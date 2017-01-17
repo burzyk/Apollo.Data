@@ -5,5 +5,5 @@ set(CMAKE_CXX_STANDARD 11)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(SOURCE_FILES main.cc utils/log.cc utils/log.h data-point.h engine/storage-page.h engine/storage.h engine/memory-storage-page.cc engine/memory-storage-page.h engine/memory-storage.cc engine/memory-storage.h)
+set(SOURCE_FILES main.cc utils/log.cc utils/log.h data-point.h engine/storage/storage-page.h engine/storage/storage.h engine/storage/memory-storage-page.cc engine/storage/memory-storage-page.h engine/storage/memory-storage.cc engine/storage/memory-storage.h engine/storage/cached-storage-page.cc engine/storage/cached-storage-page.h engine/storage/cached-storage.cc engine/storage/cached-storage.h engine/data-chunk.cc engine/data-chunk.h)
 add_executable(src ${SOURCE_FILES})
