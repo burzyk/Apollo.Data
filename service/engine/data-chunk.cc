@@ -37,17 +37,14 @@ DataChunk *DataChunk::Load(StoragePage *page) {
 }
 
 data_point_t *DataChunk::Read(uint64_t offset, uint64_t count) {
-  return (data_point_t *)
-      this->page_->Read(
-          sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
-          sizeof(data_point_t) * count);
+  return (data_point_t *)this->page_->Read(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
+                                           sizeof(data_point_t) * count);
 }
 
 void DataChunk::Write(uint64_t offset, data_point_t *points, uint64_t count) {
-  this->page_->Write(
-      sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
-      points,
-      sizeof(data_point_t) * count);
+  this->page_->Write(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
+                     points,
+                     sizeof(data_point_t) * count);
 
   this->begin_ = fmin(this->begin_, points[0].time);
   this->end_ = fmax(this->end_, points[count - 1].time);
