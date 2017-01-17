@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.6)
+project(apollo-storage)
+
+set(CMAKE_CXX_STANDARD 11)
+
+set(SOURCE_FILES main.cc utils/log.cc utils/log.h)
+add_executable(src ${SOURCE_FILES})
