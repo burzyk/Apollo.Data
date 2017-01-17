@@ -3,5 +3,5 @@ project(apollo-storage)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES main.cc utils/log.cc utils/log.h)
+set(SOURCE_FILES main.cc utils/log.cc utils/log.h data-point.h engine/storage-page.h engine/storage.h)
 add_executable(src ${SOURCE_FILES})
