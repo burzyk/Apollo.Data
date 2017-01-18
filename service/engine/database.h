@@ -19,7 +19,7 @@ class Database {
   ~Database();
   static Database *Init(Storage *storage);
 
-  DataPointReader *Read(std::string name, timestamp_t begin, timestamp_t end);
+  DataPointReader Read(std::string name, timestamp_t begin, timestamp_t end);
   void Write(std::string name, data_point_t *points, int count);
 
   void PrintMetadata();

@@ -27,7 +27,7 @@ DataChunk *DataChunk::Load(StoragePage *page) {
   }
 
   DataChunk *chunk = new DataChunk(std::string(info.series_name), page);
-  data_point_t *points = chunk->Read(0, chunk->GetMaxNumberOfPoints());
+  data_point_t *points = chunk->Read(chunk->GetMaxNumberOfPoints());
 
   for (int i = 0; i < chunk->GetMaxNumberOfPoints() && points[i].time != 0; i++) {
     chunk->begin = MIN(chunk->begin, points[i].time);
@@ -38,8 +38,12 @@ DataChunk *DataChunk::Load(StoragePage *page) {
   return chunk;
 }
 
-data_point_t *DataChunk::Read(int offset, int count) {
-  return (data_point_t *)this->page->Read(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
+data_point_t *DataChunk::Read() {
+  return this->Read(this->number_of_points);
+}
+
+data_point_t *DataChunk::Read(int count) {
+  return (data_point_t *)this->page->Read(sizeof(data_chunk_info_t),
                                           sizeof(data_point_t) * count);
 }
 
@@ -82,7 +86,7 @@ void DataChunk::PrintMetadata() {
       this->number_of_points,
       this->series_name.c_str());
 
-  data_point_t *points = this->Read(0, this->GetNumberOfPoints());
+  data_point_t *points = this->Read();
 
   for (int i = 0; i < this->GetNumberOfPoints(); i++) {
     printf("    %llu %f\n", points[i].time, points[i].value);

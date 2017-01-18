@@ -22,7 +22,8 @@ class DataChunk {
   static DataChunk *Create(std::string series_name, StoragePage *page);
   static DataChunk *Load(StoragePage *page);
 
-  data_point_t *Read(int offset, int count);
+  data_point_t *Read();
+  data_point_t *Read(int count);
   void Write(int offset, data_point_t *points, int count);
 
   std::string GetSeriesName();

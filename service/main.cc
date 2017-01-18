@@ -10,13 +10,13 @@ int main() {
   // Storage *storage = MmapFileStorage::Init("/Users/pburzynski/apollo-test/data/DATA_FILE", A_DATA_CHUNK_SIZE);
   apollo::Storage *storage = apollo::CachedStorage::Init(
       "/Users/pburzynski/apollo-test/data/DATA_FILE",
-      sizeof(apollo::data_chunk_info_t) + 5 * sizeof(apollo::data_point_t));
+      sizeof(apollo::data_chunk_info_t) + 10000 * sizeof(apollo::data_point_t));
   apollo::Database *db = apollo::Database::Init(storage);
 
-  db->PrintMetadata();
+  //db->PrintMetadata();
 
-  int batches = 3;
-  int batch_size = 3;
+  int batches = 1000000;
+  int batch_size = 100;
   uint64_t time = 0;
   apollo::data_point_t *points = new apollo::data_point_t[batch_size];
 
@@ -37,7 +37,7 @@ int main() {
   clock_gettime(CLOCK_REALTIME, &stop);
   printf("%lu.%lu\n", stop.tv_sec - start.tv_sec, stop.tv_nsec - start.tv_nsec);
 
-  db->PrintMetadata();
+  //db->PrintMetadata();
 
   delete db;
   delete storage;

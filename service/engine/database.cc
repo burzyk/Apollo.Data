@@ -76,11 +76,17 @@ void Database::Write(std::string name, data_point_t *points, int count) {
   this->storage->Flush();
 }
 
-DataPointReader *Database::Read(std::string name, timestamp_t begin, timestamp_t end) {
-  // DataSeries *series = this->FindDataSeries(name);
-  // return series == NULL ? NULL : series->Read(begin, end);
+DataPointReader Database::Read(std::string name, timestamp_t begin, timestamp_t end) {
+  std::list<DataChunk *> *chunks = this->FindDataChunks(name);
+  std::list<DataChunk *> filtered_chunks;
 
-  return NULL;
+  for (auto chunk: *chunks) {
+    if (chunk->GetBegin() <= end || chunk->GetEnd() >= begin) {
+      filtered_chunks.push_back(chunk);
+    }
+  }
+
+  return DataPointReader(filtered_chunks, begin, end);
 }
 
 void Database::PrintMetadata() {
@@ -129,7 +135,7 @@ void Database::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
   } else {
     int buffer_count = count + chunk->GetNumberOfPoints();
     data_point_t *buffer = (data_point_t *)calloc((size_t)buffer_count, sizeof(data_point_t));
-    data_point_t *content = chunk->Read(0, chunk->GetNumberOfPoints());
+    data_point_t *content = chunk->Read();
     int points_pos = count - 1;
     int content_pos = chunk->GetNumberOfPoints() - 1;
 
