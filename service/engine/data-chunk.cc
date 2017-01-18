@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <utils/common.h>
+#include <utils/log.h>
 #include "data-chunk.h"
 
 namespace apollo {
@@ -39,17 +40,22 @@ DataChunk *DataChunk::Load(StoragePage *page) {
 
 data_point_t *DataChunk::Read(int offset, int count) {
   return (data_point_t *)this->page->Read(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
-                                           sizeof(data_point_t) * count);
+                                          sizeof(data_point_t) * count);
 }
 
 void DataChunk::Write(int offset, data_point_t *points, int count) {
   this->page->Write(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
-                     points,
-                     sizeof(data_point_t) * count);
+                    points,
+                    sizeof(data_point_t) * count);
 
-  this->begin = MIN(this->begin, points[0].time);
-  this->end = MAX(this->end, points[count - 1].time);
-  this->number_of_points = MAX(this->number_of_points, offset + count);
+  if (offset == 0) {
+    this->begin = points[0].time;
+  }
+
+  if (this->number_of_points <= offset + count) {
+    this->end = points[count - 1].time;
+    this->number_of_points = offset + count;
+  }
 }
 
 std::string DataChunk::GetSeriesName() {

@@ -15,7 +15,7 @@ int main() {
 
   int batches = 3;
   int batch_size = 3;
-  uint64_t time = 1;
+  uint64_t time = 0;
   apollo::data_point_t *points = new apollo::data_point_t[batch_size];
 
   struct timespec start = {0};
@@ -23,7 +23,8 @@ int main() {
 
   for (int i = 0; i < batches; i++) {
     for (int j = 0; j < batch_size; j++) {
-      points[j].time = time++;
+      time++;
+      points[j].time = time;
       points[j].value = time * 100;
     }
 
