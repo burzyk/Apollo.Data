@@ -6,7 +6,11 @@
 
 #include "log.h"
 
+namespace apollo {
+
 void Log::Fatal(std::string message) {
-    fprintf(stderr, "FATAL: %s\n", message.c_str());
-    exit(-1);
+  fprintf(stderr, "FATAL: %s\n", message.c_str());
+  exit(-1);
+}
+
 }

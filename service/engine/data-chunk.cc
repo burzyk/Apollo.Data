@@ -76,10 +76,11 @@ int DataChunk::GetNumberOfPoints() {
 
 void DataChunk::PrintMetadata() {
   printf(
-      "begin: %llu, end: %llu, points: %d\n",
+      "begin: %llu, end: %llu, points: %d (%s)\n",
       this->begin,
       this->end,
-      this->number_of_points);
+      this->number_of_points,
+      this->series_name.c_str());
 
   data_point_t *points = this->Read(0, this->GetNumberOfPoints());
 

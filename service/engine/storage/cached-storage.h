@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <utils/file.h>
 #include "storage.h"
 #include "cached-storage-page.h"
 
@@ -22,10 +23,10 @@ class CachedStorage : public Storage {
   virtual int GetPagesCount();
   virtual void Flush();
  private:
-  CachedStorage(FILE *f, int page_size);
+  CachedStorage(File *file, int page_size);
 
   int page_size;
-  FILE *file;
+  File *file;
   std::vector<CachedStoragePage *> pages;
 };
 

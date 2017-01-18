@@ -13,6 +13,8 @@ int main() {
       sizeof(apollo::data_chunk_info_t) + 5 * sizeof(apollo::data_point_t));
   apollo::Database *db = apollo::Database::Init(storage);
 
+  db->PrintMetadata();
+
   int batches = 3;
   int batch_size = 3;
   uint64_t time = 0;
