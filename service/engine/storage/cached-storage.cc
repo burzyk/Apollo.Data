@@ -40,6 +40,8 @@ StoragePage *CachedStorage::AllocatePage() {
   uint8_t buffer[A_PAGE_ALLOCATE_BUFFER_SIZE] = {0};
   int to_allocate = this->page_size;
 
+  this->file->Seek(0, SEEK_END);
+
   while (to_allocate > 0) {
     int to_write = MIN(to_allocate, A_PAGE_ALLOCATE_BUFFER_SIZE);
     this->file->Write(buffer, (size_t)to_write, 1);
