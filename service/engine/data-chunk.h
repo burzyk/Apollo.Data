@@ -22,13 +22,13 @@ class DataChunk {
   static DataChunk *Create(std::string series_name, StoragePage *page);
   static DataChunk *Load(StoragePage *page);
 
-  data_point_t *Read(uint64_t offset, uint64_t count);
-  void Write(uint64_t offset, data_point_t *points, uint64_t count);
+  data_point_t *Read(int offset, int count);
+  void Write(int offset, data_point_t *points, int count);
 
   std::string GetSeriesName();
   timestamp_t GetBegin();
   timestamp_t GetEnd();
-  uint64_t GetNumberOfPoints();
+  int GetNumberOfPoints();
   int GetMaxNumberOfPoints();
 
   void PrintMetadata();
@@ -39,7 +39,7 @@ class DataChunk {
   std::string series_name;
   timestamp_t begin;
   timestamp_t end;
-  uint64_t number_of_points;
+  int number_of_points;
 };
 
 }

@@ -8,8 +8,8 @@
 
 namespace apollo {
 
-MemoryStoragePage::MemoryStoragePage(uint64_t size) {
-  this->page = (uint8_t *)calloc(size, 1);
+MemoryStoragePage::MemoryStoragePage(int size) {
+  this->page = (uint8_t *)calloc((size_t)size, 1);
   this->size = size;
 }
 
@@ -22,15 +22,15 @@ MemoryStoragePage::~MemoryStoragePage() {
   this->size = 0;
 }
 
-void MemoryStoragePage::Write(uint64_t offset, void *source, uint64_t size) {
+void MemoryStoragePage::Write(int offset, void *source, int size) {
   if (this->size < offset + size) {
     Log::Fatal("Trying to write outside page");
   }
 
-  memcpy(this->page + offset, source, size);
+  memcpy(this->page + offset, source, (size_t)size);
 }
 
-volatile_t *MemoryStoragePage::Read(uint64_t offset, uint64_t size) {
+volatile_t *MemoryStoragePage::Read(int offset, int size) {
   if (this->size < offset + size) {
     Log::Fatal("Trying to read outside page");
   }
@@ -38,7 +38,7 @@ volatile_t *MemoryStoragePage::Read(uint64_t offset, uint64_t size) {
   return this->page + offset;
 }
 
-uint64_t MemoryStoragePage::GetPageSize() {
+int MemoryStoragePage::GetPageSize() {
   return this->size;
 }
 

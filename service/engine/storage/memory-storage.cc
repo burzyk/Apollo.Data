@@ -6,7 +6,7 @@
 
 namespace apollo {
 
-MemoryStorage::MemoryStorage(uint64_t page_size) {
+MemoryStorage::MemoryStorage(int page_size) {
   this->page_size = page_size;
 }
 
@@ -23,12 +23,12 @@ StoragePage *MemoryStorage::AllocatePage() {
   return page;
 }
 
-StoragePage *MemoryStorage::GetPage(uint64_t index) {
+StoragePage *MemoryStorage::GetPage(int index) {
   return this->pages[index];
 }
 
-uint64_t MemoryStorage::GetPagesCount() {
-  return this->pages.size();
+int MemoryStorage::GetPagesCount() {
+  return (int)this->pages.size();
 }
 
 void MemoryStorage::Flush() {

@@ -3,6 +3,7 @@
 //
 
 #include <cmath>
+#include <utils/common.h>
 #include "data-chunk.h"
 
 namespace apollo {
@@ -28,26 +29,26 @@ DataChunk *DataChunk::Load(StoragePage *page) {
   data_point_t *points = chunk->Read(0, chunk->GetMaxNumberOfPoints());
 
   for (int i = 0; i < chunk->GetMaxNumberOfPoints() && points[i].time != 0; i++) {
-    chunk->begin = fmin(chunk->begin, points[i].time);
-    chunk->end = fmax(chunk->end, points[i].time);
+    chunk->begin = MIN(chunk->begin, points[i].time);
+    chunk->end = MAX(chunk->end, points[i].time);
     chunk->number_of_points++;
   }
 
   return chunk;
 }
 
-data_point_t *DataChunk::Read(uint64_t offset, uint64_t count) {
+data_point_t *DataChunk::Read(int offset, int count) {
   return (data_point_t *)this->page->Read(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
                                            sizeof(data_point_t) * count);
 }
 
-void DataChunk::Write(uint64_t offset, data_point_t *points, uint64_t count) {
+void DataChunk::Write(int offset, data_point_t *points, int count) {
   this->page->Write(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
                      points,
                      sizeof(data_point_t) * count);
 
-  this->begin = fmin(this->begin, points[0].time);
-  this->end = fmax(this->end, points[count - 1].time);
+  this->begin = MIN(this->begin, points[0].time);
+  this->end = MAX(this->end, points[count - 1].time);
   this->number_of_points += count;
 }
 
@@ -63,13 +64,13 @@ timestamp_t DataChunk::GetEnd() {
   return this->end;
 }
 
-uint64_t DataChunk::GetNumberOfPoints() {
+int DataChunk::GetNumberOfPoints() {
   return this->number_of_points;
 }
 
 void DataChunk::PrintMetadata() {
   printf(
-      "begin: %llu, end: %llu, points: %llu\n",
+      "begin: %llu, end: %llu, points: %d\n",
       this->begin,
       this->end,
       this->number_of_points);

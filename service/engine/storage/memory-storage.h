@@ -14,15 +14,15 @@ namespace apollo {
 
 class MemoryStorage : public Storage {
  public:
-  MemoryStorage(uint64_t page_size);
+  MemoryStorage(int page_size);
   virtual ~MemoryStorage();
 
   virtual StoragePage *AllocatePage();
-  virtual StoragePage *GetPage(uint64_t index);
-  virtual uint64_t GetPagesCount();
+  virtual StoragePage *GetPage(int index);
+  virtual int GetPagesCount();
   virtual void Flush();
  private:
-  uint64_t page_size;
+  int page_size;
   std::vector<MemoryStoragePage *> pages;
 };
 

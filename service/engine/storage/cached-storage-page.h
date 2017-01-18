@@ -14,17 +14,17 @@ namespace apollo {
 class CachedStoragePage : public StoragePage {
  public:
   virtual ~CachedStoragePage();
-  static CachedStoragePage *Load(FILE *f, uint64_t size, uint64_t file_offset);
+  static CachedStoragePage *Load(FILE *f, int size, uint64_t file_offset);
 
-  virtual void Write(uint64_t offset, void *source, uint64_t size);
-  virtual volatile_t *Read(uint64_t offset, uint64_t size);
+  virtual void Write(int offset, void *source, int size);
+  virtual volatile_t *Read(int offset, int size);
 
-  virtual uint64_t GetPageSize();
+  virtual int GetPageSize();
  private:
-  CachedStoragePage(FILE *f, uint64_t size, uint64_t file_offset);
+  CachedStoragePage(FILE *f, int size, uint64_t file_offset);
 
   uint8_t *content;
-  uint64_t size;
+  int size;
   FILE *file;
   uint64_t file_offset;
 };

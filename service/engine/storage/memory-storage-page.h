@@ -12,16 +12,16 @@ namespace apollo {
 
 class MemoryStoragePage : public StoragePage {
  public:
-  MemoryStoragePage(uint64_t size);
+  MemoryStoragePage(int size);
   virtual ~MemoryStoragePage();
 
-  virtual void Write(uint64_t offset, void *source, uint64_t size);
-  virtual volatile_t *Read(uint64_t offset, uint64_t size);
+  virtual void Write(int offset, void *source, int size);
+  virtual volatile_t *Read(int offset, int size);
 
-  virtual uint64_t GetPageSize();
+  virtual int GetPageSize();
  private:
   uint8_t *page;
-  uint64_t size;
+  int size;
 };
 
 }

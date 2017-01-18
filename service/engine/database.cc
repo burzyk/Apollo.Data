@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <utils/common.h>
 #include "database.h"
 
 namespace apollo {
@@ -29,16 +30,11 @@ Database::~Database() {
 Database *Database::Init(Storage *storage) {
   Database *db = new Database(storage);
 
-  bool loaded = false;
-  uint64_t offset = 0;
-
   for (int i = 0; i < db->storage->GetPagesCount(); i++) {
     StoragePage *page = db->storage->GetPage(i);
     DataChunk *chunk = DataChunk::Load(page);
 
-    if (chunk == NULL) {
-      loaded = true;
-    } else {
+    if (chunk != NULL) {
       db->RegisterChunk(chunk);
     }
   }
@@ -132,7 +128,7 @@ void Database::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
     this->ChunkMemcpy(chunk, chunk->GetNumberOfPoints(), points, count);
   } else {
     int buffer_count = count + chunk->GetNumberOfPoints();
-    data_point_t *buffer = (data_point_t *)calloc(buffer_count, sizeof(data_point_t));
+    data_point_t *buffer = (data_point_t *)calloc((size_t)buffer_count, sizeof(data_point_t));
     data_point_t *content = chunk->Read(0, chunk->GetNumberOfPoints());
     int points_pos = count - 1;
     int content_pos = chunk->GetNumberOfPoints() - 1;
@@ -155,7 +151,7 @@ void Database::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
 }
 
 void Database::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points, int count) {
-  int to_write = fmin(count, chunk->GetMaxNumberOfPoints() - position);
+  int to_write = MIN(count, chunk->GetMaxNumberOfPoints() - position);
   chunk->Write(position, points, to_write);
   count -= to_write;
   points += to_write;
@@ -163,7 +159,7 @@ void Database::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points,
   while (count != 0) {
     chunk = DataChunk::Create(chunk->GetSeriesName(),
                               this->storage->AllocatePage());
-    to_write = fmin(count, chunk->GetMaxNumberOfPoints());
+    to_write = MIN(count, chunk->GetMaxNumberOfPoints());
     chunk->Write(0, points, to_write);
     this->RegisterChunk(chunk);
     count -= to_write;
