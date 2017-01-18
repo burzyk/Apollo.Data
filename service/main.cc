@@ -8,11 +8,13 @@ int main() {
   // return 0;
 
   // Storage *storage = MmapFileStorage::Init("/Users/pburzynski/apollo-test/data/DATA_FILE", A_DATA_CHUNK_SIZE);
-  apollo::Storage *storage = apollo::CachedStorage::Init("/Users/pburzynski/apollo-test/data/DATA_FILE", 1000);
+  apollo::Storage *storage = apollo::CachedStorage::Init(
+      "/Users/pburzynski/apollo-test/data/DATA_FILE",
+      sizeof(apollo::data_chunk_info_t) + 5 * sizeof(apollo::data_point_t));
   apollo::Database *db = apollo::Database::Init(storage);
 
-  int batches = 10;
-  int batch_size = 10;
+  int batches = 3;
+  int batch_size = 3;
   uint64_t time = 1;
   apollo::data_point_t *points = new apollo::data_point_t[batch_size];
 

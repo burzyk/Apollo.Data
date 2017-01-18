@@ -49,7 +49,7 @@ void DataChunk::Write(int offset, data_point_t *points, int count) {
 
   this->begin = MIN(this->begin, points[0].time);
   this->end = MAX(this->end, points[count - 1].time);
-  this->number_of_points += count;
+  this->number_of_points = MAX(this->number_of_points, offset + count);
 }
 
 std::string DataChunk::GetSeriesName() {
@@ -74,6 +74,12 @@ void DataChunk::PrintMetadata() {
       this->begin,
       this->end,
       this->number_of_points);
+
+  data_point_t *points = this->Read(0, this->GetNumberOfPoints());
+
+  for (int i = 0; i < this->GetNumberOfPoints(); i++) {
+    printf("    %llu %f\n", points[i].time, points[i].value);
+  }
 }
 
 int DataChunk::GetMaxNumberOfPoints() {
