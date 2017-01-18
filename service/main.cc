@@ -10,7 +10,6 @@ int main() {
   // Storage *storage = MmapFileStorage::Init("/Users/pburzynski/apollo-test/data/DATA_FILE", A_DATA_CHUNK_SIZE);
   apollo::Storage *storage = apollo::CachedStorage::Init("/Users/pburzynski/apollo-test/data/DATA_FILE", 1000);
   apollo::Database *db = apollo::Database::Init(storage);
-  std::cout << "db initialized" << std::endl;
 
   int batches = 10;
   int batch_size = 10;
@@ -28,7 +27,6 @@ int main() {
 
     db->Write("usd_gbp", points, batch_size);
   }
-
 
   struct timespec stop = {0};
   clock_gettime(CLOCK_REALTIME, &stop);

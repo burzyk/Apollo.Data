@@ -35,11 +35,11 @@ class DataChunk {
  private:
   DataChunk(std::string series_name, StoragePage *page);
 
-  StoragePage *page_;
-  std::string series_name_;
-  timestamp_t begin_;
-  timestamp_t end_;
-  uint64_t number_of_points_;
+  StoragePage *page;
+  std::string series_name;
+  timestamp_t begin;
+  timestamp_t end;
+  uint64_t number_of_points;
 };
 
 }

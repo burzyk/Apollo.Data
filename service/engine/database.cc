@@ -8,14 +8,13 @@
 
 namespace apollo {
 
-
 Database::Database(Storage *storage) {
-  this->storage_ = storage;
-  this->chunks_count_ = 0;
+  this->storage = storage;
+  this->chunks_count = 0;
 }
 
 Database::~Database() {
-  for (auto s: this->series_) {
+  for (auto s: this->series) {
     for (auto chunk : *s.second) {
       delete chunk;
     }
@@ -23,8 +22,8 @@ Database::~Database() {
     delete s.second;
   }
 
-  this->series_.clear();
-  this->storage_ = NULL;
+  this->series.clear();
+  this->storage = NULL;
 }
 
 Database *Database::Init(Storage *storage) {
@@ -33,8 +32,8 @@ Database *Database::Init(Storage *storage) {
   bool loaded = false;
   uint64_t offset = 0;
 
-  for (int i = 0; i < db->storage_->GetPagesCount(); i++) {
-    StoragePage *page = db->storage_->GetPage(i);
+  for (int i = 0; i < db->storage->GetPagesCount(); i++) {
+    StoragePage *page = db->storage->GetPage(i);
     DataChunk *chunk = DataChunk::Load(page);
 
     if (chunk == NULL) {
@@ -51,7 +50,7 @@ void Database::Write(std::string name, data_point_t *points, int count) {
   std::list<DataChunk *> *chunks = this->FindDataChunks(name);
 
   if (chunks->size() == 0) {
-    DataChunk *chunk = DataChunk::Create(name, this->storage_->AllocatePage());
+    DataChunk *chunk = DataChunk::Create(name, this->storage->AllocatePage());
     this->RegisterChunk(chunk);
   }
 
@@ -78,7 +77,7 @@ void Database::Write(std::string name, data_point_t *points, int count) {
     }
   }
 
-  this->storage_->Flush();
+  this->storage->Flush();
 }
 
 DataPointReader *Database::Read(std::string name, timestamp_t begin, timestamp_t end) {
@@ -90,9 +89,9 @@ DataPointReader *Database::Read(std::string name, timestamp_t begin, timestamp_t
 
 void Database::PrintMetadata() {
   printf("Database:\n");
-  printf("    chunks count: %llu\n", this->chunks_count_);
+  printf("    chunks count: %llu\n", this->chunks_count);
 
-  for (auto series: this->series_) {
+  for (auto series: this->series) {
     printf("==================================================\n");
     printf("Series: %s\n", series.first.c_str());
 
@@ -113,15 +112,15 @@ void Database::RegisterChunk(DataChunk *chunk) {
   }
 
   chunks->insert(i, chunk);
-  this->chunks_count_++;
+  this->chunks_count++;
 }
 
 std::list<DataChunk *> *Database::FindDataChunks(std::string name) {
-  if (this->series_.find(name) == this->series_.end()) {
-    this->series_[name] = new std::list<DataChunk *>();
+  if (this->series.find(name) == this->series.end()) {
+    this->series[name] = new std::list<DataChunk *>();
   }
 
-  return this->series_[name];
+  return this->series[name];
 }
 
 void Database::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
@@ -162,9 +161,8 @@ void Database::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points,
   points += to_write;
 
   while (count != 0) {
-    chunk = DataChunk::Create(
-        chunk->GetSeriesName(),
-        this->storage_->AllocatePage());
+    chunk = DataChunk::Create(chunk->GetSeriesName(),
+                              this->storage->AllocatePage());
     to_write = fmin(count, chunk->GetMaxNumberOfPoints());
     chunk->Write(0, points, to_write);
     this->RegisterChunk(chunk);
@@ -172,8 +170,5 @@ void Database::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points,
     points += to_write;
   }
 }
-
-
-
 
 }

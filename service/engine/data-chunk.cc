@@ -28,63 +28,63 @@ DataChunk *DataChunk::Load(StoragePage *page) {
   data_point_t *points = chunk->Read(0, chunk->GetMaxNumberOfPoints());
 
   for (int i = 0; i < chunk->GetMaxNumberOfPoints() && points[i].time != 0; i++) {
-    chunk->begin_ = fmin(chunk->begin_, points[i].time);
-    chunk->end_ = fmax(chunk->end_, points[i].time);
-    chunk->number_of_points_++;
+    chunk->begin = fmin(chunk->begin, points[i].time);
+    chunk->end = fmax(chunk->end, points[i].time);
+    chunk->number_of_points++;
   }
 
   return chunk;
 }
 
 data_point_t *DataChunk::Read(uint64_t offset, uint64_t count) {
-  return (data_point_t *)this->page_->Read(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
+  return (data_point_t *)this->page->Read(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
                                            sizeof(data_point_t) * count);
 }
 
 void DataChunk::Write(uint64_t offset, data_point_t *points, uint64_t count) {
-  this->page_->Write(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
+  this->page->Write(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
                      points,
                      sizeof(data_point_t) * count);
 
-  this->begin_ = fmin(this->begin_, points[0].time);
-  this->end_ = fmax(this->end_, points[count - 1].time);
-  this->number_of_points_ += count;
+  this->begin = fmin(this->begin, points[0].time);
+  this->end = fmax(this->end, points[count - 1].time);
+  this->number_of_points += count;
 }
 
 std::string DataChunk::GetSeriesName() {
-  return this->series_name_;
+  return this->series_name;
 }
 
 timestamp_t DataChunk::GetBegin() {
-  return this->begin_;
+  return this->begin;
 }
 
 timestamp_t DataChunk::GetEnd() {
-  return this->end_;
+  return this->end;
 }
 
 uint64_t DataChunk::GetNumberOfPoints() {
-  return this->number_of_points_;
+  return this->number_of_points;
 }
 
 void DataChunk::PrintMetadata() {
   printf(
       "begin: %llu, end: %llu, points: %llu\n",
-      this->begin_,
-      this->end_,
-      this->number_of_points_);
+      this->begin,
+      this->end,
+      this->number_of_points);
 }
 
 int DataChunk::GetMaxNumberOfPoints() {
-  return (this->page_->GetPageSize() - sizeof(data_chunk_info_t)) / sizeof(data_point_t);
+  return (this->page->GetPageSize() - sizeof(data_chunk_info_t)) / sizeof(data_point_t);
 }
 
 DataChunk::DataChunk(std::string series_name, StoragePage *page) {
-  this->page_ = page;
-  this->series_name_ = series_name;
-  this->begin_ = A_MAX_TIMESTAMP;
-  this->end_ = A_MIN_TIMESTAMP;
-  this->number_of_points_ = 0;
+  this->page = page;
+  this->series_name = series_name;
+  this->begin = A_MAX_TIMESTAMP;
+  this->end = A_MIN_TIMESTAMP;
+  this->number_of_points = 0;
 }
 
 }

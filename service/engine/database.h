@@ -30,10 +30,9 @@ class Database {
   void WriteChunk(DataChunk *chunk, data_point_t *points, int count);
   void ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points, int count);
 
-  Storage *storage_;
-  uint64_t chunks_count_;
-
-  std::map<std::string, std::list<DataChunk *> *> series_;
+  Storage *storage;
+  uint64_t chunks_count;
+  std::map<std::string, std::list<DataChunk *> *> series;
 };
 
 }
