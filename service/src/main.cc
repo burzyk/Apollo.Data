@@ -1,7 +1,7 @@
 #include <iostream>
-#include <engine/storage/storage.h>
-#include <engine/storage/cached-storage.h>
-#include <engine/database.h>
+#include <src/engine/storage/storage.h>
+#include <src/engine/storage/cached-storage.h>
+#include <src/engine/database.h>
 
 int main() {
   // storage_allocate_page_test();

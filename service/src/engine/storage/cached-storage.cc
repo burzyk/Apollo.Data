@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#include <utils/common.h>
-#include "utils/log.h"
+#include <src/utils/common.h>
+#include "src/utils/log.h"
 #include "cached-storage.h"
 
 #define A_PAGE_ALLOCATE_BUFFER_SIZE 65536

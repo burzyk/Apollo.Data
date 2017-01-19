@@ -4,7 +4,7 @@
 
 #include <cstdlib>
 #include "memory-storage-page.h"
-#include "utils/log.h"
+#include "src/utils/log.h"
 
 namespace apollo {
 

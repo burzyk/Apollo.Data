@@ -5,7 +5,7 @@
 #ifndef APOLLO_STORAGE_DATA_POINT_READER_H
 #define APOLLO_STORAGE_DATA_POINT_READER_H
 
-#include <data-point.h>
+#include <src/data-point.h>
 #include <list>
 #include "data-chunk.h"
 

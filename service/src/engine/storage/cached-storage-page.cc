@@ -5,8 +5,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
-#include <utils/common.h>
-#include "utils/log.h"
+#include <src/utils/common.h>
+#include "src/utils/log.h"
 #include "cached-storage-page.h"
 
 namespace apollo {
