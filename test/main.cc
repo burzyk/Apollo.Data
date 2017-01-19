@@ -8,6 +8,7 @@
 #define TEST(test_case) result = runner.RunTest("" #test_case "", test_case);
 
 int main() {
+  std::string dir = ""
   apollo::Directory::CreateDirectory("./test-result");
   apollo::test::TestRunner runner("./test-result");
   int result = 0;
@@ -15,7 +16,7 @@ int main() {
   printf("==================== Running tests ====================\n");
 
   TEST(apollo::test::simple_database_initialization_test);
-  TEST(apollo::test::simple_database_initialization_test2);
+  TEST(apollo::test::basic_database_write_and_read_all);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");
