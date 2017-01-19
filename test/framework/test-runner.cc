@@ -15,10 +15,12 @@ namespace test {
 
 TestRunner::TestRunner(std::string directory) {
   this->directory = directory;
+  this->tests_failed = 0;
+  this->tests_success = 0;
 }
 
 int TestRunner::RunTest(std::string name, std::function<void(TestContext)> func) {
-  printf(ANSI_COLOR_GREEN "Running: %s ..." ANSI_COLOR_RESET, name.c_str());
+  printf("Running: %s ...", name.c_str());
 
   try {
     std::string dir = this->directory + "/" + name;
@@ -27,12 +29,18 @@ int TestRunner::RunTest(std::string name, std::function<void(TestContext)> func)
 
     func(dir);
 
-    printf(ANSI_COLOR_GREEN " OK\n" ANSI_COLOR_RESET);
+    printf(ANSI_COLOR_GREEN " [ OK ]\n" ANSI_COLOR_RESET);
+    this->tests_success++;
     return 0;
   } catch (...) {
-    printf(ANSI_COLOR_RED " Failed\n" ANSI_COLOR_RESET);
+    printf(ANSI_COLOR_RED " [ Failed ]\n" ANSI_COLOR_RESET);
+    this->tests_failed++;
     return -1;
   }
+}
+
+void TestRunner::PrintSummary() {
+  printf("Test run: %d, failed: %d\n", this->tests_success + this->tests_failed, this->tests_failed);
 }
 
 }

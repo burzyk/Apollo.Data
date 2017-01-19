@@ -15,8 +15,11 @@ class TestRunner {
   TestRunner(std::string directory);
 
   int RunTest(std::string name, std::function<void(TestContext)> func);
+  void PrintSummary();
  private:
   std::string directory;
+  int tests_success;
+  int tests_failed;
 };
 
 }

@@ -12,7 +12,13 @@ int main() {
   apollo::test::TestRunner runner("./test-result");
   int result = 0;
 
+  printf("==================== Running tests ====================\n");
+
   TEST(apollo::test::simple_database_initialization_test);
+  TEST(apollo::test::simple_database_initialization_test2);
+
+  runner.PrintSummary();
+  printf("==================== Tests finished ===================\n");
 
   return result;
 }

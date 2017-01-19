@@ -11,6 +11,9 @@ void simple_database_initialization_test(TestContext ctx) {
   throw 12;
 }
 
+void simple_database_initialization_test2(TestContext ctx) {
+}
+
 }
 }
 
