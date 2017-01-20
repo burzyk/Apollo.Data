@@ -42,6 +42,10 @@ Database *Database::Init(Storage *storage) {
   return db;
 }
 
+int Database::CalculatePageSize(int number_of_points) {
+  return sizeof(apollo::data_chunk_info_t) + number_of_points * sizeof(apollo::data_point_t);
+}
+
 void Database::Write(std::string name, data_point_t *points, int count) {
   std::list<DataChunk *> *chunks = this->FindDataChunks(name);
 

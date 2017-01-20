@@ -7,6 +7,7 @@
 
 #include <src/data-point.h>
 #include <list>
+#include <vector>
 #include "data-chunk.h"
 
 namespace apollo {
@@ -17,8 +18,8 @@ class DataPointReader {
 
   int Read(data_point_t *buffer, int size);
  private:
-  std::list<DataChunk *> chunks;
-  std::list<DataChunk *>::iterator current_chunk;
+  std::vector<DataChunk *> chunks;
+  std::vector<DataChunk *>::iterator current_chunk;
   timestamp_t begin;
   timestamp_t end;
   uint64_t position;

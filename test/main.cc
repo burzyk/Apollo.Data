@@ -8,9 +8,9 @@
 #define TEST(test_case) result = runner.RunTest("" #test_case "", test_case);
 
 int main() {
-  std::string dir = ""
-  apollo::Directory::CreateDirectory("./test-result");
-  apollo::test::TestRunner runner("./test-result");
+  std::string dir("/Users/pburzynski/apollo-test/data/test-stuff");
+  apollo::Directory::CreateDirectory(dir);
+  apollo::test::TestRunner runner(dir);
   int result = 0;
 
   printf("==================== Running tests ====================\n");

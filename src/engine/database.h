@@ -18,6 +18,7 @@ class Database {
  public:
   ~Database();
   static Database *Init(Storage *storage);
+  static int CalculatePageSize(int number_of_points);
 
   DataPointReader Read(std::string name, timestamp_t begin, timestamp_t end);
   void Write(std::string name, data_point_t *points, int count);

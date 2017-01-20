@@ -36,7 +36,7 @@ void validate_read(Database *db, std::string series_name, int expected_count, ti
   data_point_t points[A_VALIDATE_READ_BUFFER_SIZE] = {0};
   data_point_t last = {0};
 
-  while (read > 0) {
+  while (read != 0) {
     read = reader.Read(points, A_VALIDATE_READ_BUFFER_SIZE);
     total_read += read;
 
@@ -44,10 +44,10 @@ void validate_read(Database *db, std::string series_name, int expected_count, ti
       continue;
     }
 
-    Assert::IsTrue(last.time > points[0].time);
+    Assert::IsTrue(last.time <= points[0].time);
 
     for (int i = 1; i < read; i++) {
-      Assert::IsTrue(points[i - 1].time > points[i].time);
+      Assert::IsTrue(points[i - 1].time <= points[i].time);
     }
 
     last = points[read - 1];
@@ -57,7 +57,9 @@ void validate_read(Database *db, std::string series_name, int expected_count, ti
 }
 
 void simple_database_initialization_test(TestContext ctx) {
-  CachedStorage *storage = CachedStorage::Init(ctx.GetWorkingDirectory() + "DATA_FILE", 5);
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(5));
   Database *db = Database::Init(storage);
 
   delete db;
@@ -65,7 +67,9 @@ void simple_database_initialization_test(TestContext ctx) {
 }
 
 void basic_database_write_and_read_all(TestContext ctx) {
-  CachedStorage *storage = CachedStorage::Init(ctx.GetWorkingDirectory() + "DATA_FILE", 5);
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(5));
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 3);

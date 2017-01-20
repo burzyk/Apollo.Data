@@ -11,8 +11,8 @@ DataPointReader::DataPointReader(std::list<DataChunk *> chunks, timestamp_t begi
   this->begin = begin;
   this->end = end;
   this->position = 0;
-  this->chunks = chunks;
-  this->current_chunk = chunks.begin();
+  this->chunks = std::vector<DataChunk *>(chunks.begin(), chunks.end());
+  this->current_chunk = this->chunks.begin();
 }
 
 int DataPointReader::Read(apollo::data_point_t *buffer, int size) {
@@ -35,7 +35,7 @@ int DataPointReader::Read(apollo::data_point_t *buffer, int size) {
     }
 
     size_t to_copy = MIN(size, stop - start);
-    memcpy(buffer, start, to_copy);
+    memcpy(buffer, start, to_copy * sizeof(data_point_t));
     size -= to_copy;
     buffer += to_copy;
     this->position += to_copy;
