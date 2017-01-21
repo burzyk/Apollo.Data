@@ -6,7 +6,7 @@
 #define APOLLO_STORAGE_MEMORY_STORAGE_PAGE_H
 
 #include <cstdint>
-#include "storage-page.h"
+#include "src/engine/storage/storage-page.h"
 
 namespace apollo {
 
