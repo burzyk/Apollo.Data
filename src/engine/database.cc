@@ -85,7 +85,7 @@ DataPointReader Database::Read(std::string name, timestamp_t begin, timestamp_t 
   std::list<DataChunk *> filtered_chunks;
 
   for (auto chunk: *chunks) {
-    if (chunk->GetBegin() <= end || chunk->GetEnd() >= begin) {
+    if (chunk->GetBegin() <= end && chunk->GetEnd() >= begin) {
       filtered_chunks.push_back(chunk);
     }
   }
