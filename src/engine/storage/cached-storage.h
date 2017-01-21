@@ -16,17 +16,18 @@ namespace apollo {
 class CachedStorage : public Storage {
  public:
   virtual ~CachedStorage();
-  static CachedStorage *Init(std::string file_name, int page_size);
+  static CachedStorage *Init(std::string file_name, int page_size, int max_pages);
 
   virtual StoragePage *AllocatePage();
   virtual StoragePage *GetPage(int index);
   virtual int GetPagesCount();
   virtual void Flush();
  private:
-  CachedStorage(File *file, int page_size);
+  CachedStorage(File *file, PageAllocator *allocator, int page_size);
 
   int page_size;
   File *file;
+  PageAllocator *allocator;
   std::vector<CachedStoragePage *> pages;
 };
 

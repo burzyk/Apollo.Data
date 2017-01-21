@@ -11,29 +11,25 @@
 
 namespace apollo {
 
-CachedStoragePage *CachedStoragePage::Load(File *file, int size, uint64_t file_offset) {
-  CachedStoragePage *page = new CachedStoragePage(file, size, file_offset);
-  uint64_t total_read = 0;
-  size_t read = (size_t)-1;
-
-  file->Seek((off_t)file_offset, SEEK_SET);
-
-  while (read != 0 && size != 0) {
-    read = file->Read(page->content + total_read, 1, (size_t)(MIN(size, A_PAGE_LOAD_BUFFER_SIZE)));
-    total_read += read;
-    size -= read;
-  }
-
-  return page;
+CachedStoragePage::CachedStoragePage(File *file, int size, uint64_t file_offset, PageAllocator *allocator) {
+  this->allocator = allocator;
+  this->size = size;
+  this->file = file;
+  this->file_offset = file_offset;
 }
 
-CachedStoragePage::~CachedStoragePage() {
-  if (this->content != NULL) {
-    free(this->content);
-  }
+void CachedStoragePage::LoadToBuffer(uint8_t *buffer) {
+  int total_read = 0;
+  size_t read = (size_t)-1;
+  int to_read = this->size;
 
-  this->content = NULL;
-  this->size = 0;
+  this->file->Seek((off_t)this->file_offset, SEEK_SET);
+
+  while (read != 0 && to_read != 0) {
+    read = this->file->Read(buffer + total_read, 1, (size_t)(MIN(to_read, A_PAGE_LOAD_BUFFER_SIZE)));
+    total_read += read;
+    to_read -= read;
+  }
 }
 
 void CachedStoragePage::Write(int offset, void *source, int size) {
@@ -47,7 +43,13 @@ void CachedStoragePage::Write(int offset, void *source, int size) {
 
   this->file->Seek((off_t)this->file_offset + offset, SEEK_SET);
   this->file->Write(source, 1, (size_t)size);
-  memcpy(this->content + offset, source, (size_t)size);
+
+  uint8_t *content = this->allocator->GetPage(this->page_id);
+
+  if (content != NULL) {
+    memcpy(content + offset, source, (size_t)size);
+  }
+
 }
 
 volatile_t *CachedStoragePage::Read(int offset, int size) {
@@ -55,18 +57,19 @@ volatile_t *CachedStoragePage::Read(int offset, int size) {
     Log::Fatal("Trying to read outside page");
   }
 
-  return this->content + offset;
+  uint8_t *content = this->allocator->GetPage(this->page_id);
+
+  if (content == NULL) {
+    this->page_id = this->allocator->AllocatePage();
+    content = this->allocator->GetPage(this->page_id);
+    this->LoadToBuffer(content);
+  }
+
+  return content + offset;
 }
 
 int CachedStoragePage::GetPageSize() {
   return this->size;
-}
-
-CachedStoragePage::CachedStoragePage(File *file, int size, uint64_t file_offset) {
-  this->content = (uint8_t *)calloc((size_t)size, 1);
-  this->size = size;
-  this->file = file;
-  this->file_offset = file_offset;
 }
 
 }

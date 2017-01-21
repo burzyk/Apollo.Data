@@ -71,7 +71,8 @@ void validate_read(Database *db, std::string series_name, int expected_count, ti
 void simple_database_initialization_test(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   delete db;
@@ -81,7 +82,8 @@ void simple_database_initialization_test(TestContext ctx) {
 void basic_database_write_and_read_all(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 3);
@@ -95,7 +97,8 @@ void basic_database_write_and_read_all(TestContext ctx) {
 void write_database_in_one_big_batch(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 1, 32);
@@ -108,7 +111,8 @@ void write_database_in_one_big_batch(TestContext ctx) {
 void write_database_in_multiple_small_batches(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 32, 1);
@@ -121,7 +125,8 @@ void write_database_in_multiple_small_batches(TestContext ctx) {
 void database_multi_write_and_read_all(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 3);
@@ -137,7 +142,8 @@ void database_multi_write_and_read_all(TestContext ctx) {
 void database_write_close_and_write_more(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 3);
@@ -148,7 +154,8 @@ void database_write_close_and_write_more(TestContext ctx) {
 
   storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 3);
@@ -159,7 +166,8 @@ void database_write_close_and_write_more(TestContext ctx) {
 
   storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 3);
@@ -172,7 +180,8 @@ void database_write_close_and_write_more(TestContext ctx) {
 void database_continuous_write(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 3);
@@ -187,7 +196,8 @@ void database_continuous_write(TestContext ctx) {
 void database_continuous_write_with_pickup(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 3);
@@ -200,7 +210,8 @@ void database_continuous_write_with_pickup(TestContext ctx) {
 
   storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 3, 800);
@@ -215,7 +226,8 @@ void database_continuous_write_with_pickup(TestContext ctx) {
 void database_write_batch_size_equal_to_page_capacity(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 5);
@@ -233,7 +245,8 @@ void database_write_batch_size_equal_to_page_capacity(TestContext ctx) {
 void database_write_batch_size_greater_than_page_capacity(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(5));
+      Database::CalculatePageSize(5),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 100, 7);
@@ -247,7 +260,8 @@ void database_write_batch_size_greater_than_page_capacity(TestContext ctx) {
 void database_read_inside_single_chunk(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(10));
+      Database::CalculatePageSize(10),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 10, 10);
@@ -260,7 +274,8 @@ void database_read_inside_single_chunk(TestContext ctx) {
 void database_read_span_two_chunks(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(10));
+      Database::CalculatePageSize(10),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 10, 10);
@@ -273,7 +288,8 @@ void database_read_span_two_chunks(TestContext ctx) {
 void database_read_span_three_chunks(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(10));
+      Database::CalculatePageSize(10),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 10, 10);
@@ -286,7 +302,8 @@ void database_read_span_three_chunks(TestContext ctx) {
 void database_read_chunk_edges(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(10));
+      Database::CalculatePageSize(10),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 10, 10);
@@ -299,7 +316,8 @@ void database_read_chunk_edges(TestContext ctx) {
 void database_read_duplicated_values(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(3));
+      Database::CalculatePageSize(3),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 1, 2);
@@ -317,7 +335,8 @@ void database_read_duplicated_values(TestContext ctx) {
 void database_read_small_buffer(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
-      Database::CalculatePageSize(10));
+      Database::CalculatePageSize(10),
+      100);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 10, 10);

@@ -8,7 +8,7 @@
 int main() {
   apollo::Storage *storage = apollo::CachedStorage::Init(
       "/Users/pburzynski/apollo-test/data/DATA_FILE",
-      apollo::Database::CalculatePageSize(1000000));
+      apollo::Database::CalculatePageSize(1000000), 100);
   apollo::Database *db = apollo::Database::Init(storage);
 
   int batches = 1000000;
