@@ -17,6 +17,9 @@ int main() {
 
   TEST(apollo::test::simple_database_initialization_test);
   TEST(apollo::test::basic_database_write_and_read_all);
+  TEST(apollo::test::write_database_in_one_big_batch);
+  TEST(apollo::test::write_database_in_multiple_small_batches);
+  TEST(apollo::test::database_multi_write_and_read_all);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");

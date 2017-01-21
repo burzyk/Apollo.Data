@@ -80,6 +80,49 @@ void basic_database_write_and_read_all(TestContext ctx) {
 
 }
 
+void write_database_in_one_big_batch(TestContext ctx) {
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(5));
+  Database *db = Database::Init(storage);
+
+  write_to_database(db, "usd_gbp", 1, 32);
+  validate_read(db, "usd_gbp", 32, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+
+  delete db;
+  delete storage;
+}
+
+void write_database_in_multiple_small_batches(TestContext ctx) {
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(5));
+  Database *db = Database::Init(storage);
+
+  write_to_database(db, "usd_gbp", 32, 1);
+  validate_read(db, "usd_gbp", 32, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+
+  delete db;
+  delete storage;
+}
+
+void database_multi_write_and_read_all(TestContext ctx) {
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(5));
+  Database *db = Database::Init(storage);
+
+  write_to_database(db, "usd_gbp", 5, 3);
+  write_to_database(db, "usd_gbp", 5, 3);
+  write_to_database(db, "usd_gbp", 5, 3);
+  write_to_database(db, "usd_gbp", 5, 3);
+  validate_read(db, "usd_gbp", 60, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+
+  delete db;
+  delete storage;
+
+}
+
 }
 }
 

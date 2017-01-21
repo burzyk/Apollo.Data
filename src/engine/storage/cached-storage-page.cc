@@ -37,6 +37,10 @@ CachedStoragePage::~CachedStoragePage() {
 }
 
 void CachedStoragePage::Write(int offset, void *source, int size) {
+  if (size == 0) {
+    return;
+  }
+
   if (this->size < offset + size) {
     Log::Fatal("Trying to write outside page");
   }

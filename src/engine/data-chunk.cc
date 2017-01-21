@@ -48,6 +48,10 @@ data_point_t *DataChunk::Read(int count) {
 }
 
 void DataChunk::Write(int offset, data_point_t *points, int count) {
+  if (count == 0) {
+    return;
+  }
+
   this->page->Write(sizeof(data_chunk_info_t) + sizeof(data_point_t) * offset,
                     points,
                     sizeof(data_point_t) * count);
