@@ -26,6 +26,11 @@ int main() {
   TEST(apollo::test::database_write_batch_size_equal_to_page_capacity);
   TEST(apollo::test::database_write_batch_size_greater_than_page_capacity);
   TEST(apollo::test::database_read_inside_single_chunk);
+  TEST(apollo::test::database_read_span_two_chunks);
+  TEST(apollo::test::database_read_span_three_chunks);
+  TEST(apollo::test::database_read_chunk_edges);
+  TEST(apollo::test::database_read_duplicated_values);
+  TEST(apollo::test::database_read_small_buffer);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");

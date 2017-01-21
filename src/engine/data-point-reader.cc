@@ -34,7 +34,7 @@ int DataPointReader::Read(apollo::data_point_t *buffer, int size) {
                           : this->begin <= (*this->current_chunk)->GetBegin()
                             ? all_points_begin
                             : std::lower_bound(all_points_begin, all_points_end, this->begin, comp);
-    data_point_t *stop = this->end >= (*this->current_chunk)->GetEnd()
+    data_point_t *stop = this->end > (*this->current_chunk)->GetEnd()
                          ? all_points_end
                          : std::lower_bound(all_points_begin, all_points_end, this->end, comp);
 

@@ -32,7 +32,12 @@ void write_to_database(Database *db, std::string series_name, int batches, int b
   write_to_database(db, series_name, batches, batch_size, 1);
 }
 
-void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
+void validate_read(Database *db,
+                   std::string series_name,
+                   int expected_count,
+                   timestamp_t begin,
+                   timestamp_t end,
+                   int buffer_size) {
   DataPointReader reader = db->Read(series_name, begin, end);
   int read = -1;
   uint64_t total_read = 0;
@@ -40,7 +45,7 @@ void validate_read(Database *db, std::string series_name, int expected_count, ti
   data_point_t last = {0};
 
   while (read != 0) {
-    read = reader.Read(points, A_VALIDATE_READ_BUFFER_SIZE);
+    read = reader.Read(points, buffer_size);
     total_read += read;
 
     if (read == 0) {
@@ -57,6 +62,10 @@ void validate_read(Database *db, std::string series_name, int expected_count, ti
   }
 
   Assert::IsTrue(expected_count == total_read);
+}
+
+void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
+  validate_read(db, series_name, expected_count, begin, end, A_VALIDATE_READ_BUFFER_SIZE);
 }
 
 void simple_database_initialization_test(TestContext ctx) {
@@ -247,6 +256,79 @@ void database_read_inside_single_chunk(TestContext ctx) {
   delete db;
   delete storage;
 }
+
+void database_read_span_two_chunks(TestContext ctx) {
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(10));
+  Database *db = Database::Init(storage);
+
+  write_to_database(db, "usd_gbp", 10, 10);
+  validate_read(db, "usd_gbp", 4, 8, 12);
+
+  delete db;
+  delete storage;
+}
+
+void database_read_span_three_chunks(TestContext ctx) {
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(10));
+  Database *db = Database::Init(storage);
+
+  write_to_database(db, "usd_gbp", 10, 10);
+  validate_read(db, "usd_gbp", 14, 8, 22);
+
+  delete db;
+  delete storage;
+}
+
+void database_read_chunk_edges(TestContext ctx) {
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(10));
+  Database *db = Database::Init(storage);
+
+  write_to_database(db, "usd_gbp", 10, 10);
+  validate_read(db, "usd_gbp", 10, 10, 20);
+
+  delete db;
+  delete storage;
+}
+
+void database_read_duplicated_values(TestContext ctx) {
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(3));
+  Database *db = Database::Init(storage);
+
+  write_to_database(db, "usd_gbp", 1, 2);
+  write_to_database(db, "usd_gbp", 1, 2);
+  write_to_database(db, "usd_gbp", 1, 2);
+  write_to_database(db, "usd_gbp", 1, 2);
+  write_to_database(db, "usd_gbp", 1, 2);
+  validate_read(db, "usd_gbp", 5, 0, 2);
+  validate_read(db, "usd_gbp", 5, 2, 3);
+
+  delete db;
+  delete storage;
+}
+
+void database_read_small_buffer(TestContext ctx) {
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(10));
+  Database *db = Database::Init(storage);
+
+  write_to_database(db, "usd_gbp", 10, 10);
+  validate_read(db, "usd_gbp", 10, 3, 13, 2);
+  validate_read(db, "usd_gbp", 10, 3, 13, 7);
+  validate_read(db, "usd_gbp", 10, 3, 13, 10);
+
+  delete db;
+  delete storage;
+}
+
 }
 }
 
