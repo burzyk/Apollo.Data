@@ -19,7 +19,7 @@ struct page_info_t {
 
 class PageAllocator {
  public:
-  PageAllocator(int page_size, int max_pages);
+  PageAllocator(size_t page_size, int max_pages);
   ~PageAllocator();
 
   uint8_t *GetPage(page_id_t page_id);
@@ -27,7 +27,7 @@ class PageAllocator {
  private:
   void DeallocateLastPage();
 
-  int page_size;
+  size_t page_size;
   int max_pages;
   int next_page_id;
 

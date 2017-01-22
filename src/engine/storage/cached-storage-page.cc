@@ -16,6 +16,7 @@ CachedStoragePage::CachedStoragePage(File *file, int size, uint64_t file_offset,
   this->size = size;
   this->file = file;
   this->file_offset = file_offset;
+  this->page_id = -1;
 }
 
 void CachedStoragePage::LoadToBuffer(uint8_t *buffer) {
@@ -23,6 +24,7 @@ void CachedStoragePage::LoadToBuffer(uint8_t *buffer) {
   size_t read = (size_t)-1;
   int to_read = this->size;
 
+  this->file->Flush();
   this->file->Seek((off_t)this->file_offset, SEEK_SET);
 
   while (read != 0 && to_read != 0) {
@@ -49,7 +51,6 @@ void CachedStoragePage::Write(int offset, void *source, int size) {
   if (content != NULL) {
     memcpy(content + offset, source, (size_t)size);
   }
-
 }
 
 volatile_t *CachedStoragePage::Read(int offset, int size) {

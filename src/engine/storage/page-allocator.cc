@@ -8,10 +8,10 @@
 
 namespace apollo {
 
-PageAllocator::PageAllocator(int page_size, int max_pages) {
+PageAllocator::PageAllocator(size_t page_size, int max_pages) {
   this->page_size = page_size;
   this->max_pages = max_pages;
-  this->next_page_id = 100;
+  this->next_page_id = 0;
 }
 
 PageAllocator::~PageAllocator() {

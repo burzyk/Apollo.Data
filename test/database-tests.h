@@ -227,7 +227,7 @@ void database_write_batch_size_equal_to_page_capacity(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
       Database::CalculatePageSize(5),
-      100);
+      10);
   Database *db = Database::Init(storage);
 
   write_to_database(db, "usd_gbp", 5, 5);
