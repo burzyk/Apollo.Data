@@ -47,9 +47,9 @@ void FileLog::ToLog(std::string level, std::string message) {
   struct tm *now = localtime(&t);
 
   fprintf(this->output,
-          "%5d/%2d/%2d [%s]: %s\n",
+          "%d/%02d/%02d [%s]: %s\n",
           now->tm_year + 1900,
-          now->tm_mon,
+          now->tm_mon + 1,
           now->tm_mday,
           level.c_str(),
           message.c_str());

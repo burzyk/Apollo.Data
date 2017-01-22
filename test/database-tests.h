@@ -6,6 +6,7 @@
 #include <src/engine/storage/cached-storage.h>
 #include <memory>
 #include <test/framework/assert.h>
+#include <src/utils/file-log.h>
 
 namespace apollo {
 namespace test {
@@ -16,11 +17,12 @@ class DatabaseContext {
  public:
   static DatabaseContext *Create(int page_size, int max_pages, TestContext ctx) {
     DatabaseContext *context = new DatabaseContext();
+    context->log = new FileLog("");
     context->master_lock = new RwLock();
     context->storage = CachedStorage::Init(ctx.GetWorkingDirectory() + "/DATA_FILE",
                                            Database::CalculatePageSize(page_size),
                                            max_pages);
-    context->db = Database::Init(context->storage, context->master_lock);
+    context->db = Database::Init(context->storage, context->master_lock, context->log);
     return context;
   }
 
@@ -36,6 +38,7 @@ class DatabaseContext {
  private:
   DatabaseContext() {}
 
+  Log *log;
   Database *db;
   Storage *storage;
   RwLock *master_lock;

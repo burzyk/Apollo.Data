@@ -5,14 +5,16 @@
 #include <cstdlib>
 #include <cmath>
 #include <src/utils/common.h>
+#include <src/utils/stopwatch.h>
 #include "database.h"
 
 namespace apollo {
 
-Database::Database(Storage *storage, RwLock *master_lock) {
+Database::Database(Storage *storage, RwLock *master_lock, Log *log) {
   this->storage = storage;
   this->chunks_count = 0;
   this->master_lock = master_lock;
+  this->log = log;
 }
 
 Database::~Database() {
@@ -28,18 +30,26 @@ Database::~Database() {
   this->storage = nullptr;
 }
 
-Database *Database::Init(Storage *storage, RwLock *master_lock) {
-  Database *db = new Database(storage, master_lock);
+Database *Database::Init(Storage *storage, RwLock *master_lock, Log *log) {
+  log->Info("Loading database ...");
+  Stopwatch sw;
+  Database *db = new Database(storage, master_lock, log);
+
+  log->Info("Loading " + std::to_string(db->storage->GetPagesCount()) + " pages");
+  sw.Start();
 
   for (int i = 0; i < db->storage->GetPagesCount(); i++) {
     StoragePage *page = db->storage->GetPage(i);
     DataChunk *chunk = DataChunk::Load(page);
 
     if (chunk != nullptr) {
+      log->Debug("Loading chunk: " + std::to_string(i));
       db->RegisterChunk(chunk);
     }
   }
 
+  sw.Stop();
+  log->Info("Database loaded in: " + std::to_string(sw.GetElapsedMilliseconds() / 1000) + "[s]");
   return db;
 }
 
