@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <src/utils/log.h>
+#include <src/fatal-exception.h>
 #include "page-allocator.h"
 
 namespace apollo {
@@ -39,13 +40,13 @@ page_id_t PageAllocator::AllocatePage() {
   page_info_t *new_page = (page_info_t *)calloc(1, sizeof(page_info_t));
 
   if (new_page == nullptr) {
-    Log::Fatal("Unable to allocate page info");
+    throw FatalException("Unable to allocate page info");
   }
 
   new_page->page = (uint8_t *)calloc(this->page_size, 1);
 
   if (new_page->page == nullptr) {
-    Log::Fatal("Unable to allocate page");
+    throw FatalException("Unable to allocate page");
   }
 
   new_page->page_id = this->next_page_id++;
@@ -64,7 +65,7 @@ void PageAllocator::DeallocateLastPage() {
   }
 
   if (last_page == nullptr) {
-    Log::Fatal("Unable to find page to deallocate");
+    throw FatalException("Unable to find page to deallocate");
   }
 
   this->pages.erase(last_page->page_id);

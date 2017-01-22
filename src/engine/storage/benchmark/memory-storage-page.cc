@@ -3,6 +3,7 @@
 //
 
 #include <cstdlib>
+#include <src/fatal-exception.h>
 #include "memory-storage-page.h"
 #include "src/utils/log.h"
 
@@ -24,7 +25,7 @@ MemoryStoragePage::~MemoryStoragePage() {
 
 void MemoryStoragePage::Write(int offset, void *source, int size) {
   if (this->size < offset + size) {
-    Log::Fatal("Trying to write outside page");
+    throw FatalException("Trying to write outside page");
   }
 
   memcpy(this->page + offset, source, (size_t)size);
@@ -32,7 +33,7 @@ void MemoryStoragePage::Write(int offset, void *source, int size) {
 
 volatile_t *MemoryStoragePage::Read(int offset, int size) {
   if (this->size < offset + size) {
-    Log::Fatal("Trying to read outside page");
+    throw FatalException("Trying to read outside page");
   }
 
   return this->page + offset;

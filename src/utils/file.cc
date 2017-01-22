@@ -2,6 +2,7 @@
 // Created by Pawel Burzynski on 18/01/2017.
 //
 
+#include <src/fatal-exception.h>
 #include "file.h"
 #include "log.h"
 
@@ -15,7 +16,7 @@ File::File(std::string file_name) {
   }
 
   if (this->f == nullptr) {
-    Log::Fatal("Unable to open file");
+    throw FatalException("Unable to open file");
   }
 }
 
@@ -28,7 +29,7 @@ File::~File() {
 
 void File::Write(void *buffer, size_t size, size_t count) {
   if (fwrite(buffer, size, count, this->f) != count) {
-    Log::Fatal("Wrote less than expected");
+    throw FatalException("Wrote less than expected");
   }
 }
 
@@ -38,7 +39,7 @@ size_t File::Read(void *buffer, size_t size, size_t count) {
 
 void File::Seek(off_t offset, int origin) {
   if (fseek(this->f, offset, origin) == -1) {
-    Log::Fatal("Unable to seek in the file");
+    throw FatalException("Unable to seek in the file");
   }
 }
 

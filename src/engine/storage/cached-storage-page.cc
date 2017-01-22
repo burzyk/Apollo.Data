@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <src/utils/common.h>
+#include <src/fatal-exception.h>
 #include "src/utils/log.h"
 #include "cached-storage-page.h"
 
@@ -40,7 +41,7 @@ void CachedStoragePage::Write(int offset, void *source, int size) {
   }
 
   if (this->size < offset + size) {
-    Log::Fatal("Trying to write outside page");
+    throw FatalException("Trying to write outside page");
   }
 
   this->file->Seek((off_t)this->file_offset + offset, SEEK_SET);
@@ -55,7 +56,7 @@ void CachedStoragePage::Write(int offset, void *source, int size) {
 
 volatile_t *CachedStoragePage::Read(int offset, int size) {
   if (this->size < offset + size) {
-    Log::Fatal("Trying to read outside page");
+    throw FatalException("Trying to read outside page");
   }
 
   uint8_t *content = this->allocator->GetPage(this->page_id);

@@ -11,7 +11,10 @@ namespace apollo {
 
 class Log {
  public:
-  static void Fatal(std::string message);
+  virtual ~Log() {};
+  virtual void Fatal(std::string message) = 0;
+  virtual void Info(std::string message) = 0;
+  virtual void Debug(std::string message) = 0;
 };
 
 }

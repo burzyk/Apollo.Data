@@ -3,6 +3,7 @@
 //
 
 #include <sys/stat.h>
+#include <src/fatal-exception.h>
 #include "directory.h"
 #include "log.h"
 
@@ -10,7 +11,7 @@ namespace apollo {
 
 void Directory::CreateDirectory(std::string path) {
   if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-    Log::Fatal("Unable to create a directory for data series");
+    throw FatalException("Unable to create a directory for data series");
   }
 }
 
