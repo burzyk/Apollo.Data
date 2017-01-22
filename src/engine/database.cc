@@ -18,6 +18,8 @@ Database::Database(Storage *storage, RwLock *master_lock, Log *log) {
 }
 
 Database::~Database() {
+  this->log->Info("Deleting database");
+
   for (auto s: this->series) {
     for (auto chunk : *s.second) {
       delete chunk;
@@ -84,7 +86,10 @@ void Database::Write(std::string name, data_point_t *points, int count) {
         stop++;
       }
 
-      this->WriteChunk(chunk, points + start, stop - start);
+      if (stop != start) {
+        this->WriteChunk(chunk, points + start, stop - start);
+      }
+
       start = stop;
     }
   }
