@@ -147,7 +147,7 @@ void Database::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
       if (points_pos < 0) {
         buffer[i] = content[content_pos--];
       } else if (content_pos < 0) {
-        buffer[i] = content[points_pos--];
+        buffer[i] = points[points_pos--];
       } else if (points[points_pos].time < content[content_pos].time) {
         buffer[i] = content[content_pos--];
       } else {
