@@ -19,6 +19,7 @@ int main() {
   TEST(apollo::test::basic_database_write_and_read_all);
   TEST(apollo::test::write_database_in_one_big_batch);
   TEST(apollo::test::write_database_in_multiple_small_batches);
+  TEST(apollo::test::database_write_history);
   TEST(apollo::test::database_write_close_and_write_more);
   TEST(apollo::test::database_multi_write_and_read_all);
   TEST(apollo::test::database_continuous_write);

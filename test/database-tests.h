@@ -139,6 +139,23 @@ void database_multi_write_and_read_all(TestContext ctx) {
   delete storage;
 }
 
+void database_write_history(TestContext ctx) {
+  CachedStorage *storage = CachedStorage::Init(
+      ctx.GetWorkingDirectory() + "/DATA_FILE",
+      Database::CalculatePageSize(5),
+      100);
+  Database *db = Database::Init(storage);
+
+  write_to_database(db, "usd_gbp", 5, 3, 10000);
+  write_to_database(db, "usd_gbp", 5, 3, 1000);
+  write_to_database(db, "usd_gbp", 5, 3, 100);
+  write_to_database(db, "usd_gbp", 5, 3, 10);
+  validate_read(db, "usd_gbp", 60, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+
+  delete db;
+  delete storage;
+}
+
 void database_write_close_and_write_more(TestContext ctx) {
   CachedStorage *storage = CachedStorage::Init(
       ctx.GetWorkingDirectory() + "/DATA_FILE",
