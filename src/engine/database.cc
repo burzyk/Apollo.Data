@@ -25,7 +25,7 @@ Database::~Database() {
   }
 
   this->series.clear();
-  this->storage = NULL;
+  this->storage = nullptr;
 }
 
 Database *Database::Init(Storage *storage, RwLock *master_lock) {
@@ -35,7 +35,7 @@ Database *Database::Init(Storage *storage, RwLock *master_lock) {
     StoragePage *page = db->storage->GetPage(i);
     DataChunk *chunk = DataChunk::Load(page);
 
-    if (chunk != NULL) {
+    if (chunk != nullptr) {
       db->RegisterChunk(chunk);
     }
   }

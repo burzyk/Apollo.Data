@@ -14,11 +14,11 @@ MemoryStoragePage::MemoryStoragePage(int size) {
 }
 
 MemoryStoragePage::~MemoryStoragePage() {
-  if (this->page != NULL) {
+  if (this->page != nullptr) {
     free(this->page);
   }
 
-  this->page = NULL;
+  this->page = nullptr;
   this->size = 0;
 }
 

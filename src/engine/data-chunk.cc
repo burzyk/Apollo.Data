@@ -23,7 +23,7 @@ DataChunk *DataChunk::Load(StoragePage *page) {
   memcpy(&info, page->Read(0, sizeof(data_chunk_info_t)), sizeof(data_chunk_info_t));
 
   if (strlen(info.series_name) == 0) {
-    return NULL;
+    return nullptr;
   }
 
   DataChunk *chunk = new DataChunk(std::string(info.series_name), page);

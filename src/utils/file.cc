@@ -10,19 +10,19 @@ namespace apollo {
 File::File(std::string file_name) {
   this->f = fopen(file_name.c_str(), "rb+");
 
-  if (this->f == NULL) {
+  if (this->f == nullptr) {
     this->f = fopen(file_name.c_str(), "wb+");
   }
 
-  if (this->f == NULL) {
+  if (this->f == nullptr) {
     Log::Fatal("Unable to open file");
   }
 }
 
 File::~File() {
-  if (this->f != NULL) {
+  if (this->f != nullptr) {
     fclose(this->f);
-    this->f = NULL;
+    this->f = nullptr;
   }
 }
 

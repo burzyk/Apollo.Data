@@ -24,7 +24,7 @@ uint8_t *PageAllocator::GetPage(int page_id) {
   auto page = this->pages.find(page_id);
 
   if (page == this->pages.end()) {
-    return NULL;
+    return nullptr;
   } else {
     page->second->access_time = clock();
     return page->second->page;
@@ -38,13 +38,13 @@ page_id_t PageAllocator::AllocatePage() {
 
   page_info_t *new_page = (page_info_t *)calloc(1, sizeof(page_info_t));
 
-  if (new_page == NULL) {
+  if (new_page == nullptr) {
     Log::Fatal("Unable to allocate page info");
   }
 
   new_page->page = (uint8_t *)calloc(this->page_size, 1);
 
-  if (new_page->page == NULL) {
+  if (new_page->page == nullptr) {
     Log::Fatal("Unable to allocate page");
   }
 
@@ -55,15 +55,15 @@ page_id_t PageAllocator::AllocatePage() {
 }
 
 void PageAllocator::DeallocateLastPage() {
-  page_info_t *last_page = NULL;
+  page_info_t *last_page = nullptr;
 
   for (auto p: this->pages) {
-    if (last_page == NULL || last_page->access_time > p.second->access_time) {
+    if (last_page == nullptr || last_page->access_time > p.second->access_time) {
       last_page = p.second;
     }
   }
 
-  if (last_page == NULL) {
+  if (last_page == nullptr) {
     Log::Fatal("Unable to find page to deallocate");
   }
 

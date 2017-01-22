@@ -48,7 +48,7 @@ void CachedStoragePage::Write(int offset, void *source, int size) {
 
   uint8_t *content = this->allocator->GetPage(this->page_id);
 
-  if (content != NULL) {
+  if (content != nullptr) {
     memcpy(content + offset, source, (size_t)size);
   }
 }
@@ -60,7 +60,7 @@ volatile_t *CachedStoragePage::Read(int offset, int size) {
 
   uint8_t *content = this->allocator->GetPage(this->page_id);
 
-  if (content == NULL) {
+  if (content == nullptr) {
     this->page_id = this->allocator->AllocatePage();
     content = this->allocator->GetPage(this->page_id);
     this->LoadToBuffer(content);
