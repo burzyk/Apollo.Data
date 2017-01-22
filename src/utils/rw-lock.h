@@ -6,6 +6,7 @@
 #define APOLLO_STORAGE_RW_LOCK_H
 
 #include <pthread.h>
+#include "rw-lock-scope.h"
 
 namespace apollo {
 
@@ -14,9 +15,8 @@ class RwLock {
   RwLock();
   ~RwLock();
 
-  void LockWrite();
-  void LockRead();
-  void Unlock();
+  RwLockScope *LockWrite();
+  RwLockScope *LockRead();
  private:
   pthread_rwlock_t rwlock;
 };

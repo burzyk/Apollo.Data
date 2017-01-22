@@ -8,6 +8,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <src/utils/rw-lock.h>
 #include "src/engine/storage/storage.h"
 #include "data-point-reader.h"
 #include "data-chunk.h"
@@ -17,7 +18,7 @@ namespace apollo {
 class Database {
  public:
   ~Database();
-  static Database *Init(Storage *storage);
+  static Database *Init(Storage *storage, RwLock *master_lock);
   static int CalculatePageSize(int number_of_points);
 
   DataPointReader Read(std::string name, timestamp_t begin, timestamp_t end);
@@ -25,7 +26,7 @@ class Database {
 
   void PrintMetadata();
  private:
-  Database(Storage *storage);
+  Database(Storage *storage, RwLock *master_lock);
   void RegisterChunk(DataChunk *chunk);
   std::list<DataChunk *> *FindDataChunks(std::string name);
   void WriteChunk(DataChunk *chunk, data_point_t *points, int count);
@@ -34,6 +35,7 @@ class Database {
   Storage *storage;
   uint64_t chunks_count;
   std::map<std::string, std::list<DataChunk *> *> series;
+  RwLock *master_lock;
 };
 
 }

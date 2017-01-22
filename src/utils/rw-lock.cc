@@ -11,20 +11,18 @@ RwLock::RwLock() {
 }
 
 RwLock::~RwLock() {
-  this->Unlock();
+  pthread_rwlock_unlock(&this->rwlock);
   pthread_rwlock_destroy(&this->rwlock);
 }
 
-void RwLock::LockWrite() {
+RwLockScope *RwLock::LockWrite() {
   pthread_rwlock_wrlock(&this->rwlock);
+  return new RwLockScope(&this->rwlock);
 }
 
-void RwLock::LockRead() {
+RwLockScope *RwLock::LockRead() {
   pthread_rwlock_rdlock(&this->rwlock);
-}
-
-void RwLock::Unlock() {
-  pthread_rwlock_unlock(&this->rwlock);
+  return new RwLockScope(&this->rwlock);
 }
 
 }

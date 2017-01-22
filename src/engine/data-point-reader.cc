@@ -7,12 +7,16 @@
 
 namespace apollo {
 
-DataPointReader::DataPointReader(std::list<DataChunk *> chunks, timestamp_t begin, timestamp_t end) {
+DataPointReader::DataPointReader(std::list<DataChunk *> chunks,
+                                 timestamp_t begin,
+                                 timestamp_t end,
+                                 std::shared_ptr<RwLockScope> lock_scope) {
   this->begin = begin;
   this->end = end;
   this->position = 0;
   this->chunks = std::vector<DataChunk *>(chunks.begin(), chunks.end());
   this->current_chunk = this->chunks.begin();
+  this->lock_scope = lock_scope;
 }
 
 int DataPointReader::Read(apollo::data_point_t *buffer, int size) {

@@ -9,9 +9,10 @@
 
 namespace apollo {
 
-Database::Database(Storage *storage) {
+Database::Database(Storage *storage, RwLock *master_lock) {
   this->storage = storage;
   this->chunks_count = 0;
+  this->master_lock = master_lock;
 }
 
 Database::~Database() {
@@ -27,8 +28,8 @@ Database::~Database() {
   this->storage = NULL;
 }
 
-Database *Database::Init(Storage *storage) {
-  Database *db = new Database(storage);
+Database *Database::Init(Storage *storage, RwLock *master_lock) {
+  Database *db = new Database(storage, master_lock);
 
   for (int i = 0; i < db->storage->GetPagesCount(); i++) {
     StoragePage *page = db->storage->GetPage(i);
@@ -47,6 +48,7 @@ int Database::CalculatePageSize(int number_of_points) {
 }
 
 void Database::Write(std::string name, data_point_t *points, int count) {
+  auto lock = std::unique_ptr<RwLockScope>(this->master_lock->LockWrite());
   std::list<DataChunk *> *chunks = this->FindDataChunks(name);
 
   if (chunks->size() == 0) {
@@ -81,6 +83,7 @@ void Database::Write(std::string name, data_point_t *points, int count) {
 }
 
 DataPointReader Database::Read(std::string name, timestamp_t begin, timestamp_t end) {
+  auto lock = std::shared_ptr<RwLockScope>(this->master_lock->LockRead());
   std::list<DataChunk *> *chunks = this->FindDataChunks(name);
   std::list<DataChunk *> filtered_chunks;
 
@@ -90,7 +93,7 @@ DataPointReader Database::Read(std::string name, timestamp_t begin, timestamp_t 
     }
   }
 
-  return DataPointReader(filtered_chunks, begin, end);
+  return DataPointReader(filtered_chunks, begin, end, lock);
 }
 
 void Database::PrintMetadata() {
