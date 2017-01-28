@@ -10,7 +10,6 @@
 #include <map>
 #include <src/utils/rw-lock.h>
 #include <src/utils/log.h>
-#include "src/engine/storage/storage.h"
 #include "data-point-reader.h"
 #include "data-chunk.h"
 #include "data-series.h"
@@ -29,7 +28,6 @@ class Database {
  private:
   Database(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit);
   DataSeries *FindDataSeries(std::string name);
-  Storage *InitStorage(std::string series_name);
 
   std::string directory;
   int points_per_chunk;

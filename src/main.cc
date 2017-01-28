@@ -1,6 +1,4 @@
 #include <iostream>
-#include <src/engine/storage/storage.h>
-#include <src/engine/storage/cached-storage.h>
 #include <src/engine/database.h>
 #include <src/utils/stopwatch.h>
 

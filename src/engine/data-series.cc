@@ -5,13 +5,17 @@
 #include <src/utils/stopwatch.h>
 #include <cstdlib>
 #include <src/utils/common.h>
+#include <src/utils/file.h>
 #include "data-series.h"
 #include "data-point-reader.h"
 
+#define A_PAGE_ALLOCATE_BUFFER_SIZE 65536
+
 namespace apollo {
 
-DataSeries::DataSeries(Storage *storage, Log *log) {
-  this->storage = storage;
+DataSeries::DataSeries(std::string file_name, int points_per_chunk, Log *log) {
+  this->file_name = file_name;
+  this->points_per_chunk = points_per_chunk;
   this->log = log;
 }
 
@@ -23,25 +27,20 @@ DataSeries::~DataSeries() {
   }
 
   this->chunks.clear();
-  this->storage = nullptr;
 }
 
-DataSeries *DataSeries::Init(Storage *storage, Log *log) {
+DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *log) {
   log->Info("Loading data series ...");
   Stopwatch sw;
-  DataSeries *series = new DataSeries(storage, log);
+  DataSeries *series = new DataSeries(file_name, points_per_chunk, log);
+  File f(file_name);
+  int chunk_size = DataChunk::CalculateChunkSize(points_per_chunk);
 
-  log->Info("Loading " + std::to_string(series->storage->GetPagesCount()) + " pages");
   sw.Start();
 
-  for (int i = 0; i < series->storage->GetPagesCount(); i++) {
-    StoragePage *page = series->storage->GetPage(i);
-    DataChunk *chunk = DataChunk::Load(page);
-
-    if (chunk != nullptr) {
-      log->Debug("Loading chunk: " + std::to_string(i));
-      series->RegisterChunk(chunk);
-    }
+  for (int i = 0; i < f.GetSize() / chunk_size; i++) {
+    DataChunk *chunk = DataChunk::Load(file_name, (uint64_t)i * chunk_size, points_per_chunk);
+    series->RegisterChunk(chunk);
   }
 
   sw.Stop();
@@ -51,7 +50,7 @@ DataSeries *DataSeries::Init(Storage *storage, Log *log) {
 
 void DataSeries::Write(data_point_t *points, int count) {
   if (this->chunks.size() == 0) {
-    DataChunk *chunk = DataChunk::Create(this->storage->AllocatePage());
+    DataChunk *chunk = this->CreateEmptyChunk();
     this->RegisterChunk(chunk);
   }
 
@@ -156,13 +155,35 @@ void DataSeries::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *point
   points += to_write;
 
   while (count != 0) {
-    chunk = DataChunk::Create(this->storage->AllocatePage());
+    chunk = this->CreateEmptyChunk();
     to_write = MIN(count, chunk->GetMaxNumberOfPoints());
     chunk->Write(0, points, to_write);
     this->RegisterChunk(chunk);
     count -= to_write;
     points += to_write;
   }
+}
+
+DataChunk *DataSeries::CreateEmptyChunk() {
+
+  uint8_t buffer[A_PAGE_ALLOCATE_BUFFER_SIZE] = {0};
+  int to_allocate = DataChunk::CalculateChunkSize(this->points_per_chunk);
+
+  File file(this->file_name);
+  file.Seek(0, SEEK_END);
+
+  while (to_allocate > 0) {
+    int to_write = MIN(to_allocate, A_PAGE_ALLOCATE_BUFFER_SIZE);
+    file.Write(buffer, (size_t)to_write);
+    to_allocate -= to_write;
+  }
+
+  file.Flush();
+
+  return DataChunk::Load(
+      this->file_name,
+      DataChunk::CalculateChunkSize(this->points_per_chunk) * this->chunks.size(),
+      this->points_per_chunk);
 }
 
 }

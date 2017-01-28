@@ -21,10 +21,9 @@ DataPointReader::DataPointReader(std::list<DataChunk *> chunks,
 
 int DataPointReader::Read(apollo::data_point_t *buffer, int size) {
 
-  return 0;
-//  if (size == 0) {
-//    return 0;
-//  }
+  if (size == 0) {
+    return 0;
+  }
 //
 //  auto comp = [](data_point_t p, timestamp_t t) -> bool { return p.time < t; };
 //  int total_read = 0;

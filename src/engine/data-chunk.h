@@ -7,14 +7,13 @@
 
 #include <string>
 #include <src/data-point.h>
-#include "src/engine/storage/storage-page.h"
 
 namespace apollo {
 
 class DataChunk {
  public:
-  static DataChunk *Create(StoragePage *page);
-  static DataChunk *Load(StoragePage *page);
+  static DataChunk *Load(std::string file_name, uint64_t file_offset, int max_points);
+  static int CalculateChunkSize(int points);
 
   int Read(int offset, data_point_t *points, int count);
   void Write(int offset, data_point_t *points, int count);
@@ -26,9 +25,13 @@ class DataChunk {
 
   void PrintMetadata();
  private:
-  DataChunk(StoragePage *page);
+  DataChunk(std::string file_name, uint64_t file_offset, int max_points);
 
-  StoragePage *page;
+  std::string file_name;
+  uint64_t file_offset;
+  int max_points;
+  data_point_t *cached_content;
+
   timestamp_t begin;
   timestamp_t end;
   int number_of_points;

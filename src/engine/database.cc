@@ -6,7 +6,6 @@
 #include <cmath>
 #include <src/utils/common.h>
 #include <src/utils/stopwatch.h>
-#include <src/engine/storage/cached-storage.h>
 #include <src/utils/directory.h>
 #include "database.h"
 
@@ -61,18 +60,11 @@ DataSeries *Database::FindDataSeries(std::string name) {
     scope->UpgradeToWrite();
 
     if (this->series.find(name) == this->series.end()) {
-      this->series[name] = DataSeries::Init(this->InitStorage(name), this->log);
+      this->series[name] = DataSeries::Init(this->directory + "/" + name, this->points_per_chunk, this->log);
     }
   }
 
   return this->series[name];
-}
-
-Storage *Database::InitStorage(std::string series_name) {
-  int page_size = this->points_per_chunk * sizeof(apollo::data_point_t);
-  int max_pages = this->cache_memory_limit / page_size;
-
-  return CachedStorage::Init(this->directory + "/" + series_name, page_size, max_pages);
 }
 
 }

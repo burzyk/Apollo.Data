@@ -6,21 +6,22 @@
 #include <src/utils/common.h>
 #include <src/utils/log.h>
 #include <cstdlib>
+#include <src/utils/file.h>
+#include <src/fatal-exception.h>
 #include "data-chunk.h"
 
 namespace apollo {
 
-DataChunk *DataChunk::Create(StoragePage *page) {
-  return new DataChunk(page);
-}
+DataChunk *DataChunk::Load(std::string file_name, uint64_t file_offset, int max_points) {
+  DataChunk *chunk = new DataChunk(file_name, file_offset, max_points);
+  data_point_t *points = (data_point_t *)calloc((size_t)max_points, sizeof(data_point_t));
 
-DataChunk *DataChunk::Load(StoragePage *page) {
-  DataChunk *chunk = new DataChunk(page);
-  data_point_t *points = (data_point_t *)calloc((size_t)chunk->GetMaxNumberOfPoints(), sizeof(data_point_t));
+  File f(file_name);
 
-  page->Read(0, points, page->GetPageSize());
+  f.Seek(file_offset, SEEK_SET);
+  f.Read(points, max_points * sizeof(data_point_t));
 
-  for (int i = 0; i < chunk->GetMaxNumberOfPoints() && points[i].time != 0; i++) {
+  for (int i = 0; i < max_points && points[i].time != 0; i++) {
     chunk->begin = MIN(chunk->begin, points[i].time);
     chunk->end = MAX(chunk->end, points[i].time);
     chunk->number_of_points++;
@@ -30,9 +31,29 @@ DataChunk *DataChunk::Load(StoragePage *page) {
   return chunk;
 }
 
+int DataChunk::CalculateChunkSize(int points) {
+  return points * sizeof(data_point_t);
+}
+
 int DataChunk::Read(int offset, data_point_t *points, int count) {
-  int read = this->page->Read(offset * sizeof(data_point_t), points, count * sizeof(data_point_t));
-  return read / sizeof(data_point_t);
+  if (count == 0) {
+    return 0;
+  }
+
+  if (this->max_points < offset + count) {
+    throw FatalException("Trying to read outside data chunk");
+  }
+
+  if (this->cached_content == nullptr) {
+    this->cached_content = (data_point_t *)calloc((size_t)this->max_points, sizeof(data_point_t));
+
+    File f(this->file_name);
+    f.Seek(this->file_offset, SEEK_SET);
+    f.Read(this->cached_content, this->max_points * sizeof(data_point_t));
+  }
+
+  memcpy(points, this->cached_content + offset, count * sizeof(data_point_t));
+  return count;
 }
 
 void DataChunk::Write(int offset, data_point_t *points, int count) {
@@ -40,7 +61,17 @@ void DataChunk::Write(int offset, data_point_t *points, int count) {
     return;
   }
 
-  this->page->Write(sizeof(data_point_t) * offset, points, sizeof(data_point_t) * count);
+  if (this->max_points < offset + count) {
+    throw FatalException("Trying to write outside data chunk");
+  }
+
+  File f(this->file_name);
+  f.Seek(this->file_offset + offset * sizeof(data_point_t), SEEK_SET);
+  f.Write(points, count * sizeof(data_point_t));
+
+  if (this->cached_content != nullptr) {
+    memcpy(this->cached_content + offset, points, count * sizeof(data_point_t));
+  }
 
   if (offset == 0) {
     this->begin = points[0].time;
@@ -81,11 +112,14 @@ void DataChunk::PrintMetadata() {
 }
 
 int DataChunk::GetMaxNumberOfPoints() {
-  return this->page->GetPageSize() / sizeof(data_point_t);
+  return this->max_points;
 }
 
-DataChunk::DataChunk(StoragePage *page) {
-  this->page = page;
+DataChunk::DataChunk(std::string file_name, uint64_t file_offset, int max_points) {
+  this->file_name = file_name;
+  this->file_offset = file_offset;
+  this->max_points = max_points;
+  this->cached_content = nullptr;
   this->begin = A_MAX_TIMESTAMP;
   this->end = A_MIN_TIMESTAMP;
   this->number_of_points = 0;

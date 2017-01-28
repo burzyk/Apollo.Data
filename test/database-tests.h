@@ -3,7 +3,6 @@
 //
 
 #include <src/engine/database.h>
-#include <src/engine/storage/cached-storage.h>
 #include <memory>
 #include <test/framework/assert.h>
 #include <src/utils/file-log.h>
