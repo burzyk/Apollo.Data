@@ -14,8 +14,8 @@ class File {
   File(std::string file_name);
   virtual ~File();
 
-  void Write(void *buffer, size_t size, size_t count);
-  size_t Read(void *buffer, size_t size, size_t count);
+  void Write(void *buffer, size_t size);
+  size_t Read(void *buffer, size_t size);
   void Flush();
   void Seek(off_t offset, int origin);
   size_t GetSize();

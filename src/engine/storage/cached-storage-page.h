@@ -15,17 +15,19 @@ namespace apollo {
 class CachedStoragePage : public StoragePage {
  public:
   CachedStoragePage(std::string file_name, int size, uint64_t file_offset);
+  ~CachedStoragePage();
 
   virtual void Write(int offset, void *source, int bytes_count);
   virtual int Read(int offset, void *buffer, int bytes_count);
 
   virtual int GetPageSize();
  private:
-  void LoadToBuffer(uint8_t *buffer);
+  void Load();
 
   std::string file_name;
   int size;
   uint64_t file_offset;
+  uint8_t *cached_file;
 };
 
 }

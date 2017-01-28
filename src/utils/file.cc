@@ -27,16 +27,16 @@ File::~File() {
   }
 }
 
-void File::Write(void *buffer, size_t size, size_t count) {
-  if (fwrite(buffer, size, count, this->f) != count) {
+void File::Write(void *buffer, size_t size) {
+  if (fwrite(buffer, 1, size, this->f) != size) {
     throw FatalException("Wrote less than expected");
   }
 }
 
-size_t File::Read(void *buffer, size_t size, size_t count) {
+size_t File::Read(void *buffer, size_t size) {
   // TODO: semaphore for amount of opened files
 
-  return fread(buffer, size, count, this->f);
+  return fread(buffer, 1, size, this->f);
 }
 
 void File::Seek(off_t offset, int origin) {

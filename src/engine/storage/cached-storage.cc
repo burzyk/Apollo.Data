@@ -40,7 +40,7 @@ StoragePage *CachedStorage::AllocatePage() {
 
   while (to_allocate > 0) {
     int to_write = MIN(to_allocate, A_PAGE_ALLOCATE_BUFFER_SIZE);
-    file.Write(buffer, (size_t)to_write, 1);
+    file.Write(buffer, (size_t)to_write);
     to_allocate -= to_write;
   }
 

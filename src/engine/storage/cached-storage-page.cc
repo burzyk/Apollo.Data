@@ -16,21 +16,13 @@ CachedStoragePage::CachedStoragePage(std::string file_name, int size, uint64_t f
   this->size = size;
   this->file_name = file_name;
   this->file_offset = file_offset;
+  this->cached_file = nullptr;
 }
 
-void CachedStoragePage::LoadToBuffer(uint8_t *buffer) {
-  int total_read = 0;
-  size_t read = (size_t)-1;
-  int to_read = this->size;
-  File file(this->file_name);
-
-  file.Flush();
-  file.Seek((off_t)this->file_offset, SEEK_SET);
-
-  while (read != 0 && to_read != 0) {
-    read = file.Read(buffer + total_read, 1, (size_t)(MIN(to_read, A_PAGE_LOAD_BUFFER_SIZE)));
-    total_read += read;
-    to_read -= read;
+CachedStoragePage::~CachedStoragePage() {
+  if (this->cached_file != nullptr) {
+    free(this->cached_file);
+    this->cached_file = nullptr;
   }
 }
 
@@ -46,13 +38,11 @@ void CachedStoragePage::Write(int offset, void *source, int bytes_count) {
   File file(this->file_name);
 
   file.Seek((off_t)this->file_offset + offset, SEEK_SET);
-  file.Write(source, 1, (size_t)bytes_count);
+  file.Write(source, (size_t)bytes_count);
 
-//  uint8_t *content = this->allocator->GetPage(this->page_id);
-//
-//  if (content != nullptr) {
-//    memcpy(content + offset, source, (size_t)bytes_count);
-//  }
+  if (this->cached_file != nullptr) {
+    memcpy(this->cached_file + offset, source, (size_t)bytes_count);
+  }
 }
 
 int CachedStoragePage::Read(int offset, void *buffer, int bytes_count) {
@@ -64,20 +54,38 @@ int CachedStoragePage::Read(int offset, void *buffer, int bytes_count) {
     throw FatalException("Trying to read outside page");
   }
 
-  //uint8_t *content = this->allocator->GetPage(this->page_id);
+  if (this->cached_file == nullptr) {
+    this->Load();
+  }
 
-//  if (content == nullptr) {
-//    this->page_id = this->allocator->AllocatePage();
-//    content = this->allocator->GetPage(this->page_id);
-//    this->LoadToBuffer(content);
-//  }
-//
-//  memcpy(buffer, content + offset, bytes_count);
+  memcpy(buffer, this->cached_file + offset, (size_t)bytes_count);
+
   return bytes_count;
 }
 
 int CachedStoragePage::GetPageSize() {
   return this->size;
+}
+
+void CachedStoragePage::Load() {
+  if (this->cached_file != nullptr) {
+    throw FatalException("Cached file is already allocated");
+  }
+
+  int total_read = 0;
+  size_t read = (size_t)-1;
+
+  this->cached_file = (uint8_t *)calloc((size_t)this->size, 1);
+
+  File file(this->file_name);
+  file.Seek((off_t)this->file_offset, SEEK_SET);
+
+  while (read != 0 && total_read < this->size) {
+    read = file.Read(
+        this->cached_file + total_read,
+        (size_t)(MIN(this->size - total_read, A_PAGE_LOAD_BUFFER_SIZE)));
+    total_read += read;
+  }
 }
 
 }
