@@ -21,7 +21,7 @@ class Database {
   ~Database();
   static Database *Init(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit);
 
-  DataPointReader Read(std::string name, timestamp_t begin, timestamp_t end);
+  std::shared_ptr<DataPointReader> Read(std::string name, timestamp_t begin, timestamp_t end);
   void Write(std::string name, data_point_t *points, int count);
 
   void PrintMetadata();

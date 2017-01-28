@@ -12,6 +12,13 @@
 
 namespace apollo {
 
+DataChunk::~DataChunk() {
+  if (this->cached_content != nullptr) {
+    free(this->cached_content);
+    this->cached_content = nullptr;
+  }
+}
+
 DataChunk *DataChunk::Load(std::string file_name, uint64_t file_offset, int max_points) {
   DataChunk *chunk = new DataChunk(file_name, file_offset, max_points);
   data_point_t *points = (data_point_t *)calloc((size_t)max_points, sizeof(data_point_t));
@@ -35,15 +42,7 @@ int DataChunk::CalculateChunkSize(int points) {
   return points * sizeof(data_point_t);
 }
 
-int DataChunk::Read(int offset, data_point_t *points, int count) {
-  if (count == 0) {
-    return 0;
-  }
-
-  if (this->max_points < offset + count) {
-    throw FatalException("Trying to read outside data chunk");
-  }
-
+data_point_t *DataChunk::Read() {
   if (this->cached_content == nullptr) {
     this->cached_content = (data_point_t *)calloc((size_t)this->max_points, sizeof(data_point_t));
 
@@ -52,8 +51,7 @@ int DataChunk::Read(int offset, data_point_t *points, int count) {
     f.Read(this->cached_content, this->max_points * sizeof(data_point_t));
   }
 
-  memcpy(points, this->cached_content + offset, count * sizeof(data_point_t));
-  return count;
+  return this->cached_content;
 }
 
 void DataChunk::Write(int offset, data_point_t *points, int count) {

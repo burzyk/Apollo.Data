@@ -59,40 +59,16 @@ void write_to_database(Database *db, std::string series_name, int batches, int b
   write_to_database(db, series_name, batches, batch_size, 1);
 }
 
-void validate_read(Database *db,
-                   std::string series_name,
-                   int expected_count,
-                   timestamp_t begin,
-                   timestamp_t end,
-                   int buffer_size) {
-  DataPointReader reader = db->Read(series_name, begin, end);
-  int read = -1;
+void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
+  std::shared_ptr<DataPointReader> reader = db->Read(series_name, begin, end);
   uint64_t total_read = 0;
-  data_point_t points[A_VALIDATE_READ_BUFFER_SIZE] = {0};
-  data_point_t last = {0};
+  data_point_t *points = reader->GetDataPoints();
 
-  while (read != 0) {
-    read = reader.Read(points, buffer_size);
-    total_read += read;
-
-    if (read == 0) {
-      continue;
-    }
-
-    Assert::IsTrue(last.time <= points[0].time);
-
-    for (int i = 1; i < read; i++) {
-      Assert::IsTrue(points[i - 1].time <= points[i].time);
-    }
-
-    last = points[read - 1];
+  for (int i = 1; i < reader->GetDataPointsCount(); i++) {
+    Assert::IsTrue(points[i - 1].time <= points[i].time);
   }
 
   Assert::IsTrue(expected_count == total_read);
-}
-
-void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
-  validate_read(db, series_name, expected_count, begin, end, A_VALIDATE_READ_BUFFER_SIZE);
 }
 
 void simple_database_initialization_test(TestContext ctx) {
@@ -244,15 +220,6 @@ void database_read_duplicated_values(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 1, 2);
   validate_read(c->GetDb(), "usd_gbp", 5, 0, 2);
   validate_read(c->GetDb(), "usd_gbp", 5, 2, 3);
-}
-
-void database_read_small_buffer(TestContext ctx) {
-  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10, 100, ctx));
-
-  write_to_database(c->GetDb(), "usd_gbp", 10, 10);
-  validate_read(c->GetDb(), "usd_gbp", 10, 3, 13, 2);
-  validate_read(c->GetDb(), "usd_gbp", 10, 3, 13, 7);
-  validate_read(c->GetDb(), "usd_gbp", 10, 3, 13, 10);
 }
 
 }

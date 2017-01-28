@@ -31,7 +31,6 @@ int main() {
   TEST(apollo::test::database_read_span_three_chunks);
   TEST(apollo::test::database_read_chunk_edges);
   TEST(apollo::test::database_read_duplicated_values);
-  TEST(apollo::test::database_read_small_buffer);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");

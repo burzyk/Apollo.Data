@@ -81,21 +81,42 @@ void DataSeries::Write(data_point_t *points, int count) {
   }
 }
 
-DataPointReader DataSeries::Read(timestamp_t begin, timestamp_t end) {
+std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t end) {
+  std::list<DataChunk *> filtered_chunks;
 
-  // TODO: refactor!!!!!
+  for (auto chunk: this->chunks) {
+    if (chunk->GetBegin() <= end && chunk->GetEnd() >= begin) {
+      filtered_chunks.push_back(chunk);
+    }
+  }
 
-//  auto lock = std::shared_ptr<RwLockScope>(this->master_lock->LockRead());
-//  std::list<DataChunk *> *chunks = this->FindDataChunks(name);
-//  std::list<DataChunk *> filtered_chunks;
-//
-//  for (auto chunk: *chunks) {
-//    if (chunk->GetBegin() <= end && chunk->GetEnd() >= begin) {
-//      filtered_chunks.push_back(chunk);
-//    }
-//  }
-//
-//  return DataPointReader(filtered_chunks, begin, end, lock);
+  if (filtered_chunks.size() == 0) {
+    return std::make_shared<DataPointReader>(nullptr, 0);
+  }
+
+  auto comp = [](data_point_t p, timestamp_t t) -> bool { return p.time < t; };
+
+  data_point_t *front_begin = filtered_chunks.front()->Read();
+  data_point_t *front_end = front_begin + filtered_chunks.front()->GetNumberOfPoints();
+
+  data_point_t *back_begin = filtered_chunks.back()->Read();
+  data_point_t *back_end = front_begin + filtered_chunks.back()->GetNumberOfPoints();
+
+  data_point_t *read_begin = std::lower_bound(front_begin, front_end, begin, comp);
+  data_point_t *read_end = std::lower_bound(back_begin, back_end, end, comp);
+
+  int total_points = 0;
+  total_points += front_end - read_begin;
+  total_points += read_end - back_begin;
+
+  for (auto i: filtered_chunks) {
+    if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
+      total_points += i->GetNumberOfPoints();
+    }
+  }
+
+  data_point_t *snapshot = (data_point_t *)calloc((size_t)total_points, sizeof(data_point_t));
+  return std::make_shared<DataPointReader>(snapshot, total_points);
 }
 
 void DataSeries::PrintMetadata() {
@@ -126,8 +147,7 @@ void DataSeries::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
   } else {
     int buffer_count = count + chunk->GetNumberOfPoints();
     data_point_t *buffer = (data_point_t *)calloc((size_t)buffer_count, sizeof(data_point_t));
-    data_point_t *content = buffer;
-    chunk->Read(0, buffer, chunk->GetNumberOfPoints());
+    data_point_t *content = chunk->Read();
     int points_pos = count - 1;
     int content_pos = chunk->GetNumberOfPoints() - 1;
 

@@ -12,10 +12,11 @@ namespace apollo {
 
 class DataChunk {
  public:
+  ~DataChunk();
   static DataChunk *Load(std::string file_name, uint64_t file_offset, int max_points);
   static int CalculateChunkSize(int points);
 
-  int Read(int offset, data_point_t *points, int count);
+  data_point_t *Read();
   void Write(int offset, data_point_t *points, int count);
 
   timestamp_t GetBegin();

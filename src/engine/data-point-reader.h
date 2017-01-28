@@ -15,19 +15,14 @@ namespace apollo {
 
 class DataPointReader {
  public:
-  DataPointReader(std::list<DataChunk *> chunks,
-                  timestamp_t begin,
-                  timestamp_t end,
-                  std::shared_ptr<RwLockScope> lock_scope);
+  DataPointReader(data_point_t *snapshot, int count);
+  ~DataPointReader();
 
-  int Read(data_point_t *buffer, int size);
+  data_point_t *GetDataPoints();
+  int GetDataPointsCount();
  private:
-  std::vector<DataChunk *> chunks;
-  std::vector<DataChunk *>::iterator current_chunk;
-  timestamp_t begin;
-  timestamp_t end;
-  uint64_t position;
-  std::shared_ptr<RwLockScope> lock_scope;
+  data_point_t *snapshot;
+  int count;
 };
 
 }
