@@ -12,7 +12,7 @@
 
 namespace apollo {
 
-CachedStoragePage::CachedStoragePage(File *file, int size, uint64_t file_offset, PageAllocator *allocator) {
+CachedStoragePage::CachedStoragePage(File *file, int size, uint64_t file_offset, MemoryPageAllocator *allocator) {
   this->allocator = allocator;
   this->size = size;
   this->file = file;

@@ -12,7 +12,7 @@ namespace apollo {
 
 CachedStorage *CachedStorage::Init(std::string file_name, int page_size, int max_pages) {
   File *f = new File(file_name);
-  PageAllocator *allocator = new PageAllocator((size_t)page_size, max_pages);
+  MemoryPageAllocator *allocator = new MemoryPageAllocator((size_t)page_size, max_pages);
   CachedStorage *storage = new CachedStorage(f, allocator, page_size);
 
   long pages_count = f->GetSize() / page_size;
@@ -71,7 +71,7 @@ void CachedStorage::Flush() {
   this->file->Flush();
 }
 
-CachedStorage::CachedStorage(File *file, PageAllocator *allocator, int page_size) {
+CachedStorage::CachedStorage(File *file, MemoryPageAllocator *allocator, int page_size) {
   this->allocator = allocator;
   this->page_size = page_size;
   this->file = file;

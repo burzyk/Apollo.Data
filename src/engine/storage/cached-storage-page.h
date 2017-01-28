@@ -8,14 +8,14 @@
 #include <cstdio>
 #include <src/utils/file.h>
 #include "storage-page.h"
-#include "page-allocator.h"
+#include "memory-page-allocator.h"
 #define A_PAGE_LOAD_BUFFER_SIZE 65536
 
 namespace apollo {
 
 class CachedStoragePage : public StoragePage {
  public:
-  CachedStoragePage(File *file, int size, uint64_t file_offset, PageAllocator *allocator);
+  CachedStoragePage(File *file, int size, uint64_t file_offset, MemoryPageAllocator *allocator);
 
   virtual void Write(int offset, void *source, int bytes_count);
   virtual int Read(int offset, void *buffer, int bytes_count);
@@ -24,7 +24,7 @@ class CachedStoragePage : public StoragePage {
  private:
   void LoadToBuffer(uint8_t *buffer);
 
-  PageAllocator *allocator;
+  MemoryPageAllocator *allocator;
   page_id_t page_id;
   int size;
   File *file;

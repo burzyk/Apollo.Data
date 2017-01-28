@@ -17,10 +17,10 @@ struct page_info_t {
   clock_t access_time;
 };
 
-class PageAllocator {
+class MemoryPageAllocator {
  public:
-  PageAllocator(size_t page_size, int max_pages);
-  ~PageAllocator();
+  MemoryPageAllocator(size_t page_size, int max_pages);
+  ~MemoryPageAllocator();
 
   uint8_t *GetPage(page_id_t page_id);
   page_id_t AllocatePage();

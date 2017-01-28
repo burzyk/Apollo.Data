@@ -5,23 +5,23 @@
 #include <cstdlib>
 #include <src/utils/log.h>
 #include <src/fatal-exception.h>
-#include "page-allocator.h"
+#include "memory-page-allocator.h"
 
 namespace apollo {
 
-PageAllocator::PageAllocator(size_t page_size, int max_pages) {
+MemoryPageAllocator::MemoryPageAllocator(size_t page_size, int max_pages) {
   this->page_size = page_size;
   this->max_pages = max_pages;
   this->next_page_id = 0;
 }
 
-PageAllocator::~PageAllocator() {
+MemoryPageAllocator::~MemoryPageAllocator() {
   for (int i = 0; i < this->pages.size(); i++) {
     this->DeallocateLastPage();
   }
 }
 
-uint8_t *PageAllocator::GetPage(int page_id) {
+uint8_t *MemoryPageAllocator::GetPage(int page_id) {
   auto page = this->pages.find(page_id);
 
   if (page == this->pages.end()) {
@@ -32,7 +32,7 @@ uint8_t *PageAllocator::GetPage(int page_id) {
   }
 }
 
-page_id_t PageAllocator::AllocatePage() {
+page_id_t MemoryPageAllocator::AllocatePage() {
   if (this->pages.size() >= this->max_pages) {
     this->DeallocateLastPage();
   }
@@ -55,7 +55,7 @@ page_id_t PageAllocator::AllocatePage() {
   return new_page->page_id;
 }
 
-void PageAllocator::DeallocateLastPage() {
+void MemoryPageAllocator::DeallocateLastPage() {
   page_info_t *last_page = nullptr;
 
   for (auto p: this->pages) {
