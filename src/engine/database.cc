@@ -93,8 +93,6 @@ void Database::Write(std::string name, data_point_t *points, int count) {
       start = stop;
     }
   }
-
-  this->storage->Flush();
 }
 
 DataPointReader Database::Read(std::string name, timestamp_t begin, timestamp_t end) {

@@ -12,24 +12,23 @@
 
 namespace apollo {
 
-CachedStoragePage::CachedStoragePage(File *file, int size, uint64_t file_offset, MemoryPageAllocator *allocator) {
-  this->allocator = allocator;
+CachedStoragePage::CachedStoragePage(std::string file_name, int size, uint64_t file_offset) {
   this->size = size;
-  this->file = file;
+  this->file_name = file_name;
   this->file_offset = file_offset;
-  this->page_id = -1;
 }
 
 void CachedStoragePage::LoadToBuffer(uint8_t *buffer) {
   int total_read = 0;
   size_t read = (size_t)-1;
   int to_read = this->size;
+  File file(this->file_name);
 
-  this->file->Flush();
-  this->file->Seek((off_t)this->file_offset, SEEK_SET);
+  file.Flush();
+  file.Seek((off_t)this->file_offset, SEEK_SET);
 
   while (read != 0 && to_read != 0) {
-    read = this->file->Read(buffer + total_read, 1, (size_t)(MIN(to_read, A_PAGE_LOAD_BUFFER_SIZE)));
+    read = file.Read(buffer + total_read, 1, (size_t)(MIN(to_read, A_PAGE_LOAD_BUFFER_SIZE)));
     total_read += read;
     to_read -= read;
   }
@@ -44,14 +43,16 @@ void CachedStoragePage::Write(int offset, void *source, int bytes_count) {
     throw FatalException("Trying to write outside page");
   }
 
-  this->file->Seek((off_t)this->file_offset + offset, SEEK_SET);
-  this->file->Write(source, 1, (size_t)bytes_count);
+  File file(this->file_name);
 
-  uint8_t *content = this->allocator->GetPage(this->page_id);
+  file.Seek((off_t)this->file_offset + offset, SEEK_SET);
+  file.Write(source, 1, (size_t)bytes_count);
 
-  if (content != nullptr) {
-    memcpy(content + offset, source, (size_t)bytes_count);
-  }
+//  uint8_t *content = this->allocator->GetPage(this->page_id);
+//
+//  if (content != nullptr) {
+//    memcpy(content + offset, source, (size_t)bytes_count);
+//  }
 }
 
 int CachedStoragePage::Read(int offset, void *buffer, int bytes_count) {
@@ -63,15 +64,15 @@ int CachedStoragePage::Read(int offset, void *buffer, int bytes_count) {
     throw FatalException("Trying to read outside page");
   }
 
-  uint8_t *content = this->allocator->GetPage(this->page_id);
+  //uint8_t *content = this->allocator->GetPage(this->page_id);
 
-  if (content == nullptr) {
-    this->page_id = this->allocator->AllocatePage();
-    content = this->allocator->GetPage(this->page_id);
-    this->LoadToBuffer(content);
-  }
-
-  memcpy(buffer, content + offset, bytes_count);
+//  if (content == nullptr) {
+//    this->page_id = this->allocator->AllocatePage();
+//    content = this->allocator->GetPage(this->page_id);
+//    this->LoadToBuffer(content);
+//  }
+//
+//  memcpy(buffer, content + offset, bytes_count);
   return bytes_count;
 }
 

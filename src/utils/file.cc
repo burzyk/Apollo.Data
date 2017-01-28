@@ -34,6 +34,8 @@ void File::Write(void *buffer, size_t size, size_t count) {
 }
 
 size_t File::Read(void *buffer, size_t size, size_t count) {
+  // TODO: semaphore for amount of opened files
+
   return fread(buffer, size, count, this->f);
 }
 

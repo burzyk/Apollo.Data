@@ -16,7 +16,6 @@ class Storage {
   virtual StoragePage *AllocatePage() = 0;
   virtual StoragePage *GetPage(int index) = 0;
   virtual int GetPagesCount() = 0;
-  virtual void Flush() = 0;
 };
 
 }

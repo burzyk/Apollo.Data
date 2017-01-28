@@ -21,13 +21,11 @@ class CachedStorage : public Storage {
   virtual StoragePage *AllocatePage();
   virtual StoragePage *GetPage(int index);
   virtual int GetPagesCount();
-  virtual void Flush();
  private:
-  CachedStorage(File *file, MemoryPageAllocator *allocator, int page_size);
+  CachedStorage(std::string file_name, int page_size);
 
   int page_size;
-  File *file;
-  MemoryPageAllocator *allocator;
+  std::string file_name;
   std::vector<CachedStoragePage *> pages;
 };
 
