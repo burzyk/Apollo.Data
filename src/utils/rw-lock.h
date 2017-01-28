@@ -15,10 +15,10 @@ class RwLock {
   RwLock();
   ~RwLock();
 
-  RwLockScope *LockWrite();
   RwLockScope *LockRead();
  private:
   pthread_rwlock_t rwlock;
+  pthread_mutex_t upgrade_lock;
 };
 
 }

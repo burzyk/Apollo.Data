@@ -27,7 +27,7 @@ DataSeries::~DataSeries() {
 }
 
 DataSeries *DataSeries::Init(Storage *storage, Log *log) {
-  log->Info("Loading database ...");
+  log->Info("Loading data series ...");
   Stopwatch sw;
   DataSeries *series = new DataSeries(storage, log);
 

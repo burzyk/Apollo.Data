@@ -31,10 +31,11 @@ class Database {
   DataSeries *FindDataSeries(std::string name);
   Storage *InitStorage(std::string series_name);
 
-  Log *log;
   std::string directory;
   int points_per_chunk;
   int cache_memory_limit;
+  RwLock lock;
+  Log *log;
   std::map<std::string, DataSeries *> series;
 };
 

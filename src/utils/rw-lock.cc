@@ -8,21 +8,20 @@ namespace apollo {
 
 RwLock::RwLock() {
   this->rwlock = PTHREAD_RWLOCK_INITIALIZER;
+  this->upgrade_lock = PTHREAD_MUTEX_INITIALIZER;
 }
 
 RwLock::~RwLock() {
+  pthread_mutex_unlock(&this->upgrade_lock);
   pthread_rwlock_unlock(&this->rwlock);
-  pthread_rwlock_destroy(&this->rwlock);
-}
 
-RwLockScope *RwLock::LockWrite() {
-  pthread_rwlock_wrlock(&this->rwlock);
-  return new RwLockScope(&this->rwlock);
+  pthread_mutex_destroy(&this->upgrade_lock);
+  pthread_rwlock_destroy(&this->rwlock);
 }
 
 RwLockScope *RwLock::LockRead() {
   pthread_rwlock_rdlock(&this->rwlock);
-  return new RwLockScope(&this->rwlock);
+  return new RwLockScope(&this->rwlock, &this->upgrade_lock);
 }
 
 }

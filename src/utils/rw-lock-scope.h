@@ -11,11 +11,13 @@ namespace apollo {
 
 class RwLockScope {
  public:
-  RwLockScope(pthread_rwlock_t *lock);
+  RwLockScope(pthread_rwlock_t *lock, pthread_mutex_t *upgrade_lock);
   ~RwLockScope();
 
+  void UpgradeToWrite();
  private:
   pthread_rwlock_t *lock;
+  pthread_mutex_t *upgrade_lock;
 };
 
 }

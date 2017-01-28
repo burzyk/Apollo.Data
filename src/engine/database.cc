@@ -30,21 +30,7 @@ Database::~Database() {
 }
 
 Database *Database::Init(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit) {
-  Stopwatch sw;
-  Database *db = new Database(directory, log, points_per_chunk, cache_memory_limit);
-
-  log->Info("Initializing database: " + directory);
-  sw.Start();
-
-  for (auto file: Directory::GetFiles(directory)) {
-    log->Info("Loading data series: " + file);
-    db->series[file] = DataSeries::Init(db->InitStorage(file), log);
-  }
-
-  sw.Stop();
-
-  log->Info("Database loaded in: " + std::to_string(sw.GetElapsedMilliseconds() / 1000) + "[s]");
-  return db;
+  return new Database(directory, log, points_per_chunk, cache_memory_limit);
 }
 
 void Database::Write(std::string name, data_point_t *points, int count) {
@@ -69,8 +55,14 @@ void Database::PrintMetadata() {
 }
 
 DataSeries *Database::FindDataSeries(std::string name) {
+  auto scope = std::unique_ptr<RwLockScope>(this->lock.LockRead());
+
   if (this->series.find(name) == this->series.end()) {
-    this->series[name] = DataSeries::Init(this->InitStorage(name), this->log);
+    scope->UpgradeToWrite();
+
+    if (this->series.find(name) == this->series.end()) {
+      this->series[name] = DataSeries::Init(this->InitStorage(name), this->log);
+    }
   }
 
   return this->series[name];
