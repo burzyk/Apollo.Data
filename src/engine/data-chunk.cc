@@ -5,6 +5,7 @@
 #include <cmath>
 #include <src/utils/common.h>
 #include <src/utils/log.h>
+#include <cstdlib>
 #include "data-chunk.h"
 
 namespace apollo {
@@ -20,31 +21,30 @@ DataChunk *DataChunk::Create(std::string series_name, StoragePage *page) {
 
 DataChunk *DataChunk::Load(StoragePage *page) {
   data_chunk_info_t info;
-  memcpy(&info, page->Read(0, sizeof(data_chunk_info_t)), sizeof(data_chunk_info_t));
+  page->Read(0, &info, sizeof(data_chunk_info_t));
 
   if (strlen(info.series_name) == 0) {
     return nullptr;
   }
 
   DataChunk *chunk = new DataChunk(std::string(info.series_name), page);
-  data_point_t *points = chunk->Read(chunk->GetMaxNumberOfPoints());
+  std::shared_ptr<data_point_t> points = chunk->Read(chunk->GetMaxNumberOfPoints());
 
-  for (int i = 0; i < chunk->GetMaxNumberOfPoints() && points[i].time != 0; i++) {
-    chunk->begin = MIN(chunk->begin, points[i].time);
-    chunk->end = MAX(chunk->end, points[i].time);
+  for (int i = 0; i < chunk->GetMaxNumberOfPoints() && points.get()[i].time != 0; i++) {
+    chunk->begin = MIN(chunk->begin, points.get()[i].time);
+    chunk->end = MAX(chunk->end, points.get()[i].time);
     chunk->number_of_points++;
   }
 
   return chunk;
 }
 
-data_point_t *DataChunk::Read() {
-  return this->Read(this->number_of_points);
-}
+int DataChunk::Read(int offset, data_point_t *points, int count) {
+  std::shared_ptr<data_point_t> buffer = this->Read(this->number_of_points);
 
-data_point_t *DataChunk::Read(int count) {
-  return (data_point_t *)this->page->Read(sizeof(data_chunk_info_t),
-                                          sizeof(data_point_t) * count);
+  memcpy(points, buffer.get() + offset, sizeof(data_point_t) * count);
+
+  return this->number_of_points;
 }
 
 void DataChunk::Write(int offset, data_point_t *points, int count) {
@@ -90,10 +90,10 @@ void DataChunk::PrintMetadata() {
       this->number_of_points,
       this->series_name.c_str());
 
-  data_point_t *points = this->Read();
+  std::shared_ptr<data_point_t> points = this->Read(this->GetNumberOfPoints());
 
   for (int i = 0; i < this->GetNumberOfPoints(); i++) {
-    printf("    %llu %f\n", points[i].time, points[i].value);
+    printf("    %llu %f\n", points.get()[i].time, points.get()[i].value);
   }
 }
 
@@ -107,6 +107,14 @@ DataChunk::DataChunk(std::string series_name, StoragePage *page) {
   this->begin = A_MAX_TIMESTAMP;
   this->end = A_MIN_TIMESTAMP;
   this->number_of_points = 0;
+}
+
+std::shared_ptr<data_point_t> DataChunk::Read(int count) {
+  size_t buffer_size = sizeof(data_point_t) * count;
+  uint8_t *buffer = (uint8_t *)calloc(buffer_size, 1);
+  this->page->Read(sizeof(data_chunk_info_t), buffer, (int)buffer_size);
+
+  return std::shared_ptr<data_point_t>((data_point_t *)buffer);
 }
 
 }

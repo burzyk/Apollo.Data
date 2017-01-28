@@ -22,8 +22,7 @@ class DataChunk {
   static DataChunk *Create(std::string series_name, StoragePage *page);
   static DataChunk *Load(StoragePage *page);
 
-  data_point_t *Read();
-  data_point_t *Read(int count);
+  int Read(int offset, data_point_t *points, int count);
   void Write(int offset, data_point_t *points, int count);
 
   std::string GetSeriesName();
@@ -35,6 +34,7 @@ class DataChunk {
   void PrintMetadata();
  private:
   DataChunk(std::string series_name, StoragePage *page);
+  std::shared_ptr<data_point_t> Read(int count);
 
   StoragePage *page;
   std::string series_name;

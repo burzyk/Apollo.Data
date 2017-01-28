@@ -9,14 +9,12 @@
 
 namespace apollo {
 
-typedef uint8_t volatile_t;
-
 class StoragePage {
  public:
   virtual ~StoragePage() {};
 
-  virtual void Write(int offset, void *source, int size) = 0;
-  virtual volatile_t *Read(int offset, int size) = 0;
+  virtual void Write(int offset, void *source, int bytes_count) = 0;
+  virtual int Read(int offset, void *buffer, int bytes_count) = 0;
 
   virtual int GetPageSize() = 0;
 };

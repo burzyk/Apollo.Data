@@ -35,27 +35,31 @@ void CachedStoragePage::LoadToBuffer(uint8_t *buffer) {
   }
 }
 
-void CachedStoragePage::Write(int offset, void *source, int size) {
-  if (size == 0) {
+void CachedStoragePage::Write(int offset, void *source, int bytes_count) {
+  if (bytes_count == 0) {
     return;
   }
 
-  if (this->size < offset + size) {
+  if (this->size < offset + bytes_count) {
     throw FatalException("Trying to write outside page");
   }
 
   this->file->Seek((off_t)this->file_offset + offset, SEEK_SET);
-  this->file->Write(source, 1, (size_t)size);
+  this->file->Write(source, 1, (size_t)bytes_count);
 
   uint8_t *content = this->allocator->GetPage(this->page_id);
 
   if (content != nullptr) {
-    memcpy(content + offset, source, (size_t)size);
+    memcpy(content + offset, source, (size_t)bytes_count);
   }
 }
 
-volatile_t *CachedStoragePage::Read(int offset, int size) {
-  if (this->size < offset + size) {
+int CachedStoragePage::Read(int offset, void *buffer, int bytes_count) {
+  if (bytes_count == 0) {
+    return 0;
+  }
+
+  if (this->size < offset + bytes_count) {
     throw FatalException("Trying to read outside page");
   }
 
@@ -67,7 +71,8 @@ volatile_t *CachedStoragePage::Read(int offset, int size) {
     this->LoadToBuffer(content);
   }
 
-  return content + offset;
+  memcpy(buffer, content + offset, bytes_count);
+  return bytes_count;
 }
 
 int CachedStoragePage::GetPageSize() {

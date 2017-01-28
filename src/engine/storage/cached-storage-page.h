@@ -17,8 +17,8 @@ class CachedStoragePage : public StoragePage {
  public:
   CachedStoragePage(File *file, int size, uint64_t file_offset, PageAllocator *allocator);
 
-  virtual void Write(int offset, void *source, int size);
-  virtual volatile_t *Read(int offset, int size);
+  virtual void Write(int offset, void *source, int bytes_count);
+  virtual int Read(int offset, void *buffer, int bytes_count);
 
   virtual int GetPageSize();
  private:

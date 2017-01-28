@@ -157,7 +157,8 @@ void Database::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
   } else {
     int buffer_count = count + chunk->GetNumberOfPoints();
     data_point_t *buffer = (data_point_t *)calloc((size_t)buffer_count, sizeof(data_point_t));
-    data_point_t *content = chunk->Read();
+    data_point_t *content = buffer;
+    chunk->Read(0, buffer, chunk->GetNumberOfPoints());
     int points_pos = count - 1;
     int content_pos = chunk->GetNumberOfPoints() - 1;
 
