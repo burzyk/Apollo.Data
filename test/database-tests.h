@@ -15,21 +15,19 @@ namespace test {
 
 class DatabaseContext {
  public:
-  static DatabaseContext *Create(int page_size, int max_pages, TestContext ctx) {
+  static DatabaseContext *Create(int points_per_chunk, int max_pages, TestContext ctx) {
     DatabaseContext *context = new DatabaseContext();
     context->log = new FileLog("");
-    context->master_lock = new RwLock();
-    context->storage = CachedStorage::Init(ctx.GetWorkingDirectory() + "/DATA_FILE",
-                                           Database::CalculatePageSize(page_size),
-                                           max_pages);
-    context->db = Database::Init(context->storage, context->master_lock, context->log);
+    context->db = Database::Init(
+        ctx.GetWorkingDirectory(),
+        context->log,
+        points_per_chunk,
+        max_pages * points_per_chunk * sizeof(data_point_t));
     return context;
   }
 
   ~DatabaseContext() {
     delete this->db;
-    delete this->storage;
-    delete this->master_lock;
   }
 
   Database *GetDb() {
@@ -40,8 +38,6 @@ class DatabaseContext {
 
   Log *log;
   Database *db;
-  Storage *storage;
-  RwLock *master_lock;
 };
 
 void write_to_database(Database *db, std::string series_name, int batches, int batch_size, timestamp_t time) {
