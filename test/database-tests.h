@@ -10,13 +10,18 @@
 namespace apollo {
 namespace test {
 
-#define A_VALIDATE_READ_BUFFER_SIZE 65536
+class NullLog : public Log {
+ public:
+  virtual void Fatal(std::string message) {};
+  virtual void Info(std::string message) {};
+  virtual void Debug(std::string message) {};
+};
 
 class DatabaseContext {
  public:
   static DatabaseContext *Create(int points_per_chunk, int max_pages, TestContext ctx) {
     DatabaseContext *context = new DatabaseContext();
-    context->log = new FileLog("");
+    context->log = new NullLog();
     context->db = Database::Init(
         ctx.GetWorkingDirectory(),
         context->log,
@@ -61,11 +66,12 @@ void write_to_database(Database *db, std::string series_name, int batches, int b
 
 void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
   std::shared_ptr<DataPointReader> reader = db->Read(series_name, begin, end);
-  uint64_t total_read = 0;
+  int total_read = reader->GetDataPointsCount();
   data_point_t *points = reader->GetDataPoints();
 
-  for (int i = 1; i < reader->GetDataPointsCount(); i++) {
+  for (int i = 1; i < total_read; i++) {
     Assert::IsTrue(points[i - 1].time <= points[i].time);
+    Assert::IsTrue(points[i].time != 0);
   }
 
   Assert::IsTrue(expected_count == total_read);

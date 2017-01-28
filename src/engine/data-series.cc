@@ -85,7 +85,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
   std::list<DataChunk *> filtered_chunks;
 
   for (auto chunk: this->chunks) {
-    if (chunk->GetBegin() <= end && chunk->GetEnd() >= begin) {
+    if (chunk->GetBegin() < end && chunk->GetEnd() >= begin) {
       filtered_chunks.push_back(chunk);
     }
   }
@@ -100,14 +100,25 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
   data_point_t *front_end = front_begin + filtered_chunks.front()->GetNumberOfPoints();
 
   data_point_t *back_begin = filtered_chunks.back()->Read();
-  data_point_t *back_end = front_begin + filtered_chunks.back()->GetNumberOfPoints();
+  data_point_t *back_end = back_begin + filtered_chunks.back()->GetNumberOfPoints();
 
   data_point_t *read_begin = std::lower_bound(front_begin, front_end, begin, comp);
   data_point_t *read_end = std::lower_bound(back_begin, back_end, end, comp);
 
-  int total_points = 0;
-  total_points += front_end - read_begin;
-  total_points += read_end - back_begin;
+  if (filtered_chunks.size() == 1) {
+    uint64_t total_points = read_end - read_begin;
+    data_point_t *snapshot = (data_point_t *)calloc((size_t)total_points, sizeof(data_point_t));
+    memcpy(snapshot, read_begin, total_points * sizeof(data_point_t));
+
+    return std::make_shared<DataPointReader>(snapshot, total_points);
+  }
+
+  uint64_t total_points = 0;
+  uint64_t points_from_front = front_end - read_begin;
+  uint64_t points_from_back = read_end - back_begin;
+
+  total_points += points_from_front;
+  total_points += points_from_back;
 
   for (auto i: filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
@@ -116,6 +127,20 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
   }
 
   data_point_t *snapshot = (data_point_t *)calloc((size_t)total_points, sizeof(data_point_t));
+  int snapshot_position = 0;
+
+  memcpy(snapshot, read_begin, points_from_front * sizeof(data_point_t));
+  snapshot_position += points_from_front;
+
+  for (auto i: filtered_chunks) {
+    if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
+      memcpy(snapshot + snapshot_position, i->Read(), (size_t)i->GetNumberOfPoints() * sizeof(data_point_t));
+      snapshot_position += i->GetNumberOfPoints();
+    }
+  }
+
+  memcpy(snapshot + snapshot_position, back_begin, points_from_back * sizeof(data_point_t));
+
   return std::make_shared<DataPointReader>(snapshot, total_points);
 }
 

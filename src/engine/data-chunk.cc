@@ -100,13 +100,11 @@ void DataChunk::PrintMetadata() {
       this->end,
       this->number_of_points);
 
-  data_point_t *points = (data_point_t *)calloc((size_t)this->number_of_points, sizeof(data_point_t));
+  data_point_t *points = this->Read();
 
   for (int i = 0; i < this->number_of_points; i++) {
     printf("    %llu %f\n", points[i].time, points[i].value);
   }
-
-  free(points);
 }
 
 int DataChunk::GetMaxNumberOfPoints() {
