@@ -6,6 +6,7 @@
 #include <memory>
 #include <test/framework/assert.h>
 #include <src/utils/file-log.h>
+#include <src/utils/stopwatch.h>
 
 namespace apollo {
 namespace test {
@@ -226,6 +227,39 @@ void database_read_duplicated_values(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 1, 2);
   validate_read(c->GetDb(), "usd_gbp", 5, 0, 2);
   validate_read(c->GetDb(), "usd_gbp", 5, 2, 3);
+}
+
+Stopwatch database_performance_sequential_write_small(TestContext ctx) {
+  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
+  Stopwatch sw;
+
+  sw.Start();
+  write_to_database(c->GetDb(), "usd_gbp", 100, 100);
+  sw.Stop();
+
+  return sw;
+}
+
+Stopwatch database_performance_sequential_write_medium(TestContext ctx) {
+  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
+  Stopwatch sw;
+
+  sw.Start();
+  write_to_database(c->GetDb(), "usd_gbp", 10000, 100);
+  sw.Stop();
+
+  return sw;
+}
+
+Stopwatch database_performance_sequential_write_large(TestContext ctx) {
+  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
+  Stopwatch sw;
+
+  sw.Start();
+  write_to_database(c->GetDb(), "usd_gbp", 100000, 100);
+  sw.Stop();
+
+  return sw;
 }
 
 }

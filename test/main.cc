@@ -5,7 +5,20 @@
 #include <src/utils/directory.h>
 #include "database-tests.h"
 
+
+#define RUN_PERF_TESTS
+
+#ifdef RUN_TESTS
 #define TEST(test_case) result = runner.RunTest("" #test_case "", test_case);
+#else
+#define TEST(test_case)
+#endif
+
+#ifdef RUN_PERF_TESTS
+#define TEST_PERF(test_case) result = runner.RunPerfTest("" #test_case "", test_case);
+#else
+#define TEST_PERF(test_case)
+#endif
 
 int main() {
   std::string dir("/Users/pburzynski/apollo-test/data/test-stuff");
@@ -31,6 +44,10 @@ int main() {
   TEST(apollo::test::database_read_span_three_chunks);
   TEST(apollo::test::database_read_chunk_edges);
   TEST(apollo::test::database_read_duplicated_values);
+
+  TEST_PERF(apollo::test::database_performance_sequential_write_small);
+  TEST_PERF(apollo::test::database_performance_sequential_write_medium);
+  TEST_PERF(apollo::test::database_performance_sequential_write_large);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");
