@@ -54,7 +54,7 @@ void Database::PrintMetadata() {
 }
 
 DataSeries *Database::FindDataSeries(std::string name) {
-  auto scope = std::unique_ptr<RwLockScope>(this->lock.LockRead());
+  auto scope = this->lock.LockRead();
 
   if (this->series.find(name) == this->series.end()) {
     scope->UpgradeToWrite();

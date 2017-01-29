@@ -72,7 +72,7 @@ void write_to_database(Database *db, std::string series_name, int batches, int b
 }
 
 void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
-  std::shared_ptr <DataPointReader> reader = db->Read(series_name, begin, end);
+  std::shared_ptr<DataPointReader> reader = db->Read(series_name, begin, end);
   int total_read = reader->GetDataPointsCount();
   data_point_t *points = reader->GetDataPoints();
 

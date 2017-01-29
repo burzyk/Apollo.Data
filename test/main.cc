@@ -7,7 +7,7 @@
 #include "test/engine/unit-tests.h"
 #include "test/engine/performance-tests.h"
 #include "test/engine/concurrency-tests.h"
-
+#include "test/utils/rw-lock-test.h"
 
 #define RUN_TESTS
 #define RUN_PERF_TESTS
@@ -49,16 +49,23 @@ int main() {
   TEST(apollo::test::database_read_chunk_edges);
   TEST(apollo::test::database_read_duplicated_values);
 
-  TEST_PERF(apollo::test::database_performance_sequential_write_small);
-  TEST_PERF(apollo::test::database_performance_sequential_write_medium);
-  TEST_PERF(apollo::test::database_performance_sequential_write_large);
-  TEST_PERF(apollo::test::database_performance_read_small);
-  TEST_PERF(apollo::test::database_performance_read_medium);
-  TEST_PERF(apollo::test::database_performance_read_large);
-  TEST_PERF(apollo::test::database_performance_random_write_small);
-  TEST_PERF(apollo::test::database_performance_random_write_medium);
-  TEST_PERF(apollo::test::database_performance_random_write_large);
+  TEST(apollo::test::rwlock_double_read_lock_test);
+  TEST(apollo::test::rwlock_upgrade_lock_test);
+  TEST(apollo::test::rwlock_release_and_lock_again_test);
+
+//  TEST_PERF(apollo::test::database_performance_sequential_write_small);
+//  TEST_PERF(apollo::test::database_performance_sequential_write_medium);
+//  TEST_PERF(apollo::test::database_performance_sequential_write_large);
+//  TEST_PERF(apollo::test::database_performance_read_small);
+//  TEST_PERF(apollo::test::database_performance_read_medium);
+//  TEST_PERF(apollo::test::database_performance_read_large);
+//  TEST_PERF(apollo::test::database_performance_random_write_small);
+//  TEST_PERF(apollo::test::database_performance_random_write_medium);
+//  TEST_PERF(apollo::test::database_performance_random_write_large);
+
   TEST_PERF(apollo::test::database_concurrent_access_small);
+  TEST_PERF(apollo::test::database_concurrent_access_medium);
+  TEST_PERF(apollo::test::database_concurrent_access_large);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");
