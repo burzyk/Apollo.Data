@@ -229,37 +229,58 @@ void database_read_duplicated_values(TestContext ctx) {
   validate_read(c->GetDb(), "usd_gbp", 5, 2, 3);
 }
 
-Stopwatch database_performance_sequential_write_small(TestContext ctx) {
+Stopwatch database_performance_sequential_write(TestContext ctx, int batches, int batch_size) {
   auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
   Stopwatch sw;
 
   sw.Start();
-  write_to_database(c->GetDb(), "usd_gbp", 100, 100);
+  write_to_database(c->GetDb(), "usd_gbp", batches, batch_size);
   sw.Stop();
 
   return sw;
+}
+
+Stopwatch database_performance_sequential_write_small(TestContext ctx) {
+  return database_performance_sequential_write(ctx, 1000, 100);
 }
 
 Stopwatch database_performance_sequential_write_medium(TestContext ctx) {
+  return database_performance_sequential_write(ctx, 10000, 100);
+}
+
+Stopwatch database_performance_sequential_write_large(TestContext ctx) {
+  return database_performance_sequential_write(ctx, 100000, 100);
+}
+
+Stopwatch database_performance_read(TestContext ctx, int windows_count, int window_size) {
   auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
   Stopwatch sw;
 
+  write_to_database(c->GetDb(), "usd_gbp", windows_count, window_size);
+
   sw.Start();
-  write_to_database(c->GetDb(), "usd_gbp", 10000, 100);
+  for (int i = 0; i < windows_count; i++) {
+    validate_read(c->GetDb(),
+                  "usd_gbp",
+                  i == 0 ? window_size - 1 : window_size,
+                  i * window_size,
+                  (i + 1) * window_size);
+  }
   sw.Stop();
 
   return sw;
 }
 
-Stopwatch database_performance_sequential_write_large(TestContext ctx) {
-  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
-  Stopwatch sw;
+Stopwatch database_performance_read_small(TestContext ctx) {
+  return database_performance_read(ctx, 1000, 100);
+}
 
-  sw.Start();
-  write_to_database(c->GetDb(), "usd_gbp", 100000, 100);
-  sw.Stop();
+Stopwatch database_performance_read_medium(TestContext ctx) {
+  return database_performance_read(ctx, 10000, 100);
+}
 
-  return sw;
+Stopwatch database_performance_read_large(TestContext ctx) {
+  return database_performance_read(ctx, 100000, 100);
 }
 
 }

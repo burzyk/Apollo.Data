@@ -6,6 +6,7 @@
 #include "database-tests.h"
 
 
+#define RUN_TESTS
 #define RUN_PERF_TESTS
 
 #ifdef RUN_TESTS
@@ -48,6 +49,9 @@ int main() {
   TEST_PERF(apollo::test::database_performance_sequential_write_small);
   TEST_PERF(apollo::test::database_performance_sequential_write_medium);
   TEST_PERF(apollo::test::database_performance_sequential_write_large);
+  TEST_PERF(apollo::test::database_performance_read_small);
+  TEST_PERF(apollo::test::database_performance_read_medium);
+  TEST_PERF(apollo::test::database_performance_read_large);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");
