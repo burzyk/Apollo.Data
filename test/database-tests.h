@@ -7,6 +7,7 @@
 #include <test/framework/assert.h>
 #include <src/utils/file-log.h>
 #include <src/utils/stopwatch.h>
+#include <cstdlib>
 
 namespace apollo {
 namespace test {
@@ -281,6 +282,39 @@ Stopwatch database_performance_read_medium(TestContext ctx) {
 
 Stopwatch database_performance_read_large(TestContext ctx) {
   return database_performance_read(ctx, 100000, 100);
+}
+
+Stopwatch database_performance_random_write(TestContext ctx, int batches, int batch_size) {
+  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
+
+  // for random but consistent results
+  srand(0);
+  Stopwatch sw;
+
+  sw.Start();
+
+  for (int i = 0; i < batches; i++) {
+    int time = rand() % batch_size + 1;
+    write_to_database(c->GetDb(), "usd_gbp", 1, batch_size, time);
+  }
+
+  sw.Stop();
+
+  validate_read(c->GetDb(), "usd_gbp", batch_size * batches, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+
+  return sw;
+}
+
+Stopwatch database_performance_random_write_small(TestContext ctx) {
+  return database_performance_random_write(ctx, 100, 100);
+}
+
+Stopwatch database_performance_random_write_medium(TestContext ctx) {
+  return database_performance_random_write(ctx, 1000, 100);
+}
+
+Stopwatch database_performance_random_write_large(TestContext ctx) {
+  return database_performance_random_write(ctx, 10000, 100);
 }
 
 }

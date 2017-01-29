@@ -52,6 +52,9 @@ int main() {
   TEST_PERF(apollo::test::database_performance_read_small);
   TEST_PERF(apollo::test::database_performance_read_medium);
   TEST_PERF(apollo::test::database_performance_read_large);
+  TEST_PERF(apollo::test::database_performance_random_write_small);
+  TEST_PERF(apollo::test::database_performance_random_write_medium);
+//  TEST_PERF(apollo::test::database_performance_random_write_large);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");
