@@ -6,6 +6,7 @@
 #define APOLLO_STORAGE_DATASERIES_H
 
 #include <src/utils/log.h>
+#include <src/utils/rw-lock.h>
 #include "data-point-reader.h"
 
 namespace apollo {
@@ -30,6 +31,7 @@ class DataSeries {
   std::string file_name;
   int points_per_chunk;
   std::list<DataChunk *> chunks;
+  RwLock series_lock;
 };
 
 }

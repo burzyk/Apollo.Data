@@ -49,6 +49,9 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *l
 }
 
 void DataSeries::Write(data_point_t *points, int count) {
+  auto lock_scope = std::unique_ptr<RwLockScope>(this->series_lock.LockRead());
+  lock_scope->UpgradeToWrite();
+
   if (this->chunks.size() == 0) {
     DataChunk *chunk = this->CreateEmptyChunk();
     this->RegisterChunk(chunk);
@@ -82,6 +85,7 @@ void DataSeries::Write(data_point_t *points, int count) {
 }
 
 std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t end) {
+  auto lock_scope = std::unique_ptr<RwLockScope>(this->series_lock.LockRead());
   std::list<DataChunk *> filtered_chunks;
 
   for (auto chunk: this->chunks) {
