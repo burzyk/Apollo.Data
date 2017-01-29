@@ -3,7 +3,10 @@
 #include <test/framework/test-context.h>
 #include <test/framework/test-runner.h>
 #include <src/utils/directory.h>
-#include "database-tests.h"
+#include "test/engine/common.h"
+#include "test/engine/unit-tests.h"
+#include "test/engine/performance-tests.h"
+#include "test/engine/concurrency-tests.h"
 
 
 #define RUN_TESTS
@@ -54,7 +57,8 @@ int main() {
   TEST_PERF(apollo::test::database_performance_read_large);
   TEST_PERF(apollo::test::database_performance_random_write_small);
   TEST_PERF(apollo::test::database_performance_random_write_medium);
-//  TEST_PERF(apollo::test::database_performance_random_write_large);
+  TEST_PERF(apollo::test::database_performance_random_write_large);
+  TEST_PERF(apollo::test::database_concurrent_access_small);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");

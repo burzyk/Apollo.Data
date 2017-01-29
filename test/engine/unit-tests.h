@@ -2,82 +2,21 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
+#ifndef APOLLO_STORAGE_ENGINE_UNIT_TESTS_H
+#define APOLLO_STORAGE_ENGINE_UNIT_TESTS_H
+
 #include <src/engine/database.h>
 #include <memory>
 #include <test/framework/assert.h>
 #include <src/utils/file-log.h>
 #include <src/utils/stopwatch.h>
 #include <cstdlib>
+#include <chrono>
+#include <thread>
+#include "common.h"
 
 namespace apollo {
 namespace test {
-
-class NullLog : public Log {
- public:
-  virtual void Fatal(std::string message) {};
-  virtual void Info(std::string message) {};
-  virtual void Debug(std::string message) {};
-};
-
-class DatabaseContext {
- public:
-  static DatabaseContext *Create(int points_per_chunk, int max_pages, TestContext ctx) {
-    DatabaseContext *context = new DatabaseContext();
-    context->log = new NullLog();
-    context->db = Database::Init(
-        ctx.GetWorkingDirectory(),
-        context->log,
-        points_per_chunk,
-        max_pages * points_per_chunk * sizeof(data_point_t));
-    return context;
-  }
-
-  ~DatabaseContext() {
-    delete this->db;
-  }
-
-  Database *GetDb() {
-    return this->db;
-  }
- private:
-  DatabaseContext() {}
-
-  Log *log;
-  Database *db;
-};
-
-void write_to_database(Database *db, std::string series_name, int batches, int batch_size, timestamp_t time) {
-  apollo::data_point_t *points = new apollo::data_point_t[batch_size];
-
-  for (int i = 0; i < batches; i++) {
-    for (int j = 0; j < batch_size; j++) {
-      points[j].time = time;
-      points[j].value = time * 100;
-      time++;
-    }
-
-    db->Write(series_name, points, batch_size);
-  }
-
-  delete[] points;
-}
-
-void write_to_database(Database *db, std::string series_name, int batches, int batch_size) {
-  write_to_database(db, series_name, batches, batch_size, 1);
-}
-
-void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
-  std::shared_ptr<DataPointReader> reader = db->Read(series_name, begin, end);
-  int total_read = reader->GetDataPointsCount();
-  data_point_t *points = reader->GetDataPoints();
-
-  for (int i = 1; i < total_read; i++) {
-    Assert::IsTrue(points[i - 1].time <= points[i].time);
-    Assert::IsTrue(points[i].time != 0);
-  }
-
-  Assert::IsTrue(expected_count == total_read);
-}
 
 void simple_database_initialization_test(TestContext ctx) {
   auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
@@ -230,93 +169,7 @@ void database_read_duplicated_values(TestContext ctx) {
   validate_read(c->GetDb(), "usd_gbp", 5, 2, 3);
 }
 
-Stopwatch database_performance_sequential_write(TestContext ctx, int batches, int batch_size) {
-  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
-  Stopwatch sw;
-
-  sw.Start();
-  write_to_database(c->GetDb(), "usd_gbp", batches, batch_size);
-  sw.Stop();
-
-  return sw;
-}
-
-Stopwatch database_performance_sequential_write_small(TestContext ctx) {
-  return database_performance_sequential_write(ctx, 1000, 100);
-}
-
-Stopwatch database_performance_sequential_write_medium(TestContext ctx) {
-  return database_performance_sequential_write(ctx, 10000, 100);
-}
-
-Stopwatch database_performance_sequential_write_large(TestContext ctx) {
-  return database_performance_sequential_write(ctx, 100000, 100);
-}
-
-Stopwatch database_performance_read(TestContext ctx, int windows_count, int window_size) {
-  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
-  Stopwatch sw;
-
-  write_to_database(c->GetDb(), "usd_gbp", windows_count, window_size);
-
-  sw.Start();
-  for (int i = 0; i < windows_count; i++) {
-    validate_read(c->GetDb(),
-                  "usd_gbp",
-                  i == 0 ? window_size - 1 : window_size,
-                  i * window_size,
-                  (i + 1) * window_size);
-  }
-  sw.Stop();
-
-  return sw;
-}
-
-Stopwatch database_performance_read_small(TestContext ctx) {
-  return database_performance_read(ctx, 1000, 100);
-}
-
-Stopwatch database_performance_read_medium(TestContext ctx) {
-  return database_performance_read(ctx, 10000, 100);
-}
-
-Stopwatch database_performance_read_large(TestContext ctx) {
-  return database_performance_read(ctx, 100000, 100);
-}
-
-Stopwatch database_performance_random_write(TestContext ctx, int batches, int batch_size) {
-  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
-
-  // for random but consistent results
-  srand(0);
-  Stopwatch sw;
-
-  sw.Start();
-
-  for (int i = 0; i < batches; i++) {
-    int time = rand() % batch_size + 1;
-    write_to_database(c->GetDb(), "usd_gbp", 1, batch_size, time);
-  }
-
-  sw.Stop();
-
-  validate_read(c->GetDb(), "usd_gbp", batch_size * batches, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
-
-  return sw;
-}
-
-Stopwatch database_performance_random_write_small(TestContext ctx) {
-  return database_performance_random_write(ctx, 100, 100);
-}
-
-Stopwatch database_performance_random_write_medium(TestContext ctx) {
-  return database_performance_random_write(ctx, 1000, 100);
-}
-
-Stopwatch database_performance_random_write_large(TestContext ctx) {
-  return database_performance_random_write(ctx, 10000, 100);
-}
-
 }
 }
 
+#endif

@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(SRC_SOURCE_FILES src/utils/log.h src/data-point.h src/engine/data-chunk.cc src/engine/data-chunk.h src/engine/data-point-reader.cc src/engine/data-point-reader.h src/engine/database.cc src/engine/database.h src/utils/common.h src/utils/file.cc src/utils/file.h src/utils/directory.cc src/utils/directory.h src/utils/stopwatch.cc src/utils/stopwatch.h src/utils/rw-lock.cc src/utils/rw-lock.h src/utils/rw-lock-scope.cc src/utils/rw-lock-scope.h src/fatal-exception.cc src/fatal-exception.h src/utils/file-log.cc src/utils/file-log.h src/engine/data-series.cc src/engine/data-series.h)
-set(TEST_SOURCE_FILES test/main.cc test/database-tests.h test/framework/test-context.cc test/framework/test-context.h test/framework/test-runner.cc test/framework/test-runner.h test/framework/assert.cc test/framework/assert.h test/framework/validation-exception.cc test/framework/validation-exception.h)
+set(TEST_SOURCE_FILES test/main.cc test/engine/unit-tests.h test/framework/test-context.cc test/framework/test-context.h test/framework/test-runner.cc test/framework/test-runner.h test/framework/assert.cc test/framework/assert.h test/framework/validation-exception.cc test/framework/validation-exception.h test/engine/common.h test/engine/performance-tests.h test/engine/concurrency-tests.h)
 
 add_executable(apollo.data ${SRC_SOURCE_FILES} src/main.cc)
 add_executable(apollo.test ${TEST_SOURCE_FILES} ${SRC_SOURCE_FILES})
