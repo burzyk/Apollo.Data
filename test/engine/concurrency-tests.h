@@ -21,12 +21,10 @@ namespace test {
 
 void database_concurrent_access_writer(Database *db, int batches, int batch_size) {
   try {
-    for (int i = 0; i < batches; i++) {
-      write_to_database(db, "XOM_US", 1, batch_size, (timestamp_t)(i * batch_size));
-      write_to_database(db, "MSFT_US", 1, batch_size, (timestamp_t)(i * batch_size));
-      write_to_database(db, "APPL_US", 1, batch_size, (timestamp_t)(i * batch_size));
-      write_to_database(db, "AAL_LN", 1, batch_size, (timestamp_t)(i * batch_size));
-    }
+    write_to_database(db, "XOM_US", batches, batch_size);
+    write_to_database(db, "MSFT_US", batches, batch_size);
+    write_to_database(db, "APPL_US", batches, batch_size);
+    write_to_database(db, "AAL_LN", batches, batch_size);
   } catch (FatalException ex) {
     printf("Writer fatal exception: %s\n", ex.what());
   }

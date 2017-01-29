@@ -7,6 +7,7 @@
 
 #include <string>
 #include <src/data-point.h>
+#include <src/utils/rw-lock.h>
 
 namespace apollo {
 
@@ -32,6 +33,7 @@ class DataChunk {
   uint64_t file_offset;
   int max_points;
   data_point_t *cached_content;
+  RwLock lock;
 
   timestamp_t begin;
   timestamp_t end;

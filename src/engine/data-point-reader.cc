@@ -18,6 +18,8 @@ DataPointReader::~DataPointReader() {
     free(this->snapshot);
     this->snapshot = nullptr;
   }
+
+  this->count = 0;
 }
 data_point_t *DataPointReader::GetDataPoints() {
   return this->snapshot;

@@ -43,18 +43,26 @@ int DataChunk::CalculateChunkSize(int points) {
 }
 
 data_point_t *DataChunk::Read() {
-  if (this->cached_content == nullptr) {
-    this->cached_content = (data_point_t *)calloc((size_t)this->max_points, sizeof(data_point_t));
+  auto scope = this->lock.LockRead();
 
-    File f(this->file_name);
-    f.Seek(this->file_offset, SEEK_SET);
-    f.Read(this->cached_content, this->max_points * sizeof(data_point_t));
+  if (this->cached_content == nullptr) {
+    scope->UpgradeToWrite();
+
+    if (this->cached_content == nullptr) {
+      this->cached_content = (data_point_t *)calloc((size_t)this->max_points, sizeof(data_point_t));
+
+      File f(this->file_name);
+      f.Seek(this->file_offset, SEEK_SET);
+      f.Read(this->cached_content, this->max_points * sizeof(data_point_t));
+    }
   }
 
   return this->cached_content;
 }
 
 void DataChunk::Write(int offset, data_point_t *points, int count) {
+  auto scope = this->lock.LockWrite();
+
   if (count == 0) {
     return;
   }
@@ -93,6 +101,10 @@ int DataChunk::GetNumberOfPoints() {
   return this->number_of_points;
 }
 
+int DataChunk::GetMaxNumberOfPoints() {
+  return this->max_points;
+}
+
 void DataChunk::PrintMetadata() {
   printf(
       "begin: %llu, end: %llu, points: %d\n",
@@ -105,10 +117,6 @@ void DataChunk::PrintMetadata() {
   for (int i = 0; i < this->number_of_points; i++) {
     printf("    %llu %f\n", points[i].time, points[i].value);
   }
-}
-
-int DataChunk::GetMaxNumberOfPoints() {
-  return this->max_points;
 }
 
 DataChunk::DataChunk(std::string file_name, uint64_t file_offset, int max_points) {

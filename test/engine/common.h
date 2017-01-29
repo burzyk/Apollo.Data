@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <thread>
+#include <src/fatal-exception.h>
 
 namespace apollo {
 namespace test {
@@ -52,6 +53,10 @@ class DatabaseContext {
 };
 
 void write_to_database(Database *db, std::string series_name, int batches, int batch_size, timestamp_t time) {
+  if (time == 0) {
+    throw FatalException("Time cannot be 0");
+  }
+
   apollo::data_point_t *points = new apollo::data_point_t[batch_size];
 
   for (int i = 0; i < batches; i++) {
