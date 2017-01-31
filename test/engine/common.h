@@ -5,7 +5,7 @@
 #ifndef APOLLO_STORAGE_COMMON_H
 #define APOLLO_STORAGE_COMMON_H
 
-#include <src/engine/database.h>
+#include <src/storage/database.h>
 #include <memory>
 #include <test/framework/assert.h>
 #include <src/utils/file-log.h>
