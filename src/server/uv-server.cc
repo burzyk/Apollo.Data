@@ -2,10 +2,10 @@
 // Created by Pawel Burzynski on 01/02/2017.
 //
 
-#include <uv.h>
-#include <src/fatal-exception.h>
 #include <cstdlib>
-#include "server.h"
+#include <uv.h>
+#include "uv-server.h"
+#include <src/fatal-exception.h>
 
 namespace apollo {
 
@@ -36,7 +36,7 @@ void on_new_connection(uv_stream_t *server, int status) {
   }
 }
 
-Server::Server(int port, int backlog, std::vector<ClientHandler *> handlers, Log *log) {
+UvServer::UvServer(int port, int backlog, std::vector<ClientHandler *> handlers, Log *log) {
   this->port = port;
   this->backlog = backlog;
 
@@ -49,11 +49,11 @@ Server::Server(int port, int backlog, std::vector<ClientHandler *> handlers, Log
   this->info.server.data = &this->info;
 }
 
-Server::~Server() {
+UvServer::~UvServer() {
   // TODO: close loop;
 }
 
-void Server::Listen() {
+void UvServer::Listen() {
   this->info.log->Info("Starting listening on port: " + std::to_string(this->port));
 
   struct sockaddr_in addr = {0};

@@ -12,24 +12,10 @@
 
 namespace apollo {
 
-struct server_info_t {
-  uv_loop_t event_loop;
-  uv_tcp_t server;
-  Log *log;
-  std::vector<ClientHandler *> handlers;
-  std::list<uv_tcp_t *> clients;
-};
-
 class Server {
  public :
-  Server(int port, int backlog, std::vector<ClientHandler *> handlers, Log *log);
-  ~Server();
-
-  void Listen();
- private:
-  int port;
-  int backlog;
-  server_info_t info;
+  virtual ~Server() {};
+  virtual void Listen() = 0;
 };
 
 }
