@@ -32,6 +32,7 @@ void on_new_connection(uv_stream_t *server, int status) {
   } else {
     info->clients.remove(client);
     uv_close((uv_handle_t *)client, NULL);
+    free(client);
   }
 }
 
