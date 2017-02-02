@@ -14,7 +14,7 @@ typedef int packet_type_t;
 struct data_packet_t {
   packet_type_t type;
   int length;
-  uint8_t data[];
+  uint8_t *data;
 };
 
 }
