@@ -16,6 +16,7 @@ class Server {
  public :
   virtual ~Server() {};
   virtual void Listen() = 0;
+  virtual void Close() = 0;
 };
 
 }

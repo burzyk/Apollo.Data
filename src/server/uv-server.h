@@ -23,9 +23,7 @@ class UvServer : public Server {
   ~UvServer();
 
   void Listen();
-
-  friend void on_new_connection(uv_stream_t *server, int status);
-  friend void on_data_read(uv_stream_t *server, ssize_t nread, const uv_buf_t *buf);
+  void Close();
  private:
   struct client_info_t {
     int id;
@@ -34,9 +32,18 @@ class UvServer : public Server {
     ssize_t buffer_position;
   };
 
+  static void OnAlloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);
+  static void OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf);
+  static void OnNewConnection(uv_stream_t *server, int status);
+  static void OnHandleClose(uv_handle_t *handle);
+  static void OnClientShutdown(uv_shutdown_t *req, int status);
+  static void OnServerShutdown(uv_shutdown_t *req, int status);
+  static void OnServerClose(uv_async_t *handle);
+
   void RegisterClient(uv_tcp_t *client);
   void RemoveClient(uv_tcp_t *client);
   void HandlePacket(data_packet_t *packet);
+  void ReadClientData(client_info_t *info, ssize_t nread, const uv_buf_t *buf);
 
   int port;
   int backlog;

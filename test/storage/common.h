@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 29/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_COMMON_H
-#define APOLLO_STORAGE_COMMON_H
+#ifndef APOLLO_STORAGE_STORAGE_COMMON_H
+#define APOLLO_STORAGE_STORAGE_COMMON_H
 
 #include <src/storage/database.h>
 #include <memory>
@@ -14,16 +14,10 @@
 #include <chrono>
 #include <thread>
 #include <src/fatal-exception.h>
+#include <test/common.h>
 
 namespace apollo {
 namespace test {
-
-class NullLog : public Log {
- public:
-  virtual void Fatal(std::string message) {};
-  virtual void Info(std::string message) {};
-  virtual void Debug(std::string message) {};
-};
 
 class DatabaseContext {
  public:
