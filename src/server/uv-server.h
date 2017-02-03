@@ -48,6 +48,7 @@ class UvServer : public Server {
   int port;
   int backlog;
   int current_client_id;
+  bool is_running;
 
   uv_loop_t event_loop;
   uv_tcp_t server;

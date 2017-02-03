@@ -16,6 +16,7 @@ UvServer::UvServer(int port, int backlog, std::vector<ClientHandler *> handlers,
   this->log = log;
   this->handlers = handlers;
   this->current_client_id = 0;
+  this->is_running = false;
 
   uv_loop_init(&this->event_loop);
   uv_tcp_init(&this->event_loop, &this->server);
@@ -24,10 +25,13 @@ UvServer::UvServer(int port, int backlog, std::vector<ClientHandler *> handlers,
 }
 
 UvServer::~UvServer() {
-  this->Close();
+  if (this->is_running) {
+    this->Close();
+  }
 }
 
 void UvServer::Listen() {
+  this->is_running = true;
   this->log->Info("Starting listening on port: " + std::to_string(this->port));
 
   struct sockaddr_in address = {0};
@@ -46,6 +50,7 @@ void UvServer::Listen() {
 }
 
 void UvServer::Close() {
+  this->is_running = false;
   this->log->Info("Shutting down server");
 
   uv_async_t *shutdown = (uv_async_t *)calloc(1, sizeof(uv_async_t));

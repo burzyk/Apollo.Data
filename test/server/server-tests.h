@@ -28,7 +28,8 @@ void server_initialize_test(TestContext ctx) {
   std::thread server_thread(server_thread_routine, srv);
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-
+  srv->Close();
+  delete srv;
 }
 
 }
