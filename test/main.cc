@@ -3,10 +3,10 @@
 #include <test/framework/test-context.h>
 #include <test/framework/test-runner.h>
 #include <src/utils/directory.h>
-#include "test/engine/common.h"
-#include "test/engine/unit-tests.h"
-#include "test/engine/performance-tests.h"
-#include "test/engine/concurrency-tests.h"
+#include "test/storage/common.h"
+#include "test/storage/unit-tests.h"
+#include "test/storage/performance-tests.h"
+#include "test/storage/concurrency-tests.h"
 #include "test/utils/rw-lock-test.h"
 
 #define RUN_TESTS
