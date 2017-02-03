@@ -151,7 +151,8 @@ void UvServer::RemoveClient(uv_tcp_t *client) {
 
 void UvServer::HandlePacket(data_packet_t *packet) {
   for (auto handler: this->handlers) {
-    handler->ProcessPacket(packet);
+    // TODO: Responder
+    handler->ProcessPacket(packet, nullptr);
   }
 }
 

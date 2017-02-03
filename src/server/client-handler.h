@@ -6,12 +6,14 @@
 #define APOLLO_STORAGE_CLIENTHANDLER_H
 
 #include "data-packet.h"
+#include "client-responder.h"
 
 namespace apollo {
 
 class ClientHandler {
  public:
-  virtual void ProcessPacket(data_packet_t *packet) = 0;
+  virtual ~ClientHandler() {};
+  virtual void ProcessPacket(data_packet_t *packet, ClientResponder *responder) = 0;
 };
 
 }
