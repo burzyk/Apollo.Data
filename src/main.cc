@@ -6,24 +6,6 @@
 
 apollo::Server *g_server;
 
-void exit_handler(int signal) {
-  if (signal != SIGINT) {
-    return;
-  }
-
-  if (g_server != nullptr) {
-    g_server->Close();
-  }
-}
-
-void init_signals() {
-  struct sigaction sa = {0};
-  sa.sa_handler = exit_handler;
-  sa.sa_flags = SA_RESTART;
-  sigfillset(&sa.sa_mask);
-  sigaction(SIGINT, &sa, NULL);
-}
-
 int main() {
   apollo::Log *log = new apollo::FileLog(std::string());
 
@@ -31,7 +13,7 @@ int main() {
     std::vector<apollo::ClientHandler *> handlers;
     g_server = new apollo::UvServer(8099, 10, handlers, log);
 
-    init_signals();
+    // TODO: run in different thread
     g_server->Listen();
 
     delete g_server;
