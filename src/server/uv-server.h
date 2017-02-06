@@ -37,7 +37,6 @@ class UvServer : public Server {
   static void OnNewConnection(uv_stream_t *server, int status);
   static void OnHandleClose(uv_handle_t *handle);
   static void OnClientShutdown(uv_shutdown_t *req, int status);
-  static void OnServerShutdown(uv_shutdown_t *req, int status);
   static void OnServerClose(uv_async_t *handle);
 
   void RegisterClient(uv_tcp_t *client);

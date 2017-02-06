@@ -67,6 +67,10 @@ void UvServer::OnAlloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf
 void UvServer::OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
   UvServer *_this = (UvServer *)client->data;
 
+  if (!_this->is_running) {
+    return;
+  }
+
   if (_this->clients.find((uv_tcp_t *)client) == _this->clients.end()) {
     throw FatalException("Client has been removed");
   }
@@ -74,9 +78,6 @@ void UvServer::OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf_t *bu
   client_info_t *info = _this->clients[(uv_tcp_t *)client];
 
   if (nread < 0) {
-    _this->log->Info("Read error, client id: " + std::to_string(info->id));
-    _this->RemoveClient((uv_tcp_t *)client);
-  } else if (nread == UV_EOF) {
     _this->log->Debug("Client disconnected: " + std::to_string(info->id));
     _this->RemoveClient((uv_tcp_t *)client);
   } else if (nread > 0) {
@@ -90,6 +91,10 @@ void UvServer::OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf_t *bu
 
 void UvServer::OnNewConnection(uv_stream_t *server, int status) {
   UvServer *_this = (UvServer *)server->data;
+
+  if (!_this->is_running) {
+    return;
+  }
 
   if (status < 0) {
     _this->log->Info("New connection error: " + std::string(uv_strerror(status)));
@@ -124,26 +129,23 @@ void UvServer::OnClientShutdown(uv_shutdown_t *req, int status) {
 
   uv_close((uv_handle_t *)client, OnHandleClose);
   free(req);
-}
 
-void UvServer::OnServerShutdown(uv_shutdown_t *req, int status) {
-  UvServer *_this = (UvServer *)req->data;
-  uv_tcp_t *server = (uv_tcp_t *)req->handle;
+  // TODO: Move this to some polling task
+  if (_this->clients.size() == 0 && !_this->is_running) {
 
-  for (auto client: _this->clients) {
-    _this->RemoveClient(client.first);
+    // TODO: check if there are any other hanging handles
+    uv_close((uv_handle_t *)&_this->server, nullptr);
   }
-
-  uv_close((uv_handle_t *)server, OnHandleClose);
-  free(req);
 }
 
 void UvServer::OnServerClose(uv_async_t *handle) {
   UvServer *_this = (UvServer *)handle->data;
 
-  uv_shutdown_t *shutdown = (uv_shutdown_t *)calloc(1, sizeof(uv_shutdown_t));
-  shutdown->data = _this;
-  uv_shutdown(shutdown, (uv_stream_t *)&_this->server, OnServerShutdown);
+  for (auto client: _this->clients) {
+    _this->RemoveClient(client.first);
+  }
+
+  // TODO: Poll if all clients are closed
 
   free(handle);
 }

@@ -2,26 +2,33 @@
 #include <src/utils/file-log.h>
 #include <src/server/server.h>
 #include <src/server/uv-server.h>
+#include <src/utils/thread.h>
 #include "fatal-exception.h"
 
+apollo::Log *g_log;
 apollo::Server *g_server;
 
+void MainRoutine(void *data) {
+  std::vector<apollo::ClientHandler *> handlers;
+  g_server = new apollo::UvServer(8099, 10, handlers, g_log);
+
+  g_server->Listen();
+}
+
 int main() {
-  apollo::Log *log = new apollo::FileLog(std::string());
+  g_log = new apollo::FileLog(std::string());
+  apollo::Thread main_thread(MainRoutine, g_log);
+  main_thread.Start(nullptr);
 
-  try {
-    std::vector<apollo::ClientHandler *> handlers;
-    g_server = new apollo::UvServer(8099, 10, handlers, log);
+  g_log->Info("Waiting for termination signal");
+  getc(stdin);
 
-    // TODO: run in different thread
-    g_server->Listen();
+  g_log->Info("Termination signal received - stopping");
+  g_server->Close();
+  main_thread.Join();
 
-    delete g_server;
-    delete log;
+  g_log->Info("Exit");
 
-    return 0;
-  } catch (apollo::FatalException ex) {
-    log->Fatal(std::string(ex.what()));
-    return -1;
-  }
+  delete g_server;
+  delete g_log;
 }
