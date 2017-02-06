@@ -38,6 +38,7 @@ class UvServer : public Server {
   static void OnHandleClose(uv_handle_t *handle);
   static void OnClientShutdown(uv_shutdown_t *req, int status);
   static void OnServerClose(uv_async_t *handle);
+  static void OnServerShutdownWatcher(uv_idle_t* handle);
 
   void RegisterClient(uv_tcp_t *client);
   void RemoveClient(uv_tcp_t *client);
@@ -51,6 +52,7 @@ class UvServer : public Server {
 
   uv_loop_t event_loop;
   uv_tcp_t server;
+  uv_idle_t server_watcher;
   Log *log;
   std::vector<ClientHandler *> handlers;
   std::map<uv_tcp_t *, client_info_t *> clients;

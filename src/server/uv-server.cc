@@ -20,8 +20,10 @@ UvServer::UvServer(int port, int backlog, std::vector<ClientHandler *> handlers,
 
   uv_loop_init(&this->event_loop);
   uv_tcp_init(&this->event_loop, &this->server);
+  uv_idle_init(&this->event_loop, &this->server_watcher);
 
   this->server.data = this;
+  this->server_watcher.data = this;
 }
 
 UvServer::~UvServer() {
@@ -57,6 +59,7 @@ void UvServer::Close() {
   uv_async_init(&this->event_loop, shutdown, OnServerClose);
   shutdown->data = this;
   uv_async_send(shutdown);
+  uv_idle_start(&this->server_watcher, OnServerShutdownWatcher);
 }
 
 void UvServer::OnAlloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
@@ -129,13 +132,6 @@ void UvServer::OnClientShutdown(uv_shutdown_t *req, int status) {
 
   uv_close((uv_handle_t *)client, OnHandleClose);
   free(req);
-
-  // TODO: Move this to some polling task
-  if (_this->clients.size() == 0 && !_this->is_running) {
-
-    // TODO: check if there are any other hanging handles
-    uv_close((uv_handle_t *)&_this->server, nullptr);
-  }
 }
 
 void UvServer::OnServerClose(uv_async_t *handle) {
@@ -145,9 +141,18 @@ void UvServer::OnServerClose(uv_async_t *handle) {
     _this->RemoveClient(client.first);
   }
 
-  // TODO: Poll if all clients are closed
+  uv_close((uv_handle_t *)handle, OnHandleClose);
+}
 
-  free(handle);
+void UvServer::OnServerShutdownWatcher(uv_idle_t *handle) {
+  UvServer *_this = (UvServer *)handle->data;
+
+  if (!_this->is_running && _this->clients.size() == 0) {
+    uv_close((uv_handle_t *)&_this->server, nullptr);
+    uv_close((uv_handle_t *)&_this->server_watcher, nullptr);
+
+    _this->log->Info("Server socket closed");
+  }
 }
 
 void UvServer::RegisterClient(uv_tcp_t *client) {
