@@ -14,7 +14,9 @@ namespace apollo {
 class SessionManager {
  public:
   SessionManager();
-  Session *OpenSession();
+  ~SessionManager();
+
+  Session *OpenSession(std::string server, int port);
   Session *GetSessionById(int session_id);
   void CloseSession(int session_id);
  private:

@@ -10,9 +10,20 @@ SessionManager::SessionManager() {
   this->current_session_id = 0;
 }
 
-Session *SessionManager::OpenSession() {
-  Session *session = new Session();
-  return this->active_sessions[this->current_session_id++] = session;
+SessionManager::~SessionManager() {
+  for (auto session: this->active_sessions) {
+    delete session.second;
+  }
+
+  this->active_sessions.clear();
+}
+
+Session *SessionManager::OpenSession(std::string server, int port) {
+  Session *session = Session::Open(server, port);
+
+  return session != nullptr
+         ? this->active_sessions[this->current_session_id++] = session
+         : nullptr;
 }
 
 Session *SessionManager::GetSessionById(int session_id) {

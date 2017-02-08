@@ -9,11 +9,13 @@
 
 namespace apollo {
 
-typedef int packet_type_t;
+enum PacketType {
+  kPing = 1
+};
 
 struct data_packet_t {
   int total_length;
-  packet_type_t type;
+  PacketType type;
   uint8_t data[];
 };
 

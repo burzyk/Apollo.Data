@@ -196,7 +196,7 @@ void UvServer::ReadClientData(client_info_t *info, ssize_t nread, const uv_buf_t
   int offset = 0;
   int total_processed = 0;
 
-  while (offset + sizeof(packet_type_t) <= info->buffer_position) {
+  while (offset + sizeof(PacketType) <= info->buffer_position) {
     data_packet_t *packet = (data_packet_t *)(info->buffer + offset);
 
     if (offset + packet->total_length <= info->buffer_position) {
