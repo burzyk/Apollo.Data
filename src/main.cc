@@ -21,7 +21,8 @@ int main() {
   main_thread.Start(nullptr);
 
   g_log->Info("Waiting for termination signal");
-  getc(stdin);
+
+  while (getc(stdin) != 'q');
 
   g_log->Info("Termination signal received - stopping");
   g_server->Close();

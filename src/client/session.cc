@@ -73,7 +73,8 @@ void Session::SendPacket(PacketType type, uint8_t *data, int size) {
   packet->total_length = packet_size;
   memcpy(packet->data, data, size);
 
-  for (int offset = 0; offset < size; offset += send(this->sock, raw_packet + offset, 1, packet_size - offset));
+  for (int offset = 0; offset < size; offset += send(this->sock, raw_packet + offset, packet_size - offset, 0));
+  free(packet);
 }
 
 void Session::ReadResponse(uint8_t *buffer, int size) {

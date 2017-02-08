@@ -26,10 +26,16 @@ class UvServer : public Server {
   void Close();
  private:
   struct client_info_t {
+
+    // TODO: Remove
     int id;
+
+    // TODO: Replace with RingBuffer
     uint8_t *buffer;
     ssize_t buffer_size;
     ssize_t buffer_position;
+
+    // TODO: Remove Debug messages
   };
 
   static void OnAlloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);
@@ -38,7 +44,7 @@ class UvServer : public Server {
   static void OnHandleClose(uv_handle_t *handle);
   static void OnClientShutdown(uv_shutdown_t *req, int status);
   static void OnServerClose(uv_async_t *handle);
-  static void OnServerShutdownWatcher(uv_idle_t* handle);
+  static void OnServerShutdownWatcher(uv_idle_t *handle);
 
   void RegisterClient(uv_tcp_t *client);
   void RemoveClient(uv_tcp_t *client);

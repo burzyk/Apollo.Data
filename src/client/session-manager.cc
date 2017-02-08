@@ -18,12 +18,15 @@ SessionManager::~SessionManager() {
   this->active_sessions.clear();
 }
 
-Session *SessionManager::OpenSession(std::string server, int port) {
+int SessionManager::OpenSession(std::string server, int port) {
   Session *session = Session::Open(server, port);
+  int session_id = this->current_session_id++;
 
-  return session != nullptr
-         ? this->active_sessions[this->current_session_id++] = session
-         : nullptr;
+  if (session != nullptr) {
+    this->active_sessions[session_id] = session;
+  }
+
+  return session == nullptr ? kInvalidSession : session_id;
 }
 
 Session *SessionManager::GetSessionById(int session_id) {

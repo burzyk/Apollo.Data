@@ -13,10 +13,12 @@ namespace apollo {
 
 class SessionManager {
  public:
+  static const int kInvalidSession = -1;
+
   SessionManager();
   ~SessionManager();
 
-  Session *OpenSession(std::string server, int port);
+  int OpenSession(std::string server, int port);
   Session *GetSessionById(int session_id);
   void CloseSession(int session_id);
  private:
