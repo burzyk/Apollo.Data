@@ -3,13 +3,17 @@
 #include <src/server/server.h>
 #include <src/server/uv-server.h>
 #include <src/utils/thread.h>
+#include <src/server/handlers/packet-logger.h>
 #include "fatal-exception.h"
 
 apollo::Log *g_log;
 apollo::Server *g_server;
 
 void MainRoutine(void *data) {
-  std::vector<apollo::ClientHandler *> handlers;
+  std::vector<apollo::ClientHandler *> handlers{
+      new apollo::PacketLogger(g_log)
+  };
+
   g_server = new apollo::UvServer(8099, 10, handlers, g_log);
 
   g_server->Listen();

@@ -11,7 +11,7 @@ PacketLogger::PacketLogger(Log *log) {
 }
 
 void PacketLogger::ProcessPacket(data_packet_t *packet, ClientResponder *responder) {
-  this->log->Info("Received packet: " + std::to_string(packet->type) + " len: " + std::to_string(packet->total_length));
+  this->log->Debug("Received packet: " + std::to_string(packet->type) + " len: " + std::to_string(packet->total_length));
 }
 
 }
