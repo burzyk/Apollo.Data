@@ -175,7 +175,7 @@ void DataSeries::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
     this->ChunkMemcpy(chunk, chunk->GetNumberOfPoints(), points, count);
   } else {
     int buffer_count = count + chunk->GetNumberOfPoints();
-    data_point_t *buffer = (data_point_t *)calloc((size_t)buffer_count, sizeof(data_point_t));
+    data_point_t *buffer = Allocator::New<data_point_t>(buffer_count);
     data_point_t *content = chunk->Read();
     int points_pos = count - 1;
     int content_pos = chunk->GetNumberOfPoints() - 1;
@@ -193,7 +193,7 @@ void DataSeries::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
     }
 
     this->ChunkMemcpy(chunk, 0, buffer, buffer_count);
-    free(buffer);
+    Allocator::Delete(buffer);
   }
 }
 

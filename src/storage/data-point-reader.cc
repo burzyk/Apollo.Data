@@ -4,6 +4,7 @@
 
 #include <src/utils/common.h>
 #include <cstdlib>
+#include <src/utils/allocator.h>
 #include "data-point-reader.h"
 
 namespace apollo {
@@ -15,7 +16,7 @@ DataPointReader::DataPointReader(data_point_t *snapshot, int count) {
 
 DataPointReader::~DataPointReader() {
   if (this->snapshot != nullptr) {
-    free(this->snapshot);
+    Allocator::Delete(this->snapshot);
     this->snapshot = nullptr;
   }
 

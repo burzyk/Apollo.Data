@@ -8,20 +8,21 @@
 #include <cstdlib>
 #include <src/utils/file.h>
 #include <src/fatal-exception.h>
+#include <src/utils/allocator.h>
 #include "data-chunk.h"
 
 namespace apollo {
 
 DataChunk::~DataChunk() {
   if (this->cached_content != nullptr) {
-    free(this->cached_content);
+    Allocator::Delete(this->cached_content);
     this->cached_content = nullptr;
   }
 }
 
 DataChunk *DataChunk::Load(std::string file_name, uint64_t file_offset, int max_points) {
   DataChunk *chunk = new DataChunk(file_name, file_offset, max_points);
-  data_point_t *points = (data_point_t *)calloc((size_t)max_points, sizeof(data_point_t));
+  data_point_t *points = Allocator::New<data_point_t>(max_points);
 
   File f(file_name);
 
@@ -34,7 +35,7 @@ DataChunk *DataChunk::Load(std::string file_name, uint64_t file_offset, int max_
     chunk->number_of_points++;
   }
 
-  free(points);
+  Allocator::Delete(points);
   return chunk;
 }
 
@@ -49,7 +50,7 @@ data_point_t *DataChunk::Read() {
     scope->UpgradeToWrite();
 
     if (this->cached_content == nullptr) {
-      this->cached_content = (data_point_t *)calloc((size_t)this->max_points, sizeof(data_point_t));
+      this->cached_content = Allocator::New<data_point_t>(this->max_points);
 
       File f(this->file_name);
       f.Seek(this->file_offset, SEEK_SET);

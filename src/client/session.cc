@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <cstdlib>
+#include <src/utils/allocator.h>
 #include "session.h"
 
 namespace apollo {
@@ -66,7 +67,7 @@ bool Session::Ping() {
 
 void Session::SendPacket(PacketType type, uint8_t *data, int size) {
   int packet_size = size + sizeof(data_packet_t);
-  data_packet_t *packet = (data_packet_t *)calloc(packet_size, 1);
+  data_packet_t *packet = (data_packet_t *)Allocator::New<uint8_t *>(packet_size);
   uint8_t *raw_packet = (uint8_t *)packet;
 
   packet->type = type;
@@ -74,7 +75,7 @@ void Session::SendPacket(PacketType type, uint8_t *data, int size) {
   memcpy(packet->data, data, size);
 
   for (int offset = 0; offset < size; offset += send(this->sock, raw_packet + offset, packet_size - offset, 0));
-  free(packet);
+  Allocator::Delete(packet);
 }
 
 void Session::ReadResponse(uint8_t *buffer, int size) {
