@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <src/utils/common.h>
 #include <src/utils/file.h>
+#include <src/utils/allocator.h>
 #include "data-series.h"
 #include "data-point-reader.h"
 
@@ -110,7 +111,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
 
   if (filtered_chunks.size() == 1) {
     uint64_t total_points = read_end - read_begin;
-    data_point_t *snapshot = (data_point_t *)calloc((size_t)total_points, sizeof(data_point_t));
+    data_point_t *snapshot = Allocator::New<data_point_t>(total_points);
     memcpy(snapshot, read_begin, total_points * sizeof(data_point_t));
 
     return std::make_shared<DataPointReader>(snapshot, total_points);
@@ -129,7 +130,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
     }
   }
 
-  data_point_t *snapshot = (data_point_t *)calloc((size_t)total_points, sizeof(data_point_t));
+  data_point_t *snapshot = Allocator::New<data_point_t>(total_points);
   int snapshot_position = 0;
 
   memcpy(snapshot, read_begin, points_from_front * sizeof(data_point_t));

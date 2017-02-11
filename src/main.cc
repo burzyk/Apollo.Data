@@ -4,6 +4,7 @@
 #include <src/server/uv-server.h>
 #include <src/utils/thread.h>
 #include <src/server/handlers/packet-logger.h>
+#include <src/utils/allocator.h>
 #include "fatal-exception.h"
 
 apollo::Log *g_log;
@@ -33,6 +34,7 @@ int main() {
   main_thread.Join();
 
   g_log->Info("Exit");
+  apollo::Allocator::PrintUsage(g_log);
 
   delete g_server;
   delete g_log;
