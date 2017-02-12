@@ -70,13 +70,13 @@ void database_write_close_and_write_more(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
   validate_read(c->GetDb(), "usd_gbp", 15, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
 
-  c.release();
+  c.reset();
   c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
 
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
   validate_read(c->GetDb(), "usd_gbp", 30, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
 
-  c.release();
+  c.reset();
   c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
 
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
@@ -100,7 +100,7 @@ void database_continuous_write_with_pickup(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 100);
   validate_read(c->GetDb(), "usd_gbp", 45, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
 
-  c.release();
+  c.reset();
   c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
 
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 800);
