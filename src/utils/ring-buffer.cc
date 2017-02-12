@@ -9,18 +9,16 @@
 
 namespace apollo {
 
-RingBuffer::RingBuffer() {
-  this->data = nullptr;
+RingBuffer::RingBuffer(int grow_increment) {
+  this->data = Allocator::New<uint8_t>(grow_increment);
+  this->capacity = grow_increment;
+  this->grow_increment = grow_increment;
   this->size = 0;
-  this->capacity = 0;
   this->begin = 0;
 }
 
 RingBuffer::~RingBuffer() {
-  if (this->data != nullptr) {
-    Allocator::Delete(this->data);
-    this->data = nullptr;
-  }
+  Allocator::Delete(this->data);
 }
 
 int RingBuffer::Read(uint8_t *buffer, int buffer_size) {
@@ -77,7 +75,7 @@ void RingBuffer::EnsureBufferSize(int new_size) {
     return;
   }
 
-  int new_capacity = ((new_size / kBufferGrowInvrement) + 1) * kBufferGrowInvrement;
+  int new_capacity = ((new_size / this->grow_increment) + 1) * this->grow_increment;
   uint8_t *new_data = Allocator::New<uint8_t>(new_capacity);
   this->Peek(new_data, this->size);
 

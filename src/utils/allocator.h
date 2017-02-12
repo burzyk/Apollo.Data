@@ -38,12 +38,11 @@ class Allocator {
     free(pointer);
   }
 
-  static void PrintUsage(Log *log) {
+  static void AssertAllDeleted() {
     auto scope = lock.LockWrite();
-    log->Info("Removing tracking allocator");
 
-    for (auto i : memory) {
-      log->Info("Memory was not deleted " + i.second);
+    if (memory.size() != 0) {
+      throw FatalException("Not all memory allocations have been deleted");
     }
   }
 

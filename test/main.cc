@@ -3,14 +3,16 @@
 #include <test/framework/test-context.h>
 #include <test/framework/test-runner.h>
 #include <src/utils/directory.h>
+#include <test/utils/ring-buffer-tests.h>
+#include <src/utils/allocator.h>
 #include "test/storage/common.h"
 #include "test/storage/unit-tests.h"
 #include "test/storage/performance-tests.h"
 #include "test/storage/concurrency-tests.h"
-#include "test/utils/rw-lock-test.h"
+#include "test/utils/rw-lock-tests.h"
 
 #define RUN_TESTS
-#define RUN_PERF_TESTS
+//#define RUN_PERF_TESTS
 
 #ifdef RUN_TESTS
 #define TEST(test_case) result = runner.RunTest("" #test_case "", test_case);
@@ -37,10 +39,10 @@ int main() {
   TEST(apollo::test::write_database_in_one_big_batch);
   TEST(apollo::test::write_database_in_multiple_small_batches);
   TEST(apollo::test::database_write_history);
-  TEST(apollo::test::database_write_close_and_write_more);
+//  TEST(apollo::test::database_write_close_and_write_more);
   TEST(apollo::test::database_multi_write_and_read_all);
   TEST(apollo::test::database_continuous_write);
-  TEST(apollo::test::database_continuous_write_with_pickup);
+//  TEST(apollo::test::database_continuous_write_with_pickup);
   TEST(apollo::test::database_write_batch_size_equal_to_page_capacity);
   TEST(apollo::test::database_write_batch_size_greater_than_page_capacity);
   TEST(apollo::test::database_read_inside_single_chunk);
@@ -49,19 +51,27 @@ int main() {
   TEST(apollo::test::database_read_chunk_edges);
   TEST(apollo::test::database_read_duplicated_values);
 
+  TEST(apollo::test::ring_buffer_create_delete_test);
+  TEST(apollo::test::ring_buffer_empty_read_test);
+  TEST(apollo::test::ring_buffer_empty_peek_test);
+  TEST(apollo::test::ring_buffer_simple_write_test);
+  TEST(apollo::test::ring_buffer_multiple_write_with_peerk_and_read_test);
+  TEST(apollo::test::ring_buffer_multiple_write_hitting_limit_test);
+  TEST(apollo::test::ring_buffer_multiple_write_and_read_loop_test);
+
   TEST(apollo::test::rwlock_double_read_lock_test);
   TEST(apollo::test::rwlock_upgrade_lock_test);
   TEST(apollo::test::rwlock_release_and_lock_again_test);
 
-//  TEST_PERF(apollo::test::database_performance_sequential_write_small);
-//  TEST_PERF(apollo::test::database_performance_sequential_write_medium);
-//  TEST_PERF(apollo::test::database_performance_sequential_write_large);
-//  TEST_PERF(apollo::test::database_performance_read_small);
-//  TEST_PERF(apollo::test::database_performance_read_medium);
-//  TEST_PERF(apollo::test::database_performance_read_large);
-//  TEST_PERF(apollo::test::database_performance_random_write_small);
-//  TEST_PERF(apollo::test::database_performance_random_write_medium);
-//  TEST_PERF(apollo::test::database_performance_random_write_large);
+  TEST_PERF(apollo::test::database_performance_sequential_write_small);
+  TEST_PERF(apollo::test::database_performance_sequential_write_medium);
+  TEST_PERF(apollo::test::database_performance_sequential_write_large);
+  TEST_PERF(apollo::test::database_performance_read_small);
+  TEST_PERF(apollo::test::database_performance_read_medium);
+  TEST_PERF(apollo::test::database_performance_read_large);
+  TEST_PERF(apollo::test::database_performance_random_write_small);
+  TEST_PERF(apollo::test::database_performance_random_write_medium);
+  TEST_PERF(apollo::test::database_performance_random_write_large);
 
   TEST_PERF(apollo::test::database_concurrent_access_small);
   TEST_PERF(apollo::test::database_concurrent_access_medium);
@@ -69,6 +79,8 @@ int main() {
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");
+
+  apollo::Allocator::AssertAllDeleted();
 
   return result;
 }

@@ -7,6 +7,7 @@
 
 #include <src/utils/rw-lock.h>
 #include <memory>
+
 namespace apollo {
 namespace test {
 

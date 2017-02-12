@@ -10,9 +10,7 @@ namespace apollo {
 
 class RingBuffer {
  public:
-  static const int kBufferGrowInvrement = 65536;
-
-  RingBuffer();
+  RingBuffer(int grow_increment);
   ~RingBuffer();
 
   int Read(uint8_t *buffer, int buffer_size);
@@ -26,6 +24,7 @@ class RingBuffer {
   int size;
   int capacity;
   int begin;
+  int grow_increment;
 };
 
 }
