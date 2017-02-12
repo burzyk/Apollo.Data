@@ -4,22 +4,87 @@
 
 #include <cstdlib>
 #include "ring-buffer.h"
+#include "allocator.h"
+#include "common.h"
 
 namespace apollo {
 
-RingBuffer::RingBuffer(int initial_size) {
+RingBuffer::RingBuffer() {
+  this->data = nullptr;
+  this->size = 0;
+  this->capacity = 0;
+  this->begin = 0;
 }
 
 RingBuffer::~RingBuffer() {
-
+  if (this->data != nullptr) {
+    Allocator::Delete(this->data);
+    this->data = nullptr;
+  }
 }
 
-void RingBuffer::Read(uint8_t *buffer, int size) {
+int RingBuffer::Read(uint8_t *buffer, int buffer_size) {
+  int read_size = this->Peek(buffer, buffer_size);
 
+  this->begin = (this->begin + read_size) % this->capacity;
+  this->size -= read_size;
+
+  return read_size;
 }
 
-void RingBuffer::Write(uint8_t *buffer, int size) {
+int RingBuffer::Peek(uint8_t *buffer, int buffer_size) {
+  int read_size = MIN(buffer_size, this->size);
+  int read_end = (this->begin + read_size) % this->capacity;
 
+  if (read_size == 0) {
+    return 0;
+  }
+
+  if (this->begin < read_end) {
+    memcpy(buffer, this->data + this->begin, read_size);
+  } else {
+    int read_first = this->capacity - this->begin;
+    memcpy(buffer, this->data + this->begin, read_first);
+    memcpy(buffer + read_first, this->data, read_end);
+  }
+
+  return read_size;
+}
+
+void RingBuffer::Write(uint8_t *buffer, int buffer_size) {
+  this->EnsureBufferSize(this->size + buffer_size);
+
+  int data_end = (this->begin + this->size) % this->capacity;
+  int write_end = (data_end + buffer_size) % this->capacity;
+
+  if (data_end < write_end) {
+    memcpy(this->data + data_end, buffer, buffer_size);
+  } else {
+    int write_first = this->capacity - data_end;
+    memcpy(this->data + data_end, buffer, write_first);
+    memcpy(this->data, buffer + write_first, write_end);
+  }
+
+  this->size += buffer_size;
+}
+
+int RingBuffer::GetSize() {
+  return this->size;
+}
+
+void RingBuffer::EnsureBufferSize(int new_size) {
+  if (this->capacity >= new_size) {
+    return;
+  }
+
+  int new_capacity = ((new_size / kBufferGrowInvrement) + 1) * kBufferGrowInvrement;
+  uint8_t *new_data = Allocator::New<uint8_t>(new_capacity);
+  this->Peek(new_data, this->size);
+
+  Allocator::Delete(this->data);
+  this->data = new_data;
+  this->capacity = new_capacity;
+  this->begin = 0;
 }
 
 }
