@@ -9,13 +9,13 @@
 
 apollo::Log *g_log;
 apollo::Server *g_server;
+apollo::PacketLogger *g_packet_logger;
 
 void MainRoutine(void *data) {
-  std::vector<apollo::ClientHandler *> handlers{
-      new apollo::PacketLogger(g_log)
-  };
+  g_packet_logger = new apollo::PacketLogger(g_log);
+  g_server = new apollo::UvServer(8099, 10, g_log);
 
-  g_server = new apollo::UvServer(8099, 10, handlers, g_log);
+  g_server->AddClientConnectedListener(g_packet_logger);
 
   g_server->Listen();
 }
@@ -34,8 +34,9 @@ int main() {
   main_thread.Join();
 
   g_log->Info("Exit");
-  apollo::Allocator::PrintUsage(g_log);
 
   delete g_server;
   delete g_log;
+
+  apollo::Allocator::AssertAllDeleted();
 }

@@ -5,18 +5,17 @@
 #include <cstdlib>
 #include <uv.h>
 #include "uv-server.h"
+#include "uv-common.h"
 #include <src/fatal-exception.h>
 #include <src/utils/common.h>
 #include <src/utils/allocator.h>
 
 namespace apollo {
 
-UvServer::UvServer(int port, int backlog, std::vector<ClientHandler *> handlers, Log *log) {
+UvServer::UvServer(int port, int backlog, Log *log) {
   this->port = port;
   this->backlog = backlog;
   this->log = log;
-  this->handlers = handlers;
-  this->current_client_id = 0;
   this->is_running = false;
 
   uv_loop_init(&this->event_loop);
@@ -25,12 +24,6 @@ UvServer::UvServer(int port, int backlog, std::vector<ClientHandler *> handlers,
 
   this->server.data = this;
   this->server_watcher.data = this;
-}
-
-UvServer::~UvServer() {
-  if (this->is_running) {
-    this->Close();
-  }
 }
 
 void UvServer::Listen() {
@@ -49,6 +42,7 @@ void UvServer::Listen() {
   uv_run(&this->event_loop, UV_RUN_DEFAULT);
   uv_loop_close(&this->event_loop);
 
+  this->CleanDisconnectedClients();
   this->log->Info("Server loop exited");
 }
 
@@ -60,37 +54,10 @@ void UvServer::Close() {
   uv_async_init(&this->event_loop, shutdown, OnServerClose);
   shutdown->data = this;
   uv_async_send(shutdown);
-  uv_idle_start(&this->server_watcher, OnServerShutdownWatcher);
 }
 
-void UvServer::OnAlloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
-  buf->base = Allocator::New<char>(suggested_size);
-  buf->len = suggested_size;
-}
-
-void UvServer::OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
-  UvServer *_this = (UvServer *)client->data;
-
-  if (!_this->is_running) {
-    return;
-  }
-
-  if (_this->clients.find((uv_tcp_t *)client) == _this->clients.end()) {
-    throw FatalException("Client has been removed");
-  }
-
-  client_info_t *info = _this->clients[(uv_tcp_t *)client];
-
-  if (nread < 0) {
-    _this->log->Debug("Client disconnected: " + std::to_string(info->id));
-    _this->RemoveClient((uv_tcp_t *)client);
-  } else if (nread > 0) {
-    _this->ReadClientData(info, nread, buf);
-  }
-
-  if (buf->base != nullptr && buf->len != 0) {
-    Allocator::Delete(buf->base);
-  }
+void UvServer::AddClientConnectedListener(Server::ClientConnectedListener *listener) {
+  this->client_connected_listeners.push_back(listener);
 }
 
 void UvServer::OnNewConnection(uv_stream_t *server, int status) {
@@ -105,44 +72,27 @@ void UvServer::OnNewConnection(uv_stream_t *server, int status) {
     return;
   }
 
-  _this->log->Debug("Client connected");
-  uv_tcp_t *client = Allocator::New<uv_tcp_t>();
-  uv_tcp_init(&_this->event_loop, client);
+  _this->CleanDisconnectedClients();
+  UvServerClient *client = UvServerClient::Accept(server, &_this->event_loop);
 
-  if (uv_accept(server, (uv_stream_t *)client) == 0) {
-    _this->RegisterClient(client);
-    uv_read_start((uv_stream_t *)client, OnAlloc, OnDataRead);
-  } else {
-    uv_close((uv_handle_t *)client, OnHandleClose);
+  if (client != nullptr) {
+    _this->clients.push_back(client);
+
+    for (auto listener: _this->client_connected_listeners) {
+      listener->OnClientConnected(_this, client);
+    }
   }
-}
-
-void UvServer::OnHandleClose(uv_handle_t *handle) {
-  Allocator::Delete(handle);
-}
-
-void UvServer::OnClientShutdown(uv_shutdown_t *req, int status) {
-  UvServer *_this = (UvServer *)req->data;
-  uv_tcp_t *client = (uv_tcp_t *)req->handle;
-
-  client_info_t *info = _this->clients[client];
-  _this->clients.erase(client);
-
-  Allocator::Delete(info->buffer);
-  Allocator::Delete(info);
-
-  uv_close((uv_handle_t *)client, OnHandleClose);
-  Allocator::Delete(req);
 }
 
 void UvServer::OnServerClose(uv_async_t *handle) {
   UvServer *_this = (UvServer *)handle->data;
 
   for (auto client: _this->clients) {
-    _this->RemoveClient(client.first);
+    client->Close();
   }
 
-  uv_close((uv_handle_t *)handle, OnHandleClose);
+  uv_close((uv_handle_t *)handle, UvCommon::OnHandleClose);
+  uv_idle_start(&_this->server_watcher, OnServerShutdownWatcher);
 }
 
 void UvServer::OnServerShutdownWatcher(uv_idle_t *handle) {
@@ -156,69 +106,12 @@ void UvServer::OnServerShutdownWatcher(uv_idle_t *handle) {
   }
 }
 
-void UvServer::RegisterClient(uv_tcp_t *client) {
-  client->data = this;
-
-  client_info_t *info = Allocator::New<client_info_t>();
-  info->buffer = Allocator::New<uint8_t>(A_SERVER_BUFFER_SIZE);
-  info->buffer_size = A_SERVER_BUFFER_SIZE;
-  info->buffer_position = 0;
-  info->id = this->current_client_id++;
-
-  this->clients[client] = info;
-}
-
-void UvServer::RemoveClient(uv_tcp_t *client) {
-  if (this->clients.find(client) == this->clients.end()) {
-    throw FatalException("Trying to free client that is not registered");
-  }
-
-  uv_shutdown_t *shutdown = Allocator::New<uv_shutdown_t>();
-  shutdown->data = this;
-  uv_shutdown(shutdown, (uv_stream_t *)client, OnClientShutdown);
-}
-
-void UvServer::HandlePacket(data_packet_t *packet) {
-  for (auto handler: this->handlers) {
-    // TODO: Responder
-    handler->ProcessPacket(packet, nullptr);
-  }
-}
-
-void UvServer::ReadClientData(client_info_t *info, ssize_t nread, const uv_buf_t *buf) {
-  while (nread + info->buffer_position > info->buffer_size) {
-    info->buffer = (uint8_t *)realloc(info->buffer, info->buffer_size + A_SERVER_BUFFER_SIZE);
-    info->buffer_size += A_SERVER_BUFFER_SIZE;
-  }
-
-  memcpy(info->buffer + info->buffer_position, buf->base, nread);
-  info->buffer_position += nread;
-
-  int offset = 0;
-  int total_processed = 0;
-
-  while (offset + sizeof(PacketType) <= info->buffer_position) {
-    data_packet_t *packet = (data_packet_t *)(info->buffer + offset);
-
-    if (offset + packet->total_length <= info->buffer_position) {
-      this->HandlePacket(packet);
-      total_processed += packet->total_length;
+void UvServer::CleanDisconnectedClients() {
+  for (auto client: this->clients) {
+    if (!client->IsRunning()) {
+      delete client;
+      this->clients.remove(client);
     }
-
-    offset += packet->total_length;
-  }
-
-  if (total_processed > 0) {
-    size_t remaining = info->buffer_position - total_processed;
-    size_t new_size = remaining + A_SERVER_BUFFER_SIZE;
-    uint8_t *new_buffer = Allocator::New<uint8_t>(new_size);
-
-    memcpy(new_buffer, info->buffer + total_processed, remaining);
-    Allocator::Delete(info->buffer);
-
-    info->buffer = new_buffer;
-    info->buffer_size = new_size;
-    info->buffer_position = 0;
   }
 }
 
