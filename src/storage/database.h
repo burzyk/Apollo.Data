@@ -9,7 +9,7 @@
 #include <list>
 #include <map>
 #include <src/utils/rw-lock.h>
-#include <src/utils/log.h>
+#include <src/log.h>
 #include "data-point-reader.h"
 #include "data-chunk.h"
 #include "data-series.h"

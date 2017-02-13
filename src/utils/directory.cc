@@ -7,7 +7,7 @@
 #include <sys/dirent.h>
 #include <dirent.h>
 #include "directory.h"
-#include "log.h"
+#include "src/log.h"
 
 namespace shakadb {
 

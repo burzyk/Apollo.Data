@@ -5,7 +5,7 @@
 #ifndef SHAKADB_STORAGE_COMMON_H
 #define SHAKADB_STORAGE_COMMON_H
 
-#include <src/utils/log.h>
+#include <src/log.h>
 
 namespace shakadb {
 namespace test {

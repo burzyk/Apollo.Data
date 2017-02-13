@@ -7,7 +7,7 @@
 
 #include <functional>
 #include <pthread.h>
-#include "log.h"
+#include "src/log.h"
 
 namespace shakadb {
 

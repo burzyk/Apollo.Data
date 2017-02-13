@@ -4,7 +4,7 @@
 
 #include <cmath>
 #include <src/utils/common.h>
-#include <src/utils/log.h>
+#include <src/log.h>
 #include <cstdlib>
 #include <src/utils/file.h>
 #include <src/fatal-exception.h>

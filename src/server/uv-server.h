@@ -6,7 +6,7 @@
 #define SHAKADB_STORAGE_UVSERVER_H
 
 #include <uv.h>
-#include <src/utils/log.h>
+#include <src/log.h>
 #include <list>
 #include <vector>
 #include <map>

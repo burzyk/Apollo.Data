@@ -8,7 +8,7 @@
 #include <src/storage/database.h>
 #include <memory>
 #include <test/framework/assert.h>
-#include <src/utils/file-log.h>
+#include <src/file-log.h>
 #include <src/utils/stopwatch.h>
 #include <cstdlib>
 #include <chrono>

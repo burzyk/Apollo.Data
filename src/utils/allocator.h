@@ -9,7 +9,7 @@
 #include <map>
 #include <cstdlib>
 #include <src/fatal-exception.h>
-#include "log.h"
+#include "src/log.h"
 #include "rw-lock-scope.h"
 #include "rw-lock.h"
 

@@ -5,7 +5,7 @@
 #ifndef SHAKADB_STORAGE_PACKETLOGGER_H
 #define SHAKADB_STORAGE_PACKETLOGGER_H
 
-#include <src/utils/log.h>
+#include <src/log.h>
 #include <src/server/server.h>
 
 namespace shakadb {

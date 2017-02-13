@@ -6,6 +6,7 @@
 #define SHAKADB_STORAGE_FILELOG_H
 
 #include "log.h"
+#include "src/utils/rw-lock.h"
 
 namespace shakadb {
 
@@ -20,6 +21,7 @@ class FileLog : public Log {
  private:
   void ToLog(std::string level, std::string message);
 
+  RwLock lock;
   std::string log_file_name;
   FILE *output;
 };

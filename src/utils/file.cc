@@ -4,7 +4,7 @@
 
 #include <src/fatal-exception.h>
 #include "file.h"
-#include "log.h"
+#include "src/log.h"
 
 namespace shakadb {
 

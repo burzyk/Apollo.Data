@@ -32,6 +32,8 @@ void FileLog::Debug(std::string message) {
 }
 
 void FileLog::ToLog(std::string level, std::string message) {
+  auto scope = this->lock.LockWrite();
+
   if (this->output == nullptr) {
     this->output = this->log_file_name == ""
                    ? stdout

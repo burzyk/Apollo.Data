@@ -6,7 +6,7 @@
 #define SHAKADB_STORAGE_SERVER_H
 
 #include <vector>
-#include <src/utils/log.h>
+#include <src/log.h>
 #include <list>
 #include "server-client.h"
 
