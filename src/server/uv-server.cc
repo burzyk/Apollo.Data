@@ -20,10 +20,8 @@ UvServer::UvServer(int port, int backlog, Log *log) {
 
   uv_loop_init(&this->event_loop);
   uv_tcp_init(&this->event_loop, &this->server);
-  uv_idle_init(&this->event_loop, &this->server_watcher);
 
   this->server.data = this;
-  this->server_watcher.data = this;
 }
 
 void UvServer::Listen() {
@@ -92,25 +90,16 @@ void UvServer::OnServerClose(uv_async_t *handle) {
   }
 
   uv_close((uv_handle_t *)handle, UvCommon::OnHandleClose);
-  uv_idle_start(&_this->server_watcher, OnServerShutdownWatcher);
-}
-
-void UvServer::OnServerShutdownWatcher(uv_idle_t *handle) {
-  UvServer *_this = (UvServer *)handle->data;
-
-  if (!_this->is_running && _this->clients.size() == 0) {
-    uv_close((uv_handle_t *)&_this->server, nullptr);
-    uv_close((uv_handle_t *)&_this->server_watcher, nullptr);
-
-    _this->log->Info("Server socket closed");
-  }
+  uv_close((uv_handle_t *)&_this->server, nullptr);
 }
 
 void UvServer::CleanDisconnectedClients() {
-  for (auto client: this->clients) {
-    if (!client->IsRunning()) {
-      delete client;
-      this->clients.remove(client);
+  for (auto client = this->clients.begin(); client != this->clients.end();) {
+    if ((*client)->IsRunning()) {
+      client++;
+    } else {
+      delete *client;
+      client = this->clients.erase(client);
     }
   }
 }

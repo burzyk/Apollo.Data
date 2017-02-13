@@ -25,7 +25,6 @@ class UvServer : public Server {
  private:
   static void OnNewConnection(uv_stream_t *server, int status);
   static void OnServerClose(uv_async_t *handle);
-  static void OnServerShutdownWatcher(uv_idle_t *handle);
 
   void CleanDisconnectedClients();
 
@@ -38,7 +37,6 @@ class UvServer : public Server {
 
   uv_loop_t event_loop;
   uv_tcp_t server;
-  uv_idle_t server_watcher;
   Log *log;
 };
 
