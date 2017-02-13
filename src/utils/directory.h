@@ -2,13 +2,13 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_DIRECTORY_H
-#define APOLLO_STORAGE_DIRECTORY_H
+#ifndef SHAKADB_STORAGE_DIRECTORY_H
+#define SHAKADB_STORAGE_DIRECTORY_H
 
 #include <string>
 #include <list>
 
-namespace apollo {
+namespace shakadb {
 
 class Directory {
  public:
@@ -21,4 +21,4 @@ class Directory {
 
 }
 
-#endif //APOLLO_STORAGE_DIRECTORY_H
+#endif //SHAKADB_STORAGE_DIRECTORY_H

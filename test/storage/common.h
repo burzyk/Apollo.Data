@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 29/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_STORAGE_COMMON_H
-#define APOLLO_STORAGE_STORAGE_COMMON_H
+#ifndef SHAKADB_STORAGE_STORAGE_COMMON_H
+#define SHAKADB_STORAGE_STORAGE_COMMON_H
 
 #include <src/storage/database.h>
 #include <memory>
@@ -16,7 +16,7 @@
 #include <src/fatal-exception.h>
 #include <test/common.h>
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 class DatabaseContext {
@@ -51,7 +51,7 @@ void write_to_database(Database *db, std::string series_name, int batches, int b
     throw FatalException("Time cannot be 0");
   }
 
-  apollo::data_point_t *points = new apollo::data_point_t[batch_size];
+  shakadb::data_point_t *points = new shakadb::data_point_t[batch_size];
 
   for (int i = 0; i < batches; i++) {
     for (int j = 0; j < batch_size; j++) {
@@ -88,4 +88,4 @@ void validate_read(Database *db, std::string series_name, int expected_count, ti
 }
 }
 
-#endif //APOLLO_STORAGE_COMMON_H
+#endif //SHAKADB_STORAGE_COMMON_H

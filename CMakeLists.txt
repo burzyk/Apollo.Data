@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(apollo-storage)
+project(shakadb)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -17,12 +17,12 @@ set(SRC_UTILS src/utils/log.h src/utils/common.h src/utils/file.cc src/utils/fil
 
 set(SRC_TEST test/main.cc test/storage/unit-tests.h test/framework/test-context.cc test/framework/test-context.h test/framework/test-runner.cc test/framework/test-runner.h test/framework/assert.cc test/framework/assert.h test/framework/validation-exception.cc test/framework/validation-exception.h test/storage/common.h test/storage/performance-tests.h test/storage/concurrency-tests.h test/utils/rw-lock-tests.h test/server/server-tests.h test/common.h test/utils/ring-buffer-tests.h)
 
-add_executable(apollo.client ${SRC_CLIENT} ${SRC_UTILS} ${SRC_DOMAIN} src/client/main.cc)
-add_executable(apollo.data ${SRC_DOMAIN} ${SRC_SERVER} ${SRC_UTILS} ${SRC_STORAGE} src/main.cc)
-add_executable(apollo.test ${SRC_TEST} ${SRC_DOMAIN} ${SRC_SERVER} ${SRC_UTILS} ${SRC_STORAGE} test/main.cc)
+add_executable(shakadb.client ${SRC_CLIENT} ${SRC_UTILS} ${SRC_DOMAIN} src/client/main.cc)
+add_executable(shakadb ${SRC_DOMAIN} ${SRC_SERVER} ${SRC_UTILS} ${SRC_STORAGE} src/main.cc)
+add_executable(shakadb.test ${SRC_TEST} ${SRC_DOMAIN} ${SRC_SERVER} ${SRC_UTILS} ${SRC_STORAGE} test/main.cc)
 
-target_link_libraries(apollo.data pthread)
-target_link_libraries(apollo.test pthread)
+target_link_libraries(shakadb pthread)
+target_link_libraries(shakadb.test pthread)
 
-target_link_libraries(apollo.data uv)
-target_link_libraries(apollo.test uv)
+target_link_libraries(shakadb uv)
+target_link_libraries(shakadb.test uv)

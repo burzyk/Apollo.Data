@@ -2,13 +2,13 @@
 // Created by Pawel Burzynski on 12/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_SERVERCLIENT_H
-#define APOLLO_STORAGE_SERVERCLIENT_H
+#ifndef SHAKADB_STORAGE_SERVERCLIENT_H
+#define SHAKADB_STORAGE_SERVERCLIENT_H
 
 #include <cstdint>
 #include "data-packet.h"
 
-namespace apollo {
+namespace shakadb {
 
 class ServerClient {
  public:
@@ -32,4 +32,4 @@ class ServerClient {
 
 }
 
-#endif //APOLLO_STORAGE_SERVERCLIENT_H
+#endif //SHAKADB_STORAGE_SERVERCLIENT_H

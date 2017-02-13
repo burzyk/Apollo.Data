@@ -4,7 +4,7 @@
 
 #include "allocator.h"
 
-namespace apollo {
+namespace shakadb {
 
 RwLock Allocator::lock;
 std::map<void *, std::string> Allocator::memory;

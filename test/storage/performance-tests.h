@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 29/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_PERFORMANCE_TESTS_H
-#define APOLLO_STORAGE_PERFORMANCE_TESTS_H
+#ifndef SHAKADB_STORAGE_PERFORMANCE_TESTS_H
+#define SHAKADB_STORAGE_PERFORMANCE_TESTS_H
 
 #include <src/storage/database.h>
 #include <memory>
@@ -15,7 +15,7 @@
 #include <thread>
 #include "common.h"
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 Stopwatch database_performance_sequential_write(TestContext ctx, int batches, int batch_size) {
@@ -108,4 +108,4 @@ Stopwatch database_performance_random_write_large(TestContext ctx) {
 }
 }
 
-#endif //APOLLO_STORAGE_PERFORMANCE_TESTS_H
+#endif //SHAKADB_STORAGE_PERFORMANCE_TESTS_H

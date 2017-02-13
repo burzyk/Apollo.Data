@@ -5,7 +5,7 @@
 #include <cstdint>
 #include "stopwatch.h"
 
-namespace apollo {
+namespace shakadb {
 
 void Stopwatch::Start() {
   clock_gettime(CLOCK_REALTIME, &this->start);

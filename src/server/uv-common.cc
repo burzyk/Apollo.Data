@@ -6,7 +6,7 @@
 #include <src/utils/allocator.h>
 #include "uv-common.h"
 
-namespace apollo {
+namespace shakadb {
 
 void UvCommon::OnAlloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
   buf->base = Allocator::New<char>(suggested_size);

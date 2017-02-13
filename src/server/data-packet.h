@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 01/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_DATA_PACKET_H
-#define APOLLO_STORAGE_DATA_PACKET_H
+#ifndef SHAKADB_STORAGE_DATA_PACKET_H
+#define SHAKADB_STORAGE_DATA_PACKET_H
 
 #include <cstdint>
 
-namespace apollo {
+namespace shakadb {
 
 enum PacketType {
   kPing = 1
@@ -21,4 +21,4 @@ struct data_packet_t {
 
 }
 
-#endif //APOLLO_STORAGE_DATA_PACKET_H
+#endif //SHAKADB_STORAGE_DATA_PACKET_H

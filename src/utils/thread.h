@@ -2,14 +2,14 @@
 // Created by Pawel Burzynski on 03/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_THREAD_H
-#define APOLLO_STORAGE_THREAD_H
+#ifndef SHAKADB_STORAGE_THREAD_H
+#define SHAKADB_STORAGE_THREAD_H
 
 #include <functional>
 #include <pthread.h>
 #include "log.h"
 
-namespace apollo {
+namespace shakadb {
 
 class Thread {
  public:
@@ -28,4 +28,4 @@ class Thread {
 
 }
 
-#endif //APOLLO_STORAGE_THREAD_H
+#endif //SHAKADB_STORAGE_THREAD_H

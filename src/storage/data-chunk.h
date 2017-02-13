@@ -2,14 +2,14 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_DATACHUNK_H
-#define APOLLO_STORAGE_DATACHUNK_H
+#ifndef SHAKADB_STORAGE_DATACHUNK_H
+#define SHAKADB_STORAGE_DATACHUNK_H
 
 #include <string>
 #include <src/data-point.h>
 #include <src/utils/rw-lock.h>
 
-namespace apollo {
+namespace shakadb {
 
 class DataChunk {
  public:
@@ -42,4 +42,4 @@ class DataChunk {
 
 }
 
-#endif //APOLLO_STORAGE_DATACHUNK_H
+#endif //SHAKADB_STORAGE_DATACHUNK_H

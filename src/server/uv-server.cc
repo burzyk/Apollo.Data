@@ -10,7 +10,7 @@
 #include <src/utils/common.h>
 #include <src/utils/allocator.h>
 
-namespace apollo {
+namespace shakadb {
 
 UvServer::UvServer(int port, int backlog, Log *log) {
   this->port = port;

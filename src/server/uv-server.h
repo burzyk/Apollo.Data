@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 01/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_UVSERVER_H
-#define APOLLO_STORAGE_UVSERVER_H
+#ifndef SHAKADB_STORAGE_UVSERVER_H
+#define SHAKADB_STORAGE_UVSERVER_H
 
 #include <uv.h>
 #include <src/utils/log.h>
@@ -13,7 +13,7 @@
 #include "server.h"
 #include "uv-server-client.h"
 
-namespace apollo {
+namespace shakadb {
 
 class UvServer : public Server {
  public:
@@ -42,4 +42,4 @@ class UvServer : public Server {
 
 }
 
-#endif //APOLLO_STORAGE_UVSERVER_H
+#endif //SHAKADB_STORAGE_UVSERVER_H

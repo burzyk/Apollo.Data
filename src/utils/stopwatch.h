@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_STOPWATCH_H
-#define APOLLO_STORAGE_STOPWATCH_H
+#ifndef SHAKADB_STORAGE_STOPWATCH_H
+#define SHAKADB_STORAGE_STOPWATCH_H
 
 #include <time.h>
 
-namespace apollo {
+namespace shakadb {
 
 class Stopwatch {
  public:
@@ -22,4 +22,4 @@ class Stopwatch {
 
 }
 
-#endif //APOLLO_STORAGE_STOPWATCH_H
+#endif //SHAKADB_STORAGE_STOPWATCH_H

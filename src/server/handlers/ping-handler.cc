@@ -4,7 +4,7 @@
 
 #include "ping-handler.h"
 
-namespace apollo {
+namespace shakadb {
 
 void PingHandler::OnClientConnected(Server *server, ServerClient *client) {
   client->AddReceivedListener(this);

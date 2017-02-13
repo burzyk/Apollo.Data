@@ -7,7 +7,7 @@
 #include <src/utils/allocator.h>
 #include "data-point-reader.h"
 
-namespace apollo {
+namespace shakadb {
 
 DataPointReader::DataPointReader(data_point_t *snapshot, int count) {
   this->snapshot = snapshot;

@@ -5,7 +5,7 @@
 #include <cstdio>
 #include "rw-lock.h"
 
-namespace apollo {
+namespace shakadb {
 
 RwLock::RwLock() {
   this->rwlock = PTHREAD_RWLOCK_INITIALIZER;

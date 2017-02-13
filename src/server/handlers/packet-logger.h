@@ -2,13 +2,13 @@
 // Created by Pawel Burzynski on 03/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_PACKETLOGGER_H
-#define APOLLO_STORAGE_PACKETLOGGER_H
+#ifndef SHAKADB_STORAGE_PACKETLOGGER_H
+#define SHAKADB_STORAGE_PACKETLOGGER_H
 
 #include <src/utils/log.h>
 #include <src/server/server.h>
 
-namespace apollo {
+namespace shakadb {
 
 class PacketLogger : public Server::ClientConnectedListener, ServerClient::ReceiveListener {
  public:
@@ -22,4 +22,4 @@ class PacketLogger : public Server::ClientConnectedListener, ServerClient::Recei
 
 }
 
-#endif //APOLLO_STORAGE_PACKETLOGGER_H
+#endif //SHAKADB_STORAGE_PACKETLOGGER_H

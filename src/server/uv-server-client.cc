@@ -6,7 +6,7 @@
 #include "uv-server-client.h"
 #include "uv-common.h"
 
-namespace apollo {
+namespace shakadb {
 
 UvServerClient::UvServerClient(uv_stream_t *client_connection)
     : receive_buffer(65536) {

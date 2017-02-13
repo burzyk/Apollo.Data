@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_DATABASE_H
-#define APOLLO_STORAGE_DATABASE_H
+#ifndef SHAKADB_STORAGE_DATABASE_H
+#define SHAKADB_STORAGE_DATABASE_H
 
 #include <string>
 #include <list>
@@ -14,7 +14,7 @@
 #include "data-chunk.h"
 #include "data-series.h"
 
-namespace apollo {
+namespace shakadb {
 
 class Database {
  public:
@@ -39,4 +39,4 @@ class Database {
 
 }
 
-#endif //APOLLO_STORAGE_DATABASE_H
+#endif //SHAKADB_STORAGE_DATABASE_H

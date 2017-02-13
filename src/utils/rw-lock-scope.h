@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_RWLOCKSCOPE_H
-#define APOLLO_STORAGE_RWLOCKSCOPE_H
+#ifndef SHAKADB_STORAGE_RWLOCKSCOPE_H
+#define SHAKADB_STORAGE_RWLOCKSCOPE_H
 
 #include <pthread.h>
 
-namespace apollo {
+namespace shakadb {
 
 class RwLockScope {
  public:
@@ -21,4 +21,4 @@ class RwLockScope {
 
 }
 
-#endif //APOLLO_STORAGE_RWLOCKSCOPE_H
+#endif //SHAKADB_STORAGE_RWLOCKSCOPE_H

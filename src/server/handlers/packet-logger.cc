@@ -4,7 +4,7 @@
 
 #include "packet-logger.h"
 
-namespace apollo {
+namespace shakadb {
 
 PacketLogger::PacketLogger(Log *log) {
   this->log = log;

@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 11/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_ALLOCATOR_H
-#define APOLLO_STORAGE_ALLOCATOR_H
+#ifndef SHAKADB_STORAGE_ALLOCATOR_H
+#define SHAKADB_STORAGE_ALLOCATOR_H
 
 #include <string>
 #include <map>
@@ -13,7 +13,7 @@
 #include "rw-lock-scope.h"
 #include "rw-lock.h"
 
-namespace apollo {
+namespace shakadb {
 
 class Allocator {
  public:
@@ -53,4 +53,4 @@ class Allocator {
 
 }
 
-#endif //APOLLO_STORAGE_ALLOCATOR_H
+#endif //SHAKADB_STORAGE_ALLOCATOR_H

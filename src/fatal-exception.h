@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_FATALEXCEPTION_H
-#define APOLLO_STORAGE_FATALEXCEPTION_H
+#ifndef SHAKADB_STORAGE_FATALEXCEPTION_H
+#define SHAKADB_STORAGE_FATALEXCEPTION_H
 
 #include <exception>
 #include <string>
-namespace apollo {
+namespace shakadb {
 
 class FatalException : public std::exception {
  public:
@@ -20,4 +20,4 @@ class FatalException : public std::exception {
 
 }
 
-#endif //APOLLO_STORAGE_FATALEXCEPTION_H
+#endif //SHAKADB_STORAGE_FATALEXCEPTION_H

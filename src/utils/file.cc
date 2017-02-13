@@ -6,7 +6,7 @@
 #include "file.h"
 #include "log.h"
 
-namespace apollo {
+namespace shakadb {
 
 File::File(std::string file_name) {
   this->f = fopen(file_name.c_str(), "rb+");

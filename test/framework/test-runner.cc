@@ -10,7 +10,7 @@
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 TestRunner::TestRunner(std::string directory) {

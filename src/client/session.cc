@@ -11,7 +11,7 @@
 #include <src/utils/allocator.h>
 #include "session.h"
 
-namespace apollo {
+namespace shakadb {
 
 Session::Session(int sock) {
   this->sock = sock;

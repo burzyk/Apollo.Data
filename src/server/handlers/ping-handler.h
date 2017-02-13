@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 13/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_PINGHANDLER_H
-#define APOLLO_STORAGE_PINGHANDLER_H
+#ifndef SHAKADB_STORAGE_PINGHANDLER_H
+#define SHAKADB_STORAGE_PINGHANDLER_H
 
 #include <src/server/server.h>
 
-namespace apollo {
+namespace shakadb {
 
 class PingHandler : public Server::ClientConnectedListener, ServerClient::ReceiveListener {
  public:
@@ -17,4 +17,4 @@ class PingHandler : public Server::ClientConnectedListener, ServerClient::Receiv
 
 }
 
-#endif //APOLLO_STORAGE_PINGHANDLER_H
+#endif //SHAKADB_STORAGE_PINGHANDLER_H

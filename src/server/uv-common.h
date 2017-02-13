@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 12/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_UVCOMMON_H
-#define APOLLO_STORAGE_UVCOMMON_H
+#ifndef SHAKADB_STORAGE_UVCOMMON_H
+#define SHAKADB_STORAGE_UVCOMMON_H
 
 #include <uv.h>
 
-namespace apollo {
+namespace shakadb {
 
 class UvCommon {
  public:
@@ -17,4 +17,4 @@ class UvCommon {
 
 }
 
-#endif //APOLLO_STORAGE_UVCOMMON_H
+#endif //SHAKADB_STORAGE_UVCOMMON_H

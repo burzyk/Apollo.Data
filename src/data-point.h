@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_DATA_POINT_H
-#define APOLLO_STORAGE_DATA_POINT_H
+#ifndef SHAKADB_STORAGE_DATA_POINT_H
+#define SHAKADB_STORAGE_DATA_POINT_H
 
 #include <cstdint>
 
-namespace apollo {
+namespace shakadb {
 
 #define A_MAX_TIMESTAMP     UINT64_MAX
 #define A_MIN_TIMESTAMP     0
@@ -21,4 +21,4 @@ struct data_point_t {
 
 }
 
-#endif //APOLLO_STORAGE_DATA_POINT_H
+#endif //SHAKADB_STORAGE_DATA_POINT_H

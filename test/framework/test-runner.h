@@ -2,13 +2,13 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_TEST_RUNNER_H
-#define APOLLO_STORAGE_TEST_RUNNER_H
+#ifndef SHAKADB_STORAGE_TEST_RUNNER_H
+#define SHAKADB_STORAGE_TEST_RUNNER_H
 
 #include <src/utils/stopwatch.h>
 #include "test-context.h"
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 class TestRunner {
@@ -28,4 +28,4 @@ class TestRunner {
 }
 }
 
-#endif //APOLLO_STORAGE_TESTRUNNER_H
+#endif //SHAKADB_STORAGE_TESTRUNNER_H

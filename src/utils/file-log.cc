@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include "file-log.h"
 
-namespace apollo {
+namespace shakadb {
 
 FileLog::FileLog(std::string log_file_name) {
   this->log_file_name = log_file_name;

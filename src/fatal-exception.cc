@@ -4,7 +4,7 @@
 
 #include "fatal-exception.h"
 
-namespace apollo {
+namespace shakadb {
 
 FatalException::FatalException(const char *message) {
   this->message = message;

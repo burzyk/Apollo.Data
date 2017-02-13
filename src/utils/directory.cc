@@ -9,7 +9,7 @@
 #include "directory.h"
 #include "log.h"
 
-namespace apollo {
+namespace shakadb {
 
 std::list<std::string> Directory::GetDirectories(std::string path) {
   return GetDiskItems(path, DT_DIR);

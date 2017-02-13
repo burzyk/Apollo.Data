@@ -5,7 +5,7 @@
 #include <src/fatal-exception.h>
 #include "thread.h"
 
-namespace apollo {
+namespace shakadb {
 
 Thread::Thread(std::function<void(void *)> thread_routine, Log *log) {
   this->thread = nullptr;

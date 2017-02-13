@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 18/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_FILE_H
-#define APOLLO_STORAGE_FILE_H
+#ifndef SHAKADB_STORAGE_FILE_H
+#define SHAKADB_STORAGE_FILE_H
 
 #include <string>
 
-namespace apollo {
+namespace shakadb {
 
 class File {
  public:
@@ -25,4 +25,4 @@ class File {
 
 }
 
-#endif //APOLLO_STORAGE_FILE_H
+#endif //SHAKADB_STORAGE_FILE_H

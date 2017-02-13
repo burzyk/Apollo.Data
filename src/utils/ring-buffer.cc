@@ -7,7 +7,7 @@
 #include "allocator.h"
 #include "common.h"
 
-namespace apollo {
+namespace shakadb {
 
 RingBuffer::RingBuffer(int grow_increment) {
   this->data = Allocator::New<uint8_t>(grow_increment);

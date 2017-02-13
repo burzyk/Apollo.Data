@@ -2,15 +2,15 @@
 // Created by Pawel Burzynski on 01/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_SERVER_H
-#define APOLLO_STORAGE_SERVER_H
+#ifndef SHAKADB_STORAGE_SERVER_H
+#define SHAKADB_STORAGE_SERVER_H
 
 #include <vector>
 #include <src/utils/log.h>
 #include <list>
 #include "server-client.h"
 
-namespace apollo {
+namespace shakadb {
 
 class Server {
  public:
@@ -27,4 +27,4 @@ class Server {
 
 }
 
-#endif //APOLLO_STORAGE_SERVER_H
+#endif //SHAKADB_STORAGE_SERVER_H

@@ -5,7 +5,7 @@
 #include "assert.h"
 #include "validation-exception.h"
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 void Assert::IsTrue(bool condition) {

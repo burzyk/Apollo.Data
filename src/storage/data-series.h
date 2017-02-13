@@ -2,14 +2,14 @@
 // Created by Pawel Burzynski on 28/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_DATASERIES_H
-#define APOLLO_STORAGE_DATASERIES_H
+#ifndef SHAKADB_STORAGE_DATASERIES_H
+#define SHAKADB_STORAGE_DATASERIES_H
 
 #include <src/utils/log.h>
 #include <src/utils/rw-lock.h>
 #include "data-point-reader.h"
 
-namespace apollo {
+namespace shakadb {
 
 class DataSeries {
  public:
@@ -36,4 +36,4 @@ class DataSeries {
 
 }
 
-#endif //APOLLO_STORAGE_DATASERIES_H
+#endif //SHAKADB_STORAGE_DATASERIES_H

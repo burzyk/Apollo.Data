@@ -4,7 +4,7 @@
 
 #include "test-context.h"
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 TestContext::TestContext(std::string workingDirectory) {

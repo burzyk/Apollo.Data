@@ -12,7 +12,7 @@
 
 #define A_PAGE_ALLOCATE_BUFFER_SIZE 65536
 
-namespace apollo {
+namespace shakadb {
 
 DataSeries::DataSeries(std::string file_name, int points_per_chunk, Log *log) {
   this->file_name = file_name;

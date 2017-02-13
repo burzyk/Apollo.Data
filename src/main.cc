@@ -8,15 +8,15 @@
 #include <src/server/handlers/ping-handler.h>
 #include "fatal-exception.h"
 
-apollo::Log *g_log;
-apollo::Server *g_server;
-apollo::PacketLogger *g_packet_logger;
-apollo::PingHandler *g_ping;
+shakadb::Log *g_log;
+shakadb::Server *g_server;
+shakadb::PacketLogger *g_packet_logger;
+shakadb::PingHandler *g_ping;
 
 void MainRoutine(void *data) {
-  g_packet_logger = new apollo::PacketLogger(g_log);
-  g_ping = new apollo::PingHandler();
-  g_server = new apollo::UvServer(8099, 10, g_log);
+  g_packet_logger = new shakadb::PacketLogger(g_log);
+  g_ping = new shakadb::PingHandler();
+  g_server = new shakadb::UvServer(8099, 10, g_log);
 
   g_server->AddClientConnectedListener(g_packet_logger);
   g_server->AddClientConnectedListener(g_ping);
@@ -25,8 +25,8 @@ void MainRoutine(void *data) {
 }
 
 int main() {
-  g_log = new apollo::FileLog(std::string());
-  apollo::Thread main_thread(MainRoutine, g_log);
+  g_log = new shakadb::FileLog(std::string());
+  shakadb::Thread main_thread(MainRoutine, g_log);
   main_thread.Start(nullptr);
 
   g_log->Info("Waiting for termination signal");
@@ -42,5 +42,5 @@ int main() {
   delete g_server;
   delete g_log;
 
-  apollo::Allocator::AssertAllDeleted();
+  shakadb::Allocator::AssertAllDeleted();
 }

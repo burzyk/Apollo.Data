@@ -2,11 +2,11 @@
 // Created by Pawel Burzynski on 11/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_RINGBUFFER_H
-#define APOLLO_STORAGE_RINGBUFFER_H
+#ifndef SHAKADB_STORAGE_RINGBUFFER_H
+#define SHAKADB_STORAGE_RINGBUFFER_H
 
 #include <cstdint>
-namespace apollo {
+namespace shakadb {
 
 class RingBuffer {
  public:
@@ -29,4 +29,4 @@ class RingBuffer {
 
 }
 
-#endif //APOLLO_STORAGE_RINGBUFFER_H
+#endif //SHAKADB_STORAGE_RINGBUFFER_H

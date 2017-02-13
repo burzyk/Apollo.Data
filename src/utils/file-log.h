@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_FILELOG_H
-#define APOLLO_STORAGE_FILELOG_H
+#ifndef SHAKADB_STORAGE_FILELOG_H
+#define SHAKADB_STORAGE_FILELOG_H
 
 #include "log.h"
 
-namespace apollo {
+namespace shakadb {
 
 class FileLog : public Log {
  public:
@@ -26,4 +26,4 @@ class FileLog : public Log {
 
 }
 
-#endif //APOLLO_STORAGE_FILELOG_H
+#endif //SHAKADB_STORAGE_FILELOG_H

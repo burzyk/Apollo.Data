@@ -9,7 +9,7 @@
 #include <src/utils/directory.h>
 #include "database.h"
 
-namespace apollo {
+namespace shakadb {
 
 Database::Database(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit) {
   this->directory = directory;

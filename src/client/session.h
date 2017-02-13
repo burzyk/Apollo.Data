@@ -2,14 +2,14 @@
 // Created by Pawel Burzynski on 08/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_SESSION_H
-#define APOLLO_STORAGE_SESSION_H
+#ifndef SHAKADB_STORAGE_SESSION_H
+#define SHAKADB_STORAGE_SESSION_H
 
 #include <src/data-point.h>
 #include <string>
 #include <src/server/data-packet.h>
 
-namespace apollo {
+namespace shakadb {
 
 class Session {
  public:
@@ -28,4 +28,4 @@ class Session {
 
 }
 
-#endif //APOLLO_STORAGE_SESSION_H
+#endif //SHAKADB_STORAGE_SESSION_H

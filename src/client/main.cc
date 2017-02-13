@@ -3,11 +3,12 @@
 //
 
 #include "session-manager.h"
+
 int main() {
-  apollo::SessionManager manager;
+  shakadb::SessionManager manager;
   int session_id = manager.OpenSession("localhost", 8099);
 
-  if (session_id == apollo::SessionManager::kInvalidSession) {
+  if (session_id == shakadb::SessionManager::kInvalidSession) {
     printf("Unable to connect\n");
     return -1;
   }

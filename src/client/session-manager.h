@@ -2,14 +2,14 @@
 // Created by Pawel Burzynski on 08/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_SESSIONMANAGER_H
-#define APOLLO_STORAGE_SESSIONMANAGER_H
+#ifndef SHAKADB_STORAGE_SESSIONMANAGER_H
+#define SHAKADB_STORAGE_SESSIONMANAGER_H
 
 #include <vector>
 #include <map>
 #include "session.h"
 
-namespace apollo {
+namespace shakadb {
 
 class SessionManager {
  public:
@@ -28,4 +28,4 @@ class SessionManager {
 
 }
 
-#endif //APOLLO_STORAGE_SESSIONMANAGER_H
+#endif //SHAKADB_STORAGE_SESSIONMANAGER_H

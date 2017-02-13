@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 03/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_SERVER_TESTS_H
-#define APOLLO_STORAGE_SERVER_TESTS_H
+#ifndef SHAKADB_STORAGE_SERVER_TESTS_H
+#define SHAKADB_STORAGE_SERVER_TESTS_H
 
 #include <test/framework/test-context.h>
 #include <thread>
@@ -12,7 +12,7 @@
 #include <test/common.h>
 #include <src/server/handlers/packet-logger.h>
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 void server_thread_routine(Server *server) {
@@ -35,4 +35,4 @@ void server_initialize_test(TestContext ctx) {
 }
 }
 
-#endif //APOLLO_STORAGE_SERVER_TESTS_H
+#endif //SHAKADB_STORAGE_SERVER_TESTS_H

@@ -2,14 +2,14 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_RW_LOCK_H
-#define APOLLO_STORAGE_RW_LOCK_H
+#ifndef SHAKADB_STORAGE_RW_LOCK_H
+#define SHAKADB_STORAGE_RW_LOCK_H
 
 #include <pthread.h>
 #include <memory>
 #include "rw-lock-scope.h"
 
-namespace apollo {
+namespace shakadb {
 
 class RwLock {
  public:
@@ -24,4 +24,4 @@ class RwLock {
 
 }
 
-#endif //APOLLO_STORAGE_RWLOCK_H
+#endif //SHAKADB_STORAGE_RWLOCK_H

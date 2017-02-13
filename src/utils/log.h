@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace apollo {
+namespace shakadb {
 
 class Log {
  public:

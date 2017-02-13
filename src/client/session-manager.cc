@@ -4,7 +4,7 @@
 
 #include "session-manager.h"
 
-namespace apollo {
+namespace shakadb {
 
 SessionManager::SessionManager() {
   this->current_session_id = 0;

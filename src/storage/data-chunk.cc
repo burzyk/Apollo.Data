@@ -11,7 +11,7 @@
 #include <src/utils/allocator.h>
 #include "data-chunk.h"
 
-namespace apollo {
+namespace shakadb {
 
 DataChunk::~DataChunk() {
   if (this->cached_content != nullptr) {

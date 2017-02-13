@@ -2,12 +2,12 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef APOLLO_STORAGE_VALIDATIONEXCEPTION_H
-#define APOLLO_STORAGE_VALIDATIONEXCEPTION_H
+#ifndef SHAKADB_STORAGE_VALIDATIONEXCEPTION_H
+#define SHAKADB_STORAGE_VALIDATIONEXCEPTION_H
 
 #include <exception>
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 class ValidationException : public std::exception {
@@ -22,4 +22,4 @@ class ValidationException : public std::exception {
 }
 }
 
-#endif //APOLLO_STORAGE_VALIDATIONEXCEPTION_H
+#endif //SHAKADB_STORAGE_VALIDATIONEXCEPTION_H

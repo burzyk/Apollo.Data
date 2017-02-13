@@ -2,14 +2,14 @@
 // Created by Pawel Burzynski on 12/02/2017.
 //
 
-#ifndef APOLLO_STORAGE_RING_BUFFER_TESTS_H
-#define APOLLO_STORAGE_RING_BUFFER_TESTS_H
+#ifndef SHAKADB_STORAGE_RING_BUFFER_TESTS_H
+#define SHAKADB_STORAGE_RING_BUFFER_TESTS_H
 
 #include <test/framework/test-context.h>
 #include <src/utils/ring-buffer.h>
 #include <test/framework/assert.h>
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 void ring_buffer_create_delete_test(TestContext ctx) {
@@ -121,4 +121,4 @@ void ring_buffer_multiple_write_and_read_loop_test(TestContext ctx) {
 }
 }
 
-#endif //APOLLO_STORAGE_RING_BUFFER_TESTS_H
+#endif //SHAKADB_STORAGE_RING_BUFFER_TESTS_H

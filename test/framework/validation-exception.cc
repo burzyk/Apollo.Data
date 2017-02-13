@@ -4,7 +4,7 @@
 
 #include "validation-exception.h"
 
-namespace apollo {
+namespace shakadb {
 namespace test {
 
 ValidationException::ValidationException(const char *message) {

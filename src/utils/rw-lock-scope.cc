@@ -4,7 +4,7 @@
 
 #include "rw-lock-scope.h"
 
-namespace apollo {
+namespace shakadb {
 
 RwLockScope::RwLockScope(pthread_rwlock_t *lock) {
   this->lock = lock;
