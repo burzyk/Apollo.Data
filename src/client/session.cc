@@ -60,9 +60,19 @@ Session *Session::Open(std::string server, int port) {
 
 bool Session::Ping() {
   const char *ping_data = "ala ma kota";
-  this->SendPacket(PacketType::kPing, (uint8_t *)ping_data, strlen(ping_data));
+  int request_length = strlen(ping_data);
 
-  return true;
+  this->SendPacket(PacketType::kPing, (uint8_t *)ping_data, request_length);
+  data_packet_t *packet = this->ReadPacket();
+
+  if (packet == nullptr) {
+    return false;
+  }
+
+  bool result = memcmp(ping_data, packet->data, request_length) == 0;
+  Allocator::Delete(packet);
+
+  return result;
 }
 
 void Session::SendPacket(PacketType type, uint8_t *data, int size) {
@@ -74,12 +84,47 @@ void Session::SendPacket(PacketType type, uint8_t *data, int size) {
   packet->total_length = packet_size;
   memcpy(packet->data, data, size);
 
-  for (int offset = 0; offset < size; offset += send(this->sock, raw_packet + offset, packet_size - offset, 0));
+  int sent = 0;
+  int total_sent = 0;
+
+  do {
+    sent = send(this->sock, raw_packet, packet_size - total_sent, 0);
+    raw_packet += sent;
+    total_sent += sent;
+  } while (sent != 0 && total_sent < size);
+
   Allocator::Delete(packet);
 }
 
-void Session::ReadResponse(uint8_t *buffer, int size) {
+data_packet_t *Session::ReadPacket() {
+  data_packet_t header = {0};
 
+  if (recv(this->sock, &header, sizeof(data_packet_t), MSG_WAITALL) != sizeof(data_packet_t)) {
+    return nullptr;
+  }
+
+  uint8_t *raw_packet = Allocator::New<uint8_t>(header.total_length);
+  data_packet_t *packet = (data_packet_t *)raw_packet;
+
+  memcpy(raw_packet, &header, sizeof(data_packet_t));
+  raw_packet += sizeof(data_packet_t);
+
+  int total_read = 0;
+  int read = 0;
+  int data_size = packet->total_length - sizeof(data_packet_t);
+
+  do {
+    read = recv(this->sock, raw_packet, data_size - total_read, 0);
+    raw_packet += read;
+    total_read += read;
+  } while (read != 0 && total_read < data_size);
+
+  if (total_read < data_size) {
+    Allocator::Delete(packet);
+    return nullptr;
+  }
+
+  return packet;
 }
 
 }

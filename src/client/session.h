@@ -22,7 +22,7 @@ class Session {
  private:
   Session(int sock);
   void SendPacket(PacketType type, uint8_t *data, int size);
-  void ReadResponse(uint8_t *buffer, int size);
+  data_packet_t *ReadPacket();
   int sock;
 };
 

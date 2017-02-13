@@ -49,10 +49,25 @@ void UvServerClient::SendPacket(PacketType type, uint8_t *data, int data_size) {
     throw FatalException("Sending data to closed client");
   }
 
-  // TODO: Implement
+  data_packet_t packet = {
+      .type = type, .total_length = (int)sizeof(data_packet_t) + data_size
+  };
+  uv_buf_t buffer[] = {
+      {.base = Allocator::New<char>(packet.total_length), .len = (size_t)packet.total_length}
+  };
+  memcpy(buffer[0].base, &packet, sizeof(data_packet_t));
+  memcpy(buffer[0].base + sizeof(data_packet_t), data, data_size);
+
+  uv_write_t *write = Allocator::New<uv_write_t>();
+  write->data = buffer[0].base;
+  uv_write(write, this->client_connection, buffer, 1, OnDataWrite);
 }
 
 void UvServerClient::Close() {
+  if (!this->IsRunning()) {
+    return;
+  }
+
   uv_read_stop(this->client_connection);
 
   uv_shutdown_t *shutdown = Allocator::New<uv_shutdown_t>();
@@ -76,6 +91,11 @@ void UvServerClient::OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf
   if (buf->base != nullptr && buf->len != 0) {
     Allocator::Delete(buf->base);
   }
+}
+
+void UvServerClient::OnDataWrite(uv_write_t *req, int status) {
+  Allocator::Delete(req->data);
+  Allocator::Delete(req);
 }
 
 void UvServerClient::OnClientShutdown(uv_shutdown_t *req, int status) {

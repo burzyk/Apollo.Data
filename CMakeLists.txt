@@ -11,7 +11,7 @@ link_directories(/usr/local/Cellar/libuv/1.9.1/lib)
 
 set(SRC_DOMAIN src/data-point.h src/fatal-exception.cc src/fatal-exception.h)
 set(SRC_CLIENT src/server/data-packet.h src/client/main.cc src/client/session-manager.cc src/client/session-manager.h src/client/session.cc src/client/session.h)
-set(SRC_SERVER src/server/data-packet.h src/server/server.h src/server/uv-server.cc src/server/uv-server.h src/server/handlers/packet-logger.cc src/server/handlers/packet-logger.h src/server/uv-server-client.cc src/server/uv-server-client.h src/server/server-client.h src/server/uv-common.h src/server/uv-common.cc)
+set(SRC_SERVER src/server/data-packet.h src/server/server.h src/server/uv-server.cc src/server/uv-server.h src/server/handlers/packet-logger.cc src/server/handlers/packet-logger.h src/server/uv-server-client.cc src/server/uv-server-client.h src/server/server-client.h src/server/uv-common.h src/server/uv-common.cc src/server/handlers/ping-handler.cc src/server/handlers/ping-handler.h)
 set(SRC_STORAGE src/storage/data-chunk.cc src/storage/data-chunk.h src/storage/data-point-reader.cc src/storage/data-point-reader.h src/storage/database.cc src/storage/database.h src/storage/data-series.cc src/storage/data-series.h)
 set(SRC_UTILS src/utils/log.h src/utils/common.h src/utils/file.cc src/utils/file.h src/utils/directory.cc src/utils/directory.h src/utils/stopwatch.cc src/utils/stopwatch.h src/utils/rw-lock.cc src/utils/rw-lock.h src/utils/rw-lock-scope.cc src/utils/rw-lock-scope.h src/utils/file-log.cc src/utils/file-log.h src/utils/thread.cc src/utils/thread.h src/utils/ring-buffer.cc src/utils/ring-buffer.h src/utils/allocator.h src/utils/allocator.cc)
 

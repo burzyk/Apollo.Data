@@ -5,17 +5,21 @@
 #include <src/utils/thread.h>
 #include <src/server/handlers/packet-logger.h>
 #include <src/utils/allocator.h>
+#include <src/server/handlers/ping-handler.h>
 #include "fatal-exception.h"
 
 apollo::Log *g_log;
 apollo::Server *g_server;
 apollo::PacketLogger *g_packet_logger;
+apollo::PingHandler *g_ping;
 
 void MainRoutine(void *data) {
   g_packet_logger = new apollo::PacketLogger(g_log);
+  g_ping = new apollo::PingHandler();
   g_server = new apollo::UvServer(8099, 10, g_log);
 
   g_server->AddClientConnectedListener(g_packet_logger);
+  g_server->AddClientConnectedListener(g_ping);
 
   g_server->Listen();
 }

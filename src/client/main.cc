@@ -12,7 +12,9 @@ int main() {
     return -1;
   }
 
-  manager.GetSessionById(session_id)->Ping();
+  if (!manager.GetSessionById(session_id)->Ping()) {
+    printf("Ping failure\n");
+  }
 
   return 0;
 }
