@@ -14,6 +14,7 @@ class MonitorScope {
   MonitorScope(pthread_mutex_t *mutex, pthread_cond_t *cond);
   ~MonitorScope();
 
+  void Reenter();
   void Signal();
   void Wait();
   void Exit();

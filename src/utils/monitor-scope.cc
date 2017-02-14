@@ -12,7 +12,11 @@ MonitorScope::MonitorScope(pthread_mutex_t *mutex, pthread_cond_t *cond) {
 }
 
 MonitorScope::~MonitorScope() {
-  pthread_mutex_unlock(this->mutex);
+  this->Exit();
+}
+
+void MonitorScope::Reenter() {
+  pthread_mutex_lock(this->mutex);
 }
 
 void MonitorScope::Signal() {

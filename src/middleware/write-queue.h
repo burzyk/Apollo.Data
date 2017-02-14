@@ -9,21 +9,24 @@
 #include <src/data-point.h>
 #include <src/storage/database.h>
 #include <src/utils/ring-buffer.h>
+#include <src/utils/monitor.h>
 
 namespace shakadb {
 
 class WriteQueue {
  public:
-  WriteQueue(Database *db);
+  WriteQueue(Database *db, int buffer_grow_increment);
   ~WriteQueue();
 
   void Enqueue(std::string series_name, data_point_t *points, int points_count);
   void ListenForData();
   void Close();
  private:
-  std::map<std::string, RingBuffer *> buffers;
   Database *db;
+  std::map<std::string, RingBuffer *> buffers;
   volatile bool is_active;
+  int buffer_grow_increment;
+  Monitor monitor;
 };
 
 }
