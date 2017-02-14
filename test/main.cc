@@ -5,6 +5,7 @@
 #include <src/utils/directory.h>
 #include <test/utils/ring-buffer-tests.h>
 #include <src/utils/allocator.h>
+#include <test/utils/monitor-tests.h>
 #include "test/storage/common.h"
 #include "test/storage/unit-tests.h"
 #include "test/storage/performance-tests.h"
@@ -62,6 +63,10 @@ int main() {
   TEST(shakadb::test::rwlock_double_read_lock_test);
   TEST(shakadb::test::rwlock_upgrade_lock_test);
   TEST(shakadb::test::rwlock_release_and_lock_again_test);
+
+  TEST(shakadb::test::monitor_create_delete_test);
+  TEST(shakadb::test::monitor_enter_test);
+  TEST(shakadb::test::monitor_enter_two_threads_test);
 
   TEST_PERF(shakadb::test::database_performance_sequential_write_small);
   TEST_PERF(shakadb::test::database_performance_sequential_write_medium);

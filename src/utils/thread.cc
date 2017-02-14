@@ -3,6 +3,7 @@
 //
 
 #include <src/fatal-exception.h>
+#include <zconf.h>
 #include "thread.h"
 
 namespace shakadb {
@@ -12,6 +13,13 @@ Thread::Thread(std::function<void(void *)> thread_routine, Log *log) {
   this->thread_data = nullptr;
   this->log = log;
   this->thread_routine = thread_routine;
+}
+
+void Thread::Sleep(int milliseconds) {
+  struct timespec ts = {
+      .tv_sec = milliseconds / 1000, .tv_nsec = (milliseconds % 1000) * 1000000
+  };
+  nanosleep(&ts, nullptr);
 }
 
 void Thread::Start(void *data) {

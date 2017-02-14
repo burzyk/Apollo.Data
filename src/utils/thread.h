@@ -15,6 +15,8 @@ class Thread {
  public:
   Thread(std::function<void(void *)> thread_routine, Log *log);
 
+  static void Sleep(int milliseconds);
+
   void Start(void *data);
   void Join();
  private:
