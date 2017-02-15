@@ -5,6 +5,7 @@
 #include <src/server/uv-server.h>
 #include <src/file-log.h>
 #include <src/utils/allocator.h>
+#include <src/storage/standard-database.h>
 #include "bootstrapper.h"
 
 namespace shakadb {
@@ -14,11 +15,21 @@ Bootstrapper::Bootstrapper() {
   this->server = new UvServer(8099, 10, this->log);
   this->ping_handler = new PingHandler();
   this->packet_logger = new PacketLogger(this->log);
+  this->db = StandardDatabase::Init("/Users/pburzynski/shakadb-test/data/prod", this->log, 100000, 0);
+  this->write_queue = new WriteQueue(this->db, 65536);
+  this->write_handler = new WriteHandler(this->write_queue);
+
+  this->write_queue_thread = new Thread([this](void *) -> void { this->WriteQueueRoutine(); }, this->log);
   this->server_thread = new Thread([this](void *) -> void { this->ServerRoutine(); }, this->log);
 }
 
 Bootstrapper::~Bootstrapper() {
   delete this->server_thread;
+  delete this->write_queue_thread;
+
+  delete this->write_handler;
+  delete this->write_queue;
+  delete this->db;
   delete this->packet_logger;
   delete this->ping_handler;
   delete this->server;
@@ -27,6 +38,7 @@ Bootstrapper::~Bootstrapper() {
 
 void Bootstrapper::Run() {
   Bootstrapper *bootstrapper = new Bootstrapper();
+  bootstrapper->log->Info("========== Starting ShakaDB ==========");
 
   bootstrapper->Start();
 
@@ -36,12 +48,12 @@ void Bootstrapper::Run() {
 
   delete bootstrapper;
   Allocator::AssertAllDeleted();
+  bootstrapper->log->Info("========== ShakaDB Stopped ==========");
 }
 
 void Bootstrapper::Start() {
-  this->log->Info("========== Starting ShakaDB ==========");
-
   this->server_thread->Start(nullptr);
+  this->write_queue_thread->Start(nullptr);
 
   this->log->Info("ShakaDB started");
 }
@@ -52,14 +64,20 @@ void Bootstrapper::Stop() {
   this->server->Close();
   this->server_thread->Join();
 
-  this->log->Info("========== ShakaDB Stopped ==========");
+  this->write_queue->Close();
+  this->write_queue_thread->Join();
 }
 
 void Bootstrapper::ServerRoutine() {
-  this->server->AddClientConnectedListener(this->packet_logger);
+  // this->server->AddClientConnectedListener(this->packet_logger);
   this->server->AddClientConnectedListener(this->ping_handler);
+  this->server->AddClientConnectedListener(this->write_handler);
 
   this->server->Listen();
+}
+
+void Bootstrapper::WriteQueueRoutine() {
+  this->write_queue->ListenForData();
 }
 
 }

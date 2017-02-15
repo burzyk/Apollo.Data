@@ -6,7 +6,7 @@
 
 namespace shakadb {
 
-#define SHAKADB_COPY_BUFFER_SIZE  65536
+#define SHAKADB_COPY_BUFFER_SIZE  1024
 
 WriteQueue::WriteQueue(Database *db, int buffer_grow_increment) {
   this->db = db;

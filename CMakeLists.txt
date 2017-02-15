@@ -12,7 +12,7 @@ link_directories(/usr/local/Cellar/libuv/1.9.1/lib)
 set(SRC_DOMAIN src/data-point.h src/fatal-exception.cc src/fatal-exception.h)
 set(SRC_CLIENT src/server/data-packet.h src/client/main.cc src/client/session-manager.cc src/client/session-manager.h src/client/session.cc src/client/session.h)
 set(SRC_MIDDLEWARE src/middleware/write-queue.cc src/middleware/write-queue.h)
-set(SRC_SERVER src/server/data-packet.h src/server/server.h src/server/uv-server.cc src/server/uv-server.h src/server/handlers/packet-logger.cc src/server/handlers/packet-logger.h src/server/uv-server-client.cc src/server/uv-server-client.h src/server/server-client.h src/server/uv-common.h src/server/uv-common.cc src/server/handlers/ping-handler.cc src/server/handlers/ping-handler.h)
+set(SRC_SERVER src/server/data-packet.h src/server/server.h src/server/uv-server.cc src/server/uv-server.h src/server/handlers/packet-logger.cc src/server/handlers/packet-logger.h src/server/uv-server-client.cc src/server/uv-server-client.h src/server/server-client.h src/server/uv-common.h src/server/uv-common.cc src/server/handlers/ping-handler.cc src/server/handlers/ping-handler.h src/server/handlers/write-handler.cc src/server/handlers/write-handler.h)
 set(SRC_STORAGE src/storage/data-chunk.cc src/storage/data-chunk.h src/storage/standard-data-point-reader.cc src/storage/standard-data-point-reader.h src/storage/standard-database.cc src/storage/standard-database.h src/storage/data-series.cc src/storage/data-series.h src/storage/database.h src/storage/data-point-reader.h)
 set(SRC_UTILS src/log.h src/utils/common.h src/utils/file.cc src/utils/file.h src/utils/directory.cc src/utils/directory.h src/utils/stopwatch.cc src/utils/stopwatch.h src/utils/rw-lock.cc src/utils/rw-lock.h src/utils/rw-lock-scope.cc src/utils/rw-lock-scope.h src/file-log.cc src/file-log.h src/utils/thread.cc src/utils/thread.h src/utils/ring-buffer.cc src/utils/ring-buffer.h src/utils/allocator.h src/utils/allocator.cc src/utils/monitor.cc src/utils/monitor.h src/utils/monitor-scope.cc src/utils/monitor-scope.h)
 
@@ -20,7 +20,7 @@ set(SRC_TEST test/main.cc test/storage/unit-tests.h test/framework/test-context.
 
 add_executable(shakadb.client ${SRC_CLIENT} ${SRC_UTILS} ${SRC_DOMAIN} src/client/main.cc)
 add_executable(shakadb ${SRC_DOMAIN} ${SRC_MIDDLEWARE} ${SRC_SERVER} ${SRC_UTILS} ${SRC_STORAGE} src/main.cc src/bootstrapper.cc src/bootstrapper.h)
-add_executable(shakadb.test ${SRC_TEST} ${SRC_DOMAIN} ${SRC_SERVER} ${SRC_UTILS} ${SRC_STORAGE} test/main.cc)
+add_executable(shakadb.test ${SRC_TEST} ${SRC_DOMAIN} ${SRC_MIDDLEWARE} ${SRC_SERVER} ${SRC_UTILS} ${SRC_STORAGE} test/main.cc)
 
 target_link_libraries(shakadb pthread)
 target_link_libraries(shakadb.test pthread)

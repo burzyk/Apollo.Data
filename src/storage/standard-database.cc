@@ -17,8 +17,6 @@ StandardDatabase::StandardDatabase(std::string directory, Log *log, int points_p
 }
 
 StandardDatabase::~StandardDatabase() {
-  this->log->Info("Deleting database");
-
   for (auto s: this->series) {
     delete s.second;
   }

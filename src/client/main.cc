@@ -17,5 +17,16 @@ int main() {
     printf("Ping failure\n");
   }
 
+  shakadb::data_point_t points[1024] = {0};
+
+  for (int i = 0; i < 1000; i++) {
+    for (int j = 0; j < 1024; j++) {
+      points[j].time = i * 1024 + j;
+      points[j].value = j;
+    }
+
+    manager.GetSessionById(session_id)->WritePoints("USD_AUD", points, 1024);
+  }
+
   return 0;
 }

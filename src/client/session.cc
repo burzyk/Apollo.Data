@@ -75,6 +75,16 @@ bool Session::Ping() {
   return result;
 }
 
+void Session::WritePoints(std::string series_name, data_point_t *points, int count) {
+  int payload_size = series_name.size() + 1 + count * sizeof(data_point_t);
+  uint8_t *payload = Allocator::New<uint8_t>(payload_size);
+  memcpy(payload, series_name.c_str(), series_name.size());
+  memcpy(payload + series_name.size() + 1, points, count * sizeof(data_point_t));
+
+  this->SendPacket(kWrite, payload, payload_size);
+  Allocator::Delete(payload);
+}
+
 void Session::SendPacket(PacketType type, uint8_t *data, int size) {
   int packet_size = size + sizeof(data_packet_t);
   data_packet_t *packet = (data_packet_t *)Allocator::New<uint8_t *>(packet_size);

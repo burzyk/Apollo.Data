@@ -15,7 +15,7 @@ void PingHandler::OnReceived(ServerClient *client, data_packet_t *packet) {
     return;
   }
 
-  client->SendPacket(PacketType::kPing, packet->data, packet->total_length - sizeof(data_packet_t));
+  client->SendPacket(PacketType::kPing, packet->data, packet->payload_length());
 }
 
 }

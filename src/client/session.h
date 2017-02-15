@@ -19,6 +19,7 @@ class Session {
   static Session *Open(std::string server, int port);
 
   bool Ping();
+  void WritePoints(std::string series_name, data_point_t *points, int count);
  private:
   Session(int sock);
   void SendPacket(PacketType type, uint8_t *data, int size);

@@ -21,8 +21,6 @@ DataSeries::DataSeries(std::string file_name, int points_per_chunk, Log *log) {
 }
 
 DataSeries::~DataSeries() {
-  this->log->Info("Deleting data series");
-
   for (auto chunk: this->chunks) {
     delete chunk;
   }
