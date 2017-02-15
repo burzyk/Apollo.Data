@@ -5,16 +5,16 @@
 #include <src/utils/common.h>
 #include <cstdlib>
 #include <src/utils/allocator.h>
-#include "data-point-reader.h"
+#include "standard-data-point-reader.h"
 
 namespace shakadb {
 
-DataPointReader::DataPointReader(data_point_t *snapshot, int count) {
+StandardDataPointReader::StandardDataPointReader(data_point_t *snapshot, int count) {
   this->snapshot = snapshot;
   this->count = count;
 }
 
-DataPointReader::~DataPointReader() {
+StandardDataPointReader::~StandardDataPointReader() {
   if (this->snapshot != nullptr) {
     Allocator::Delete(this->snapshot);
     this->snapshot = nullptr;
@@ -22,11 +22,11 @@ DataPointReader::~DataPointReader() {
 
   this->count = 0;
 }
-data_point_t *DataPointReader::GetDataPoints() {
+data_point_t *StandardDataPointReader::GetDataPoints() {
   return this->snapshot;
 }
 
-int DataPointReader::GetDataPointsCount() {
+int StandardDataPointReader::GetDataPointsCount() {
   return this->count;
 }
 

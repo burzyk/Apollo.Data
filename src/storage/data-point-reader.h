@@ -1,30 +1,22 @@
 //
-// Created by Pawel Burzynski on 17/01/2017.
+// Created by Pawel Burzynski on 15/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_DATA_POINT_READER_H
-#define SHAKADB_STORAGE_DATA_POINT_READER_H
+#ifndef SHAKADB_DATA_POINT_READER_H
+#define SHAKADB_DATA_POINT_READER_H
 
 #include <src/data-point.h>
-#include <list>
-#include <vector>
-#include <src/utils/rw-lock-scope.h>
-#include "data-chunk.h"
 
 namespace shakadb {
 
 class DataPointReader {
  public:
-  DataPointReader(data_point_t *snapshot, int count);
-  ~DataPointReader();
+  virtual ~DataPointReader() {};
 
-  data_point_t *GetDataPoints();
-  int GetDataPointsCount();
- private:
-  data_point_t *snapshot;
-  int count;
+  virtual data_point_t *GetDataPoints() = 0;
+  virtual int GetDataPointsCount() = 0;
 };
 
 }
 
-#endif //SHAKADB_STORAGE_DATAPOINTREADER_H
+#endif //SHAKADB_DATA_POINT_READER_H

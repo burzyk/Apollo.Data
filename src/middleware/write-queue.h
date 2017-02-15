@@ -10,6 +10,7 @@
 #include <src/storage/database.h>
 #include <src/utils/ring-buffer.h>
 #include <src/utils/monitor.h>
+#include <map>
 
 namespace shakadb {
 

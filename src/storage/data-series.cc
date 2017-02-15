@@ -8,7 +8,7 @@
 #include <src/utils/file.h>
 #include <src/utils/allocator.h>
 #include "data-series.h"
-#include "data-point-reader.h"
+#include "standard-data-point-reader.h"
 
 #define A_PAGE_ALLOCATE_BUFFER_SIZE 65536
 
@@ -45,7 +45,7 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *l
   }
 
   sw.Stop();
-  log->Info("Database loaded in: " + std::to_string(sw.GetElapsedMilliseconds() / 1000) + "[s]");
+  log->Info("StandardDatabase loaded in: " + std::to_string(sw.GetElapsedMilliseconds() / 1000) + "[s]");
   return series;
 }
 
@@ -95,7 +95,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
   }
 
   if (filtered_chunks.size() == 0) {
-    return std::make_shared<DataPointReader>(nullptr, 0);
+    return std::make_shared<StandardDataPointReader>(nullptr, 0);
   }
 
   auto comp = [](data_point_t p, timestamp_t t) -> bool { return p.time < t; };
@@ -114,7 +114,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
     data_point_t *snapshot = Allocator::New<data_point_t>(total_points);
     memcpy(snapshot, read_begin, total_points * sizeof(data_point_t));
 
-    return std::make_shared<DataPointReader>(snapshot, total_points);
+    return std::make_shared<StandardDataPointReader>(snapshot, total_points);
   }
 
   uint64_t total_points = 0;
@@ -145,7 +145,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
 
   memcpy(snapshot + snapshot_position, back_begin, points_from_back * sizeof(data_point_t));
 
-  return std::make_shared<DataPointReader>(snapshot, total_points);
+  return std::make_shared<StandardDataPointReader>(snapshot, total_points);
 }
 
 void DataSeries::PrintMetadata() {

@@ -15,6 +15,7 @@
 #include <thread>
 #include <src/fatal-exception.h>
 #include <test/common.h>
+#include <src/storage/standard-database.h>
 
 namespace shakadb {
 namespace test {
@@ -24,7 +25,7 @@ class DatabaseContext {
   static DatabaseContext *Create(int points_per_chunk, int max_pages, TestContext ctx) {
     DatabaseContext *context = new DatabaseContext();
     context->log = new NullLog();
-    context->db = Database::Init(
+    context->db = StandardDatabase::Init(
         ctx.GetWorkingDirectory(),
         context->log,
         points_per_chunk,
@@ -71,7 +72,7 @@ void write_to_database(Database *db, std::string series_name, int batches, int b
 }
 
 void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
-  std::shared_ptr<DataPointReader> reader = db->Read(series_name, begin, end);
+  std::shared_ptr<StandardDataPointReader> reader = db->Read(series_name, begin, end);
   int total_read = reader->GetDataPointsCount();
   data_point_t *points = reader->GetDataPoints();
 
