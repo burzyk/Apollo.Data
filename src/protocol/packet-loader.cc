@@ -12,7 +12,7 @@ DataPacket *PacketLoader::Load(Stream *stream) {
   data_packet_header_t header;
 
   if (stream->Peek((uint8_t *)&header, sizeof(header)) < sizeof(header)
-      || stream->GetSize() < header.packet_length) {
+      || !stream->HasData(header.packet_length)) {
     return nullptr;
   }
 

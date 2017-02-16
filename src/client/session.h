@@ -8,6 +8,7 @@
 #include <src/data-point.h>
 #include <string>
 #include <src/protocol/data-packet.h>
+#include "receive-stream.h"
 
 namespace shakadb {
 
@@ -24,6 +25,8 @@ class Session {
   Session(int sock);
   bool SendPacket(DataPacket *packet);
   std::shared_ptr<DataPacket> ReadPacket();
+
+  ReceiveStream receive_stream;
   int sock;
 };
 

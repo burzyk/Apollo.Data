@@ -15,7 +15,7 @@ class Stream {
   virtual int Read(uint8_t *buffer, int buffer_size) = 0;
   virtual int Peek(uint8_t *buffer, int buffer_size) = 0;
   virtual void Write(uint8_t *buffer, int buffer_size) = 0;
-  virtual int GetSize() = 0;
+  virtual bool HasData(int size) = 0;
 };
 
 }

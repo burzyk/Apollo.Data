@@ -11,11 +11,15 @@
 #include <src/utils/allocator.h>
 #include <src/protocol/ping-packet.h>
 #include <src/protocol/write-request.h>
+#include <src/protocol/packet-loader.h>
 #include "session.h"
 
 namespace shakadb {
 
-Session::Session(int sock) {
+#define SHAKADB_RECV_STREAM_GROW  65536000
+
+Session::Session(int sock)
+    : receive_stream(sock, SHAKADB_RECV_STREAM_GROW) {
   this->sock = sock;
 }
 
@@ -95,37 +99,7 @@ bool Session::SendPacket(DataPacket *packet) {
 }
 
 std::shared_ptr<DataPacket> Session::ReadPacket() {
-  /*
-  data_packet_t header = {0};
-
-  if (recv(this->sock, &header, sizeof(data_packet_t), MSG_WAITALL) != sizeof(data_packet_t)) {
-    return nullptr;
-  }
-
-  uint8_t *raw_packet = Allocator::New<uint8_t>(header.total_length);
-  data_packet_t *packet = (data_packet_t *)raw_packet;
-
-  memcpy(raw_packet, &header, sizeof(data_packet_t));
-  raw_packet += sizeof(data_packet_t);
-
-  int total_read = 0;
-  int read = 0;
-  int data_size = packet->total_length - sizeof(data_packet_t);
-
-  do {
-    read = recv(this->sock, raw_packet, data_size - total_read, 0);
-    raw_packet += read;
-    total_read += read;
-  } while (read != 0 && total_read < data_size);
-
-  if (total_read < data_size) {
-    Allocator::Delete(packet);
-    return nullptr;
-  }
-
-  return packet;
-   */
-  return nullptr;
+  return std::shared_ptr<DataPacket>(PacketLoader::Load(&this->receive_stream));
 }
 
 }

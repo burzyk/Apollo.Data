@@ -19,23 +19,23 @@ int main() {
     return -1;
   }
 
-  shakadb::data_point_t points[100] = {0};
-  shakadb::Stopwatch sw;
-  shakadb::Session *session = manager.GetSessionById(session_id);
-
-  sw.Start();
-
-  for (int i = 0; i < 1000000; i++) {
-    for (int j = 0; j < 100; j++) {
-      points[j].time = i * 100 + j;
-      points[j].value = j;
-    }
-
-    session->WritePoints("USD_AUD", points, 100);
-  }
-
-  sw.Stop();
-  printf("Elapsed: %f[s]\n", sw.GetElapsedSeconds());
+//  shakadb::data_point_t points[100] = {0};
+//  shakadb::Stopwatch sw;
+//  shakadb::Session *session = manager.GetSessionById(session_id);
+//
+//  sw.Start();
+//
+//  for (int i = 0; i < 1000000; i++) {
+//    for (int j = 0; j < 100; j++) {
+//      points[j].time = i * 100 + j;
+//      points[j].value = j;
+//    }
+//
+//    session->WritePoints("USD_AUD", points, 100);
+//  }
+//
+//  sw.Stop();
+//  printf("Elapsed: %f[s]\n", sw.GetElapsedSeconds());
 
   return 0;
 }

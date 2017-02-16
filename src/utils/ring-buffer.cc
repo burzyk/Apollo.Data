@@ -50,6 +50,10 @@ int RingBuffer::Peek(uint8_t *buffer, int buffer_size) {
 }
 
 void RingBuffer::Write(uint8_t *buffer, int buffer_size) {
+  if (buffer_size == 0) {
+    return;
+  }
+
   this->EnsureBufferSize(this->size + buffer_size);
 
   int data_end = (this->begin + this->size) % this->capacity;
@@ -68,6 +72,10 @@ void RingBuffer::Write(uint8_t *buffer, int buffer_size) {
 
 int RingBuffer::GetSize() {
   return this->size;
+}
+
+bool RingBuffer::HasData(int size) {
+  return size <= this->GetSize();
 }
 
 void RingBuffer::EnsureBufferSize(int new_size) {

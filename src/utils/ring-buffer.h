@@ -6,7 +6,7 @@
 #define SHAKADB_STORAGE_RINGBUFFER_H
 
 #include <cstdint>
-#include "Stream.h"
+#include "stream.h"
 
 namespace shakadb {
 
@@ -19,6 +19,7 @@ class RingBuffer : public Stream {
   int Peek(uint8_t *buffer, int buffer_size);
   void Write(uint8_t *buffer, int buffer_size);
   int GetSize();
+  bool HasData(int size);
  private:
   void EnsureBufferSize(int new_size);
 
