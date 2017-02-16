@@ -23,7 +23,7 @@ struct data_packet_header_t {
 class DataPacket {
  public:
   DataPacket();
-  DataPacket(RingBuffer *buffer, int packet_size);
+  DataPacket(Stream *stream, int packet_size);
   virtual ~DataPacket();
 
   virtual PacketType GetType() = 0;

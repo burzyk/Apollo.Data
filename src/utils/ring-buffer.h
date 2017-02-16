@@ -6,9 +6,11 @@
 #define SHAKADB_STORAGE_RINGBUFFER_H
 
 #include <cstdint>
+#include "Stream.h"
+
 namespace shakadb {
 
-class RingBuffer {
+class RingBuffer : public Stream {
  public:
   RingBuffer(int grow_increment);
   ~RingBuffer();

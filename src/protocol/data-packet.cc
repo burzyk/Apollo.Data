@@ -12,11 +12,11 @@ DataPacket::DataPacket() {
   this->packet_size = 0;
 }
 
-DataPacket::DataPacket(RingBuffer *buffer, int packet_size) {
+DataPacket::DataPacket(Stream *stream, int packet_size) {
   this->raw_packet = Allocator::New<uint8_t>(packet_size);
   this->packet_size = packet_size;
 
-  if (buffer->Read(this->raw_packet, this->packet_size) != packet_size) {
+  if (stream->Read(this->raw_packet, this->packet_size) != packet_size) {
     throw FatalException("Not enough data in the buffer");
   }
 }

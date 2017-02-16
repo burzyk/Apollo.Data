@@ -6,8 +6,8 @@
 
 namespace shakadb {
 
-WriteRequest::WriteRequest(RingBuffer *buffer, int packet_size)
-    : DataPacket(buffer, packet_size) {
+WriteRequest::WriteRequest(Stream *stream, int packet_size)
+    : DataPacket(stream, packet_size) {
 }
 
 WriteRequest::WriteRequest(std::string series_name, data_point_t *points, int points_count)

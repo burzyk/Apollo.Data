@@ -11,7 +11,7 @@ namespace shakadb {
 
 class PacketLoader {
  public:
-  static DataPacket *Load(RingBuffer *buffer);
+  static DataPacket *Load(Stream *stream);
 };
 
 }

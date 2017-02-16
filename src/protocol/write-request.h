@@ -13,7 +13,7 @@ namespace shakadb {
 
 class WriteRequest : public DataPacket {
  public:
-  WriteRequest(RingBuffer *buffer, int packet_size);
+  WriteRequest(Stream *stream, int packet_size);
   WriteRequest(std::string series_name, data_point_t *points, int points_count);
 
   PacketType GetType();
