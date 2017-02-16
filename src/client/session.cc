@@ -9,6 +9,8 @@
 #include <netdb.h>
 #include <cstdlib>
 #include <src/utils/allocator.h>
+#include <src/protocol/ping-packet.h>
+#include <src/protocol/write-request.h>
 #include "session.h"
 
 namespace shakadb {
@@ -62,38 +64,24 @@ bool Session::Ping() {
   const char *ping_data = "ala ma kota";
   int request_length = strlen(ping_data);
 
-  this->SendPacket(PacketType::kPing, (uint8_t *)ping_data, request_length);
-  data_packet_t *packet = this->ReadPacket();
+  PingPacket request((uint8_t *)ping_data, request_length);
+  this->SendPacket(&request);
 
-  if (packet == nullptr) {
-    return false;
-  }
+  std::shared_ptr<PingPacket> response = std::static_pointer_cast<PingPacket>(this->ReadPacket());
 
-  bool result = memcmp(ping_data, packet->data, request_length) == 0;
-  Allocator::Delete(packet);
-
-  return result;
+  return response != nullptr &&
+      request.GetPingDataSize() == response->GetPingDataSize() &&
+      memcmp(request.GetPingData(), response->GetPingData(), request_length) == 0;
 }
 
-void Session::WritePoints(std::string series_name, data_point_t *points, int count) {
-  int payload_size = series_name.size() + 1 + count * sizeof(data_point_t);
-  uint8_t *payload = Allocator::New<uint8_t>(payload_size);
-  memcpy(payload, series_name.c_str(), series_name.size());
-  memcpy(payload + series_name.size() + 1, points, count * sizeof(data_point_t));
-
-  this->SendPacket(kWrite, payload, payload_size);
-  Allocator::Delete(payload);
+bool Session::WritePoints(std::string series_name, data_point_t *points, int count) {
+  WriteRequest request(series_name, points, count);
+  return this->SendPacket(&request);
 }
 
-void Session::SendPacket(PacketType type, uint8_t *data, int size) {
-  int packet_size = size + sizeof(data_packet_t);
-  data_packet_t *packet = (data_packet_t *)Allocator::New<uint8_t *>(packet_size);
-  uint8_t *raw_packet = (uint8_t *)packet;
-
-  packet->type = type;
-  packet->total_length = packet_size;
-  memcpy(packet->data, data, size);
-
+bool Session::SendPacket(DataPacket *packet) {
+  uint8_t *raw_packet = packet->GetPacket();
+  int packet_size = packet->GetPacketSize();
   int sent = 0;
   int total_sent = 0;
 
@@ -101,12 +89,13 @@ void Session::SendPacket(PacketType type, uint8_t *data, int size) {
     sent = send(this->sock, raw_packet, packet_size - total_sent, 0);
     raw_packet += sent;
     total_sent += sent;
-  } while (sent != 0 && total_sent < size);
+  } while (sent != 0 && total_sent < packet_size);
 
-  Allocator::Delete(packet);
+  return total_sent == packet_size;
 }
 
-data_packet_t *Session::ReadPacket() {
+std::shared_ptr<DataPacket> Session::ReadPacket() {
+  /*
   data_packet_t header = {0};
 
   if (recv(this->sock, &header, sizeof(data_packet_t), MSG_WAITALL) != sizeof(data_packet_t)) {
@@ -135,6 +124,8 @@ data_packet_t *Session::ReadPacket() {
   }
 
   return packet;
+   */
+  return nullptr;
 }
 
 }

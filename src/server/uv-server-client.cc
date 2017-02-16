@@ -3,6 +3,7 @@
 //
 
 #include <src/utils/allocator.h>
+#include <src/protocol/packet-loader.h>
 #include "uv-server-client.h"
 #include "uv-common.h"
 
@@ -44,22 +45,17 @@ void UvServerClient::AddDisconnectedListener(ServerClient::DisconnectListener *l
   this->disconnect_listeners.push_back(listener);
 }
 
-void UvServerClient::SendPacket(PacketType type, uint8_t *data, int data_size) {
+void UvServerClient::SendPacket(DataPacket *packet) {
   if (!this->IsRunning()) {
     throw FatalException("Sending data to closed client");
   }
 
-  data_packet_t packet = {
-      .type = type, .total_length = (int)sizeof(data_packet_t) + data_size
-  };
   uv_buf_t buffer[] = {
-      {.base = Allocator::New<char>(packet.total_length), .len = (size_t)packet.total_length}
+      {.base = (char *)packet->GetPacket(), .len = (size_t)packet->GetPacketSize()}
   };
-  memcpy(buffer[0].base, &packet, sizeof(data_packet_t));
-  memcpy(buffer[0].base + sizeof(data_packet_t), data, data_size);
 
   uv_write_t *write = Allocator::New<uv_write_t>();
-  write->data = buffer[0].base;
+  write->data = packet;
   uv_write(write, this->client_connection, buffer, 1, OnDataWrite);
 }
 
@@ -94,7 +90,9 @@ void UvServerClient::OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf
 }
 
 void UvServerClient::OnDataWrite(uv_write_t *req, int status) {
-  Allocator::Delete(req->data);
+  DataPacket *packet = (DataPacket *)req->data;
+  delete packet;
+
   Allocator::Delete(req);
 }
 
@@ -113,17 +111,11 @@ void UvServerClient::OnClientShutdown(uv_shutdown_t *req, int status) {
 void UvServerClient::ReadData(ssize_t nread, const uv_buf_t *buf) {
   this->receive_buffer.Write((uint8_t *)buf->base, nread);
 
-  int header_size = sizeof(data_packet_t);
-  data_packet_t header = {0};
+  DataPacket *packet = nullptr;
 
-  while (this->receive_buffer.Peek((uint8_t *)&header, header_size) == header_size
-      && (this->receive_buffer.GetSize() >= header.total_length)) {
-
-    uint8_t *packet = Allocator::New<uint8_t>(header.total_length);
-    this->receive_buffer.Read(packet, header.total_length);
-
+  while ((packet = PacketLoader::Load(&this->receive_buffer)) != nullptr) {
     for (auto listener: this->receive_listeners) {
-      listener->OnReceived(this, (data_packet_t *)packet);
+      listener->OnReceived(this, packet);
     }
 
     Allocator::Delete(packet);

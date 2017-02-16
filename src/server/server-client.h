@@ -6,7 +6,7 @@
 #define SHAKADB_STORAGE_SERVERCLIENT_H
 
 #include <cstdint>
-#include "data-packet.h"
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
@@ -14,7 +14,7 @@ class ServerClient {
  public:
   class ReceiveListener {
    public:
-    virtual void OnReceived(ServerClient *client, data_packet_t *packet) = 0;
+    virtual void OnReceived(ServerClient *client, DataPacket *packet) = 0;
   };
 
   class DisconnectListener {
@@ -26,7 +26,7 @@ class ServerClient {
 
   virtual void AddReceivedListener(ReceiveListener *listener) = 0;
   virtual void AddDisconnectedListener(DisconnectListener *listener) = 0;
-  virtual void SendPacket(PacketType type, uint8_t *data, int data_size) = 0;
+  virtual void SendPacket(DataPacket *packet) = 0;
   virtual void Close() = 0;
 };
 

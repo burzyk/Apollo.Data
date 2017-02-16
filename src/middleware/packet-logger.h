@@ -15,7 +15,7 @@ class PacketLogger : public Server::ClientConnectedListener, ServerClient::Recei
   PacketLogger(Log *log);
 
   void OnClientConnected(Server *server, ServerClient *client);
-  void OnReceived(ServerClient *client, data_packet_t *packet);
+  void OnReceived(ServerClient *client, DataPacket *packet);
  private:
   Log *log;
 };

@@ -8,7 +8,7 @@
 #include <uv.h>
 #include <list>
 #include <src/utils/ring-buffer.h>
-#include "data-packet.h"
+#include "src/protocol/data-packet.h"
 #include "server-client.h"
 
 namespace shakadb {
@@ -20,7 +20,7 @@ class UvServerClient : public ServerClient {
 
   void AddReceivedListener(ReceiveListener *listener);
   void AddDisconnectedListener(DisconnectListener *listener);
-  void SendPacket(PacketType type, uint8_t *data, int data_size);
+  void SendPacket(DataPacket *packet);
   void Close();
   bool  IsRunning();
  private:

@@ -2,6 +2,7 @@
 // Created by Pawel Burzynski on 13/02/2017.
 //
 
+#include <src/protocol/ping-packet.h>
 #include "ping-handler.h"
 
 namespace shakadb {
@@ -10,12 +11,15 @@ void PingHandler::OnClientConnected(Server *server, ServerClient *client) {
   client->AddReceivedListener(this);
 }
 
-void PingHandler::OnReceived(ServerClient *client, data_packet_t *packet) {
-  if (packet->type != PacketType::kPing) {
+void PingHandler::OnReceived(ServerClient *client, DataPacket *packet) {
+  if (packet->GetType() != PacketType::kPing) {
     return;
   }
 
-  client->SendPacket(PacketType::kPing, packet->data, packet->payload_length());
+  PingPacket *request = (PingPacket *)packet;
+  PingPacket *response = new PingPacket(request->GetPingData(), request->GetPingDataSize());
+
+  client->SendPacket(response);
 }
 
 }

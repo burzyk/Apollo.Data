@@ -26,14 +26,13 @@ class Bootstrapper {
   void WriteQueueRoutine();
 
   Thread *server_thread;
-  Thread *write_queue_thread;
+  Thread *write_handler_thread;
 
   Log *log;
   Server *server;
   PingHandler *ping_handler;
   PacketLogger *packet_logger;
   WriteHandler *write_handler;
-  WriteQueue *write_queue;
   Database *db;
 };
 

@@ -12,7 +12,7 @@ namespace shakadb {
 class PingHandler : public Server::ClientConnectedListener, ServerClient::ReceiveListener {
  public:
   void OnClientConnected(Server *server, ServerClient *client);
-  void OnReceived(ServerClient *client, data_packet_t *packet);
+  void OnReceived(ServerClient *client, DataPacket *packet);
 };
 
 }
