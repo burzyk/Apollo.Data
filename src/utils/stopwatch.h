@@ -14,7 +14,7 @@ class Stopwatch {
   void Start();
   void Stop();
 
-  float GetElapsedMilliseconds();
+  float GetElapsedSeconds();
  private:
   timespec start;
   timespec stop;

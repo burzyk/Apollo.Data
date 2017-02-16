@@ -26,7 +26,8 @@ void WriteHandler::OnReceived(ServerClient *client, data_packet_t *packet) {
   data_point_t *points = (data_point_t *)(packet->data + series_name.size() + 1);
   int points_count = (packet->payload_length() - series_name.size() - 1) / sizeof(data_point_t);
 
-  // this->write_queue->Enqueue(series_name, points, points_count);
+  // TODO: Integrate WriteQueue with WriteHandler
+  this->write_queue->Enqueue(series_name, points, points_count);
 }
 
 }

@@ -24,6 +24,8 @@ class WriteQueue {
   void Close();
  private:
   Database *db;
+  data_point_t *points_buffer;
+  int points_buffer_size;
   std::map<std::string, RingBuffer *> buffers;
   volatile bool is_active;
   int buffer_grow_increment;

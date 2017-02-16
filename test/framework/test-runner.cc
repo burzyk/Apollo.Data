@@ -50,7 +50,7 @@ int TestRunner::RunPerfTest(std::string name, std::function<Stopwatch(TestContex
     Stopwatch sw = func(dir);
 
     printf(ANSI_COLOR_GREEN " [ OK ]" ANSI_COLOR_RESET);
-    printf(ANSI_COLOR_GREEN " [ %fs ]\n" ANSI_COLOR_RESET, sw.GetElapsedMilliseconds());
+    printf(ANSI_COLOR_GREEN " [ %fs ]\n" ANSI_COLOR_RESET, sw.GetElapsedSeconds());
     this->tests_success++;
     return 0;
   } catch (...) {
