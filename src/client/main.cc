@@ -16,6 +16,7 @@ int main() {
 
   if (!manager.GetSessionById(session_id)->Ping()) {
     printf("Ping failure\n");
+    return -1;
   }
 
   shakadb::data_point_t points[100] = {0};

@@ -118,7 +118,7 @@ void UvServerClient::ReadData(ssize_t nread, const uv_buf_t *buf) {
       listener->OnReceived(this, packet);
     }
 
-    Allocator::Delete(packet);
+    delete packet;
   }
 }
 

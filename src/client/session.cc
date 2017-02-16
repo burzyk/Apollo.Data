@@ -62,16 +62,16 @@ Session *Session::Open(std::string server, int port) {
 
 bool Session::Ping() {
   const char *ping_data = "ala ma kota";
-  int request_length = strlen(ping_data);
+  int ping_data_length = strlen(ping_data);
 
-  PingPacket request((uint8_t *)ping_data, request_length);
+  PingPacket request((uint8_t *)ping_data, ping_data_length);
   this->SendPacket(&request);
 
   std::shared_ptr<PingPacket> response = std::static_pointer_cast<PingPacket>(this->ReadPacket());
 
   return response != nullptr &&
       request.GetPingDataSize() == response->GetPingDataSize() &&
-      memcmp(request.GetPingData(), response->GetPingData(), request_length) == 0;
+      memcmp(request.GetPingData(), response->GetPingData(), ping_data_length) == 0;
 }
 
 bool Session::WritePoints(std::string series_name, data_point_t *points, int count) {

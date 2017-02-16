@@ -13,7 +13,7 @@
 #include "test/utils/rw-lock-tests.h"
 
 #define RUN_TESTS
-#define RUN_PERF_TESTS
+//#define RUN_PERF_TESTS
 
 #ifdef RUN_TESTS
 #define TEST(test_case) result = runner.RunTest("" #test_case "", test_case);

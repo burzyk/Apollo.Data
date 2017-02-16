@@ -44,9 +44,9 @@ void Bootstrapper::Run() {
 
   bootstrapper->Stop();
 
+  bootstrapper->log->Info("========== ShakaDB Stopped ==========");
   delete bootstrapper;
   Allocator::AssertAllDeleted();
-  bootstrapper->log->Info("========== ShakaDB Stopped ==========");
 }
 
 void Bootstrapper::Start() {
