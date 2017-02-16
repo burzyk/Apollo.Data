@@ -10,7 +10,7 @@
 #include <src/server/server.h>
 #include <src/server/uv-server.h>
 #include <test/common.h>
-#include <src/server/handlers/packet-logger.h>
+#include <src/middleware/packet-logger.h>
 
 namespace shakadb {
 namespace test {

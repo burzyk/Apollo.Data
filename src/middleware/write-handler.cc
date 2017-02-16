@@ -27,6 +27,7 @@ void WriteHandler::OnReceived(ServerClient *client, data_packet_t *packet) {
   int points_count = (packet->payload_length() - series_name.size() - 1) / sizeof(data_point_t);
 
   // TODO: Integrate WriteQueue with WriteHandler
+  // TODO: move handlers to middleware
   this->write_queue->Enqueue(series_name, points, points_count);
 }
 

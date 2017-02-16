@@ -6,10 +6,10 @@
 #define SHAKADB_BOOTSTRAPPER_H
 
 #include <src/server/server.h>
-#include <src/server/handlers/ping-handler.h>
-#include <src/server/handlers/packet-logger.h>
+#include <src/middleware/ping-handler.h>
+#include <src/middleware/packet-logger.h>
 #include <src/utils/thread.h>
-#include <src/server/handlers/write-handler.h>
+#include <src/middleware/write-handler.h>
 
 namespace shakadb {
 
