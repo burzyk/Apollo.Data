@@ -10,6 +10,7 @@
 #include <src/middleware/packet-logger.h>
 #include <src/utils/thread.h>
 #include <src/middleware/write-handler.h>
+#include <src/middleware/read-handler.h>
 
 namespace shakadb {
 
@@ -33,6 +34,7 @@ class Bootstrapper {
   PingHandler *ping_handler;
   PacketLogger *packet_logger;
   WriteHandler *write_handler;
+  ReadHandler *read_handler;
   Database *db;
 };
 

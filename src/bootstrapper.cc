@@ -17,6 +17,7 @@ Bootstrapper::Bootstrapper() {
   this->packet_logger = new PacketLogger(this->log);
   this->db = StandardDatabase::Init("/Users/pburzynski/shakadb-test/data/prod", this->log, 100000, 0);
   this->write_handler = new WriteHandler(this->db, 65536000, 65536000);
+  this->read_handler = new ReadHandler(this->db, 65536000);
 
   this->write_handler_thread = new Thread([this](void *) -> void { this->WriteQueueRoutine(); }, this->log);
   this->server_thread = new Thread([this](void *) -> void { this->ServerRoutine(); }, this->log);
@@ -26,6 +27,7 @@ Bootstrapper::~Bootstrapper() {
   delete this->server_thread;
   delete this->write_handler_thread;
 
+  delete this->read_handler;
   delete this->write_handler;
   delete this->db;
   delete this->packet_logger;
@@ -70,6 +72,7 @@ void Bootstrapper::ServerRoutine() {
   // this->server->AddClientConnectedListener(this->packet_logger);
   this->server->AddServerListener(this->ping_handler);
   this->server->AddServerListener(this->write_handler);
+  this->server->AddServerListener(this->read_handler);
 
   this->server->Listen();
 }
