@@ -11,8 +11,7 @@ PingPacket::PingPacket(uint8_t *raw_packet, int packet_size)
     : DataPacket(raw_packet, packet_size) {
 }
 
-PingPacket::PingPacket(char *ping_data, int ping_data_size)
-    : DataPacket() {
+PingPacket::PingPacket(char *ping_data, int ping_data_size) {
   this->InitPacket(ping_data_size);
   memcpy(this->GetPayload(), ping_data, ping_data_size);
 }

@@ -13,7 +13,10 @@ namespace shakadb {
 
 enum PacketType {
   kPing = 1,
-  kWrite = 2
+  kWriteRequest = 2,
+  kWriteResponse = 3,
+  kReadRequest = 4,
+  kReadResponse = 5
 };
 
 struct data_packet_header_t {

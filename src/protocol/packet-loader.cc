@@ -31,7 +31,7 @@ DataPacket *PacketLoader::Load(uint8_t *raw_packet, int packet_size) {
 
   switch (header->type) {
     case kPing: return new PingPacket(raw_packet, packet_size);
-    case kWrite: return new WriteRequest(raw_packet, packet_size);
+    case kWriteRequest: return new WriteRequest(raw_packet, packet_size);
     default: return nullptr;
   }
 }

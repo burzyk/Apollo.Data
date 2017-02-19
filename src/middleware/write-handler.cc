@@ -32,7 +32,7 @@ WriteHandler::~WriteHandler() {
 }
 
 void WriteHandler::OnReceived(ServerClient *client, DataPacket *packet) {
-  if (packet->GetType() != kWrite) {
+  if (packet->GetType() != kWriteRequest) {
     return;
   }
 

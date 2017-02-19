@@ -10,8 +10,7 @@ WriteRequest::WriteRequest(uint8_t *raw_packet, int packet_size)
     : DataPacket(raw_packet, packet_size) {
 }
 
-WriteRequest::WriteRequest(std::string series_name, data_point_t *points, int points_count)
-    : DataPacket() {
+WriteRequest::WriteRequest(std::string series_name, data_point_t *points, int points_count) {
   this->InitPacket(sizeof(int) + series_name.size() + points_count * sizeof(data_point_t));
   int series_name_size = series_name.size();
 
@@ -21,7 +20,7 @@ WriteRequest::WriteRequest(std::string series_name, data_point_t *points, int po
 }
 
 PacketType WriteRequest::GetType() {
-  return kWrite;
+  return kWriteRequest;
 }
 
 int WriteRequest::GetPointsCount() {
