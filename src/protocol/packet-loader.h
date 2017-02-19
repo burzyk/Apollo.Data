@@ -5,6 +5,7 @@
 #ifndef SHAKADB_PACKETLOADER_H
 #define SHAKADB_PACKETLOADER_H
 
+#include <memory>
 #include "data-packet.h"
 
 namespace shakadb {
@@ -12,6 +13,7 @@ namespace shakadb {
 class PacketLoader {
  public:
   static DataPacket *Load(Stream *stream);
+  static DataPacket *Load(std::shared_ptr<uint8_t> raw_packet, int packet_size);
 };
 
 }

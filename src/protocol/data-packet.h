@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <src/utils/ring-buffer.h>
+#include <memory>
 
 namespace shakadb {
 
@@ -16,15 +17,15 @@ enum PacketType {
 };
 
 struct data_packet_header_t {
-  PacketType type;
   int packet_length;
+  PacketType type;
 };
 
 class DataPacket {
  public:
   DataPacket();
-  DataPacket(Stream *stream, int packet_size);
-  virtual ~DataPacket();
+  DataPacket(std::shared_ptr<uint8_t> raw_packet, int packet_size);
+  virtual ~DataPacket() {};
 
   virtual PacketType GetType() = 0;
   uint8_t *GetPacket();
@@ -34,7 +35,7 @@ class DataPacket {
   uint8_t *GetPayload();
   int GetPayloadSize();
  private:
-  uint8_t *raw_packet;
+  std::shared_ptr<uint8_t> raw_packet;
   int packet_size;
 };
 

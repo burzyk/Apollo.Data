@@ -9,6 +9,7 @@
 
 namespace shakadb {
 
+// TODO: Refactor snapshot to a smart pointer
 StandardDataPointReader::StandardDataPointReader(data_point_t *snapshot, int count) {
   this->snapshot = snapshot;
   this->count = count;

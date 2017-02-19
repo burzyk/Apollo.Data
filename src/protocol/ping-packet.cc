@@ -7,8 +7,8 @@
 
 namespace shakadb {
 
-PingPacket::PingPacket(Stream *stream, int packet_size)
-    : DataPacket(stream, packet_size) {
+PingPacket::PingPacket(std::shared_ptr<uint8_t> raw_packet, int packet_size)
+    : DataPacket(raw_packet, packet_size) {
 }
 
 PingPacket::PingPacket(uint8_t *ping_data, int ping_data_size)
