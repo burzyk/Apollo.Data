@@ -15,7 +15,6 @@ class ServerClient {
   class ServerClientListener {
    public:
     virtual ~ServerClientListener() {};
-    virtual void OnSend(ServerClient *client, DataPacket *packet) = 0;
     virtual void OnReceived(ServerClient *client, DataPacket *packet) = 0;
     virtual void OnDisconnected(ServerClient *client) = 0;
   };

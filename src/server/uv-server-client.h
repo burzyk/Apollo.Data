@@ -23,11 +23,6 @@ class UvServerClient : public ServerClient {
   void Close();
   bool IsRunning();
  private:
-  struct send_request_details_t {
-    UvServerClient *client;
-    DataPacket *packet;
-  };
-
   UvServerClient(uv_stream_t *client_connection);
 
   static void OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf);

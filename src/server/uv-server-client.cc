@@ -50,12 +50,8 @@ void UvServerClient::SendPacket(DataPacket *packet) {
       {.base = (char *)packet->GetPacket(), .len = (size_t)packet->GetPacketSize()}
   };
 
-  send_request_details_t *data = Allocator::New<send_request_details_t>();
-  data->packet = packet;
-  data->client = this;
-
   uv_write_t *write = Allocator::New<uv_write_t>();
-  write->data = data;
+  write->data = packet;
   uv_write(write, this->client_connection, buffer, 1, OnDataWrite);
 }
 
@@ -90,13 +86,9 @@ void UvServerClient::OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf
 }
 
 void UvServerClient::OnDataWrite(uv_write_t *req, int status) {
-  send_request_details_t *details = (send_request_details_t *)req->data;
+  DataPacket *packet = (DataPacket *)req->data;
+  delete packet;
 
-  for (auto listener: details->client->server_client_listeners) {
-    listener->OnSend(details->client, details->packet);
-  }
-
-  Allocator::Delete(details);
   Allocator::Delete(req);
 }
 

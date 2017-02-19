@@ -15,7 +15,7 @@ class PingPacket : public DataPacket {
   PingPacket(char *ping_data, int ping_data_size);
 
   virtual PacketType GetType();
-  uint8_t *GetPingData();
+  char *GetPingData();
   int GetPingDataSize();
 };
 

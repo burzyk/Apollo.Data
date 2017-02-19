@@ -19,7 +19,7 @@ DataPacket::DataPacket(uint8_t *raw_packet, int packet_size) {
 
 DataPacket::~DataPacket() {
   if (this->raw_packet != nullptr) {
-    delete this->raw_packet;
+    Allocator::Delete(this->raw_packet);
   }
 }
 

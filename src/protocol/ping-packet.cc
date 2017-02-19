@@ -21,8 +21,8 @@ PacketType PingPacket::GetType() {
   return kPing;
 }
 
-uint8_t *PingPacket::GetPingData() {
-  return this->GetPayload();
+char *PingPacket::GetPingData() {
+  return (char *)this->GetPayload();
 }
 
 int PingPacket::GetPingDataSize() {

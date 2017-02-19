@@ -65,7 +65,7 @@ bool Session::Ping() {
   const char *ping_data = "ala ma kota";
   int ping_data_length = strlen(ping_data);
 
-  PingPacket request((uint8_t *)ping_data, ping_data_length);
+  PingPacket request((char *)ping_data, ping_data_length);
   this->SendPacket(&request);
 
   auto response = std::unique_ptr<PingPacket>((PingPacket *)this->ReadPacket());
@@ -104,6 +104,11 @@ DataPacket *Session::ReadPacket() {
 
   uint8_t *raw_packet = Allocator::New<uint8_t>(header.packet_length);
   memcpy(raw_packet, &header, sizeof(header));
+
+  if (!this->Receive(raw_packet + sizeof(data_packet_header_t), header.packet_length - sizeof(data_packet_header_t))) {
+    Allocator::Delete(raw_packet);
+    return nullptr;
+  }
 
   return PacketLoader::Load(raw_packet, header.packet_length);
 }

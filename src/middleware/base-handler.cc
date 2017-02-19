@@ -10,10 +10,6 @@ void BaseHandler::OnClientConnected(Server *server, ServerClient *client) {
   client->AddServerClientListener(this);
 }
 
-void BaseHandler::OnSend(ServerClient *client, DataPacket *packet) {
-  delete packet;
-}
-
 void BaseHandler::OnReceived(ServerClient *client, DataPacket *packet) {
 }
 

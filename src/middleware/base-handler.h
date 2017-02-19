@@ -13,7 +13,6 @@ namespace shakadb {
 class BaseHandler : public Server::ServerListener, ServerClient::ServerClientListener {
  public:
   void OnClientConnected(Server *server, ServerClient *client);
-  void OnSend(ServerClient *client, DataPacket *packet);
   void OnReceived(ServerClient *client, DataPacket *packet);
   void OnDisconnected(ServerClient *client);
 };
