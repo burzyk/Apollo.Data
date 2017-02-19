@@ -11,8 +11,8 @@ namespace shakadb {
 
 class PingPacket : public DataPacket {
  public:
-  PingPacket(std::shared_ptr<uint8_t> raw_packet, int packet_size);
-  PingPacket(uint8_t *ping_data, int ping_data_size);
+  PingPacket(uint8_t *raw_packet, int packet_size);
+  PingPacket(char *ping_data, int ping_data_size);
 
   virtual PacketType GetType();
   uint8_t *GetPingData();

@@ -13,7 +13,7 @@ namespace shakadb {
 class PacketLoader {
  public:
   static DataPacket *Load(Stream *stream);
-  static DataPacket *Load(std::shared_ptr<uint8_t> raw_packet, int packet_size);
+  static DataPacket *Load(uint8_t *raw_packet, int packet_size);
 };
 
 }

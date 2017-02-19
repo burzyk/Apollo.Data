@@ -16,10 +16,7 @@
 
 namespace shakadb {
 
-#define SHAKADB_RECV_STREAM_GROW  65536000
-
-Session::Session(int sock)
-    : receive_stream(sock, SHAKADB_RECV_STREAM_GROW) {
+Session::Session(int sock) {
   this->sock = sock;
 }
 
@@ -71,7 +68,7 @@ bool Session::Ping() {
   PingPacket request((uint8_t *)ping_data, ping_data_length);
   this->SendPacket(&request);
 
-  std::shared_ptr<PingPacket> response = std::static_pointer_cast<PingPacket>(this->ReadPacket());
+  auto response = std::unique_ptr<PingPacket>((PingPacket *)this->ReadPacket());
 
   return response != nullptr &&
       request.GetPingDataSize() == response->GetPingDataSize() &&
@@ -98,8 +95,27 @@ bool Session::SendPacket(DataPacket *packet) {
   return total_sent == packet_size;
 }
 
-std::shared_ptr<DataPacket> Session::ReadPacket() {
-  return std::shared_ptr<DataPacket>(PacketLoader::Load(&this->receive_stream));
+DataPacket *Session::ReadPacket() {
+  data_packet_header_t header;
+
+  if (!this->Receive(&header, sizeof(header))) {
+    return nullptr;
+  }
+
+  uint8_t *raw_packet = Allocator::New<uint8_t>(header.packet_length);
+  memcpy(raw_packet, &header, sizeof(header));
+
+  return PacketLoader::Load(raw_packet, header.packet_length);
+}
+
+bool Session::Receive(void *buffer, int size) {
+  ssize_t read = 0;
+
+  while ((read = recv(this->sock, buffer, size, MSG_WAITALL)) > 0) {
+    size -= read;
+  }
+
+  return size == 0;
 }
 
 }

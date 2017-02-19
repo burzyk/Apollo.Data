@@ -17,15 +17,15 @@ enum PacketType {
 };
 
 struct data_packet_header_t {
-  int packet_length;
   PacketType type;
+  int packet_length;
 };
 
 class DataPacket {
  public:
   DataPacket();
-  DataPacket(std::shared_ptr<uint8_t> raw_packet, int packet_size);
-  virtual ~DataPacket() {};
+  DataPacket(uint8_t *raw_packet, int packet_size);
+  virtual ~DataPacket();
 
   virtual PacketType GetType() = 0;
   uint8_t *GetPacket();
@@ -35,7 +35,7 @@ class DataPacket {
   uint8_t *GetPayload();
   int GetPayloadSize();
  private:
-  std::shared_ptr<uint8_t> raw_packet;
+  uint8_t *raw_packet;
   int packet_size;
 };
 
