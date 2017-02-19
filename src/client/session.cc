@@ -12,7 +12,9 @@
 #include <src/protocol/ping-packet.h>
 #include <src/protocol/write-request.h>
 #include <src/protocol/packet-loader.h>
+#include <src/protocol/read-request.h>
 #include "session.h"
+#include "client-data-point-reader.h"
 
 namespace shakadb {
 
@@ -80,6 +82,12 @@ bool Session::WritePoints(std::string series_name, data_point_t *points, int cou
   return this->SendPacket(&request);
 }
 
+DataPointReader *Session::ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end) {
+  ReadRequest request(series_name, begin, end);
+  this->SendPacket(&request);
+  return new ClientDataPointReader([this]() -> ReadResponse * { return (ReadResponse *)this->ReadPacket(); });
+}
+
 bool Session::SendPacket(DataPacket *packet) {
   uint8_t *raw_packet = packet->GetPacket();
   int packet_size = packet->GetPacketSize();
@@ -118,6 +126,7 @@ bool Session::Receive(void *buffer, int size) {
 
   while ((read = recv(this->sock, buffer, size, MSG_WAITALL)) > 0) {
     size -= read;
+    buffer += read;
   }
 
   return size == 0;

@@ -23,12 +23,18 @@ void ReadHandler::OnReceived(ServerClient *client, DataPacket *packet) {
   auto reader = this->db->Read(request->GetSeriesName(), request->GetBegin(), request->GetEnd());
   data_point_t *points = reader->GetDataPoints();
   int points_count = reader->GetDataPointsCount();
+  int remaining = points_count;
 
-  while (points_count > 0) {
-    int to_send = MIN(points_count, this->points_per_packet);
-    client->SendPacket(new ReadResponse(points, to_send));
+  if (remaining == 0) {
+    client->SendPacket(new ReadResponse(nullptr, 0, 0));
+    return;
+  }
+
+  while (remaining > 0) {
+    int to_send = MIN(remaining, this->points_per_packet);
+    client->SendPacket(new ReadResponse(points, to_send, points_count));
     points += to_send;
-    points_count -= to_send;
+    remaining -= to_send;
   }
 }
 

@@ -3,6 +3,7 @@
 //
 
 #include <src/utils/stopwatch.h>
+#include <src/storage/data-point-reader.h>
 #include "session-manager.h"
 
 int main() {
@@ -19,23 +20,32 @@ int main() {
     return -1;
   }
 
-  shakadb::data_point_t points[100] = {0};
-  shakadb::Stopwatch sw;
   shakadb::Session *session = manager.GetSessionById(session_id);
+  shakadb::DataPointReader *reader = session->ReadPoints("USD_AUD", A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
 
-  sw.Start();
-
-  for (int i = 0; i < 10000; i++) {
-    for (int j = 0; j < 100; j++) {
-      points[j].time = i * 100 + j;
-      points[j].value = j;
-    }
-
-    session->WritePoints("USD_AUD", points, 100);
+  for (int i = 0; i < reader->GetDataPointsCount(); i++) {
+    printf("%llu -> %f\n", reader->GetDataPoints()[i].time, reader->GetDataPoints()[i].value);
   }
 
-  sw.Stop();
-  printf("Elapsed: %f[s]\n", sw.GetElapsedSeconds());
+  delete reader;
+
+//  shakadb::data_point_t points[100] = {0};
+//  shakadb::Stopwatch sw;
+//  shakadb::Session *session = manager.GetSessionById(session_id);
+//
+//  sw.Start();
+//
+//  for (int i = 0; i < 10000; i++) {
+//    for (int j = 0; j < 100; j++) {
+//      points[j].time = i * 100 + j;
+//      points[j].value = j;
+//    }
+//
+//    session->WritePoints("USD_AUD", points, 100);
+//  }
+//
+//  sw.Stop();
+//  printf("Elapsed: %f[s]\n", sw.GetElapsedSeconds());
 
   return 0;
 }

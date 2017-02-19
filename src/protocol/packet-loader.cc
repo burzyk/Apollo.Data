@@ -6,6 +6,8 @@
 #include "packet-loader.h"
 #include "ping-packet.h"
 #include "write-request.h"
+#include "read-request.h"
+#include "read-response.h"
 
 namespace shakadb {
 
@@ -32,6 +34,8 @@ DataPacket *PacketLoader::Load(uint8_t *raw_packet, int packet_size) {
   switch (header->type) {
     case kPing: return new PingPacket(raw_packet, packet_size);
     case kWriteRequest: return new WriteRequest(raw_packet, packet_size);
+    case kReadRequest: return new ReadRequest(raw_packet, packet_size);
+    case kReadResponse: return new ReadResponse(raw_packet, packet_size);
     default: return nullptr;
   }
 }
