@@ -54,8 +54,8 @@ void UvServer::Close() {
   uv_async_send(shutdown);
 }
 
-void UvServer::AddClientConnectedListener(Server::ClientConnectedListener *listener) {
-  this->client_connected_listeners.push_back(listener);
+void UvServer::AddServerListener(ServerListener *listener) {
+  this->server_listeners.push_back(listener);
 }
 
 void UvServer::OnNewConnection(uv_stream_t *server, int status) {
@@ -76,7 +76,7 @@ void UvServer::OnNewConnection(uv_stream_t *server, int status) {
   if (client != nullptr) {
     _this->clients.push_back(client);
 
-    for (auto listener: _this->client_connected_listeners) {
+    for (auto listener: _this->server_listeners) {
       listener->OnClientConnected(_this, client);
     }
   }

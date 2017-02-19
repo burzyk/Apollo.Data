@@ -12,7 +12,7 @@ link_directories(/usr/local/Cellar/libuv/1.9.1/lib)
 
 set(SRC_DOMAIN src/data-point.h src/fatal-exception.cc src/fatal-exception.h)
 set(SRC_CLIENT src/client/session-manager.cc src/client/session-manager.h src/client/session.cc src/client/session.h src/client/receive-stream.cc src/client/receive-stream.h)
-set(SRC_MIDDLEWARE src/middleware/packet-logger.cc src/middleware/packet-logger.h src/middleware/ping-handler.cc src/middleware/ping-handler.h src/middleware/write-handler.cc src/middleware/write-handler.h)
+set(SRC_MIDDLEWARE src/middleware/packet-logger.cc src/middleware/packet-logger.h src/middleware/ping-handler.cc src/middleware/ping-handler.h src/middleware/write-handler.cc src/middleware/write-handler.h src/middleware/base-handler.cc src/middleware/base-handler.h)
 set(SRC_PROTOCOL src/protocol/data-packet.h src/protocol/data-packet.cc src/protocol/ping-packet.cc src/protocol/ping-packet.h src/protocol/write-request.cc src/protocol/write-request.h src/protocol/packet-loader.cc src/protocol/packet-loader.h)
 set(SRC_SERVER src/server/server.h src/server/uv-server.cc src/server/uv-server.h src/server/uv-server-client.cc src/server/uv-server-client.h src/server/server-client.h src/server/uv-common.h src/server/uv-common.cc)
 set(SRC_STORAGE src/storage/data-chunk.cc src/storage/data-chunk.h src/storage/standard-data-point-reader.cc src/storage/standard-data-point-reader.h src/storage/standard-database.cc src/storage/standard-database.h src/storage/data-series.cc src/storage/data-series.h src/storage/database.h src/storage/data-point-reader.h)

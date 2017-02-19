@@ -68,8 +68,8 @@ void Bootstrapper::Stop() {
 
 void Bootstrapper::ServerRoutine() {
   // this->server->AddClientConnectedListener(this->packet_logger);
-  this->server->AddClientConnectedListener(this->ping_handler);
-  this->server->AddClientConnectedListener(this->write_handler);
+  this->server->AddServerListener(this->ping_handler);
+  this->server->AddServerListener(this->write_handler);
 
   this->server->Listen();
 }

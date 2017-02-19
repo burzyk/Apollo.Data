@@ -37,12 +37,8 @@ UvServerClient *UvServerClient::Accept(uv_stream_t *server, uv_loop_t *loop) {
   return client;
 }
 
-void UvServerClient::AddReceivedListener(ServerClient::ReceiveListener *listener) {
-  this->receive_listeners.push_back(listener);
-}
-
-void UvServerClient::AddDisconnectedListener(ServerClient::DisconnectListener *listener) {
-  this->disconnect_listeners.push_back(listener);
+void UvServerClient::AddServerClientListener(ServerClientListener *listener) {
+  this->server_client_listeners.push_back(listener);
 }
 
 void UvServerClient::SendPacket(DataPacket *packet) {
@@ -54,8 +50,12 @@ void UvServerClient::SendPacket(DataPacket *packet) {
       {.base = (char *)packet->GetPacket(), .len = (size_t)packet->GetPacketSize()}
   };
 
+  send_request_details_t *data = Allocator::New<send_request_details_t>();
+  data->packet = packet;
+  data->client = this;
+
   uv_write_t *write = Allocator::New<uv_write_t>();
-  write->data = packet;
+  write->data = data;
   uv_write(write, this->client_connection, buffer, 1, OnDataWrite);
 }
 
@@ -90,16 +90,20 @@ void UvServerClient::OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf
 }
 
 void UvServerClient::OnDataWrite(uv_write_t *req, int status) {
-  DataPacket *packet = (DataPacket *)req->data;
-  delete packet;
+  send_request_details_t *details = (send_request_details_t *)req->data;
 
+  for (auto listener: details->client->server_client_listeners) {
+    listener->OnSend(details->client, details->packet);
+  }
+
+  Allocator::Delete(details);
   Allocator::Delete(req);
 }
 
 void UvServerClient::OnClientShutdown(uv_shutdown_t *req, int status) {
   UvServerClient *_this = (UvServerClient *)req->data;
 
-  for (auto listener : _this->disconnect_listeners) {
+  for (auto listener : _this->server_client_listeners) {
     listener->OnDisconnected(_this);
   }
 
@@ -114,7 +118,7 @@ void UvServerClient::ReadData(ssize_t nread, const uv_buf_t *buf) {
   DataPacket *packet = nullptr;
 
   while ((packet = PacketLoader::Load(&this->receive_buffer)) != nullptr) {
-    for (auto listener: this->receive_listeners) {
+    for (auto listener: this->server_client_listeners) {
       listener->OnReceived(this, packet);
     }
 

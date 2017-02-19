@@ -10,10 +10,6 @@ PacketLogger::PacketLogger(Log *log) {
   this->log = log;
 }
 
-void PacketLogger::OnClientConnected(Server *server, ServerClient *client) {
-  client->AddReceivedListener(this);
-}
-
 void PacketLogger::OnReceived(ServerClient *client, DataPacket *packet) {
   this->log->Debug(
       "Received packet: " + std::to_string(packet->GetType()) + " len: " + std::to_string(packet->GetPacketSize()));

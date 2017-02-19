@@ -10,15 +10,15 @@
 #include <src/storage/database.h>
 #include <src/utils/monitor.h>
 #include <map>
+#include "base-handler.h"
 
 namespace shakadb {
 
-class WriteHandler : public Server::ClientConnectedListener, ServerClient::ReceiveListener {
+class WriteHandler : public BaseHandler {
  public:
   WriteHandler(Database *db, int buffer_grow_increment, int points_buffer_count);
   ~WriteHandler();
 
-  void OnClientConnected(Server *server, ServerClient *client);
   void OnReceived(ServerClient *client, DataPacket *packet);
 
   void ListenForData();

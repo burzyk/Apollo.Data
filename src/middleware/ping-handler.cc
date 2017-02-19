@@ -7,10 +7,6 @@
 
 namespace shakadb {
 
-void PingHandler::OnClientConnected(Server *server, ServerClient *client) {
-  client->AddReceivedListener(this);
-}
-
 void PingHandler::OnReceived(ServerClient *client, DataPacket *packet) {
   if (packet->GetType() != PacketType::kPing) {
     return;

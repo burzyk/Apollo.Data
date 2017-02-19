@@ -31,10 +31,6 @@ WriteHandler::~WriteHandler() {
   Allocator::Delete(this->points_buffer);
 }
 
-void WriteHandler::OnClientConnected(Server *server, ServerClient *client) {
-  client->AddReceivedListener(this);
-}
-
 void WriteHandler::OnReceived(ServerClient *client, DataPacket *packet) {
   if (packet->GetType() != kWrite) {
     return;

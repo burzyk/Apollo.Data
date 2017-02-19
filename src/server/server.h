@@ -14,15 +14,16 @@ namespace shakadb {
 
 class Server {
  public:
-  class ClientConnectedListener {
+  class ServerListener {
    public:
+    virtual ~ServerListener() {};
     virtual void OnClientConnected(Server *server, ServerClient *client) = 0;
   };
 
   virtual ~Server() {};
   virtual void Listen() = 0;
   virtual void Close() = 0;
-  virtual void AddClientConnectedListener(ClientConnectedListener *listener) = 0;
+  virtual void AddServerListener(ServerListener *listener) = 0;
 };
 
 }

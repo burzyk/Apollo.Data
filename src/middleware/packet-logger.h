@@ -7,14 +7,14 @@
 
 #include <src/log.h>
 #include <src/server/server.h>
+#include "base-handler.h"
 
 namespace shakadb {
 
-class PacketLogger : public Server::ClientConnectedListener, ServerClient::ReceiveListener {
+class PacketLogger : public BaseHandler {
  public:
   PacketLogger(Log *log);
 
-  void OnClientConnected(Server *server, ServerClient *client);
   void OnReceived(ServerClient *client, DataPacket *packet);
  private:
   Log *log;

@@ -16,6 +16,9 @@ DataPacket *PacketLoader::Load(Stream *stream) {
     return nullptr;
   }
 
+  // TODO: Base handler
+  // TODO: on packet send event that will free the packet
+
   switch (header.type) {
     case kPing: return new PingPacket(stream, header.packet_length);
     case kWrite: return new WriteRequest(stream, header.packet_length);

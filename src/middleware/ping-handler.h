@@ -6,12 +6,12 @@
 #define SHAKADB_STORAGE_PINGHANDLER_H
 
 #include <src/server/server.h>
+#include "base-handler.h"
 
 namespace shakadb {
 
-class PingHandler : public Server::ClientConnectedListener, ServerClient::ReceiveListener {
+class PingHandler : public BaseHandler {
  public:
-  void OnClientConnected(Server *server, ServerClient *client);
   void OnReceived(ServerClient *client, DataPacket *packet);
 };
 

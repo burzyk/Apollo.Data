@@ -21,7 +21,7 @@ class UvServer : public Server {
 
   void Listen();
   void Close();
-  void AddClientConnectedListener(ClientConnectedListener *listener);
+  void AddServerListener(ServerListener *listener);
  private:
   static void OnNewConnection(uv_stream_t *server, int status);
   static void OnServerClose(uv_async_t *handle);
@@ -33,7 +33,7 @@ class UvServer : public Server {
   bool is_running;
 
   std::list<UvServerClient *> clients;
-  std::list<Server::ClientConnectedListener *> client_connected_listeners;
+  std::list<Server::ServerListener *> server_listeners;
 
   uv_loop_t event_loop;
   uv_tcp_t server;
