@@ -27,7 +27,7 @@ class Session {
   Session(int sock);
   bool SendPacket(DataPacket *packet);
   DataPacket *ReadPacket();
-  bool Receive(void *buffer, int size);
+  bool Receive(uint8_t *buffer, int size);
 
   int sock;
 };

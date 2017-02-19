@@ -106,7 +106,7 @@ bool Session::SendPacket(DataPacket *packet) {
 DataPacket *Session::ReadPacket() {
   data_packet_header_t header;
 
-  if (!this->Receive(&header, sizeof(header))) {
+  if (!this->Receive((uint8_t *)&header, sizeof(header))) {
     return nullptr;
   }
 
@@ -121,7 +121,7 @@ DataPacket *Session::ReadPacket() {
   return PacketLoader::Load(raw_packet, header.packet_length);
 }
 
-bool Session::Receive(void *buffer, int size) {
+bool Session::Receive(uint8_t *buffer, int size) {
   ssize_t read = 0;
 
   while ((read = recv(this->sock, buffer, size, MSG_WAITALL)) > 0) {
