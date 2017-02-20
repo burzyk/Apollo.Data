@@ -5,11 +5,11 @@
 #include <list>
 #include <src/utils/allocator.h>
 #include <src/utils/common.h>
-#include "client-data-point-reader.h"
+#include "client-data-points-reader.h"
 
 namespace shakadb {
 
-ClientDataPointReader::ClientDataPointReader(std::function<ReadResponse *()> packet_provider) {
+ClientDataPointsReader::ClientDataPointsReader(std::function<ReadResponse *()> packet_provider) {
   this->points_count = 0;
   this->position = 0;
   this->received_points = nullptr;
@@ -31,13 +31,13 @@ ClientDataPointReader::ClientDataPointReader(std::function<ReadResponse *()> pac
   }
 }
 
-ClientDataPointReader::~ClientDataPointReader() {
+ClientDataPointsReader::~ClientDataPointsReader() {
   if (this->received_points != nullptr) {
     Allocator::Delete(this->received_points);
   }
 }
 
-int ClientDataPointReader::ReadDataPoints(data_point_t *points, int count) {
+int ClientDataPointsReader::ReadDataPoints(data_point_t *points, int count) {
   int to_read = MIN(count, this->points_count - this->position);
 
   if (to_read == 0) {
@@ -49,7 +49,7 @@ int ClientDataPointReader::ReadDataPoints(data_point_t *points, int count) {
   return to_read;
 }
 
-int ClientDataPointReader::GetDataPointsCount() {
+int ClientDataPointsReader::GetDataPointsCount() {
   return this->points_count;
 }
 

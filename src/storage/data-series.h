@@ -8,7 +8,7 @@
 #include <src/log.h>
 #include <src/utils/rw-lock.h>
 #include <list>
-#include "src/data-point-reader.h"
+#include "src/data-points-reader.h"
 #include "data-chunk.h"
 
 namespace shakadb {
@@ -18,7 +18,7 @@ class DataSeries {
   ~DataSeries();
   static DataSeries *Init(std::string file_name, int points_per_chunk, Log *log);
 
-  std::shared_ptr<DataPointReader> Read(timestamp_t begin, timestamp_t end);
+  std::shared_ptr<DataPointsReader> Read(timestamp_t begin, timestamp_t end);
   void Write(data_point_t *points, int count);
 
   void PrintMetadata();

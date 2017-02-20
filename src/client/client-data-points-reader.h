@@ -5,16 +5,16 @@
 #ifndef SHAKADB_CLIENTDATAPOINTREADER_H
 #define SHAKADB_CLIENTDATAPOINTREADER_H
 
-#include <src/data-point-reader.h>
+#include <src/data-points-reader.h>
 #include <functional>
 #include <src/protocol/read-response.h>
 
 namespace shakadb {
 
-class ClientDataPointReader : public DataPointReader {
+class ClientDataPointsReader : public DataPointsReader {
  public:
-  ClientDataPointReader(std::function<ReadResponse *(void)> packet_provider);
-  virtual ~ClientDataPointReader();
+  ClientDataPointsReader(std::function<ReadResponse *(void)> packet_provider);
+  virtual ~ClientDataPointsReader();
 
   int ReadDataPoints(data_point_t *points, int count);
   int GetDataPointsCount();

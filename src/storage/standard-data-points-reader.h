@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_DATA_POINT_READER_H
-#define SHAKADB_STORAGE_DATA_POINT_READER_H
+#ifndef SHAKADB_STORAGE_DATA_POINTS_READER_H
+#define SHAKADB_STORAGE_DATA_POINTS_READER_H
 
 #include <src/data-point.h>
 #include <list>
@@ -11,13 +11,13 @@
 #include <src/utils/rw-lock-scope.h>
 #include <src/utils/ring-buffer.h>
 #include "data-chunk.h"
-#include "src/data-point-reader.h"
+#include "src/data-points-reader.h"
 
 namespace shakadb {
 
-class StandardDataPointReader : public DataPointReader {
+class StandardDataPointsReader : public DataPointsReader {
  public:
-  StandardDataPointReader(int points_buffer_increment);
+  StandardDataPointsReader(int points_buffer_increment);
 
   int ReadDataPoints(data_point_t *points, int count);
   void WriteDataPoints(data_point_t *points, int count);
@@ -29,4 +29,4 @@ class StandardDataPointReader : public DataPointReader {
 
 }
 
-#endif //SHAKADB_STORAGE_DATAPOINTREADER_H
+#endif //SHAKADB_STORAGE_DATA_POINTS_READER_H

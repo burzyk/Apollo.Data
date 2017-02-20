@@ -33,7 +33,7 @@ void StandardDatabase::Write(std::string name, data_point_t *points, int count) 
   series->Write(points, count);
 }
 
-std::shared_ptr<DataPointReader> StandardDatabase::Read(std::string name, timestamp_t begin, timestamp_t end) {
+std::shared_ptr<DataPointsReader> StandardDatabase::Read(std::string name, timestamp_t begin, timestamp_t end) {
   DataSeries *series = this->FindDataSeries(name);
   return series->Read(begin, end);
 }

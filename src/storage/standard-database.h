@@ -10,7 +10,7 @@
 #include <map>
 #include <src/utils/rw-lock.h>
 #include <src/log.h>
-#include "src/data-point-reader.h"
+#include "src/data-points-reader.h"
 #include "data-chunk.h"
 #include "data-series.h"
 #include "database.h"
@@ -22,7 +22,7 @@ class StandardDatabase : public Database {
   ~StandardDatabase();
   static StandardDatabase *Init(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit);
 
-  std::shared_ptr<DataPointReader> Read(std::string name, timestamp_t begin, timestamp_t end);
+  std::shared_ptr<DataPointsReader> Read(std::string name, timestamp_t begin, timestamp_t end);
   void Write(std::string name, data_point_t *points, int count);
 
   void PrintMetadata();

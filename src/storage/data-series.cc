@@ -8,7 +8,7 @@
 #include <src/utils/file.h>
 #include <src/utils/allocator.h>
 #include "data-series.h"
-#include "standard-data-point-reader.h"
+#include "standard-data-points-reader.h"
 
 #define A_PAGE_ALLOCATE_BUFFER_SIZE 65536
 
@@ -82,7 +82,7 @@ void DataSeries::Write(data_point_t *points, int count) {
   }
 }
 
-std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t end) {
+std::shared_ptr<DataPointsReader> DataSeries::Read(timestamp_t begin, timestamp_t end) {
   auto lock_scope = this->series_lock.LockRead();
   std::list<DataChunk *> filtered_chunks;
 
@@ -93,7 +93,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
   }
 
   if (filtered_chunks.size() == 0) {
-    return std::make_shared<StandardDataPointReader>(0);
+    return std::make_shared<StandardDataPointsReader>(0);
   }
 
   auto comp = [](data_point_t p, timestamp_t t) -> bool { return p.time < t; };
@@ -109,7 +109,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
 
   if (filtered_chunks.size() == 1) {
     uint64_t total_points = read_end - read_begin;
-    auto reader = std::make_shared<StandardDataPointReader>(total_points);
+    auto reader = std::make_shared<StandardDataPointsReader>(total_points);
     reader->WriteDataPoints(read_begin, total_points);
 
     return reader;
@@ -128,7 +128,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
     }
   }
 
-  auto reader = std::make_shared<StandardDataPointReader>(total_points);
+  auto reader = std::make_shared<StandardDataPointsReader>(total_points);
 
   reader->WriteDataPoints(read_begin, points_from_front);
 

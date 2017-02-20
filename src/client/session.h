@@ -9,7 +9,7 @@
 #include <string>
 #include <src/protocol/data-packet.h>
 #include <src/protocol/read-response.h>
-#include <src/data-point-reader.h>
+#include <src/data-points-reader.h>
 
 namespace shakadb {
 
@@ -22,7 +22,7 @@ class Session {
 
   bool Ping();
   bool WritePoints(std::string series_name, data_point_t *points, int count);
-  DataPointReader *ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end);
+  DataPointsReader *ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end);
  private:
   Session(int sock);
   bool SendPacket(DataPacket *packet);

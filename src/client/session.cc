@@ -14,7 +14,7 @@
 #include <src/protocol/packet-loader.h>
 #include <src/protocol/read-request.h>
 #include "session.h"
-#include "client-data-point-reader.h"
+#include "client-data-points-reader.h"
 
 namespace shakadb {
 
@@ -82,10 +82,10 @@ bool Session::WritePoints(std::string series_name, data_point_t *points, int cou
   return this->SendPacket(&request);
 }
 
-DataPointReader *Session::ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end) {
+DataPointsReader *Session::ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end) {
   ReadRequest request(series_name, begin, end);
   this->SendPacket(&request);
-  return new ClientDataPointReader([this]() -> ReadResponse * { return (ReadResponse *)this->ReadPacket(); });
+  return new ClientDataPointsReader([this]() -> ReadResponse * { return (ReadResponse *)this->ReadPacket(); });
 }
 
 bool Session::SendPacket(DataPacket *packet) {

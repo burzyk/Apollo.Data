@@ -3,7 +3,7 @@
 //
 
 #include <src/utils/stopwatch.h>
-#include <src/data-point-reader.h>
+#include <src/data-points-reader.h>
 #include "session-manager.h"
 
 int main() {
@@ -21,7 +21,7 @@ int main() {
   }
 
   shakadb::Session *session = manager.GetSessionById(session_id);
-  shakadb::DataPointReader *reader = session->ReadPoints("USD_AUD", A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  shakadb::DataPointsReader *reader = session->ReadPoints("USD_AUD", A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
   shakadb::data_point_t points[1024] = {0};
   int remaining = reader->GetDataPointsCount();
 
