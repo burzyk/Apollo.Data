@@ -10,7 +10,7 @@
 #include <vector>
 #include <src/utils/rw-lock-scope.h>
 #include "data-chunk.h"
-#include "data-point-reader.h"
+#include "src/data-point-reader.h"
 
 namespace shakadb {
 

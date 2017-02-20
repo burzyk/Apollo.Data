@@ -5,7 +5,7 @@
 #ifndef SHAKADB_DATABASE_H
 #define SHAKADB_DATABASE_H
 
-#include "data-point-reader.h"
+#include "src/data-point-reader.h"
 
 namespace shakadb {
 

@@ -9,7 +9,7 @@
 #include <string>
 #include <src/protocol/data-packet.h>
 #include <src/protocol/read-response.h>
-#include <src/storage/data-point-reader.h>
+#include <src/data-point-reader.h>
 
 namespace shakadb {
 

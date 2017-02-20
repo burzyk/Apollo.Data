@@ -3,7 +3,7 @@
 //
 
 #include <src/utils/stopwatch.h>
-#include <src/storage/data-point-reader.h>
+#include <src/data-point-reader.h>
 #include "session-manager.h"
 
 int main() {
