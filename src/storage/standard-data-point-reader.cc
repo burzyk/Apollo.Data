@@ -9,35 +9,22 @@
 
 namespace shakadb {
 
-StandardDataPointReader::StandardDataPointReader(data_point_t *snapshot, int count) {
-  this->snapshot = snapshot;
-  this->count = count;
-  this->position = 0;
-}
-
-StandardDataPointReader::~StandardDataPointReader() {
-  if (this->snapshot != nullptr) {
-    Allocator::Delete(this->snapshot);
-    this->snapshot = nullptr;
-  }
-
-  this->count = 0;
+StandardDataPointReader::StandardDataPointReader(int points_buffer_increment)
+    : points_buffer(points_buffer_increment) {
+  this->total_points = 0;
 }
 
 int StandardDataPointReader::ReadDataPoints(data_point_t *points, int count) {
-  int to_read = MIN(count, this->count - this->position);
+  return this->points_buffer.Read((uint8_t *)points, count * sizeof(data_point_t)) / sizeof(data_point_t);
+}
 
-  if (to_read == 0) {
-    return 0;
-  }
-
-  memcpy(points, this->snapshot + this->position, to_read * sizeof(data_point_t));
-  this->position += to_read;
-  return to_read;
+void StandardDataPointReader::WriteDataPoints(data_point_t *points, int count) {
+  this->total_points += count;
+  this->points_buffer.Write((uint8_t *)points, count * sizeof(data_point_t));
 }
 
 int StandardDataPointReader::GetDataPointsCount() {
-  return this->count;
+  return this->total_points;
 }
 
 }

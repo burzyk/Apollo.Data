@@ -93,7 +93,7 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
   }
 
   if (filtered_chunks.size() == 0) {
-    return std::make_shared<StandardDataPointReader>(nullptr, 0);
+    return std::make_shared<StandardDataPointReader>(0);
   }
 
   auto comp = [](data_point_t p, timestamp_t t) -> bool { return p.time < t; };
@@ -109,10 +109,10 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
 
   if (filtered_chunks.size() == 1) {
     uint64_t total_points = read_end - read_begin;
-    data_point_t *snapshot = Allocator::New<data_point_t>(total_points);
-    memcpy(snapshot, read_begin, total_points * sizeof(data_point_t));
+    auto reader = std::make_shared<StandardDataPointReader>(total_points);
+    reader->WriteDataPoints(read_begin, total_points);
 
-    return std::make_shared<StandardDataPointReader>(snapshot, total_points);
+    return reader;
   }
 
   uint64_t total_points = 0;
@@ -128,22 +128,19 @@ std::shared_ptr<DataPointReader> DataSeries::Read(timestamp_t begin, timestamp_t
     }
   }
 
-  data_point_t *snapshot = Allocator::New<data_point_t>(total_points);
-  int snapshot_position = 0;
+  auto reader = std::make_shared<StandardDataPointReader>(total_points);
 
-  memcpy(snapshot, read_begin, points_from_front * sizeof(data_point_t));
-  snapshot_position += points_from_front;
+  reader->WriteDataPoints(read_begin, points_from_front);
 
   for (auto i: filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
-      memcpy(snapshot + snapshot_position, i->Read(), (size_t)i->GetNumberOfPoints() * sizeof(data_point_t));
-      snapshot_position += i->GetNumberOfPoints();
+      reader->WriteDataPoints(i->Read(), i->GetNumberOfPoints());
     }
   }
 
-  memcpy(snapshot + snapshot_position, back_begin, points_from_back * sizeof(data_point_t));
+  reader->WriteDataPoints(back_begin, points_from_back);
 
-  return std::make_shared<StandardDataPointReader>(snapshot, total_points);
+  return reader;
 }
 
 void DataSeries::PrintMetadata() {
