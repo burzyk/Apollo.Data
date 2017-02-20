@@ -11,6 +11,7 @@
 #include "test/storage/performance-tests.h"
 #include "test/storage/concurrency-tests.h"
 #include "test/utils/rw-lock-tests.h"
+#include "test/domain/configuration-tests.h"
 
 #define RUN_TESTS
 //#define RUN_PERF_TESTS
@@ -67,6 +68,9 @@ int main() {
   TEST(shakadb::test::monitor_create_delete_test);
   TEST(shakadb::test::monitor_enter_test);
   TEST(shakadb::test::monitor_enter_two_threads_test);
+
+//  TEST(shakadb::test::configuration_init_test);
+//  TEST(shakadb::test::configuration_full_test);
 
   TEST_PERF(shakadb::test::database_performance_sequential_write_small);
   TEST_PERF(shakadb::test::database_performance_sequential_write_medium);
