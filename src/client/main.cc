@@ -35,9 +35,9 @@ int main() {
 //
 //  sw.Start();
 //
-//  for (int i = 0; i < 10000; i++) {
+//  for (int i = 0; i < 10; i++) {
 //    for (int j = 0; j < 100; j++) {
-//      points[j].time = i * 100 + j;
+//      points[j].time = i * 100 + j + 1;
 //      points[j].value = j;
 //    }
 //

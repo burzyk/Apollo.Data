@@ -24,7 +24,7 @@ ClientDataPointReader::ClientDataPointReader(std::function<ReadResponse *()> pac
   int position = 0;
 
   for (auto packet: packets) {
-    memcpy(this->points + position, packet->GetPoints(), packet->GetPointsCount());
+    memcpy(this->points + position, packet->GetPoints(), packet->GetPointsCount() * sizeof(data_point_t));
     position += packet->GetPointsCount();
   }
 }
