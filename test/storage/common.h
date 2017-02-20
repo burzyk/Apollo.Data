@@ -85,16 +85,18 @@ data_point_t *read_all_points(DataPointReader *reader) {
 void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
   std::shared_ptr<DataPointReader> reader = db->Read(series_name, begin, end);
   int total_read = reader->GetDataPointsCount();
-  auto points = std::unique_ptr<data_point_t>(read_all_points(reader.get()));
+  data_point_t *points = read_all_points(reader.get());
 
   for (int i = 1; i < total_read; i++) {
-    Assert::IsTrue(points.get()[i - 1].time <= points.get()[i].time);
-    Assert::IsTrue(points.get()[i].time != 0);
+    Assert::IsTrue(points[i - 1].time <= points[i].time);
+    Assert::IsTrue(points[i].time != 0);
   }
 
   if (expected_count > 0) {
     Assert::IsTrue(expected_count == total_read);
   }
+
+  Allocator::Delete(points);
 }
 
 }

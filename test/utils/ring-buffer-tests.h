@@ -98,8 +98,8 @@ void ring_buffer_multiple_write_hitting_limit_test(TestContext ctx) {
 
 void ring_buffer_multiple_write_and_read_loop_test(TestContext ctx) {
   RingBuffer buffer(5);
-  uint8_t input[1000] = {0};
-  uint8_t result[1000] = {0};
+  uint8_t input[10000] = {0};
+  uint8_t result[10000] = {0};
   uint8_t expected[10000] = {0};
 
   for (int i = 0; i < 1000; i++) {
