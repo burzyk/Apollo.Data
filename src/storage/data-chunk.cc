@@ -125,8 +125,8 @@ DataChunk::DataChunk(std::string file_name, uint64_t file_offset, int max_points
   this->file_offset = file_offset;
   this->max_points = max_points;
   this->cached_content = nullptr;
-  this->begin = data_point_t::kMinTimestamp;
-  this->end = data_point_t::kMaxTimestamp;
+  this->begin = data_point_t::kMaxTimestamp;
+  this->end = data_point_t::kMinTimestamp;
   this->number_of_points = 0;
 }
 
