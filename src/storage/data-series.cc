@@ -191,14 +191,14 @@ void DataSeries::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
 }
 
 void DataSeries::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points, int count) {
-  int to_write = MIN(count, chunk->GetMaxNumberOfPoints() - position);
+  int to_write = min(count, chunk->GetMaxNumberOfPoints() - position);
   chunk->Write(position, points, to_write);
   count -= to_write;
   points += to_write;
 
   while (count != 0) {
     chunk = this->CreateEmptyChunk();
-    to_write = MIN(count, chunk->GetMaxNumberOfPoints());
+    to_write = min(count, chunk->GetMaxNumberOfPoints());
     chunk->Write(0, points, to_write);
     this->RegisterChunk(chunk);
     count -= to_write;
@@ -215,7 +215,7 @@ DataChunk *DataSeries::CreateEmptyChunk() {
   file.Seek(0, SEEK_END);
 
   while (to_allocate > 0) {
-    int to_write = MIN(to_allocate, buffer_size);
+    int to_write = min(to_allocate, buffer_size);
     file.Write(buffer, (size_t)to_write);
     to_allocate -= to_write;
   }

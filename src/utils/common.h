@@ -5,7 +5,14 @@
 #ifndef SHAKADB_STORAGE_COMMON_H
 #define SHAKADB_STORAGE_COMMON_H
 
-#define MAX(a, b) (a) < (b) ? (b) : (a)
-#define MIN(a, b) (a) < (b) ? (a) : (b)
+#include <cstdint>
+
+namespace shakadb {
+
+uint64_t max(uint64_t a, uint64_t b);
+uint64_t min(uint64_t a, uint64_t b);
+int min(int a, int b);
+
+}
 
 #endif //SHAKADB_STORAGE_COMMON_H

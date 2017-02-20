@@ -33,10 +33,10 @@ void database_concurrent_access_writer(Database *db, int batches, int batch_size
 void database_concurrent_access_reader(Database *db, volatile bool *should_terminate) {
   try {
     while (!*should_terminate) {
-      validate_read(db, "XOM_US", -1, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
-      validate_read(db, "MSFT_US", -1, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
-      validate_read(db, "APPL_US", -1, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
-      validate_read(db, "AAL_LN", -1, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+      validate_read(db, "XOM_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+      validate_read(db, "MSFT_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+      validate_read(db, "APPL_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+      validate_read(db, "AAL_LN", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
     }
   } catch (FatalException ex) {
     printf("Reader fatal exception: %s\n", ex.what());

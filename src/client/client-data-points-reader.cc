@@ -38,7 +38,7 @@ ClientDataPointsReader::~ClientDataPointsReader() {
 }
 
 int ClientDataPointsReader::ReadDataPoints(data_point_t *points, int count) {
-  int to_read = MIN(count, this->points_count - this->position);
+  int to_read = min(count, this->points_count - this->position);
 
   if (to_read == 0) {
     return 0;

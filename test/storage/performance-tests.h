@@ -88,7 +88,7 @@ Stopwatch database_performance_random_write(TestContext ctx, int batches, int ba
 
   sw.Stop();
 
-  validate_read(c->GetDb(), "usd_gbp", batch_size * batches, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", batch_size * batches, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   return sw;
 }

@@ -21,7 +21,10 @@ int main() {
   }
 
   shakadb::Session *session = manager.GetSessionById(session_id);
-  shakadb::DataPointsReader *reader = session->ReadPoints("USD_AUD", A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  shakadb::DataPointsReader *reader = session->ReadPoints(
+      "USD_AUD",
+      shakadb::data_point_t::kMinTimestamp,
+      shakadb::data_point_t::kMaxTimestamp);
   shakadb::data_point_t points[1024] = {0};
   int remaining = reader->GetDataPointsCount();
 

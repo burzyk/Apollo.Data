@@ -9,12 +9,12 @@
 
 namespace shakadb {
 
-#define A_MAX_TIMESTAMP     UINT64_MAX
-#define A_MIN_TIMESTAMP     0
-
 typedef uint64_t timestamp_t;
 
 struct data_point_t {
+  static const timestamp_t kMaxTimestamp;
+  static const timestamp_t kMinTimestamp;
+
   timestamp_t time;
   float value;
 };

@@ -31,7 +31,7 @@ int RingBuffer::Read(uint8_t *buffer, int buffer_size) {
 }
 
 int RingBuffer::Peek(uint8_t *buffer, int buffer_size) {
-  int read_size = MIN(buffer_size, this->size);
+  int read_size = min(buffer_size, this->size);
   int read_end = (this->begin + read_size) % this->capacity;
 
   if (read_size == 0) {

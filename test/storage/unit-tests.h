@@ -27,21 +27,21 @@ void basic_database_write_and_read_all(TestContext ctx) {
   auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
 
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
-  validate_read(c->GetDb(), "usd_gbp", 15, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 15, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void write_database_in_one_big_batch(TestContext ctx) {
   auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
 
   write_to_database(c->GetDb(), "usd_gbp", 1, 32);
-  validate_read(c->GetDb(), "usd_gbp", 32, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 32, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void write_database_in_multiple_small_batches(TestContext ctx) {
   auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
 
   write_to_database(c->GetDb(), "usd_gbp", 32, 1);
-  validate_read(c->GetDb(), "usd_gbp", 32, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 32, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void database_multi_write_and_read_all(TestContext ctx) {
@@ -51,7 +51,7 @@ void database_multi_write_and_read_all(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
-  validate_read(c->GetDb(), "usd_gbp", 60, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 60, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void database_write_history(TestContext ctx) {
@@ -61,26 +61,26 @@ void database_write_history(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 1000);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 100);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 10);
-  validate_read(c->GetDb(), "usd_gbp", 60, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 60, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void database_write_close_and_write_more(TestContext ctx) {
   auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
 
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
-  validate_read(c->GetDb(), "usd_gbp", 15, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 15, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   c.reset();
   c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
 
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
-  validate_read(c->GetDb(), "usd_gbp", 30, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 30, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   c.reset();
   c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
 
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
-  validate_read(c->GetDb(), "usd_gbp", 45, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void database_continuous_write(TestContext ctx) {
@@ -89,7 +89,7 @@ void database_continuous_write(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 30);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 100);
-  validate_read(c->GetDb(), "usd_gbp", 45, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void database_continuous_write_with_pickup(TestContext ctx) {
@@ -98,7 +98,7 @@ void database_continuous_write_with_pickup(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 5, 3);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 30);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 100);
-  validate_read(c->GetDb(), "usd_gbp", 45, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   c.reset();
   c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(5, 100, ctx));
@@ -106,7 +106,7 @@ void database_continuous_write_with_pickup(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 800);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 10000);
   write_to_database(c->GetDb(), "usd_gbp", 5, 3, 100000);
-  validate_read(c->GetDb(), "usd_gbp", 90, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 90, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void database_write_batch_size_equal_to_page_capacity(TestContext ctx) {
@@ -118,7 +118,7 @@ void database_write_batch_size_equal_to_page_capacity(TestContext ctx) {
   write_to_database(c->GetDb(), "usd_gbp", 5, 5);
   write_to_database(c->GetDb(), "usd_gbp", 5, 5);
   write_to_database(c->GetDb(), "usd_gbp", 5, 5);
-  validate_read(c->GetDb(), "usd_gbp", 150, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 150, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void database_write_batch_size_greater_than_page_capacity(TestContext ctx) {
@@ -126,7 +126,7 @@ void database_write_batch_size_greater_than_page_capacity(TestContext ctx) {
 
   write_to_database(c->GetDb(), "usd_gbp", 100, 7);
   write_to_database(c->GetDb(), "usd_gbp", 100, 7);
-  validate_read(c->GetDb(), "usd_gbp", 1400, A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  validate_read(c->GetDb(), "usd_gbp", 1400, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void database_read_inside_single_chunk(TestContext ctx) {
