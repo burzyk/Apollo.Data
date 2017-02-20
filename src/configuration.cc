@@ -22,7 +22,10 @@ Configuration *Configuration::Load(std::string config_file) {
   size_t line_size = 0;
   ssize_t read = 0;
   regex_t regex;
-  regcomp(&regex, "^.+=.+$", 0);
+
+  if (regcomp(&regex, "^.+=.+$", REG_EXTENDED)) {
+    throw FatalException("Unable to compile a regex");
+  };
 
   while ((read = getline(&line, &line_size, f)) != -1) {
     if (read == 0 || line[0] == '#') {
@@ -38,7 +41,7 @@ Configuration *Configuration::Load(std::string config_file) {
     bool key_complete = false;
 
     for (int i = 0; i < read; i++) {
-      if (isblank(line[i])) {
+      if (isspace(line[i])) {
         continue;
       }
 
