@@ -5,9 +5,10 @@
 #include "bootstrapper.h"
 #include "fatal-exception.h"
 
-int main() {
+int main(int argc, char *argv[]) {
   try {
-    shakadb::Bootstrapper::Run();
+    //std::string config_file(argc > 1 ? argv[1] : "");
+    shakadb::Bootstrapper::Run("/Users/pburzynski/projects/ShakaDB/server.cfg");
   } catch (shakadb::FatalException ex) {
     fprintf(stderr, "Fatal Exception: %s\n", ex.what());
     return -1;

@@ -11,14 +11,15 @@
 #include <src/utils/thread.h>
 #include <src/middleware/write-handler.h>
 #include <src/middleware/read-handler.h>
+#include "configuration.h"
 
 namespace shakadb {
 
 class Bootstrapper {
  public:
-  static void Run();
+  static void Run(std::string config_file);
  private:
-  Bootstrapper();
+  Bootstrapper(Configuration *config);
   ~Bootstrapper();
 
   void Start();

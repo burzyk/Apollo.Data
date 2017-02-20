@@ -7,17 +7,21 @@
 #include <src/utils/allocator.h>
 #include <src/storage/standard-database.h>
 #include "bootstrapper.h"
+#include "configuration.h"
 
 namespace shakadb {
 
-Bootstrapper::Bootstrapper() {
-  this->log = new FileLog(std::string());
-  this->server = new UvServer(8099, 10, this->log);
+Bootstrapper::Bootstrapper(Configuration *config) {
+  this->log = new FileLog(config->GetLogFile());
+  this->server = new UvServer(config->GetServerPort(), config->GetServerBacklog(), this->log);
   this->ping_handler = new PingHandler();
   this->packet_logger = new PacketLogger(this->log);
-  this->db = StandardDatabase::Init("/Users/pburzynski/shakadb-test/data/prod", this->log, 100000, 0);
-  this->write_handler = new WriteHandler(this->db, 65536000, 65536000);
-  this->read_handler = new ReadHandler(this->db, 65536000);
+  this->db = StandardDatabase::Init(config->GetDbFolder(), this->log, config->GetDbPointsPerChunk(), 0);
+  this->write_handler = new WriteHandler(
+      this->db,
+      config->GetWriteHandlerBufferSize(),
+      config->GetWriteHandlerBufferSize());
+  this->read_handler = new ReadHandler(this->db, config->GetReadHandlerBufferSize());
 
   this->write_handler_thread = new Thread([this](void *) -> void { this->WriteQueueRoutine(); }, this->log);
   this->server_thread = new Thread([this](void *) -> void { this->ServerRoutine(); }, this->log);
@@ -36,8 +40,8 @@ Bootstrapper::~Bootstrapper() {
   delete this->log;
 }
 
-void Bootstrapper::Run() {
-  Bootstrapper *bootstrapper = new Bootstrapper();
+void Bootstrapper::Run(std::string config_file) {
+  Bootstrapper *bootstrapper = new Bootstrapper(Configuration::Load(config_file));
   bootstrapper->log->Info("========== Starting ShakaDB ==========");
 
   bootstrapper->Start();

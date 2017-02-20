@@ -11,7 +11,7 @@ include_directories(/usr/local/Cellar/libuv/1.9.1/include)
 link_directories(/usr/local/Cellar/libuv/1.9.1/lib)
 
 
-set(SRC_DOMAIN src/data-point.h src/fatal-exception.cc src/fatal-exception.h src/storage/standard-data-points-reader.h src/data-point.cc)
+set(SRC_DOMAIN src/data-point.h src/fatal-exception.cc src/fatal-exception.h src/storage/standard-data-points-reader.h src/data-point.cc src/configuration.cc src/configuration.h)
 set(SRC_CLIENT src/client/session-manager.cc src/client/session-manager.h src/client/session.cc src/client/session.h src/client/client-data-points-reader.cc src/client/client-data-points-reader.h)
 set(SRC_MIDDLEWARE src/middleware/packet-logger.cc src/middleware/packet-logger.h src/middleware/ping-handler.cc src/middleware/ping-handler.h src/middleware/write-handler.cc src/middleware/write-handler.h src/middleware/base-handler.cc src/middleware/base-handler.h src/middleware/read-handler.cc src/middleware/read-handler.h)
 set(SRC_PROTOCOL src/protocol/data-packet.h src/protocol/data-packet.cc src/protocol/ping-packet.cc src/protocol/ping-packet.h src/protocol/write-request.cc src/protocol/write-request.h src/protocol/packet-loader.cc src/protocol/packet-loader.h src/protocol/read-request.cc src/protocol/read-request.h src/protocol/read-response.cc src/protocol/read-response.h)
