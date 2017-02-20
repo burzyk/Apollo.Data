@@ -89,7 +89,7 @@ DataPointsReader *Session::ReadPoints(std::string series_name, timestamp_t begin
 }
 
 bool Session::SendPacket(DataPacket *packet) {
-  uint8_t *raw_packet = packet->GetPacket();
+  byte_t *raw_packet = packet->GetPacket();
   int packet_size = packet->GetPacketSize();
   int sent = 0;
   int total_sent = 0;
@@ -106,11 +106,11 @@ bool Session::SendPacket(DataPacket *packet) {
 DataPacket *Session::ReadPacket() {
   data_packet_header_t header;
 
-  if (!this->Receive((uint8_t *)&header, sizeof(header))) {
+  if (!this->Receive((byte_t *)&header, sizeof(header))) {
     return nullptr;
   }
 
-  uint8_t *raw_packet = Allocator::New<uint8_t>(header.packet_length);
+  byte_t *raw_packet = Allocator::New<byte_t>(header.packet_length);
   memcpy(raw_packet, &header, sizeof(header));
 
   if (!this->Receive(raw_packet + sizeof(data_packet_header_t), header.packet_length - sizeof(data_packet_header_t))) {
@@ -121,7 +121,7 @@ DataPacket *Session::ReadPacket() {
   return PacketLoader::Load(raw_packet, header.packet_length);
 }
 
-bool Session::Receive(uint8_t *buffer, int size) {
+bool Session::Receive(byte_t *buffer, int size) {
   ssize_t read = 0;
 
   while ((read = recv(this->sock, buffer, size, MSG_WAITALL)) > 0) {

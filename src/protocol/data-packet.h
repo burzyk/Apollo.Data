@@ -27,18 +27,18 @@ struct data_packet_header_t {
 class DataPacket {
  public:
   DataPacket();
-  DataPacket(uint8_t *raw_packet, int packet_size);
+  DataPacket(byte_t *raw_packet, int packet_size);
   virtual ~DataPacket();
 
   virtual PacketType GetType() = 0;
-  uint8_t *GetPacket();
+  byte_t *GetPacket();
   int GetPacketSize();
  protected:
   void InitPacket(int payload_size);
-  uint8_t *GetPayload();
+  byte_t *GetPayload();
   int GetPayloadSize();
  private:
-  uint8_t *raw_packet;
+  byte_t *raw_packet;
   int packet_size;
 };
 

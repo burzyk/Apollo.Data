@@ -10,6 +10,7 @@
 #include <src/protocol/data-packet.h>
 #include <src/protocol/read-response.h>
 #include <src/data-points-reader.h>
+#include <src/utils/common.h>
 
 namespace shakadb {
 
@@ -27,7 +28,7 @@ class Session {
   Session(int sock);
   bool SendPacket(DataPacket *packet);
   DataPacket *ReadPacket();
-  bool Receive(uint8_t *buffer, int size);
+  bool Receive(byte_t *buffer, int size);
 
   int sock;
 };

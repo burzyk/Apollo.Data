@@ -6,7 +6,7 @@
 
 namespace shakadb {
 
-ReadRequest::ReadRequest(uint8_t *raw_packet, int packet_size)
+ReadRequest::ReadRequest(byte_t *raw_packet, int packet_size)
     : DataPacket(raw_packet, packet_size) {
 }
 

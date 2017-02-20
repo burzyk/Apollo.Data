@@ -208,7 +208,7 @@ void DataSeries::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *point
 
 DataChunk *DataSeries::CreateEmptyChunk() {
   int buffer_size = this->points_per_chunk / 2;
-  uint8_t *buffer = Allocator::New<uint8_t>(buffer_size);
+  byte_t *buffer = Allocator::New<byte_t>(buffer_size);
   int to_allocate = DataChunk::CalculateChunkSize(this->points_per_chunk);
 
   File file(this->file_name);

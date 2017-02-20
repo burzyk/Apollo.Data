@@ -105,7 +105,7 @@ void UvServerClient::OnClientShutdown(uv_shutdown_t *req, int status) {
 }
 
 void UvServerClient::ReadData(ssize_t nread, const uv_buf_t *buf) {
-  this->receive_buffer.Write((uint8_t *)buf->base, nread);
+  this->receive_buffer.Write((byte_t *)buf->base, nread);
 
   DataPacket *packet = nullptr;
 

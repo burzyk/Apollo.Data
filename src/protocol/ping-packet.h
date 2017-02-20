@@ -11,7 +11,7 @@ namespace shakadb {
 
 class PingPacket : public DataPacket {
  public:
-  PingPacket(uint8_t *raw_packet, int packet_size);
+  PingPacket(byte_t *raw_packet, int packet_size);
   PingPacket(char *ping_data, int ping_data_size);
 
   virtual PacketType GetType();

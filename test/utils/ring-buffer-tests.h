@@ -19,7 +19,7 @@ void ring_buffer_create_delete_test(TestContext ctx) {
 
 void ring_buffer_empty_read_test(TestContext ctx) {
   RingBuffer buffer(5);
-  uint8_t data[255] = {0};
+  byte_t data[255] = {0};
 
   Assert::IsTrue(buffer.Read(data, 20) == 0);
   Assert::IsTrue(buffer.Read(data, 20) == 0);
@@ -30,7 +30,7 @@ void ring_buffer_empty_read_test(TestContext ctx) {
 
 void ring_buffer_empty_peek_test(TestContext ctx) {
   RingBuffer buffer(5);
-  uint8_t data[255] = {0};
+  byte_t data[255] = {0};
 
   Assert::IsTrue(buffer.Peek(data, 20) == 0);
   Assert::IsTrue(buffer.Read(data, 20) == 0);
@@ -43,7 +43,7 @@ void ring_buffer_simple_write_test(TestContext ctx) {
   RingBuffer buffer(5);
   const char *data = "ala ma kota";
 
-  buffer.Write((uint8_t *)data, 11);
+  buffer.Write((byte_t *)data, 11);
 
   Assert::IsTrue(buffer.GetSize() == 11);
 }
@@ -52,10 +52,10 @@ void ring_buffer_multiple_write_with_peerk_and_read_test(TestContext ctx) {
   RingBuffer buffer(5);
   const char *data_1 = "ala ma kota";
   const char *data_2 = "ola ma asa";
-  uint8_t result[255] = {0};
+  byte_t result[255] = {0};
 
-  buffer.Write((uint8_t *)data_1, 11);
-  buffer.Write((uint8_t *)data_2, 10);
+  buffer.Write((byte_t *)data_1, 11);
+  buffer.Write((byte_t *)data_2, 10);
   Assert::IsTrue(buffer.GetSize() == 11 + 10);
 
   memset(result, 0, 255);
@@ -79,15 +79,15 @@ void ring_buffer_multiple_write_hitting_limit_test(TestContext ctx) {
   RingBuffer buffer(5);
   const char *data_1 = "ala ma kota";
   const char *data_2 = " ola ma";
-  uint8_t result[255] = {0};
+  byte_t result[255] = {0};
 
-  buffer.Write((uint8_t *)data_1, 11);
+  buffer.Write((byte_t *)data_1, 11);
 
   buffer.Read(result, 6);
   Assert::IsTrue(buffer.GetSize() == 5);
   Assert::IsTrue(strcmp((const char *)result, "ala ma") == 0);
 
-  buffer.Write((uint8_t *)data_2, 7);
+  buffer.Write((byte_t *)data_2, 7);
 
   memset(result, 0, 255);
   int read_count = buffer.Read(result, 100);
@@ -98,9 +98,9 @@ void ring_buffer_multiple_write_hitting_limit_test(TestContext ctx) {
 
 void ring_buffer_multiple_write_and_read_loop_test(TestContext ctx) {
   RingBuffer buffer(5);
-  uint8_t input[10000] = {0};
-  uint8_t result[10000] = {0};
-  uint8_t expected[10000] = {0};
+  byte_t input[10000] = {0};
+  byte_t result[10000] = {0};
+  byte_t expected[10000] = {0};
 
   for (int i = 0; i < 1000; i++) {
     input[i] = i % 100;

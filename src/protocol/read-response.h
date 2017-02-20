@@ -6,13 +6,14 @@
 #define SHAKADB_READRESPONSE_H
 
 #include <src/data-point.h>
+#include <src/utils/common.h>
 #include "data-packet.h"
 
 namespace shakadb {
 
 class ReadResponse : public DataPacket {
  public:
-  ReadResponse(uint8_t *raw_packet, int packet_size);
+  ReadResponse(byte_t *raw_packet, int packet_size);
   ReadResponse(data_point_t *points, int points_count, int total_points_count);
 
   PacketType GetType();

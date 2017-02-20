@@ -6,7 +6,7 @@
 
 namespace shakadb {
 
-WriteRequest::WriteRequest(uint8_t *raw_packet, int packet_size)
+WriteRequest::WriteRequest(byte_t *raw_packet, int packet_size)
     : DataPacket(raw_packet, packet_size) {
 }
 

@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 03/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_COMMON_H
-#define SHAKADB_STORAGE_COMMON_H
+#ifndef SHAKADB_STORAGE_TESTS_COMMON_H
+#define SHAKADB_STORAGE_TESTS_COMMON_H
 
 #include <src/log.h>
 
@@ -20,4 +20,4 @@ class NullLog : public Log {
 }
 }
 
-#endif //SHAKADB_STORAGE_COMMON_H
+#endif //SHAKADB_STORAGE_TESTS_COMMON_H

@@ -9,6 +9,8 @@
 
 namespace shakadb {
 
+typedef uint8_t byte_t;
+
 uint64_t max(uint64_t a, uint64_t b);
 uint64_t min(uint64_t a, uint64_t b);
 int min(int a, int b);

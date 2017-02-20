@@ -14,12 +14,12 @@ namespace shakadb {
 DataPacket *PacketLoader::Load(Stream *stream) {
   data_packet_header_t header;
 
-  if (stream->Peek((uint8_t *)&header, sizeof(data_packet_header_t)) < sizeof(data_packet_header_t)
+  if (stream->Peek((byte_t *)&header, sizeof(data_packet_header_t)) < sizeof(data_packet_header_t)
       || !stream->HasData(header.packet_length)) {
     return nullptr;
   }
 
-  uint8_t *raw_packet = Allocator::New<uint8_t>(header.packet_length);
+  byte_t *raw_packet = Allocator::New<byte_t>(header.packet_length);
 
   if (stream->Read(raw_packet, header.packet_length) != header.packet_length) {
     throw FatalException("Not enough data in the buffer");
@@ -28,7 +28,7 @@ DataPacket *PacketLoader::Load(Stream *stream) {
   return Load(raw_packet, header.packet_length);
 }
 
-DataPacket *PacketLoader::Load(uint8_t *raw_packet, int packet_size) {
+DataPacket *PacketLoader::Load(byte_t *raw_packet, int packet_size) {
   data_packet_header_t *header = (data_packet_header_t *)raw_packet;
 
   switch (header->type) {

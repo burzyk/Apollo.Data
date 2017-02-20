@@ -15,15 +15,15 @@ class RingBuffer : public Stream {
   RingBuffer(int grow_increment);
   ~RingBuffer();
 
-  int Read(uint8_t *buffer, int buffer_size);
-  int Peek(uint8_t *buffer, int buffer_size);
-  void Write(uint8_t *buffer, int buffer_size);
+  int Read(byte_t *buffer, int buffer_size);
+  int Peek(byte_t *buffer, int buffer_size);
+  void Write(byte_t *buffer, int buffer_size);
   int GetSize();
   bool HasData(int size);
  private:
   void EnsureBufferSize(int new_size);
 
-  uint8_t *data;
+  byte_t *data;
   int size;
   int capacity;
   int begin;

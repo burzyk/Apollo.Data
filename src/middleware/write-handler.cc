@@ -45,7 +45,7 @@ void WriteHandler::OnReceived(ServerClient *client, DataPacket *packet) {
   }
 
   this->buffers[request->GetSeriesName()]->Write(
-      (uint8_t *)request->GetPoints(),
+      (byte_t *)request->GetPoints(),
       request->GetPointsCount() * sizeof(data_point_t));
   scope->Signal();
 }
@@ -61,7 +61,7 @@ void WriteHandler::ListenForData() {
       sw.Start();
 
       while (buffer.second->GetSize() != 0) {
-        int read = buffer.second->Read((uint8_t *)this->points_buffer, this->points_buffer_size) / sizeof(data_point_t);
+        int read = buffer.second->Read((byte_t *)this->points_buffer, this->points_buffer_size) / sizeof(data_point_t);
 
         scope->Exit();
         this->db->Write(buffer.first, this->points_buffer, read);

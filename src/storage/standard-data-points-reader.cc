@@ -15,12 +15,12 @@ StandardDataPointsReader::StandardDataPointsReader(int points_buffer_increment)
 }
 
 int StandardDataPointsReader::ReadDataPoints(data_point_t *points, int count) {
-  return this->points_buffer.Read((uint8_t *)points, count * sizeof(data_point_t)) / sizeof(data_point_t);
+  return this->points_buffer.Read((byte_t *)points, count * sizeof(data_point_t)) / sizeof(data_point_t);
 }
 
 void StandardDataPointsReader::WriteDataPoints(data_point_t *points, int count) {
   this->total_points += count;
-  this->points_buffer.Write((uint8_t *)points, count * sizeof(data_point_t));
+  this->points_buffer.Write((byte_t *)points, count * sizeof(data_point_t));
 }
 
 int StandardDataPointsReader::GetDataPointsCount() {
