@@ -19,11 +19,12 @@ class StandardDataPointReader : public DataPointReader {
   StandardDataPointReader(data_point_t *snapshot, int count);
   ~StandardDataPointReader();
 
-  data_point_t *GetDataPoints();
+  int ReadDataPoints(data_point_t *points, int count);
   int GetDataPointsCount();
  private:
   data_point_t *snapshot;
   int count;
+  int position;
 };
 
 }

@@ -71,14 +71,25 @@ void write_to_database(Database *db, std::string series_name, int batches, int b
   write_to_database(db, series_name, batches, batch_size, 1);
 }
 
+data_point_t *read_all_points(DataPointReader *reader) {
+  int points_count = reader->GetDataPointsCount();
+  data_point_t *points = Allocator::New<data_point_t>(points_count);
+
+  if (reader->ReadDataPoints(points, points_count) != points_count) {
+    throw FatalException("Unable to read all points");
+  }
+
+  return points;
+}
+
 void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
   std::shared_ptr<DataPointReader> reader = db->Read(series_name, begin, end);
   int total_read = reader->GetDataPointsCount();
-  data_point_t *points = reader->GetDataPoints();
+  auto points = std::unique_ptr<data_point_t>(read_all_points(reader.get()));
 
   for (int i = 1; i < total_read; i++) {
-    Assert::IsTrue(points[i - 1].time <= points[i].time);
-    Assert::IsTrue(points[i].time != 0);
+    Assert::IsTrue(points.get()[i - 1].time <= points.get()[i].time);
+    Assert::IsTrue(points.get()[i].time != 0);
   }
 
   if (expected_count > 0) {

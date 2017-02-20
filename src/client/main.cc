@@ -22,9 +22,16 @@ int main() {
 
   shakadb::Session *session = manager.GetSessionById(session_id);
   shakadb::DataPointReader *reader = session->ReadPoints("USD_AUD", A_MIN_TIMESTAMP, A_MAX_TIMESTAMP);
+  shakadb::data_point_t points[1024] = {0};
+  int remaining = reader->GetDataPointsCount();
 
-  for (int i = 0; i < reader->GetDataPointsCount(); i++) {
-    printf("%llu -> %f\n", reader->GetDataPoints()[i].time, reader->GetDataPoints()[i].value);
+  while (remaining > 0) {
+    int read = reader->ReadDataPoints(points, 1024);
+    remaining -= read;
+
+    for (int i = 0; i < read; i++) {
+      printf("%llu -> %f\n", points[i].time, points[i].value);
+    }
   }
 
   delete reader;

@@ -16,11 +16,12 @@ class ClientDataPointReader : public DataPointReader {
   ClientDataPointReader(std::function<ReadResponse *(void)> packet_provider);
   virtual ~ClientDataPointReader();
 
-  data_point_t *GetDataPoints();
+  int ReadDataPoints(data_point_t *points, int count);
   int GetDataPointsCount();
  private:
-  data_point_t *points;
+  data_point_t *received_points;
   int points_count;
+  int position;
 };
 
 }
