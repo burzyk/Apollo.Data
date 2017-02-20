@@ -10,8 +10,6 @@
 #include "data-series.h"
 #include "standard-data-points-reader.h"
 
-#define A_PAGE_ALLOCATE_BUFFER_SIZE 65536
-
 namespace shakadb {
 
 DataSeries::DataSeries(std::string file_name, int points_per_chunk, Log *log) {
@@ -209,19 +207,20 @@ void DataSeries::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *point
 }
 
 DataChunk *DataSeries::CreateEmptyChunk() {
-
-  uint8_t buffer[A_PAGE_ALLOCATE_BUFFER_SIZE] = {0};
+  int buffer_size = this->points_per_chunk / 2;
+  uint8_t *buffer = Allocator::New<uint8_t>(buffer_size);
   int to_allocate = DataChunk::CalculateChunkSize(this->points_per_chunk);
 
   File file(this->file_name);
   file.Seek(0, SEEK_END);
 
   while (to_allocate > 0) {
-    int to_write = MIN(to_allocate, A_PAGE_ALLOCATE_BUFFER_SIZE);
+    int to_write = MIN(to_allocate, buffer_size);
     file.Write(buffer, (size_t)to_write);
     to_allocate -= to_write;
   }
 
+  Allocator::Delete(buffer);
   file.Flush();
 
   return DataChunk::Load(
