@@ -5,7 +5,7 @@
 #ifndef SHAKADB_READHANDLER_H
 #define SHAKADB_READHANDLER_H
 
-#include <src/storage/database.h>
+#include <src/database.h>
 #include "base-handler.h"
 
 namespace shakadb {

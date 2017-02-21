@@ -12,6 +12,7 @@
 #include "test/storage/concurrency-tests.h"
 #include "test/utils/rw-lock-tests.h"
 #include "test/domain/configuration-tests.h"
+#include "test/server/end-to-end.h"
 
 #define RUN_TESTS
 //#define RUN_PERF_TESTS
@@ -72,19 +73,21 @@ int main() {
   TEST(shakadb::test::configuration_init_test);
   TEST(shakadb::test::configuration_full_test);
 
-  TEST_PERF(shakadb::test::database_performance_sequential_write_small);
-  TEST_PERF(shakadb::test::database_performance_sequential_write_medium);
-  TEST_PERF(shakadb::test::database_performance_sequential_write_large);
-  TEST_PERF(shakadb::test::database_performance_read_small);
-  TEST_PERF(shakadb::test::database_performance_read_medium);
-  TEST_PERF(shakadb::test::database_performance_read_large);
-  TEST_PERF(shakadb::test::database_performance_random_write_small);
-  TEST_PERF(shakadb::test::database_performance_random_write_medium);
-  TEST_PERF(shakadb::test::database_performance_random_write_large);
+//  TEST_PERF(shakadb::test::database_performance_sequential_write_small);
+//  TEST_PERF(shakadb::test::database_performance_sequential_write_medium);
+//  TEST_PERF(shakadb::test::database_performance_sequential_write_large);
+//  TEST_PERF(shakadb::test::database_performance_read_small);
+//  TEST_PERF(shakadb::test::database_performance_read_medium);
+//  TEST_PERF(shakadb::test::database_performance_read_large);
+//  TEST_PERF(shakadb::test::database_performance_random_write_small);
+//  TEST_PERF(shakadb::test::database_performance_random_write_medium);
+//  TEST_PERF(shakadb::test::database_performance_random_write_large);
+//
+//  TEST_PERF(shakadb::test::database_concurrent_access_small);
+//  TEST_PERF(shakadb::test::database_concurrent_access_medium);
+//  TEST_PERF(shakadb::test::database_concurrent_access_large);
 
-  TEST_PERF(shakadb::test::database_concurrent_access_small);
-  TEST_PERF(shakadb::test::database_concurrent_access_medium);
-  TEST_PERF(shakadb::test::database_concurrent_access_large);
+  //TEST_PERF(shakadb::test::e2e_initial_write);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");

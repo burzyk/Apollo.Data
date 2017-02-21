@@ -17,16 +17,19 @@ namespace shakadb {
 
 class Bootstrapper {
  public:
-  static void Run(std::string config_file);
+  virtual ~Bootstrapper();
+  static Bootstrapper *Run(std::string config_file);
+  void Stop();
  private:
   Bootstrapper(Configuration *config);
-  ~Bootstrapper();
 
-  void Start();
-  void Stop();
   void ServerRoutine();
   void WriteQueueRoutine();
+  void MainRoutine();
 
+  Monitor control_lock;
+  std::shared_ptr<MonitorScope> control_lock_scope;
+  Thread *master_thread;
   Thread *server_thread;
   Thread *write_handler_thread;
 

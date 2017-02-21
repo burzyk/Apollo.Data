@@ -13,7 +13,7 @@
 #include "src/data-points-reader.h"
 #include "data-chunk.h"
 #include "data-series.h"
-#include "database.h"
+#include "src/database.h"
 
 namespace shakadb {
 

@@ -5,7 +5,7 @@
 #ifndef SHAKADB_STORAGE_STORAGE_COMMON_H
 #define SHAKADB_STORAGE_STORAGE_COMMON_H
 
-#include <src/storage/database.h>
+#include <src/database.h>
 #include <memory>
 #include <test/framework/assert.h>
 #include <src/file-log.h>

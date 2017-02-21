@@ -23,6 +23,7 @@ Bootstrapper::Bootstrapper(Configuration *config) {
       config->GetWriteHandlerBufferSize());
   this->read_handler = new ReadHandler(this->db, config->GetReadHandlerBufferSize());
 
+  this->master_thread = new Thread([this](void *) -> void { this->MainRoutine(); }, this->log);
   this->write_handler_thread = new Thread([this](void *) -> void { this->WriteQueueRoutine(); }, this->log);
   this->server_thread = new Thread([this](void *) -> void { this->ServerRoutine(); }, this->log);
 }
@@ -30,6 +31,7 @@ Bootstrapper::Bootstrapper(Configuration *config) {
 Bootstrapper::~Bootstrapper() {
   delete this->server_thread;
   delete this->write_handler_thread;
+  delete this->master_thread;
 
   delete this->read_handler;
   delete this->write_handler;
@@ -40,29 +42,24 @@ Bootstrapper::~Bootstrapper() {
   delete this->log;
 }
 
-void Bootstrapper::Run(std::string config_file) {
+Bootstrapper *Bootstrapper::Run(std::string config_file) {
   Bootstrapper *bootstrapper = new Bootstrapper(Configuration::Load(config_file));
-  bootstrapper->log->Info("========== Starting ShakaDB ==========");
+  bootstrapper->master_thread->Start(nullptr);
 
-  bootstrapper->Start();
-
-  while (getc(stdin) != 'q');
-
-  bootstrapper->Stop();
-
-  bootstrapper->log->Info("========== ShakaDB Stopped ==========");
-  delete bootstrapper;
-  Allocator::AssertAllDeleted();
+  return bootstrapper;
 }
 
-void Bootstrapper::Start() {
+void Bootstrapper::MainRoutine() {
+  this->log->Info("========== Starting ShakaDB ==========");
+
   this->server_thread->Start(nullptr);
   this->write_handler_thread->Start(nullptr);
 
   this->log->Info("ShakaDB started");
-}
 
-void Bootstrapper::Stop() {
+  this->control_lock_scope = this->control_lock.Enter();
+  this->control_lock_scope->Wait();
+
   this->log->Info("Stopping the database");
 
   this->server->Close();
@@ -70,6 +67,13 @@ void Bootstrapper::Stop() {
 
   this->write_handler->Close();
   this->write_handler_thread->Join();
+
+  this->log->Info("========== ShakaDB Stopped ==========");
+}
+
+void Bootstrapper::Stop() {
+  this->control_lock_scope->Signal();
+  this->master_thread->Join();
 }
 
 void Bootstrapper::ServerRoutine() {

@@ -7,7 +7,7 @@
 
 #include <src/server/server-client.h>
 #include <src/server/server.h>
-#include <src/storage/database.h>
+#include <src/database.h>
 #include <src/utils/monitor.h>
 #include <map>
 #include "base-handler.h"
