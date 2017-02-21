@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <functional>
-#include <memory>
 #include <test/framework/test-context.h>
 #include <test/framework/test-runner.h>
 #include <src/utils/directory.h>
@@ -8,7 +7,7 @@
 #include <src/utils/allocator.h>
 #include <test/tests/monitor-tests.h>
 #include "test/tests/database-common.h"
-#include "test/tests/database-unit-tests.h"
+#include "test/tests/database-basic-tests.h"
 #include "test/tests/database-performance-tests.h"
 #include "test/tests/database-concurrency-tests.h"
 #include "test/tests/rw-lock-tests.h"
@@ -16,24 +15,20 @@
 #include "test/tests/end-to-end.h"
 
 #define RUN_TESTS
-//#define RUN_PERF_TESTS
+#define RUN_PERF_TESTS
 
 #ifdef RUN_TESTS
-#define TEST(test_case) result |= runner.RunTest("" #test_case "", [](shakadb::test::TestContext ctx) -> void { test_case(ctx); });
+#define TEST(clazz, test_case) result |= runner.RunTest(\
+      "" #clazz " -> " #test_case "",\
+      [&clazz](shakadb::test::TestContext ctx) -> void { clazz.test_case(ctx); });
 #else
 #define TEST(test_case)
 #endif
 
-#ifdef RUN_TESTS
-#define TEST2(clazz, test_case) result |= runner.RunTest(\
-      "" #clazz " -> " #test_case "",\
-      [&clazz](shakadb::test::TestContext ctx) -> void { clazz.test_case(ctx); });
-#else
-#define TEST2(test_case)
-#endif
-
 #ifdef RUN_PERF_TESTS
-#define TEST_PERF(test_case) result |= runner.RunPerfTest("" #test_case "", test_case);
+#define TEST_PERF(clazz, test_case) result |= runner.RunPerfTest(\
+      "" #clazz " -> " #test_case "",\
+      [&clazz](shakadb::test::TestContext ctx) -> shakadb::Stopwatch { return clazz.test_case(ctx); });
 #else
 #define TEST_PERF(test_case)
 #endif
@@ -46,58 +41,62 @@ int main() {
 
   printf("==================== Running tests ====================\n");
 
-  TEST(shakadb::test::simple_database_initialization_test);
-  TEST(shakadb::test::basic_database_write_and_read_all);
-  TEST(shakadb::test::write_database_in_one_big_batch);
-  TEST(shakadb::test::write_database_in_multiple_small_batches);
-  TEST(shakadb::test::database_write_history);
-  TEST(shakadb::test::database_write_close_and_write_more);
-  TEST(shakadb::test::database_multi_write_and_read_all);
-  TEST(shakadb::test::database_continuous_write);
-  TEST(shakadb::test::database_continuous_write_with_pickup);
-  TEST(shakadb::test::database_write_batch_size_equal_to_page_capacity);
-  TEST(shakadb::test::database_write_batch_size_greater_than_page_capacity);
-  TEST(shakadb::test::database_read_inside_single_chunk);
-  TEST(shakadb::test::database_read_span_two_chunks);
-  TEST(shakadb::test::database_read_span_three_chunks);
-  TEST(shakadb::test::database_read_chunk_edges);
-  TEST(shakadb::test::database_read_duplicated_values);
+  auto database_basic = shakadb::test::DatabaseBasicTests();
+  TEST(database_basic, simple_database_initialization_test);
+  TEST(database_basic, basic_database_write_and_read_all);
+  TEST(database_basic, write_database_in_one_big_batch);
+  TEST(database_basic, write_database_in_multiple_small_batches);
+  TEST(database_basic, database_write_history);
+  TEST(database_basic, database_write_close_and_write_more);
+  TEST(database_basic, database_multi_write_and_read_all);
+  TEST(database_basic, database_continuous_write);
+  TEST(database_basic, database_continuous_write_with_pickup);
+  TEST(database_basic, database_write_batch_size_equal_to_page_capacity);
+  TEST(database_basic, database_write_batch_size_greater_than_page_capacity);
+  TEST(database_basic, database_read_inside_single_chunk);
+  TEST(database_basic, database_read_span_two_chunks);
+  TEST(database_basic, database_read_span_three_chunks);
+  TEST(database_basic, database_read_chunk_edges);
+  TEST(database_basic, database_read_duplicated_values);
 
-  TEST(shakadb::test::ring_buffer_create_delete_test);
-  TEST(shakadb::test::ring_buffer_empty_read_test);
-  TEST(shakadb::test::ring_buffer_empty_peek_test);
-  TEST(shakadb::test::ring_buffer_simple_write_test);
-  TEST(shakadb::test::ring_buffer_multiple_write_with_peerk_and_read_test);
-  TEST(shakadb::test::ring_buffer_multiple_write_hitting_limit_test);
-  TEST(shakadb::test::ring_buffer_multiple_write_and_read_loop_test);
+  auto ring_buffer = shakadb::test::RingBufferTests();
+  TEST(ring_buffer, create_delete_test);
+  TEST(ring_buffer, empty_read_test);
+  TEST(ring_buffer, empty_peek_test);
+  TEST(ring_buffer, simple_write_test);
+  TEST(ring_buffer, multiple_write_with_peerk_and_read_test);
+  TEST(ring_buffer, multiple_write_hitting_limit_test);
+  TEST(ring_buffer, multiple_write_and_read_loop_test);
 
-  TEST(shakadb::test::rwlock_double_read_lock_test);
-  TEST(shakadb::test::rwlock_upgrade_lock_test);
-  TEST(shakadb::test::rwlock_release_and_lock_again_test);
+  auto rwlock = shakadb::test::RwLockTests();
+  TEST(rwlock, double_read_lock_test);
+  TEST(rwlock, upgrade_lock_test);
+  TEST(rwlock, release_and_lock_again_test);
 
-  TEST(shakadb::test::monitor_create_delete_test);
-  TEST(shakadb::test::monitor_enter_test);
-  TEST(shakadb::test::monitor_enter_two_threads_test);
+  auto monitor = shakadb::test::MonitorTests();
+  TEST(monitor, create_delete_test);
+  TEST(monitor, enter_test);
+  TEST(monitor, enter_two_threads_test);
 
   auto configuration = shakadb::test::ConfigurationTests();
-  TEST2(configuration, init_test);
-  TEST2(configuration, full_test);
+  TEST(configuration, init_test);
+  TEST(configuration, full_test);
 
-//  TEST_PERF(shakadb::test::database_performance_sequential_write_small);
-//  TEST_PERF(shakadb::test::database_performance_sequential_write_medium);
-//  TEST_PERF(shakadb::test::database_performance_sequential_write_large);
-//  TEST_PERF(shakadb::test::database_performance_read_small);
-//  TEST_PERF(shakadb::test::database_performance_read_medium);
-//  TEST_PERF(shakadb::test::database_performance_read_large);
-//  TEST_PERF(shakadb::test::database_performance_random_write_small);
-//  TEST_PERF(shakadb::test::database_performance_random_write_medium);
-//  TEST_PERF(shakadb::test::database_performance_random_write_large);
-//
-//  TEST_PERF(shakadb::test::database_concurrent_access_small);
-//  TEST_PERF(shakadb::test::database_concurrent_access_medium);
-//  TEST_PERF(shakadb::test::database_concurrent_access_large);
+  auto database_performance = shakadb::test::DatabasePerformanceTests();
+  TEST_PERF(database_performance, sequential_write_small);
+  TEST_PERF(database_performance, sequential_write_medium);
+  TEST_PERF(database_performance, sequential_write_large);
+  TEST_PERF(database_performance, read_small);
+  TEST_PERF(database_performance, read_medium);
+  TEST_PERF(database_performance, read_large);
+  TEST_PERF(database_performance, random_write_small);
+  TEST_PERF(database_performance, random_write_medium);
+  TEST_PERF(database_performance, random_write_large);
 
-  //TEST_PERF(shakadb::test::e2e_initial_write);
+  auto database_concurrent = shakadb::test::DatabaseConcurrencyTests();
+  TEST_PERF(database_concurrent, access_small);
+  TEST_PERF(database_concurrent, access_medium);
+  TEST_PERF(database_concurrent, access_large);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");

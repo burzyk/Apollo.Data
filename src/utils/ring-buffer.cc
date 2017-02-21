@@ -10,6 +10,10 @@
 namespace shakadb {
 
 RingBuffer::RingBuffer(int grow_increment) {
+  if (grow_increment <= 0) {
+    FatalException("grow_increment must be greater than zero");
+  }
+
   this->data = Allocator::New<byte_t>(grow_increment);
   this->capacity = grow_increment;
   this->grow_increment = grow_increment;

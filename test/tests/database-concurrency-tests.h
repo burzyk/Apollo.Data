@@ -19,69 +19,69 @@
 namespace shakadb {
 namespace test {
 
-void database_concurrent_access_writer(Database *db, int batches, int batch_size) {
-  try {
-    write_to_database(db, "XOM_US", batches, batch_size);
-    write_to_database(db, "MSFT_US", batches, batch_size);
-    write_to_database(db, "APPL_US", batches, batch_size);
-    write_to_database(db, "AAL_LN", batches, batch_size);
-  } catch (FatalException ex) {
-    printf("Writer fatal exception: %s\n", ex.what());
-  }
-}
+class DatabaseConcurrencyTests {
+ public:
+  Stopwatch access_small(TestContext ctx) {
+    return this->concurrent_access(ctx, 5, 100, 100);
+  };
 
-void database_concurrent_access_reader(Database *db, volatile bool *should_terminate) {
-  try {
-    while (!*should_terminate) {
-      validate_read(db, "XOM_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-      validate_read(db, "MSFT_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-      validate_read(db, "APPL_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-      validate_read(db, "AAL_LN", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Stopwatch access_medium(TestContext ctx) {
+    return this->concurrent_access(ctx, 5, 200, 100);
+  };
+
+  Stopwatch access_large(TestContext ctx) {
+    return this->concurrent_access(ctx, 5, 300, 100);
+  };
+ private:
+  static void concurrent_access_writer(Database *db, int batches, int batch_size) {
+    try {
+      write_to_database(db, "XOM_US", batches, batch_size);
+      write_to_database(db, "MSFT_US", batches, batch_size);
+      write_to_database(db, "APPL_US", batches, batch_size);
+      write_to_database(db, "AAL_LN", batches, batch_size);
+    } catch (FatalException ex) {
+      printf("Writer fatal exception: %s\n", ex.what());
     }
-  } catch (FatalException ex) {
-    printf("Reader fatal exception: %s\n", ex.what());
-  }
-}
+  };
 
-Stopwatch database_concurrent_access(TestContext ctx,
-                                     int readers_count,
-                                     int write_batches,
-                                     int write_batch_size) {
-  auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
-  std::list<std::thread *> readers;
-  Stopwatch sw;
-  bool should_terminate = false;
+  static void concurrent_access_reader(Database *db, volatile bool *should_terminate) {
+    try {
+      while (!*should_terminate) {
+        validate_read(db, "XOM_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+        validate_read(db, "MSFT_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+        validate_read(db, "APPL_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+        validate_read(db, "AAL_LN", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+      }
+    } catch (FatalException ex) {
+      printf("Reader fatal exception: %s\n", ex.what());
+    }
+  };
 
-  for (int i = 0; i < readers_count; i++) {
-    readers.push_back(new std::thread(database_concurrent_access_reader, c->GetDb(), &should_terminate));
-  }
+  Stopwatch concurrent_access(TestContext ctx, int readers_count, int write_batches, int write_batch_size) {
+    auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
+    std::list<std::thread *> readers;
+    Stopwatch sw;
+    bool should_terminate = false;
 
-  sw.Start();
-  std::thread writer(database_concurrent_access_writer, c->GetDb(), write_batches, write_batch_size);
-  writer.join();
-  sw.Stop();
+    for (int i = 0; i < readers_count; i++) {
+      readers.push_back(new std::thread(concurrent_access_reader, c->GetDb(), &should_terminate));
+    }
 
-  should_terminate = true;
+    sw.Start();
+    std::thread writer(concurrent_access_writer, c->GetDb(), write_batches, write_batch_size);
+    writer.join();
+    sw.Stop();
 
-  for (auto reader: readers) {
-    reader->join();
-    delete reader;
-  }
+    should_terminate = true;
 
-  return sw;
-}
+    for (auto reader: readers) {
+      reader->join();
+      delete reader;
+    }
 
-Stopwatch database_concurrent_access_small(TestContext ctx) {
-  return database_concurrent_access(ctx, 5, 100, 100);
-}
-
-Stopwatch database_concurrent_access_medium(TestContext ctx) {
-  return database_concurrent_access(ctx, 5, 1000, 100);
-}
-
-Stopwatch database_concurrent_access_large(TestContext ctx) {
-  return database_concurrent_access(ctx, 5, 10000, 100);
-}
+    return sw;
+  };
+};
 
 }
 }

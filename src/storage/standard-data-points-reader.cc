@@ -10,7 +10,7 @@
 namespace shakadb {
 
 StandardDataPointsReader::StandardDataPointsReader(int points_buffer_increment)
-    : points_buffer(points_buffer_increment) {
+    : points_buffer(points_buffer_increment == 0 ? 1 : points_buffer_increment) {
   this->total_points = 0;
 }
 

@@ -15,44 +15,47 @@
 namespace shakadb {
 namespace test {
 
-void monitor_create_delete_test(TestContext ctx) {
-  Monitor *monitor = new Monitor();
-  delete monitor;
-}
+class MonitorTests {
+ public:
+  void create_delete_test(TestContext ctx) {
+    Monitor *monitor = new Monitor();
+    delete monitor;
+  };
 
-void monitor_enter_test(TestContext ctx) {
-  Monitor monitor;
+  void enter_test(TestContext ctx) {
+    Monitor monitor;
 
-  { auto scope2 = monitor.Enter(); }
-  auto scope1 = monitor.Enter();
-}
+    { auto scope2 = monitor.Enter(); }
+    auto scope1 = monitor.Enter();
+  };
 
-void monitor_enter_two_threads_test(TestContext ctx) {
-  Monitor *monitor = new Monitor();
-  std::vector<int> *result = new std::vector<int>();
+  void enter_two_threads_test(TestContext ctx) {
+    Monitor *monitor = new Monitor();
+    std::vector<int> *result = new std::vector<int>();
 
-  Thread worker([monitor, result](void *data) -> void {
+    Thread worker([monitor, result](void *data) -> void {
+      auto scope = monitor->Enter();
+      scope->Wait();
+      result->push_back(1);
+    }, nullptr);
+
+    worker.Start(nullptr);
+    Thread::Sleep(100);
     auto scope = monitor->Enter();
-    scope->Wait();
-    result->push_back(1);
-  }, nullptr);
+    result->push_back(0);
+    scope->Signal();
+    scope->Exit();
 
-  worker.Start(nullptr);
-  Thread::Sleep(100);
-  auto scope = monitor->Enter();
-  result->push_back(0);
-  scope->Signal();
-  scope->Exit();
+    worker.Join();
 
-  worker.Join();
+    Assert::IsTrue(result->size() == 2);
+    Assert::IsTrue(result->at(0) == 0);
+    Assert::IsTrue(result->at(1) == 1);
 
-  Assert::IsTrue(result->size() == 2);
-  Assert::IsTrue(result->at(0) == 0);
-  Assert::IsTrue(result->at(1) == 1);
-
-  delete result;
-  delete monitor;
-}
+    delete result;
+    delete monitor;
+  };
+};
 
 }
 }
