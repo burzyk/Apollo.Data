@@ -14,13 +14,17 @@
 #include <chrono>
 #include <thread>
 #include <src/fatal-exception.h>
-#include "database-common.h"
+#include "base-database-tests.h"
 
 namespace shakadb {
 namespace test {
 
-class DatabaseConcurrencyTests {
+class DatabaseConcurrencyTests : public BaseDatabaseTest {
  public:
+  DatabaseConcurrencyTests(DatabaseContextFactory *context_factory)
+      : BaseDatabaseTest(context_factory) {
+  }
+
   Stopwatch access_small(TestContext ctx) {
     return this->concurrent_access(ctx, 5, 100, 100);
   };
@@ -58,7 +62,7 @@ class DatabaseConcurrencyTests {
   };
 
   Stopwatch concurrent_access(TestContext ctx, int readers_count, int write_batches, int write_batch_size) {
-    auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
+    auto c = std::unique_ptr<DatabaseContext>(this->CreateContext(10000, 100, ctx));
     std::list<std::thread *> readers;
     Stopwatch sw;
     bool should_terminate = false;

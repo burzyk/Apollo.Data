@@ -13,13 +13,17 @@
 #include <cstdlib>
 #include <chrono>
 #include <thread>
-#include "database-common.h"
+#include "base-database-tests.h"
 
 namespace shakadb {
 namespace test {
 
-class DatabasePerformanceTests {
+class DatabasePerformanceTests : public BaseDatabaseTest {
  public:
+  DatabasePerformanceTests(DatabaseContextFactory *context_factory)
+      : BaseDatabaseTest(context_factory) {
+  }
+
   Stopwatch sequential_write_small(TestContext ctx) {
     return this->sequential_write(ctx, 1000, 100);
   };
@@ -58,7 +62,7 @@ class DatabasePerformanceTests {
 
  private:
   Stopwatch sequential_write(TestContext ctx, int batches, int batch_size) {
-    auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
+    auto c = std::unique_ptr<DatabaseContext>(this->CreateContext(10000, 100, ctx));
     Stopwatch sw;
 
     sw.Start();
@@ -69,7 +73,7 @@ class DatabasePerformanceTests {
   };
 
   Stopwatch read(TestContext ctx, int windows_count, int window_size) {
-    auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
+    auto c = std::unique_ptr<DatabaseContext>(this->CreateContext(10000, 100, ctx));
     Stopwatch sw;
 
     write_to_database(c->GetDb(), "usd_gbp", windows_count, window_size);
@@ -88,7 +92,7 @@ class DatabasePerformanceTests {
   };
 
   Stopwatch random_write(TestContext ctx, int batches, int batch_size) {
-    auto c = std::unique_ptr<DatabaseContext>(DatabaseContext::Create(10000, 100, ctx));
+    auto c = std::unique_ptr<DatabaseContext>(this->CreateContext(10000, 100, ctx));
 
     // for random but consistent results
     srand(0);

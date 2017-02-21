@@ -6,7 +6,7 @@
 #include <test/tests/ring-buffer-tests.h>
 #include <src/utils/allocator.h>
 #include <test/tests/monitor-tests.h>
-#include "test/tests/database-common.h"
+#include "test/tests/base-database-tests.h"
 #include "test/tests/database-basic-tests.h"
 #include "test/tests/database-performance-tests.h"
 #include "test/tests/database-concurrency-tests.h"
@@ -41,7 +41,9 @@ int main() {
 
   printf("==================== Running tests ====================\n");
 
-  auto database_basic = shakadb::test::DatabaseBasicTests();
+  auto context_factory = shakadb::test::StandardDatabaseContextFactory();
+
+  auto database_basic = shakadb::test::DatabaseBasicTests(&context_factory);
   TEST(database_basic, simple_database_initialization_test);
   TEST(database_basic, basic_database_write_and_read_all);
   TEST(database_basic, write_database_in_one_big_batch);
@@ -82,7 +84,7 @@ int main() {
   TEST(configuration, init_test);
   TEST(configuration, full_test);
 
-  auto database_performance = shakadb::test::DatabasePerformanceTests();
+  auto database_performance = shakadb::test::DatabasePerformanceTests(&context_factory);
   TEST_PERF(database_performance, sequential_write_small);
   TEST_PERF(database_performance, sequential_write_medium);
   TEST_PERF(database_performance, sequential_write_large);
@@ -93,7 +95,7 @@ int main() {
   TEST_PERF(database_performance, random_write_medium);
   TEST_PERF(database_performance, random_write_large);
 
-  auto database_concurrent = shakadb::test::DatabaseConcurrencyTests();
+  auto database_concurrent = shakadb::test::DatabaseConcurrencyTests(&context_factory);
   TEST_PERF(database_concurrent, access_small);
   TEST_PERF(database_concurrent, access_medium);
   TEST_PERF(database_concurrent, access_large);
