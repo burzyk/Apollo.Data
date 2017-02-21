@@ -4,23 +4,21 @@
 
 #include <src/utils/stopwatch.h>
 #include <src/data-points-reader.h>
-#include "session-manager.h"
+#include "session.h"
 
 int main() {
-  shakadb::SessionManager manager;
-  int session_id = manager.OpenSession("localhost", 8099);
+  shakadb::Session *session = shakadb::Session::Open("localhost", 8099);
 
-  if (session_id == shakadb::SessionManager::kInvalidSession) {
+  if (session == nullptr) {
     printf("Unable to connect\n");
     return -1;
   }
 
-  if (!manager.GetSessionById(session_id)->Ping()) {
+  if (!session->Ping()) {
     printf("Ping failure\n");
     return -1;
   }
 
-  shakadb::Session *session = manager.GetSessionById(session_id);
   shakadb::DataPointsReader *reader = session->ReadPoints(
       "USD_AUD",
       shakadb::data_point_t::kMinTimestamp,
@@ -56,6 +54,8 @@ int main() {
 //
 //  sw.Stop();
 //  printf("Elapsed: %f[s]\n", sw.GetElapsedSeconds());
+
+  delete session;
 
   return 0;
 }

@@ -16,8 +16,6 @@ namespace shakadb {
 
 class Session {
  public:
-  static const int kInvalidSocket = -1;
-
   ~Session();
   static Session *Open(std::string server, int port);
 
@@ -25,7 +23,10 @@ class Session {
   bool WritePoints(std::string series_name, data_point_t *points, int count);
   DataPointsReader *ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end);
  private:
+  static const int kInvalidSocket = -1;
+
   Session(int sock);
+
   bool SendPacket(DataPacket *packet);
   DataPacket *ReadPacket();
   bool Receive(byte_t *buffer, int size);

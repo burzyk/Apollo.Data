@@ -8,7 +8,6 @@
 #include <src/utils/stopwatch.h>
 #include <test/framework/test-context.h>
 #include <src/bootstrapper.h>
-#include <src/client/session-manager.h>
 
 namespace shakadb {
 namespace test {
