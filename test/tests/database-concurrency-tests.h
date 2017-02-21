@@ -14,7 +14,7 @@
 #include <chrono>
 #include <thread>
 #include <src/fatal-exception.h>
-#include "common.h"
+#include "database-common.h"
 
 namespace shakadb {
 namespace test {

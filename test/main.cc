@@ -3,16 +3,16 @@
 #include <test/framework/test-context.h>
 #include <test/framework/test-runner.h>
 #include <src/utils/directory.h>
-#include <test/utils/ring-buffer-tests.h>
+#include <test/tests/ring-buffer-tests.h>
 #include <src/utils/allocator.h>
-#include <test/utils/monitor-tests.h>
-#include "test/storage/common.h"
-#include "test/storage/unit-tests.h"
-#include "test/storage/performance-tests.h"
-#include "test/storage/concurrency-tests.h"
-#include "test/utils/rw-lock-tests.h"
-#include "test/domain/configuration-tests.h"
-#include "test/server/end-to-end.h"
+#include <test/tests/monitor-tests.h>
+#include "test/tests/database-common.h"
+#include "test/tests/database-unit-tests.h"
+#include "test/tests/database-performance-tests.h"
+#include "test/tests/database-concurrency-tests.h"
+#include "test/tests/rw-lock-tests.h"
+#include "test/tests/configuration-tests.h"
+#include "test/tests/end-to-end.h"
 
 #define RUN_TESTS
 //#define RUN_PERF_TESTS
