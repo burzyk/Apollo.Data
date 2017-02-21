@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <functional>
+#include <memory>
 #include <test/framework/test-context.h>
 #include <test/framework/test-runner.h>
 #include <src/utils/directory.h>
@@ -18,13 +19,21 @@
 //#define RUN_PERF_TESTS
 
 #ifdef RUN_TESTS
-#define TEST(test_case) result = runner.RunTest("" #test_case "", test_case);
+#define TEST(test_case) result |= runner.RunTest("" #test_case "", [](shakadb::test::TestContext ctx) -> void { test_case(ctx); });
 #else
 #define TEST(test_case)
 #endif
 
+#ifdef RUN_TESTS
+#define TEST2(clazz, test_case) result |= runner.RunTest(\
+      "" #clazz " -> " #test_case "",\
+      [&clazz](shakadb::test::TestContext ctx) -> void { clazz.test_case(ctx); });
+#else
+#define TEST2(test_case)
+#endif
+
 #ifdef RUN_PERF_TESTS
-#define TEST_PERF(test_case) result = runner.RunPerfTest("" #test_case "", test_case);
+#define TEST_PERF(test_case) result |= runner.RunPerfTest("" #test_case "", test_case);
 #else
 #define TEST_PERF(test_case)
 #endif
@@ -70,8 +79,9 @@ int main() {
   TEST(shakadb::test::monitor_enter_test);
   TEST(shakadb::test::monitor_enter_two_threads_test);
 
-  TEST(shakadb::test::configuration_init_test);
-  TEST(shakadb::test::configuration_full_test);
+  auto configuration = shakadb::test::ConfigurationTests();
+  TEST2(configuration, init_test);
+  TEST2(configuration, full_test);
 
 //  TEST_PERF(shakadb::test::database_performance_sequential_write_small);
 //  TEST_PERF(shakadb::test::database_performance_sequential_write_medium);
