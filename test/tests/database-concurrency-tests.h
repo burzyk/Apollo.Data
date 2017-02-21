@@ -26,29 +26,29 @@ class DatabaseConcurrencyTests : public BaseDatabaseTest {
   }
 
   Stopwatch access_small(TestContext ctx) {
-    return this->concurrent_access(ctx, 5, 100, 100);
+    return this->ConcurrentAccess(ctx, 5, 100, 100);
   };
 
   Stopwatch access_medium(TestContext ctx) {
-    return this->concurrent_access(ctx, 5, 200, 100);
+    return this->ConcurrentAccess(ctx, 5, 200, 100);
   };
 
   Stopwatch access_large(TestContext ctx) {
-    return this->concurrent_access(ctx, 5, 300, 100);
+    return this->ConcurrentAccess(ctx, 5, 300, 100);
   };
  private:
-  static void concurrent_access_writer(Database *db, int batches, int batch_size) {
+  static void ConcurrentAccessWriter(Database *db, int batches, int batch_size) {
     try {
-      write_to_database(db, "XOM_US", batches, batch_size);
-      write_to_database(db, "MSFT_US", batches, batch_size);
-      write_to_database(db, "APPL_US", batches, batch_size);
-      write_to_database(db, "AAL_LN", batches, batch_size);
+      WriteToDatabase(db, "XOM_US", batches, batch_size);
+      WriteToDatabase(db, "MSFT_US", batches, batch_size);
+      WriteToDatabase(db, "APPL_US", batches, batch_size);
+      WriteToDatabase(db, "AAL_LN", batches, batch_size);
     } catch (FatalException ex) {
       printf("Writer fatal exception: %s\n", ex.what());
     }
   };
 
-  static void concurrent_access_reader(Database *db, volatile bool *should_terminate) {
+  static void ConcurrentAccessReader(Database *db, volatile bool *should_terminate) {
     try {
       while (!*should_terminate) {
         validate_read(db, "XOM_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
@@ -61,18 +61,18 @@ class DatabaseConcurrencyTests : public BaseDatabaseTest {
     }
   };
 
-  Stopwatch concurrent_access(TestContext ctx, int readers_count, int write_batches, int write_batch_size) {
+  Stopwatch ConcurrentAccess(TestContext ctx, int readers_count, int write_batches, int write_batch_size) {
     auto c = std::unique_ptr<DatabaseContext>(this->CreateContext(10000, 100, ctx));
     std::list<std::thread *> readers;
     Stopwatch sw;
     bool should_terminate = false;
 
     for (int i = 0; i < readers_count; i++) {
-      readers.push_back(new std::thread(concurrent_access_reader, c->GetDb(), &should_terminate));
+      readers.push_back(new std::thread(ConcurrentAccessReader, c->GetDb(), &should_terminate));
     }
 
     sw.Start();
-    std::thread writer(concurrent_access_writer, c->GetDb(), write_batches, write_batch_size);
+    std::thread writer(ConcurrentAccessWriter, c->GetDb(), write_batches, write_batch_size);
     writer.join();
     sw.Stop();
 

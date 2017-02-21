@@ -25,58 +25,58 @@ class DatabasePerformanceTests : public BaseDatabaseTest {
   }
 
   Stopwatch sequential_write_small(TestContext ctx) {
-    return this->sequential_write(ctx, 1000, 100);
+    return this->SequentialWrite(ctx, 1000, 100);
   };
 
   Stopwatch sequential_write_medium(TestContext ctx) {
-    return this->sequential_write(ctx, 10000, 100);
+    return this->SequentialWrite(ctx, 10000, 100);
   };
 
   Stopwatch sequential_write_large(TestContext ctx) {
-    return this->sequential_write(ctx, 100000, 100);
+    return this->SequentialWrite(ctx, 100000, 100);
   };
 
   Stopwatch read_small(TestContext ctx) {
-    return this->read(ctx, 1000, 100);
+    return this->Read(ctx, 1000, 100);
   };
 
   Stopwatch read_medium(TestContext ctx) {
-    return this->read(ctx, 10000, 100);
+    return this->Read(ctx, 10000, 100);
   };
 
   Stopwatch read_large(TestContext ctx) {
-    return this->read(ctx, 100000, 100);
+    return this->Read(ctx, 100000, 100);
   };
 
   Stopwatch random_write_small(TestContext ctx) {
-    return this->random_write(ctx, 100, 100);
+    return this->RandomWrite(ctx, 100, 100);
   };
 
   Stopwatch random_write_medium(TestContext ctx) {
-    return this->random_write(ctx, 1000, 100);
+    return this->RandomWrite(ctx, 1000, 100);
   };
 
   Stopwatch random_write_large(TestContext ctx) {
-    return this->random_write(ctx, 10000, 100);
+    return this->RandomWrite(ctx, 10000, 100);
   };
 
  private:
-  Stopwatch sequential_write(TestContext ctx, int batches, int batch_size) {
+  Stopwatch SequentialWrite(TestContext ctx, int batches, int batch_size) {
     auto c = std::unique_ptr<DatabaseContext>(this->CreateContext(10000, 100, ctx));
     Stopwatch sw;
 
     sw.Start();
-    write_to_database(c->GetDb(), "usd_gbp", batches, batch_size);
+    WriteToDatabase(c->GetDb(), "usd_gbp", batches, batch_size);
     sw.Stop();
 
     return sw;
   };
 
-  Stopwatch read(TestContext ctx, int windows_count, int window_size) {
+  Stopwatch Read(TestContext ctx, int windows_count, int window_size) {
     auto c = std::unique_ptr<DatabaseContext>(this->CreateContext(10000, 100, ctx));
     Stopwatch sw;
 
-    write_to_database(c->GetDb(), "usd_gbp", windows_count, window_size);
+    WriteToDatabase(c->GetDb(), "usd_gbp", windows_count, window_size);
 
     sw.Start();
     for (int i = 0; i < windows_count; i++) {
@@ -91,7 +91,7 @@ class DatabasePerformanceTests : public BaseDatabaseTest {
     return sw;
   };
 
-  Stopwatch random_write(TestContext ctx, int batches, int batch_size) {
+  Stopwatch RandomWrite(TestContext ctx, int batches, int batch_size) {
     auto c = std::unique_ptr<DatabaseContext>(this->CreateContext(10000, 100, ctx));
 
     // for random but consistent results
@@ -102,7 +102,7 @@ class DatabasePerformanceTests : public BaseDatabaseTest {
 
     for (int i = 0; i < batches; i++) {
       int time = rand() % batch_size + 1;
-      write_to_database(c->GetDb(), "usd_gbp", 1, batch_size, (timestamp_t)time);
+      WriteToDatabase(c->GetDb(), "usd_gbp", 1, batch_size, (timestamp_t)time);
     }
 
     sw.Stop();
