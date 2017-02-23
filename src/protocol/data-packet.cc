@@ -3,6 +3,7 @@
 //
 
 #include <src/utils/allocator.h>
+#include <vector>
 #include "data-packet.h"
 
 namespace shakadb {
@@ -46,6 +47,11 @@ byte_t *DataPacket::GetPayload() {
 
 int DataPacket::GetPayloadSize() {
   return this->packet_size - sizeof(data_packet_header_t);
+}
+
+std::vector<PacketFragment *> DataPacket::GetFragments() {
+  // TODO: implement
+  return std::vector<PacketFragment *>();
 }
 
 }

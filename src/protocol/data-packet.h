@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <src/utils/ring-buffer.h>
 #include <memory>
+#include <vector>
+#include "packet-fragment.h"
 
 namespace shakadb {
 
@@ -33,6 +35,8 @@ class DataPacket {
   virtual PacketType GetType() = 0;
   byte_t *GetPacket();
   int GetPacketSize();
+
+  std::vector<PacketFragment *> GetFragments();
  protected:
   void InitPacket(int payload_size);
   byte_t *GetPayload();

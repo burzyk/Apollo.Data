@@ -9,10 +9,12 @@
 
 namespace shakadb {
 
-UvServerClient::UvServerClient(uv_stream_t *client_connection)
+// TODO: buffer size initialization
+UvServerClient::UvServerClient(uv_stream_t *client_connection, uv_loop_t *loop)
     : receive_buffer(65536) {
   this->client_connection = client_connection;
-
+  this->loop = loop;
+  this->is_send_active = false;
   this->client_connection->data = this;
 }
 
@@ -28,7 +30,7 @@ UvServerClient *UvServerClient::Accept(uv_stream_t *server, uv_loop_t *loop) {
   UvServerClient *client = nullptr;
 
   if (uv_accept(server, (uv_stream_t *)client_connection) == 0) {
-    client = new UvServerClient((uv_stream_t *)client_connection);
+    client = new UvServerClient((uv_stream_t *)client_connection, loop);
     uv_read_start((uv_stream_t *)client_connection, UvCommon::OnAlloc, OnDataRead);
   } else {
     uv_close((uv_handle_t *)client_connection, UvCommon::OnHandleClose);
@@ -46,13 +48,14 @@ void UvServerClient::SendPacket(DataPacket *packet) {
     throw FatalException("Sending data to closed client");
   }
 
-  uv_buf_t buffer[] = {
-      {.base = (char *)packet->GetPacket(), .len = (size_t)packet->GetPacketSize()}
-  };
+  auto lock = this->send_queue_monitor.Enter();
+  this->send_queue.push_back(packet);
+  lock.reset();
 
-  uv_write_t *write = Allocator::New<uv_write_t>();
-  write->data = packet;
-  uv_write(write, this->client_connection, buffer, 1, OnDataWrite);
+  uv_async_t *signal_send = Allocator::New<uv_async_t>();
+  uv_async_init(this->loop, signal_send, OnSignalSend);
+  signal_send->data = this;
+  uv_async_send(signal_send);
 }
 
 void UvServerClient::Close() {
@@ -85,10 +88,28 @@ void UvServerClient::OnDataRead(uv_stream_t *client, ssize_t nread, const uv_buf
   }
 }
 
-void UvServerClient::OnDataWrite(uv_write_t *req, int status) {
-  DataPacket *packet = (DataPacket *)req->data;
-  delete packet;
+void UvServerClient::OnSignalSend(uv_async_t *handle) {
+  UvServerClient *_this = (UvServerClient *)handle->data;
 
+  if (!_this->is_send_active) {
+    _this->SendPendingData();
+  }
+
+  uv_close((uv_handle_t *)handle, UvCommon::OnHandleClose);
+}
+
+void UvServerClient::OnDataWrite(uv_write_t *req, int status) {
+  write_request_t *data = (write_request_t *)req->data;
+
+  if (status < 0) {
+    data->client->Close();
+  } else {
+    data->client->SendPendingData();
+  }
+
+  delete data->packet;
+  Allocator::Delete(data->buffers);
+  Allocator::Delete(data);
   Allocator::Delete(req);
 }
 
@@ -116,6 +137,39 @@ void UvServerClient::ReadData(ssize_t nread, const uv_buf_t *buf) {
 
     delete packet;
   }
+}
+
+void UvServerClient::SendPendingData() {
+  auto lock = this->send_queue_monitor.Enter();
+  DataPacket *packet = nullptr;
+
+  if (this->send_queue.size() > 0) {
+    packet = this->send_queue.front();
+    this->send_queue.pop_front();
+  }
+  lock.reset();
+
+  this->is_send_active = packet != nullptr;
+
+  if (!this->is_send_active) {
+    return;
+  }
+
+  std::vector<PacketFragment *> fragments = packet->GetFragments();
+  write_request_t *data = Allocator::New<write_request_t>();
+  data->client = this;
+  data->buffers = Allocator::New<uv_buf_t>(fragments.size());
+  data->buffers_count = fragments.size();
+  data->packet = packet;
+
+  for (int i = 0; i < data->buffers_count; i++) {
+    data->buffers[i].base = (char *)fragments[i]->GetData();
+    data->buffers[i].len = fragments[i]->GetSize();
+  }
+
+  uv_write_t *write = Allocator::New<uv_write_t>();
+  write->data = data;
+  uv_write(write, this->client_connection, data->buffers, 1, OnDataWrite);
 }
 
 }
