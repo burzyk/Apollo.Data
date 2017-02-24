@@ -13,7 +13,7 @@ class DataPointsReader {
  public:
   virtual ~DataPointsReader() {};
 
-  virtual int ReadDataPoints(data_point_t *points, int count) = 0;
+  virtual data_point_t *GetDataPoints() = 0;
   virtual int GetDataPointsCount() = 0;
 };
 

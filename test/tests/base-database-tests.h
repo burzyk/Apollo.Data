@@ -98,22 +98,15 @@ class BaseDatabaseTest {
   static void WriteToDatabase(Database *db, std::string series_name, int batches, int batch_size) {
     WriteToDatabase(db, series_name, batches, batch_size, 1);
   };
-
-  static data_point_t *read_all_points(DataPointsReader *reader) {
-    int points_count = reader->GetDataPointsCount();
-    data_point_t *points = Allocator::New<data_point_t>(points_count);
-
-    if (reader->ReadDataPoints(points, points_count) != points_count) {
-      throw FatalException("Unable to read all points");
-    }
-
-    return points;
-  };
-
-  static void validate_read(Database *db, std::string series_name, int expected_count, timestamp_t begin, timestamp_t end) {
+  
+  static void validate_read(Database *db,
+                            std::string series_name,
+                            int expected_count,
+                            timestamp_t begin,
+                            timestamp_t end) {
     std::shared_ptr<DataPointsReader> reader = db->Read(series_name, begin, end);
     int total_read = reader->GetDataPointsCount();
-    data_point_t *points = read_all_points(reader.get());
+    data_point_t *points = reader->GetDataPoints();
 
     for (int i = 1; i < total_read; i++) {
       Assert::IsTrue(points[i - 1].time <= points[i].time);
@@ -123,8 +116,6 @@ class BaseDatabaseTest {
     if (expected_count > 0) {
       Assert::IsTrue(expected_count == total_read);
     }
-
-    Allocator::Delete(points);
   };
  private:
   DatabaseContextFactory *context_factory;

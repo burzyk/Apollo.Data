@@ -17,14 +17,16 @@ namespace shakadb {
 
 class StandardDataPointsReader : public DataPointsReader {
  public:
-  StandardDataPointsReader(int points_buffer_increment);
+  StandardDataPointsReader(int points_count);
+  virtual ~StandardDataPointsReader();
 
-  int ReadDataPoints(data_point_t *points, int count);
   void WriteDataPoints(data_point_t *points, int count);
+  data_point_t *GetDataPoints();
   int GetDataPointsCount();
  private:
-  RingBuffer points_buffer;
-  int total_points;
+  data_point_t *data_points;
+  int points_count;
+  int write_position;
 };
 
 }

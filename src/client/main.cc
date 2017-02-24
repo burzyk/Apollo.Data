@@ -19,23 +19,23 @@ int main() {
     return -1;
   }
 
-  shakadb::DataPointsReader *reader = session->ReadPoints(
-      "USD_AUD",
-      shakadb::data_point_t::kMinTimestamp,
-      shakadb::data_point_t::kMaxTimestamp);
-  shakadb::data_point_t points[1024] = {0};
-  int remaining = reader->GetDataPointsCount();
-
-  while (remaining > 0) {
-    int read = reader->ReadDataPoints(points, 1024);
-    remaining -= read;
-
-    for (int i = 0; i < read; i++) {
-      printf("%llu -> %f\n", points[i].time, points[i].value);
-    }
-  }
-
-  delete reader;
+//  shakadb::DataPointsReader *reader = session->ReadPoints(
+//      "USD_AUD",
+//      shakadb::data_point_t::kMinTimestamp,
+//      shakadb::data_point_t::kMaxTimestamp);
+//  shakadb::data_point_t points[1024] = {0};
+//  int remaining = reader->GetDataPointsCount();
+//
+//  while (remaining > 0) {
+//    int read = reader->ReadDataPoints(points, 1024);
+//    remaining -= read;
+//
+//    for (int i = 0; i < read; i++) {
+//      printf("%llu -> %f\n", points[i].time, points[i].value);
+//    }
+//  }
+//
+//  delete reader;
 
 //  shakadb::data_point_t points[100] = {0};
 //  shakadb::Stopwatch sw;
