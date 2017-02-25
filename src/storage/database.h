@@ -13,7 +13,7 @@ class Database {
  public:
   virtual ~Database() {};
 
-  virtual std::shared_ptr<DataPointsReader> Read(std::string name, timestamp_t begin, timestamp_t end) = 0;
+  virtual DataPointsReader *Read(std::string name, timestamp_t begin, timestamp_t end, int max_points) = 0;
   virtual void Write(std::string name, data_point_t *points, int count) = 0;
 };
 

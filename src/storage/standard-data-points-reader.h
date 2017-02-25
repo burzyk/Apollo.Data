@@ -20,7 +20,7 @@ class StandardDataPointsReader : public DataPointsReader {
  public:
   StandardDataPointsReader(int points_count);
 
-  void WriteDataPoints(data_point_t *points, int count);
+  bool WriteDataPoints(data_point_t *points, int count);
   data_point_t *GetDataPoints();
   int GetDataPointsCount();
  private:

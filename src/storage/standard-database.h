@@ -22,7 +22,7 @@ class StandardDatabase : public Database {
   ~StandardDatabase();
   static StandardDatabase *Init(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit);
 
-  std::shared_ptr<DataPointsReader> Read(std::string name, timestamp_t begin, timestamp_t end);
+  DataPointsReader *Read(std::string name, timestamp_t begin, timestamp_t end, int max_points);
   void Write(std::string name, data_point_t *points, int count);
 
   void PrintMetadata();

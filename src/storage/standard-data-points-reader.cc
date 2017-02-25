@@ -18,10 +18,16 @@ data_point_t *StandardDataPointsReader::GetDataPoints() {
   return (data_point_t *)this->points_buffer.GetBuffer();
 }
 
-void StandardDataPointsReader::WriteDataPoints(data_point_t *points, int count) {
+bool StandardDataPointsReader::WriteDataPoints(data_point_t *points, int count) {
+  if (count == 0) {
+    return false;
+  }
+
   int to_write = min(count, this->GetDataPointsCount() - this->write_position);
   memcpy(this->GetDataPoints() + this->write_position, points, to_write * sizeof(data_point_t));
   this->write_position += to_write;
+
+  return this->write_position < this->GetDataPointsCount();
 }
 
 int StandardDataPointsReader::GetDataPointsCount() {

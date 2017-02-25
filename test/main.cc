@@ -60,6 +60,7 @@ int main() {
   TEST(database_basic, database_read_span_three_chunks);
   TEST(database_basic, database_read_chunk_edges);
   TEST(database_basic, database_read_duplicated_values);
+  TEST(database_basic, database_read_with_limit);
 
   auto ring_buffer = shakadb::test::RingBufferTests();
   TEST(ring_buffer, create_delete_test);

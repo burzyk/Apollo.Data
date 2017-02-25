@@ -80,11 +80,11 @@ class DatabasePerformanceTests : public BaseDatabaseTest {
 
     sw.Start();
     for (int i = 0; i < windows_count; i++) {
-      validate_read(c->GetDb(),
-                    "usd_gbp",
-                    i == 0 ? window_size - 1 : window_size,
-                    (timestamp_t)(i * window_size),
-                    (timestamp_t)((i + 1) * window_size));
+      ValidateRead(c->GetDb(),
+                   "usd_gbp",
+                   i == 0 ? window_size - 1 : window_size,
+                   (timestamp_t)(i * window_size),
+                   (timestamp_t)((i + 1) * window_size));
     }
     sw.Stop();
 
@@ -107,11 +107,11 @@ class DatabasePerformanceTests : public BaseDatabaseTest {
 
     sw.Stop();
 
-    validate_read(c->GetDb(),
-                  "usd_gbp",
-                  batch_size * batches,
-                  data_point_t::kMinTimestamp,
-                  data_point_t::kMaxTimestamp);
+    ValidateRead(c->GetDb(),
+                 "usd_gbp",
+                 batch_size * batches,
+                 data_point_t::kMinTimestamp,
+                 data_point_t::kMaxTimestamp);
 
     return sw;
   };

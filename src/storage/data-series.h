@@ -18,7 +18,7 @@ class DataSeries {
   ~DataSeries();
   static DataSeries *Init(std::string file_name, int points_per_chunk, Log *log);
 
-  std::shared_ptr<DataPointsReader> Read(timestamp_t begin, timestamp_t end);
+  DataPointsReader *Read(timestamp_t begin, timestamp_t end, int max_points);
   void Write(data_point_t *points, int count);
 
   void PrintMetadata();

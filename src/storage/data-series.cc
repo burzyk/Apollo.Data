@@ -80,7 +80,7 @@ void DataSeries::Write(data_point_t *points, int count) {
   }
 }
 
-std::shared_ptr<DataPointsReader> DataSeries::Read(timestamp_t begin, timestamp_t end) {
+DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_points) {
   auto lock_scope = this->series_lock.LockRead();
   std::list<DataChunk *> filtered_chunks;
 
@@ -91,7 +91,7 @@ std::shared_ptr<DataPointsReader> DataSeries::Read(timestamp_t begin, timestamp_
   }
 
   if (filtered_chunks.size() == 0) {
-    return std::make_shared<StandardDataPointsReader>(0);
+    return new StandardDataPointsReader(0);
   }
 
   auto comp = [](data_point_t p, timestamp_t t) -> bool { return p.time < t; };
@@ -106,16 +106,16 @@ std::shared_ptr<DataPointsReader> DataSeries::Read(timestamp_t begin, timestamp_
   data_point_t *read_end = std::lower_bound(back_begin, back_end, end, comp);
 
   if (filtered_chunks.size() == 1) {
-    uint64_t total_points = read_end - read_begin;
-    auto reader = std::make_shared<StandardDataPointsReader>(total_points);
+    int total_points = min(read_end - read_begin, max_points);
+    StandardDataPointsReader *reader = new StandardDataPointsReader(total_points);
     reader->WriteDataPoints(read_begin, total_points);
 
     return reader;
   }
 
-  uint64_t total_points = 0;
-  uint64_t points_from_front = front_end - read_begin;
-  uint64_t points_from_back = read_end - back_begin;
+  int total_points = 0;
+  int points_from_front = front_end - read_begin;
+  int points_from_back = read_end - back_begin;
 
   total_points += points_from_front;
   total_points += points_from_back;
@@ -126,13 +126,17 @@ std::shared_ptr<DataPointsReader> DataSeries::Read(timestamp_t begin, timestamp_
     }
   }
 
-  auto reader = std::make_shared<StandardDataPointsReader>(total_points);
+  StandardDataPointsReader *reader = new StandardDataPointsReader(min(total_points, max_points));
 
-  reader->WriteDataPoints(read_begin, points_from_front);
+  if (!reader->WriteDataPoints(read_begin, points_from_front)) {
+    return reader;
+  }
 
   for (auto i: filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
-      reader->WriteDataPoints(i->Read(), i->GetNumberOfPoints());
+      if (!reader->WriteDataPoints(i->Read(), i->GetNumberOfPoints())) {
+        return reader;
+      }
     }
   }
 

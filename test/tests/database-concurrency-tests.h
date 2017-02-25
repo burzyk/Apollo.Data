@@ -51,10 +51,10 @@ class DatabaseConcurrencyTests : public BaseDatabaseTest {
   static void ConcurrentAccessReader(Database *db, volatile bool *should_terminate) {
     try {
       while (!*should_terminate) {
-        validate_read(db, "XOM_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-        validate_read(db, "MSFT_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-        validate_read(db, "APPL_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-        validate_read(db, "AAL_LN", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+        ValidateRead(db, "XOM_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+        ValidateRead(db, "MSFT_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+        ValidateRead(db, "APPL_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+        ValidateRead(db, "AAL_LN", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
       }
     } catch (FatalException ex) {
       printf("Reader fatal exception: %s\n", ex.what());

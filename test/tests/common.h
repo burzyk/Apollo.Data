@@ -75,7 +75,11 @@ class BaseDatabaseTest {
     return this->context_factory->Create(points_per_chunk, max_pages, ctx);
   };
 
-  static void WriteToDatabase(Database *db, std::string series_name, int batches, int batch_size, timestamp_t time) {
+  static void WriteToDatabase(Database *db,
+                              std::string series_name,
+                              int batches,
+                              int batch_size,
+                              timestamp_t time = 1) {
     if (time == 0) {
       throw FatalException("Time cannot be 0");
     }
@@ -95,16 +99,13 @@ class BaseDatabaseTest {
     shakadb::Allocator::Delete(points);
   };
 
-  static void WriteToDatabase(Database *db, std::string series_name, int batches, int batch_size) {
-    WriteToDatabase(db, series_name, batches, batch_size, 1);
-  };
-  
-  static void validate_read(Database *db,
-                            std::string series_name,
-                            int expected_count,
-                            timestamp_t begin,
-                            timestamp_t end) {
-    std::shared_ptr<DataPointsReader> reader = db->Read(series_name, begin, end);
+  static void ValidateRead(Database *db,
+                           std::string series_name,
+                           int expected_count,
+                           timestamp_t begin,
+                           timestamp_t end,
+                           int max_points = INT_MAX) {
+    auto reader = std::unique_ptr<DataPointsReader>(db->Read(series_name, begin, end, max_points));
     int total_read = reader->GetDataPointsCount();
     data_point_t *points = reader->GetDataPoints();
 
