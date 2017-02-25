@@ -37,9 +37,9 @@ DataPacket *DataPacket::Load(Stream *stream) {
   }
 
   Buffer *raw_packet = new MemoryBuffer(header.packet_length);
-  memcpy(raw_packet->GetBuffer(), &header, sizeof(data_point_t));
-  byte_t *payload = raw_packet->GetBuffer() + sizeof(data_point_t);
-  int payload_size = raw_packet->GetSize() - sizeof(data_point_t);
+  memcpy(raw_packet->GetBuffer(), &header, sizeof(data_packet_header_t));
+  byte_t *payload = raw_packet->GetBuffer() + sizeof(data_packet_header_t);
+  int payload_size = raw_packet->GetSize() - sizeof(data_packet_header_t);
 
   if (stream->Read(payload, payload_size) != payload_size) {
     delete raw_packet;
