@@ -25,3 +25,7 @@ add_executable(shakadb.test ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} src
 
 target_link_libraries(shakadb pthread)
 target_link_libraries(shakadb.test pthread)
+
+set_target_properties(shakadb PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(shakadb.test PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(shakadb.client PROPERTIES LINKER_LANGUAGE CXX)
