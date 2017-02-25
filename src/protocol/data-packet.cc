@@ -5,6 +5,7 @@
 #include <src/utils/allocator.h>
 #include <vector>
 #include <src/utils/memory-buffer.h>
+#include <src/utils/shallow-buffer.h>
 #include "data-packet.h"
 #include "ping-packet.h"
 #include "write-request.h"
@@ -13,17 +14,8 @@
 
 namespace shakadb {
 
-DataPacket::DataPacket(PacketType type, int payload_size) {
-  data_packet_header_t header{.type = type, .packet_length = payload_size + (int)sizeof(data_packet_header_t)};
-  MemoryBuffer *first_fragment = new MemoryBuffer(sizeof(data_packet_header_t));
+DataPacket::DataPacket() {
 
-  memcpy(first_fragment->GetBuffer(), &header, first_fragment->GetSize());
-
-  this->AddFragment(first_fragment);
-}
-
-DataPacket::DataPacket(Buffer *packet) {
-  this->fragments.push_back(packet);
 }
 
 DataPacket::~DataPacket() {
@@ -46,21 +38,56 @@ DataPacket *DataPacket::Load(Stream *stream) {
     throw FatalException("Not enough data in the buffer");
   }
 
+  DataPacket *result = nullptr;
+
   switch (header.type) {
-    case kPing: return new PingPacket(raw_packet);
-    case kWriteRequest: return new WriteRequest(raw_packet);
-    case kReadRequest: return new ReadRequest(raw_packet);
-    case kReadResponse: return new ReadResponse(raw_packet);
-    default: return nullptr;
+    case kPing: result = new PingPacket();
+      break;
+    case kWriteRequest: result = new WriteRequest();
+      break;
+    case kReadRequest: result = new ReadRequest();
+      break;
+    case kReadResponse: result = new ReadResponse();
+      break;
+    default: result = nullptr;
   }
+
+  if (result == nullptr) {
+    delete raw_packet;
+    return nullptr;
+  }
+
+  result->fragments.push_back(raw_packet);
+  ShallowBuffer buffer(
+      raw_packet->GetBuffer() + sizeof(data_packet_header_t),
+      raw_packet->GetSize() - sizeof(data_packet_header_t));
+  result->Deserialize(&buffer);
+  return result;
 }
 
 std::vector<Buffer *> DataPacket::GetFragments() {
-  return this->fragments;
-}
+  if (this->fragments.size() > 0) {
+    return this->fragments;
+  }
 
-void DataPacket::AddFragment(Buffer *fragment) {
-  this->fragments.push_back(fragment);
+  std::vector<Buffer *> payload = this->Serialize();
+  int payload_size = 0;
+
+  for (auto buffer: payload) {
+    payload_size += buffer->GetSize();
+  }
+
+  MemoryBuffer *header_fragment = new MemoryBuffer(sizeof(data_packet_header_t));
+  data_packet_header_t *header = (data_packet_header_t *)header_fragment->GetBuffer();
+  header->type = this->GetType();
+  header->packet_length = payload_size + header_fragment->GetSize();
+  this->fragments.push_back(header_fragment);
+
+  for (auto buffer: payload) {
+    this->fragments.push_back(buffer);
+  }
+
+  return this->fragments;
 }
 
 }

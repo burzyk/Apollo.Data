@@ -28,15 +28,15 @@ struct data_packet_header_t {
 
 class DataPacket {
  public:
-  DataPacket(PacketType type, int payload_size);
+  DataPacket();
   virtual ~DataPacket();
   static DataPacket *Load(Stream *stream);
 
   virtual PacketType GetType() = 0;
   std::vector<Buffer *> GetFragments();
  protected:
-  DataPacket(Buffer *packet);
-  void AddFragment(Buffer *fragment);
+  virtual void Deserialize(Buffer *payload) = 0;
+  virtual std::vector<Buffer *> Serialize() = 0;
  private:
   std::vector<Buffer *> fragments;
 };

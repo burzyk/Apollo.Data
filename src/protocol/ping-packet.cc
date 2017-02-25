@@ -8,15 +8,12 @@
 
 namespace shakadb {
 
-PingPacket::PingPacket(char *ping_data, int ping_data_size)
-    : DataPacket(kPing, ping_data_size) {
-  MemoryBuffer *payload = new MemoryBuffer(ping_data_size);
-  memcpy(payload->GetBuffer(), ping_data, payload->GetSize());
-  this->AddFragment(payload);
+PingPacket::PingPacket() : PingPacket(nullptr, 0) {
 }
 
-PingPacket::PingPacket(Buffer *packet)
-    : DataPacket(packet) {
+PingPacket::PingPacket(char *ping_data, int ping_data_size) {
+  this->ping_data = ping_data;
+  this->ping_data_size = ping_data_size;
 }
 
 PacketType PingPacket::GetType() {
@@ -24,9 +21,25 @@ PacketType PingPacket::GetType() {
 }
 
 char *PingPacket::GetPingData() {
+  this->ping_data;
 }
 
 int PingPacket::GetPingDataSize() {
+  this->ping_data_size;
+}
+
+void PingPacket::Deserialize(Buffer *payload) {
+  this->ping_data_size = payload->GetSize();
+  this->ping_data = (char *)payload->GetBuffer();
+}
+
+std::vector<Buffer *> PingPacket::Serialize() {
+  std::vector<Buffer *> result;
+  MemoryBuffer *buffer = new MemoryBuffer(this->ping_data_size);
+  memcpy(buffer->GetBuffer(), this->ping_data, this->ping_data_size);
+
+  result.push_back(buffer);
+  return result;
 }
 
 }

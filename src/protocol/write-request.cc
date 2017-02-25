@@ -6,12 +6,13 @@
 
 namespace shakadb {
 
-WriteRequest::WriteRequest(std::string series_name, data_point_t *points, int points_count)
-    : DataPacket(kWriteRequest, 0) {
+WriteRequest::WriteRequest() : WriteRequest("", nullptr, 0) {
 }
 
-WriteRequest::WriteRequest(Buffer *packet)
-    : DataPacket(packet) {
+WriteRequest::WriteRequest(std::string series_name, data_point_t *points, int points_count) {
+  this->series_name = series_name;
+  this->points = points;
+  this->points_count = points_count;
 }
 
 PacketType WriteRequest::GetType() {
@@ -19,15 +20,23 @@ PacketType WriteRequest::GetType() {
 }
 
 int WriteRequest::GetPointsCount() {
+  return this->points_count;
 }
 
 data_point_t *WriteRequest::GetPoints() {
+  return this->points;
 }
 
 std::string WriteRequest::GetSeriesName() {
+  return this->series_name;
 }
 
-int WriteRequest::GetSeriesNameSize() {
+void WriteRequest::Deserialize(Buffer *payload) {
+
+}
+
+std::vector<Buffer *> WriteRequest::Serialize() {
+  return std::vector<Buffer *>();
 }
 
 }

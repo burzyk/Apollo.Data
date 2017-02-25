@@ -13,16 +13,20 @@ namespace shakadb {
 
 class ReadRequest : public DataPacket {
  public:
-  friend DataPacket *DataPacket::Load(Stream *stream);
+  ReadRequest();
   ReadRequest(std::string series_name, timestamp_t begin, timestamp_t end);
 
   PacketType GetType();
   std::string GetSeriesName();
   timestamp_t GetBegin();
   timestamp_t GetEnd();
+ protected:
+  void Deserialize(Buffer *payload);
+  std::vector<Buffer *> Serialize();
  private:
-  ReadRequest(Buffer *packet);
-  int GetSeriesNameSize();
+  std::string series_name;
+  timestamp_t begin;
+  timestamp_t end;
 };
 
 }

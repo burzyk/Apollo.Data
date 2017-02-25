@@ -7,21 +7,27 @@
 
 #include <src/data-point.h>
 #include <src/utils/common.h>
+#include <src/data-points-reader.h>
+#include <src/utils/shallow-buffer.h>
 #include "data-packet.h"
 
 namespace shakadb {
 
 class ReadResponse : public DataPacket {
  public:
-  friend DataPacket *DataPacket::Load(Stream *stream);
-  ReadResponse(data_point_t *points, int points_count, int total_points_count);
+  ReadResponse();
+  ReadResponse(std::shared_ptr<DataPointsReader> reader);
 
   PacketType GetType();
-  int GetTotalPointsCount();
   int GetPointsCount();
   data_point_t *GetPoints();
+ protected:
+  void Deserialize(Buffer *payload);
+  std::vector<Buffer *> Serialize();
  private:
-  ReadResponse(Buffer *packet);
+  data_point_t *points;
+  int points_count;
+  std::shared_ptr<DataPointsReader> reader;
 };
 
 }

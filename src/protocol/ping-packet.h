@@ -11,14 +11,18 @@ namespace shakadb {
 
 class PingPacket : public DataPacket {
  public:
-  friend DataPacket *DataPacket::Load(Stream *stream);
+  PingPacket();
   PingPacket(char *ping_data, int ping_data_size);
 
   virtual PacketType GetType();
   char *GetPingData();
   int GetPingDataSize();
+ protected:
+  void Deserialize(Buffer *payload);
+  std::vector<Buffer *> Serialize();
  private:
-  PingPacket(Buffer *packet);
+  char *ping_data;
+  int ping_data_size;
 };
 
 }

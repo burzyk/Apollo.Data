@@ -13,16 +13,20 @@ namespace shakadb {
 
 class WriteRequest : public DataPacket {
  public:
-  friend DataPacket *DataPacket::Load(Stream *stream);
+  WriteRequest();
   WriteRequest(std::string series_name, data_point_t *points, int points_count);
 
   PacketType GetType();
   int GetPointsCount();
   data_point_t *GetPoints();
   std::string GetSeriesName();
+ protected:
+  void Deserialize(Buffer *payload);
+  std::vector<Buffer *> Serialize();
  private:
-  WriteRequest(Buffer *packet);
-  int GetSeriesNameSize();
+  std::string series_name;
+  data_point_t *points;
+  int points_count;
 };
 
 }
