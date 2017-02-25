@@ -14,9 +14,7 @@ class Stream {
  public:
   virtual ~Stream() {};
   virtual int Read(byte_t *buffer, int buffer_size) = 0;
-  virtual int Peek(byte_t *buffer, int buffer_size) = 0;
   virtual void Write(byte_t *buffer, int buffer_size) = 0;
-  virtual bool HasData(int size) = 0;
 };
 
 }

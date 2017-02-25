@@ -78,10 +78,6 @@ int RingBuffer::GetSize() {
   return this->size;
 }
 
-bool RingBuffer::HasData(int size) {
-  return size <= this->GetSize();
-}
-
 void RingBuffer::EnsureBufferSize(int new_size) {
   if (this->capacity >= new_size) {
     return;

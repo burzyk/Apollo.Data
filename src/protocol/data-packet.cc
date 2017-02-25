@@ -28,15 +28,18 @@ DataPacket::~DataPacket() {
 DataPacket *DataPacket::Load(Stream *stream) {
   data_packet_header_t header;
 
-  if (stream->Peek((byte_t *)&header, sizeof(data_packet_header_t)) < sizeof(data_packet_header_t)
-      || !stream->HasData(header.packet_length)) {
+  if (stream->Read((byte_t *)&header, sizeof(data_packet_header_t)) < sizeof(data_packet_header_t)) {
     return nullptr;
   }
 
   Buffer *raw_packet = new MemoryBuffer(header.packet_length);
+  memcpy(raw_packet, &header, sizeof(data_point_t));
+  byte_t *payload = raw_packet->GetBuffer() + sizeof(data_point_t);
+  int payload_size = raw_packet->GetSize() - sizeof(data_point_t);
 
-  if (stream->Read(raw_packet->GetBuffer(), header.packet_length) != header.packet_length) {
-    throw FatalException("Not enough data in the buffer");
+  if (stream->Read(payload, payload_size) != payload_size) {
+    delete raw_packet;
+    return nullptr;
   }
 
   DataPacket *result = nullptr;
