@@ -11,6 +11,7 @@
 #include "write-request.h"
 #include "read-request.h"
 #include "read-response.h"
+#include "write-response.h"
 
 namespace shakadb {
 
@@ -44,6 +45,8 @@ DataPacket *DataPacket::Load(Stream *stream) {
     case kPing: result = new PingPacket();
       break;
     case kWriteRequest: result = new WriteRequest();
+      break;
+    case kWriteResponse: result = new WriteResponse();
       break;
     case kReadRequest: result = new ReadRequest();
       break;

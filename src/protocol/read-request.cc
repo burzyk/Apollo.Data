@@ -42,12 +42,11 @@ bool ReadRequest::Deserialize(Buffer *payload) {
     return false;
   }
 
-  read_request_t request;
-  memcpy(&request, payload->GetBuffer(), sizeof(read_request_t));
+  read_request_t *request = (read_request_t *)payload->GetBuffer();
 
-  this->begin = request.begin;
-  this->end = request.end;
-  this->series_name = std::string(request.series_name);
+  this->begin = request->begin;
+  this->end = request->end;
+  this->series_name = std::string(request->series_name);
 
   return true;
 }

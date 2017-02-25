@@ -38,11 +38,10 @@ bool WriteRequest::Deserialize(Buffer *payload) {
     return false;
   }
 
-  write_request_t request;
-  memcpy(&request, payload->GetBuffer(), sizeof(write_request_t));
+  write_request_t *request = (write_request_t *)payload->GetBuffer();
 
-  this->points_count = request.points_count;
-  this->series_name = std::string(request.series_name);
+  this->points_count = request->points_count;
+  this->series_name = std::string(request->series_name);
 
   if (payload->GetSize() != sizeof(write_request_t) + this->points_count * sizeof(data_point_t)) {
     return false;
