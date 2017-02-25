@@ -10,6 +10,7 @@
 #include <vector>
 #include <src/utils/rw-lock-scope.h>
 #include <src/utils/ring-buffer.h>
+#include <src/utils/memory-buffer.h>
 #include "data-chunk.h"
 #include "src/data-points-reader.h"
 
@@ -18,14 +19,12 @@ namespace shakadb {
 class StandardDataPointsReader : public DataPointsReader {
  public:
   StandardDataPointsReader(int points_count);
-  virtual ~StandardDataPointsReader();
 
   void WriteDataPoints(data_point_t *points, int count);
   data_point_t *GetDataPoints();
   int GetDataPointsCount();
  private:
-  data_point_t *data_points;
-  int points_count;
+  MemoryBuffer points_buffer;
   int write_position;
 };
 

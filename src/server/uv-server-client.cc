@@ -3,7 +3,6 @@
 //
 
 #include <src/utils/allocator.h>
-#include <src/protocol/packet-loader.h>
 #include "uv-server-client.h"
 #include "uv-common.h"
 
@@ -130,7 +129,7 @@ void UvServerClient::ReadData(ssize_t nread, const uv_buf_t *buf) {
 
   DataPacket *packet = nullptr;
 
-  while ((packet = PacketLoader::Load(&this->receive_buffer)) != nullptr) {
+  while ((packet = DataPacket::Load(&this->receive_buffer)) != nullptr) {
     for (auto listener: this->server_client_listeners) {
       listener->OnReceived(this, packet);
     }
@@ -155,7 +154,7 @@ void UvServerClient::SendPendingData() {
     return;
   }
 
-  std::vector<PacketFragment *> fragments = packet->GetFragments();
+  std::vector<Buffer *> fragments = packet->GetFragments();
   write_request_t *data = Allocator::New<write_request_t>();
   data->client = this;
   data->buffers = Allocator::New<uv_buf_t>(fragments.size());
@@ -163,7 +162,7 @@ void UvServerClient::SendPendingData() {
   data->packet = packet;
 
   for (int i = 0; i < data->buffers_count; i++) {
-    data->buffers[i].base = (char *)fragments[i]->GetData();
+    data->buffers[i].base = (char *)fragments[i]->GetBuffer();
     data->buffers[i].len = fragments[i]->GetSize();
   }
 

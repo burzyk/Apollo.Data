@@ -3,17 +3,20 @@
 //
 
 #include <cstring>
+#include <src/utils/memory-buffer.h>
 #include "ping-packet.h"
 
 namespace shakadb {
 
-PingPacket::PingPacket(byte_t *raw_packet, int packet_size)
-    : DataPacket(raw_packet, packet_size) {
+PingPacket::PingPacket(char *ping_data, int ping_data_size)
+    : DataPacket(kPing, ping_data_size) {
+  MemoryBuffer *payload = new MemoryBuffer(ping_data_size);
+  memcpy(payload->GetBuffer(), ping_data, payload->GetSize());
+  this->AddFragment(payload);
 }
 
-PingPacket::PingPacket(char *ping_data, int ping_data_size) {
-  this->InitPacket(ping_data_size);
-  memcpy(this->GetPayload(), ping_data, ping_data_size);
+PingPacket::PingPacket(Buffer *packet)
+    : DataPacket(packet) {
 }
 
 PacketType PingPacket::GetType() {
@@ -21,11 +24,9 @@ PacketType PingPacket::GetType() {
 }
 
 char *PingPacket::GetPingData() {
-  return (char *)this->GetPayload();
 }
 
 int PingPacket::GetPingDataSize() {
-  return this->GetPayloadSize();
 }
 
 }

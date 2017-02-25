@@ -13,7 +13,7 @@ namespace shakadb {
 
 class ReadRequest : public DataPacket {
  public:
-  ReadRequest(byte_t *raw_packet, int packet_size);
+  friend DataPacket *DataPacket::Load(Stream *stream);
   ReadRequest(std::string series_name, timestamp_t begin, timestamp_t end);
 
   PacketType GetType();
@@ -21,6 +21,7 @@ class ReadRequest : public DataPacket {
   timestamp_t GetBegin();
   timestamp_t GetEnd();
  private:
+  ReadRequest(Buffer *packet);
   int GetSeriesNameSize();
 };
 

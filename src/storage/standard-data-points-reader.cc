@@ -9,28 +9,23 @@
 
 namespace shakadb {
 
-StandardDataPointsReader::StandardDataPointsReader(int points_count) {
-  this->points_count = points_count;
-  this->data_points = Allocator::New<data_point_t>(this->points_count);
+StandardDataPointsReader::StandardDataPointsReader(int points_count)
+    : points_buffer(points_count * sizeof(data_point_t)) {
   this->write_position = 0;
 }
 
-StandardDataPointsReader::~StandardDataPointsReader() {
-  Allocator::Delete(this->data_points);
-}
-
 data_point_t *StandardDataPointsReader::GetDataPoints() {
-  return this->data_points;
+  return (data_point_t *)this->points_buffer.GetBuffer();
 }
 
 void StandardDataPointsReader::WriteDataPoints(data_point_t *points, int count) {
-  int to_write = min(count, this->points_count - this->write_position);
-  memcpy(this->data_points + this->write_position, points, to_write * sizeof(data_point_t));
+  int to_write = min(count, this->GetDataPointsCount() - this->write_position);
+  memcpy(this->GetDataPoints() + this->write_position, points, to_write * sizeof(data_point_t));
   this->write_position += to_write;
 }
 
 int StandardDataPointsReader::GetDataPointsCount() {
-  return this->points_count;
+  return this->points_buffer.GetSize() / sizeof(data_point_t);
 }
 
 }

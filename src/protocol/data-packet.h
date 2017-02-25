@@ -9,7 +9,7 @@
 #include <src/utils/ring-buffer.h>
 #include <memory>
 #include <vector>
-#include "packet-fragment.h"
+#include <src/utils/buffer.h>
 
 namespace shakadb {
 
@@ -28,22 +28,17 @@ struct data_packet_header_t {
 
 class DataPacket {
  public:
-  DataPacket();
-  DataPacket(byte_t *raw_packet, int packet_size);
+  DataPacket(PacketType type, int payload_size);
   virtual ~DataPacket();
+  static DataPacket *Load(Stream *stream);
 
   virtual PacketType GetType() = 0;
-  byte_t *GetPacket();
-  int GetPacketSize();
-
-  std::vector<PacketFragment *> GetFragments();
+  std::vector<Buffer *> GetFragments();
  protected:
-  void InitPacket(int payload_size);
-  byte_t *GetPayload();
-  int GetPayloadSize();
+  DataPacket(Buffer *packet);
+  void AddFragment(Buffer *fragment);
  private:
-  byte_t *raw_packet;
-  int packet_size;
+  std::vector<Buffer *> fragments;
 };
 
 }

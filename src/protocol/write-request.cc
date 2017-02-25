@@ -6,17 +6,12 @@
 
 namespace shakadb {
 
-WriteRequest::WriteRequest(byte_t *raw_packet, int packet_size)
-    : DataPacket(raw_packet, packet_size) {
+WriteRequest::WriteRequest(std::string series_name, data_point_t *points, int points_count)
+    : DataPacket(kWriteRequest, 0) {
 }
 
-WriteRequest::WriteRequest(std::string series_name, data_point_t *points, int points_count) {
-  this->InitPacket(sizeof(int) + series_name.size() + points_count * sizeof(data_point_t));
-  int series_name_size = series_name.size();
-
-  memcpy(this->GetPayload(), &series_name_size, sizeof(int));
-  memcpy(this->GetPayload() + sizeof(int), series_name.c_str(), series_name.size());
-  memcpy(this->GetPayload() + sizeof(int) + series_name.size(), points, points_count * sizeof(data_point_t));
+WriteRequest::WriteRequest(Buffer *packet)
+    : DataPacket(packet) {
 }
 
 PacketType WriteRequest::GetType() {
@@ -24,19 +19,15 @@ PacketType WriteRequest::GetType() {
 }
 
 int WriteRequest::GetPointsCount() {
-  return (this->GetPayloadSize() - sizeof(int) - this->GetSeriesNameSize()) / sizeof(data_point_t);
 }
 
 data_point_t *WriteRequest::GetPoints() {
-  return (data_point_t *)(this->GetPayload() + sizeof(int) + this->GetSeriesNameSize());
 }
 
 std::string WriteRequest::GetSeriesName() {
-  return std::string((char *)(this->GetPayload() + sizeof(int)), this->GetSeriesNameSize());
 }
 
 int WriteRequest::GetSeriesNameSize() {
-  return *((int *)this->GetPayload());
 }
 
 }

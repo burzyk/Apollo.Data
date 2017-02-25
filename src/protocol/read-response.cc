@@ -6,18 +6,11 @@
 
 namespace shakadb {
 
-ReadResponse::ReadResponse(byte_t *raw_packet, int packet_size)
-    : DataPacket(raw_packet, packet_size) {
+ReadResponse::ReadResponse(Buffer *packet) : DataPacket(packet) {
 }
 
-ReadResponse::ReadResponse(data_point_t *points, int points_count, int total_points_count) {
-  this->InitPacket(sizeof(int) + sizeof(data_point_t) * points_count);
-
-  memcpy(this->GetPayload(), &total_points_count, sizeof(int));
-
-  if (points_count != 0) {
-    memcpy(this->GetPayload() + sizeof(int), points, points_count * sizeof(data_point_t));
-  }
+ReadResponse::ReadResponse(data_point_t *points, int points_count, int total_points_count)
+    : DataPacket(kReadResponse, 0) {
 }
 
 PacketType ReadResponse::GetType() {
@@ -25,15 +18,12 @@ PacketType ReadResponse::GetType() {
 }
 
 int ReadResponse::GetPointsCount() {
-  return (this->GetPayloadSize() - sizeof(int)) / sizeof(data_point_t);
 }
 
 data_point_t *ReadResponse::GetPoints() {
-  return (data_point_t *)(this->GetPayload() + sizeof(int));
 }
 
 int ReadResponse::GetTotalPointsCount() {
-  return *((int *)this->GetPayload());
 }
 
 }

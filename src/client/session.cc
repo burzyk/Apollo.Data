@@ -11,7 +11,6 @@
 #include <src/utils/allocator.h>
 #include <src/protocol/ping-packet.h>
 #include <src/protocol/write-request.h>
-#include <src/protocol/packet-loader.h>
 #include <src/protocol/read-request.h>
 #include "session.h"
 #include "client-data-points-reader.h"
@@ -89,36 +88,36 @@ DataPointsReader *Session::ReadPoints(std::string series_name, timestamp_t begin
 }
 
 bool Session::SendPacket(DataPacket *packet) {
-  byte_t *raw_packet = packet->GetPacket();
-  int packet_size = packet->GetPacketSize();
-  int sent = 0;
-  int total_sent = 0;
-
-  do {
-    sent = send(this->sock, raw_packet, packet_size - total_sent, 0);
-    raw_packet += sent;
-    total_sent += sent;
-  } while (sent != 0 && total_sent < packet_size);
-
-  return total_sent == packet_size;
+//  byte_t *raw_packet = packet->GetPacket();
+//  int packet_size = packet->GetPacketSize();
+//  int sent = 0;
+//  int total_sent = 0;
+//
+//  do {
+//    sent = send(this->sock, raw_packet, packet_size - total_sent, 0);
+//    raw_packet += sent;
+//    total_sent += sent;
+//  } while (sent != 0 && total_sent < packet_size);
+//
+//  return total_sent == packet_size;
 }
 
 DataPacket *Session::ReadPacket() {
-  data_packet_header_t header;
-
-  if (!this->Receive((byte_t *)&header, sizeof(header))) {
-    return nullptr;
-  }
-
-  byte_t *raw_packet = Allocator::New<byte_t>(header.packet_length);
-  memcpy(raw_packet, &header, sizeof(header));
-
-  if (!this->Receive(raw_packet + sizeof(data_packet_header_t), header.packet_length - sizeof(data_packet_header_t))) {
-    Allocator::Delete(raw_packet);
-    return nullptr;
-  }
-
-  return PacketLoader::Load(raw_packet, header.packet_length);
+//  data_packet_header_t header;
+//
+//  if (!this->Receive((byte_t *)&header, sizeof(header))) {
+//    return nullptr;
+//  }
+//
+//  byte_t *raw_packet = Allocator::New<byte_t>(header.packet_length);
+//  memcpy(raw_packet, &header, sizeof(header));
+//
+//  if (!this->Receive(raw_packet + sizeof(data_packet_header_t), header.packet_length - sizeof(data_packet_header_t))) {
+//    Allocator::Delete(raw_packet);
+//    return nullptr;
+//  }
+//
+//  return PacketLoader::Load(raw_packet, header.packet_length);
 }
 
 bool Session::Receive(byte_t *buffer, int size) {
