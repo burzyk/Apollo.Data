@@ -26,7 +26,7 @@ class WriteRequest : public DataPacket {
  private:
   struct write_request_t {
     char series_name[SHAKADB_SERIES_NAME_MAX_LENGTH + 1];
-    int points_count;
+    uint32_t points_count;
   };
 
   std::string series_name;

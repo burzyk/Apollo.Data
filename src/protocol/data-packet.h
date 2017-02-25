@@ -23,7 +23,7 @@ enum PacketType {
 
 struct data_packet_header_t {
   PacketType type;
-  int packet_length;
+  uint32_t packet_length;
 };
 
 class DataPacket {

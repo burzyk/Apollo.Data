@@ -32,6 +32,10 @@ DataPacket *DataPacket::Load(Stream *stream) {
     return nullptr;
   }
 
+  if (header.packet_length > SHAKADB_PACKET_MAX_LEN) {
+    return nullptr;
+  }
+
   Buffer *raw_packet = new MemoryBuffer(header.packet_length);
   memcpy(raw_packet->GetBuffer(), &header, sizeof(data_point_t));
   byte_t *payload = raw_packet->GetBuffer() + sizeof(data_point_t);

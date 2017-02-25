@@ -23,7 +23,9 @@ WebServer::WebServer(int port, int backlog, int max_clients, Log *log) {
 }
 
 WebServer::~WebServer() {
-  this->Close();
+  if (this->is_running) {
+    this->Close();
+  }
 }
 
 void WebServer::Listen() {
@@ -43,6 +45,8 @@ void WebServer::Listen() {
   if (listen(this->master_socket, this->backlog) == -1) {
     throw FatalException("Unable to listen");
   }
+
+  this->is_running = true;
 
   for (int i = 0; i < this->max_clients; i++) {
     Thread *worker = new Thread([this](void *) -> void { this->WorkerRoutine(); }, this->log);
