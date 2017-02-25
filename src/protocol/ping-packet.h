@@ -18,7 +18,7 @@ class PingPacket : public DataPacket {
   char *GetPingData();
   int GetPingDataSize();
  protected:
-  void Deserialize(Buffer *payload);
+  bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
  private:
   char *ping_data;

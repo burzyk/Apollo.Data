@@ -61,7 +61,12 @@ DataPacket *DataPacket::Load(Stream *stream) {
   ShallowBuffer buffer(
       raw_packet->GetBuffer() + sizeof(data_packet_header_t),
       raw_packet->GetSize() - sizeof(data_packet_header_t));
-  result->Deserialize(&buffer);
+
+  if (!result->Deserialize(&buffer)) {
+    delete result;
+    result = nullptr;
+  }
+
   return result;
 }
 

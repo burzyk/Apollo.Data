@@ -9,6 +9,8 @@
 
 namespace shakadb {
 
+#define SHAKADB_SERIES_NAME_MAX_LENGTH 255
+
 typedef uint8_t byte_t;
 
 uint64_t max(uint64_t a, uint64_t b);

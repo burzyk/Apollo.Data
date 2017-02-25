@@ -35,7 +35,7 @@ class DataPacket {
   virtual PacketType GetType() = 0;
   std::vector<Buffer *> GetFragments();
  protected:
-  virtual void Deserialize(Buffer *payload) = 0;
+  virtual bool Deserialize(Buffer *payload) = 0;
   virtual std::vector<Buffer *> Serialize() = 0;
  private:
   std::vector<Buffer *> fragments;

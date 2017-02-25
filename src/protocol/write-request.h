@@ -21,9 +21,14 @@ class WriteRequest : public DataPacket {
   data_point_t *GetPoints();
   std::string GetSeriesName();
  protected:
-  void Deserialize(Buffer *payload);
+  bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
  private:
+  struct write_request_t {
+    char series_name[SHAKADB_SERIES_NAME_MAX_LENGTH + 1];
+    int points_count;
+  };
+
   std::string series_name;
   data_point_t *points;
   int points_count;

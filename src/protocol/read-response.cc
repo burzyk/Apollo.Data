@@ -30,9 +30,11 @@ data_point_t *ReadResponse::GetPoints() {
   return this->points;
 }
 
-void ReadResponse::Deserialize(Buffer *payload) {
+bool ReadResponse::Deserialize(Buffer *payload) {
   this->points = (data_point_t *)payload->GetBuffer();
   this->points_count = payload->GetSize() / sizeof(data_point_t);
+
+  return true;
 }
 
 std::vector<Buffer *> ReadResponse::Serialize() {

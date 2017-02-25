@@ -21,25 +21,25 @@ PacketType PingPacket::GetType() {
 }
 
 char *PingPacket::GetPingData() {
-  this->ping_data;
+  return this->ping_data;
 }
 
 int PingPacket::GetPingDataSize() {
-  this->ping_data_size;
+  return this->ping_data_size;
 }
 
-void PingPacket::Deserialize(Buffer *payload) {
+bool PingPacket::Deserialize(Buffer *payload) {
   this->ping_data_size = payload->GetSize();
   this->ping_data = (char *)payload->GetBuffer();
+
+  return true;
 }
 
 std::vector<Buffer *> PingPacket::Serialize() {
-  std::vector<Buffer *> result;
   MemoryBuffer *buffer = new MemoryBuffer(this->ping_data_size);
   memcpy(buffer->GetBuffer(), this->ping_data, this->ping_data_size);
 
-  result.push_back(buffer);
-  return result;
+  return std::vector<Buffer *> {buffer};
 }
 
 }

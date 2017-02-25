@@ -22,7 +22,7 @@ class ReadResponse : public DataPacket {
   int GetPointsCount();
   data_point_t *GetPoints();
  protected:
-  void Deserialize(Buffer *payload);
+  bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
  private:
   data_point_t *points;
