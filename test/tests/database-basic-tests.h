@@ -13,7 +13,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <thread>
-#include "base-database-tests.h"
+#include "common.h"
 
 namespace shakadb {
 namespace test {

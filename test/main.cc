@@ -6,7 +6,7 @@
 #include <test/tests/ring-buffer-tests.h>
 #include <src/utils/allocator.h>
 #include <test/tests/monitor-tests.h>
-#include "test/tests/base-database-tests.h"
+#include "test/tests/common.h"
 #include "test/tests/database-basic-tests.h"
 #include "test/tests/database-performance-tests.h"
 #include "test/tests/database-concurrency-tests.h"
