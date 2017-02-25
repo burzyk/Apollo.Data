@@ -10,10 +10,10 @@
 #include <map>
 #include <src/utils/rw-lock.h>
 #include <src/log.h>
-#include "src/data-points-reader.h"
+#include "data-points-reader.h"
 #include "data-chunk.h"
 #include "data-series.h"
-#include "src/database.h"
+#include "database.h"
 
 namespace shakadb {
 

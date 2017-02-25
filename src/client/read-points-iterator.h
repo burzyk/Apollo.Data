@@ -5,7 +5,7 @@
 #ifndef SHAKADB_CLIENTDATAPOINTREADER_H
 #define SHAKADB_CLIENTDATAPOINTREADER_H
 
-#include <src/data-points-reader.h>
+#include <src/storage/data-points-reader.h>
 #include <functional>
 #include <src/protocol/read-response.h>
 

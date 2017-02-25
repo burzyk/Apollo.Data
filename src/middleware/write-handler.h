@@ -6,7 +6,7 @@
 #define SHAKADB_WRITEHANDLER_H
 
 #include <src/server/server.h>
-#include <src/database.h>
+#include <src/storage/database.h>
 #include <src/utils/monitor.h>
 #include <map>
 #include "base-handler.h"

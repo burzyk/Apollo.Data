@@ -15,10 +15,13 @@ ReadHandler::ReadHandler(Database *db, Server *server, int points_per_packet)
   this->db = db;
   this->points_per_packet = points_per_packet;
 }
+
 void ReadHandler::OnPacketReceived(int client_id, DataPacket *packet) {
   if (packet->GetType() != kReadRequest) {
     return;
   }
+
+
 
 //  ReadRequest *request = (ReadRequest *)packet;
 //

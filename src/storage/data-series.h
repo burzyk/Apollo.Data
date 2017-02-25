@@ -8,7 +8,7 @@
 #include <src/log.h>
 #include <src/utils/rw-lock.h>
 #include <list>
-#include "src/data-points-reader.h"
+#include "data-points-reader.h"
 #include "data-chunk.h"
 
 namespace shakadb {

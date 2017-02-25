@@ -9,7 +9,7 @@
 #include <string>
 #include <src/protocol/data-packet.h>
 #include <src/protocol/read-response.h>
-#include <src/data-points-reader.h>
+#include <src/storage/data-points-reader.h>
 #include <src/utils/common.h>
 #include <src/utils/socket-stream.h>
 #include "read-points-iterator.h"

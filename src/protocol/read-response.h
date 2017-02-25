@@ -7,7 +7,7 @@
 
 #include <src/data-point.h>
 #include <src/utils/common.h>
-#include <src/data-points-reader.h>
+#include <src/storage/data-points-reader.h>
 #include <src/utils/shallow-buffer.h>
 #include "data-packet.h"
 

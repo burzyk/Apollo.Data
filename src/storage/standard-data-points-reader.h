@@ -12,7 +12,7 @@
 #include <src/utils/ring-buffer.h>
 #include <src/utils/memory-buffer.h>
 #include "data-chunk.h"
-#include "src/data-points-reader.h"
+#include "data-points-reader.h"
 
 namespace shakadb {
 
