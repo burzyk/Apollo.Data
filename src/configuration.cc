@@ -97,12 +97,4 @@ int Configuration::GetDbPointsPerChunk() {
   return this->ReadAsInt("db.points_per_chunk", 100000);
 }
 
-int Configuration::GetWriteHandlerBufferSize() {
-  return this->ReadAsInt("write_handler.buffer_size", 65536000);
-}
-
-int Configuration::GetReadHandlerBufferSize() {
-  return this->ReadAsInt("read_handler.buffer_size", 65536000);
-}
-
 }

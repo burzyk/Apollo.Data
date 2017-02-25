@@ -12,9 +12,9 @@ namespace shakadb {
 
 class ReadHandler : public BaseHandler {
  public:
-  ReadHandler(Database *db, int points_per_packet);
+  ReadHandler(Database *db, Server *server, int points_per_packet);
 
-  void OnReceived(ServerClient *client, DataPacket *packet);
+  void OnPacketReceived(int client_id, DataPacket *packet);
  private:
   Database *db;
   int points_per_packet;

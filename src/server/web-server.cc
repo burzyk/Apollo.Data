@@ -8,11 +8,11 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <src/utils/allocator.h>
-#include "simple-server.h"
+#include "web-server.h"
 
 namespace shakadb {
 
-SimpleServer::SimpleServer(int port, int backlog, int max_clients, Log *log) {
+WebServer::WebServer(int port, int backlog, int max_clients, Log *log) {
   this->log = log;
   this->port = port;
   this->backlog = backlog;
@@ -22,11 +22,11 @@ SimpleServer::SimpleServer(int port, int backlog, int max_clients, Log *log) {
   this->next_client_id = 10;
 }
 
-SimpleServer::~SimpleServer() {
+WebServer::~WebServer() {
   this->Close();
 }
 
-void SimpleServer::Listen() {
+void WebServer::Listen() {
   if ((this->master_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     throw FatalException("Unable to open main socket");
   }
@@ -51,7 +51,7 @@ void SimpleServer::Listen() {
   }
 }
 
-void SimpleServer::WorkerRoutine() {
+void WebServer::WorkerRoutine() {
   while (this->is_running) {
     int client_socket;
 
@@ -82,7 +82,7 @@ void SimpleServer::WorkerRoutine() {
   }
 }
 
-void SimpleServer::Close() {
+void WebServer::Close() {
   auto lock = this->monitor.Enter();
   this->is_running = 0;
 
@@ -100,11 +100,11 @@ void SimpleServer::Close() {
   }
 }
 
-void SimpleServer::AddServerListener(SimpleServer::ServerListener *listener) {
+void WebServer::AddServerListener(WebServer::ServerListener *listener) {
   this->listeners.push_back(listener);
 }
 
-void SimpleServer::SendPacket(int client_id, DataPacket *packet) {
+void WebServer::SendPacket(int client_id, DataPacket *packet) {
   auto lock = this->monitor.Enter();
   client_info_t *client = this->clients[client_id];
 
@@ -120,7 +120,7 @@ void SimpleServer::SendPacket(int client_id, DataPacket *packet) {
   }
 }
 
-int SimpleServer::AllocateClient(SocketStream *socket) {
+int WebServer::AllocateClient(SocketStream *socket) {
   auto lock = this->monitor.Enter();
   client_info_t *client = Allocator::New<client_info_t>();
   client->socket = socket;
@@ -131,7 +131,7 @@ int SimpleServer::AllocateClient(SocketStream *socket) {
   return client_id;
 }
 
-void SimpleServer::CloseClient(int client_id) {
+void WebServer::CloseClient(int client_id) {
   auto lock = this->monitor.Enter();
   client_info_t *info = this->clients[client_id];
 

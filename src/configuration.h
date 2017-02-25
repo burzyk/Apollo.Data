@@ -18,9 +18,6 @@ class Configuration {
   int GetServerBacklog();
   std::string GetDbFolder();
   int GetDbPointsPerChunk();
-  int GetWriteHandlerBufferSize();
-  int GetReadHandlerBufferSize();
-
  private:
   Configuration();
 

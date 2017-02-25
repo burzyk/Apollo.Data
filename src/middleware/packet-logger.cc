@@ -6,11 +6,12 @@
 
 namespace shakadb {
 
-PacketLogger::PacketLogger(Log *log) {
+PacketLogger::PacketLogger(Server *server, Log *log)
+    : BaseHandler(server) {
   this->log = log;
 }
 
-void PacketLogger::OnReceived(ServerClient *client, DataPacket *packet) {
+void PacketLogger::OnPacketReceived(int client_id, DataPacket *packet) {
   this->log->Debug("Received packet: " + std::to_string(packet->GetType()));
 }
 

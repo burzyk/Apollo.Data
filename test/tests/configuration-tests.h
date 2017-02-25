@@ -55,8 +55,6 @@ class ConfigurationTests {
     Assert::IsTrue(config->GetServerBacklog() == 99);
     Assert::IsTrue(config->GetDbFolder() == "some_bad_folder");
     Assert::IsTrue(config->GetDbPointsPerChunk() == 2);
-    Assert::IsTrue(config->GetWriteHandlerBufferSize() == 4);
-    Assert::IsTrue(config->GetReadHandlerBufferSize() == 7);
 
     delete config;
   };

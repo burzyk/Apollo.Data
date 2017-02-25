@@ -13,9 +13,9 @@ namespace shakadb {
 
 class PacketLogger : public BaseHandler {
  public:
-  PacketLogger(Log *log);
+  PacketLogger(Server *server, Log *log);
 
-  void OnReceived(ServerClient *client, DataPacket *packet);
+  void OnPacketReceived(int client_id, DataPacket *packet);
  private:
   Log *log;
 };

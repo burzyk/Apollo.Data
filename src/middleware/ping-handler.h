@@ -12,7 +12,8 @@ namespace shakadb {
 
 class PingHandler : public BaseHandler {
  public:
-  void OnReceived(ServerClient *client, DataPacket *packet);
+  PingHandler(Server *server);
+  void OnPacketReceived(int client_id, DataPacket *packet);
 };
 
 }

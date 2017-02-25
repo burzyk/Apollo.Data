@@ -5,16 +5,20 @@
 #ifndef SHAKADB_BASEHANDLER_H
 #define SHAKADB_BASEHANDLER_H
 
-#include <src/server/server-client.h>
 #include <src/server/server.h>
 
 namespace shakadb {
 
-class BaseHandler : public Server::ServerListener, ServerClient::ServerClientListener {
+class BaseHandler : public Server::ServerListener {
  public:
-  void OnClientConnected(Server *server, ServerClient *client);
-  void OnReceived(ServerClient *client, DataPacket *packet);
-  void OnDisconnected(ServerClient *client);
+  BaseHandler(Server *server);
+
+  void OnClientConnected(int client_id);
+  void OnClientDisconnected(int client_id);
+  void OnPacketReceived(int client_id, DataPacket *packet);
+  Server *GetServer();
+ private:
+  Server *server;
 };
 
 }

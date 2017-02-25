@@ -8,27 +8,21 @@
 #include <src/protocol/data-packet.h>
 #include <src/utils/thread.h>
 #include <list>
+#include <map>
 #include <src/utils/socket-stream.h>
 #include <src/utils/monitor.h>
+#include <src/server/server.h>
 
 namespace shakadb {
 
-class SimpleServer {
+class WebServer : public Server {
  public:
-  class ServerListener {
-   public:
-    virtual ~ServerListener() {};
-    virtual void OnClientConnected(int client_id) = 0;
-    virtual void OnClientDisconnected(int client_id) = 0;
-    virtual void OnPacketReceived(int client_id, DataPacket *packet) = 0;
-  };
-
-  SimpleServer(int port, int backlog, int max_clients, Log *log);
-  ~SimpleServer();
+  WebServer(int port, int backlog, int max_clients, Log *log);
+  ~WebServer();
 
   void Listen();
   void Close();
-  void AddServerListener(ServerListener *listener);
+  void AddServerListener(Server::ServerListener *listener);
   void SendPacket(int client_id, DataPacket *packet);
  private:
   struct client_info_t {

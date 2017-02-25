@@ -7,16 +7,19 @@
 
 namespace shakadb {
 
-void PingHandler::OnReceived(ServerClient *client, DataPacket *packet) {
+PingHandler::PingHandler(Server * server)
+    : BaseHandler(server) {
+}
+
+void PingHandler::OnPacketReceived(int client_id, DataPacket *packet) {
   if (packet->GetType() != PacketType::kPing) {
     return;
   }
 
   PingPacket *request = (PingPacket *)packet;
-  std::shared_ptr<DataPacket> response = std::shared_ptr<DataPacket>(
-      new PingPacket(request->GetPingData(), request->GetPingDataSize()));
+  PingPacket response(request->GetPingData(), request->GetPingDataSize());
 
-  client->SendPacket(response);
+  this->GetServer()->SendPacket(client_id, &response);
 }
 
 }

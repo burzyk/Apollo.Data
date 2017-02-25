@@ -2,7 +2,7 @@
 // Created by Pawel Burzynski on 14/02/2017.
 //
 
-#include <src/server/uv-server.h>
+#include <src/server/web-server.h>
 #include <src/file-log.h>
 #include <src/utils/allocator.h>
 #include <src/storage/standard-database.h>
@@ -13,24 +13,19 @@ namespace shakadb {
 
 Bootstrapper::Bootstrapper(Configuration *config) {
   this->log = new FileLog(config->GetLogFile());
-  this->server = new UvServer(config->GetServerPort(), config->GetServerBacklog(), this->log);
-  this->ping_handler = new PingHandler();
-  this->packet_logger = new PacketLogger(this->log);
+  this->server = new WebServer(config->GetServerPort(), config->GetServerBacklog(), config->GetServerBacklog(), this->log);
+  this->ping_handler = new PingHandler(this->server);
+  this->packet_logger = new PacketLogger(this->server, this->log);
   this->db = StandardDatabase::Init(config->GetDbFolder(), this->log, config->GetDbPointsPerChunk(), 0);
-  this->write_handler = new WriteHandler(
-      this->db);//,
-//      config->GetWriteHandlerBufferSize(),
-//      config->GetWriteHandlerBufferSize());
-  this->read_handler = new ReadHandler(this->db, config->GetReadHandlerBufferSize());
+  this->write_handler = new WriteHandler(this->db, this->server);
+  this->read_handler = new ReadHandler(this->db, this->server, 100);
 
   this->master_thread = new Thread([this](void *) -> void { this->MainRoutine(); }, this->log);
-  this->write_handler_thread = new Thread([this](void *) -> void { this->WriteQueueRoutine(); }, this->log);
   this->server_thread = new Thread([this](void *) -> void { this->ServerRoutine(); }, this->log);
 }
 
 Bootstrapper::~Bootstrapper() {
   delete this->server_thread;
-  delete this->write_handler_thread;
   delete this->master_thread;
 
   delete this->read_handler;
@@ -53,7 +48,6 @@ void Bootstrapper::MainRoutine() {
   this->log->Info("========== Starting ShakaDB ==========");
 
   this->server_thread->Start(nullptr);
-  this->write_handler_thread->Start(nullptr);
 
   this->log->Info("ShakaDB started");
 
@@ -64,9 +58,6 @@ void Bootstrapper::MainRoutine() {
 
   this->server->Close();
   this->server_thread->Join();
-
-  this->write_handler->Close();
-  this->write_handler_thread->Join();
 
   this->log->Info("========== ShakaDB Stopped ==========");
 }
@@ -83,10 +74,6 @@ void Bootstrapper::ServerRoutine() {
   this->server->AddServerListener(this->read_handler);
 
   this->server->Listen();
-}
-
-void Bootstrapper::WriteQueueRoutine() {
-  this->write_handler->ListenForData();
 }
 
 }

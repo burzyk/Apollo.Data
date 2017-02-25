@@ -24,14 +24,12 @@ class Bootstrapper {
   Bootstrapper(Configuration *config);
 
   void ServerRoutine();
-  void WriteQueueRoutine();
   void MainRoutine();
 
   Monitor control_lock;
   std::shared_ptr<MonitorScope> control_lock_scope;
   Thread *master_thread;
   Thread *server_thread;
-  Thread *write_handler_thread;
 
   Log *log;
   Server *server;

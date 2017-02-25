@@ -6,14 +6,21 @@
 
 namespace shakadb {
 
-void BaseHandler::OnClientConnected(Server *server, ServerClient *client) {
-  client->AddServerClientListener(this);
+BaseHandler::BaseHandler(Server *server) {
+  this->server = server;
 }
 
-void BaseHandler::OnReceived(ServerClient *client, DataPacket *packet) {
+void BaseHandler::OnClientConnected(int client_id) {
 }
 
-void BaseHandler::OnDisconnected(ServerClient *client) {
+void BaseHandler::OnClientDisconnected(int client_id) {
+}
+
+void BaseHandler::OnPacketReceived(int client_id, DataPacket *packet) {
+}
+
+Server *BaseHandler::GetServer() {
+  return this->server;
 }
 
 }

@@ -5,7 +5,6 @@
 #ifndef SHAKADB_WRITEHANDLER_H
 #define SHAKADB_WRITEHANDLER_H
 
-#include <src/server/server-client.h>
 #include <src/server/server.h>
 #include <src/database.h>
 #include <src/utils/monitor.h>
@@ -16,24 +15,11 @@ namespace shakadb {
 
 class WriteHandler : public BaseHandler {
  public:
-  WriteHandler(Database *db);
-  ~WriteHandler();
+  WriteHandler(Database *db, Server *server);
 
-  void OnReceived(ServerClient *client, DataPacket *packet);
-
-  void ListenForData();
-  void Close();
+  void OnPacketReceived(int client_id, DataPacket *packet);
  private:
-  struct write_info_t {
-    std::string series_name;
-    Buffer *points;
-    int points_count;
-  };
-
   Database *db;
-  std::list<write_info_t> write_info;
-  volatile bool is_active;
-  Monitor monitor;
 };
 
 }

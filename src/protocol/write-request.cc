@@ -49,6 +49,10 @@ bool WriteRequest::Deserialize(Buffer *payload) {
 
   this->points = (data_point_t *)payload->GetBuffer() + sizeof(write_request_t);
 
+  std::sort(this->points, this->points + this->points_count, [](data_point_t a, data_point_t b) -> bool {
+    return a.time < b.time;
+  });
+
   return true;
 }
 

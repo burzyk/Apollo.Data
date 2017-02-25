@@ -8,7 +8,7 @@
 #include <vector>
 #include <src/log.h>
 #include <list>
-#include "server-client.h"
+#include <src/protocol/data-packet.h>
 
 namespace shakadb {
 
@@ -17,13 +17,16 @@ class Server {
   class ServerListener {
    public:
     virtual ~ServerListener() {};
-    virtual void OnClientConnected(Server *server, ServerClient *client) = 0;
+    virtual void OnClientConnected(int client_id) = 0;
+    virtual void OnClientDisconnected(int client_id) = 0;
+    virtual void OnPacketReceived(int client_id, DataPacket *packet) = 0;
   };
 
   virtual ~Server() {};
   virtual void Listen() = 0;
   virtual void Close() = 0;
   virtual void AddServerListener(ServerListener *listener) = 0;
+  virtual void SendPacket(int client_id, DataPacket *packet) = 0;
 };
 
 }
