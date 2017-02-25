@@ -7,16 +7,14 @@
 #include <src/protocol/write-request.h>
 #include <src/utils/allocator.h>
 #include <src/utils/stopwatch.h>
+#include <src/utils/memory-buffer.h>
 #include "write-handler.h"
 
 namespace shakadb {
 
-WriteHandler::WriteHandler(Database *db, int buffer_grow_increment, int points_buffer_count) {
+WriteHandler::WriteHandler(Database *db) {
   this->db = db;
   this->is_active = true;
-  this->points_buffer = Allocator::New<data_point_t>(points_buffer_count);
-  this->buffer_grow_increment = buffer_grow_increment;
-  this->points_buffer_size = points_buffer_count * sizeof(data_point_t);
 }
 
 WriteHandler::~WriteHandler() {
@@ -24,11 +22,9 @@ WriteHandler::~WriteHandler() {
     throw FatalException("The queue is still active");
   }
 
-  for (auto buffer: this->buffers) {
-    delete buffer.second;
+  for (auto buffer: this->write_info) {
+    delete buffer.points;
   }
-
-  Allocator::Delete(this->points_buffer);
 }
 
 void WriteHandler::OnReceived(ServerClient *client, DataPacket *packet) {
@@ -37,16 +33,15 @@ void WriteHandler::OnReceived(ServerClient *client, DataPacket *packet) {
   }
 
   WriteRequest *request = (WriteRequest *)packet;
+  write_info_t info = {
+      .points=new MemoryBuffer(request->GetPointsCount() * sizeof(data_point_t)),
+      .series_name=request->GetSeriesName(),
+      .points_count=request->GetPointsCount()};
+
+  memcpy(info.points->GetBuffer(), request->GetPoints(), info.points->GetSize());
 
   auto scope = this->monitor.Enter();
-
-  if (this->buffers.find(request->GetSeriesName()) == this->buffers.end()) {
-    this->buffers[request->GetSeriesName()] = new RingBuffer(this->buffer_grow_increment);
-  }
-
-  this->buffers[request->GetSeriesName()]->Write(
-      (byte_t *)request->GetPoints(),
-      request->GetPointsCount() * sizeof(data_point_t));
+  this->write_info.push_back(info);
   scope->Signal();
 }
 
@@ -54,24 +49,20 @@ void WriteHandler::ListenForData() {
   auto scope = this->monitor.Enter();
 
   while (this->is_active) {
-    std::map<std::string, RingBuffer *> buffers_snapshot = this->buffers;
+    std::list<write_info_t> write_info_snapshot = this->write_info;
+    scope->Exit();
 
-    for (auto buffer: buffers_snapshot) {
-      Stopwatch sw;
-      sw.Start();
+    for (auto info: write_info_snapshot) {
+      data_point_t *points = (data_point_t *)info.points->GetBuffer();
+      std::sort(points, points + info.points_count, [](data_point_t p1, data_point_t p2) {
+        return p1.time < p2.time;
+      });
 
-      while (buffer.second->GetSize() != 0) {
-        int read = buffer.second->Read((byte_t *)this->points_buffer, this->points_buffer_size) / sizeof(data_point_t);
-
-        scope->Exit();
-        this->db->Write(buffer.first, this->points_buffer, read);
-        scope->Reenter();
-      }
-
-      sw.Stop();
-      printf("Elapsed: %fs\n", sw.GetElapsedSeconds());
+      this->db->Write(info.series_name, points, info.points_count);
+      delete info.points;
     }
 
+    scope->Reenter();
     scope->Wait();
   }
 }

@@ -16,7 +16,7 @@ namespace shakadb {
 
 class WriteHandler : public BaseHandler {
  public:
-  WriteHandler(Database *db, int buffer_grow_increment, int points_buffer_count);
+  WriteHandler(Database *db);
   ~WriteHandler();
 
   void OnReceived(ServerClient *client, DataPacket *packet);
@@ -24,12 +24,15 @@ class WriteHandler : public BaseHandler {
   void ListenForData();
   void Close();
  private:
+  struct write_info_t {
+    std::string series_name;
+    Buffer *points;
+    int points_count;
+  };
+
   Database *db;
-  data_point_t *points_buffer;
-  int points_buffer_size;
-  std::map<std::string, RingBuffer *> buffers;
+  std::list<write_info_t> write_info;
   volatile bool is_active;
-  int buffer_grow_increment;
   Monitor monitor;
 };
 
