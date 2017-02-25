@@ -23,7 +23,7 @@ class WebServer : public Server {
   void Listen();
   void Close();
   void AddServerListener(Server::ServerListener *listener);
-  void SendPacket(int client_id, DataPacket *packet);
+  bool SendPacket(int client_id, DataPacket *packet);
  private:
   struct client_info_t {
     SocketStream *socket;

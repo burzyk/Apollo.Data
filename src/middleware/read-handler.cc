@@ -21,25 +21,22 @@ void ReadHandler::OnPacketReceived(int client_id, DataPacket *packet) {
     return;
   }
 
+  ReadRequest *request = (ReadRequest *)packet;
+  timestamp_t begin = request->GetBegin();
+  bool send_more_data = true;
 
+  while (send_more_data) {
+    auto reader = std::unique_ptr<DataPointsReader>(
+        this->db->Read(request->GetSeriesName(), begin, request->GetEnd(), this->points_per_packet));
+    ReadResponse response(reader.get(), begin == request->GetBegin() ? 0 : 1);
 
-//  ReadRequest *request = (ReadRequest *)packet;
-//
-//  auto reader = this->db->Read(request->GetSeriesName(), request->GetBegin(), request->GetEnd());
-//  data_point_t *points = Allocator::New<data_point_t>(this->points_per_packet);
-//  int remaining = reader->GetDataPointsCount();
-//
-//  if (remaining == 0) {
-//    client->SendPacket(new ReadResponse(nullptr, 0, 0));
-//  } else {
-//    while (remaining > 0) {
-//      // int to_send = reader->ReadDataPoints(points, this->points_per_packet);
-//      client->SendPacket(new ReadResponse(points, to_send, reader->GetDataPointsCount()));
-//      remaining -= to_send;
-//    }
-//  }
+    if (!this->GetServer()->SendPacket(client_id, &response)) {
+      return;
+    }
 
-//  Allocator::Delete(points);
+    begin = reader->GetDataPoints()[reader->GetDataPointsCount() - 1].time;
+    send_more_data = reader->GetDataPointsCount() != 0;
+  }
 }
 
 }

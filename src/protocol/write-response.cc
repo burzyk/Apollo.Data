@@ -8,7 +8,6 @@
 namespace shakadb {
 
 WriteResponse::WriteResponse() {
-
 }
 
 WriteResponse::WriteResponse(WriteStatus status) {

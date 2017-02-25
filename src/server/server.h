@@ -26,7 +26,7 @@ class Server {
   virtual void Listen() = 0;
   virtual void Close() = 0;
   virtual void AddServerListener(ServerListener *listener) = 0;
-  virtual void SendPacket(int client_id, DataPacket *packet) = 0;
+  virtual bool SendPacket(int client_id, DataPacket *packet) = 0;
 };
 
 }

@@ -6,15 +6,17 @@
 
 namespace shakadb {
 
-ReadResponse::ReadResponse() : ReadResponse(nullptr) {
+ReadResponse::ReadResponse() : ReadResponse(nullptr, 0) {
 }
 
-ReadResponse::ReadResponse(std::shared_ptr<DataPointsReader> reader) {
+ReadResponse::ReadResponse(DataPointsReader *reader, int front_discard) {
   this->reader = reader;
+  this->points = nullptr;
+  this->points_count = 0;
 
   if (reader != nullptr) {
-    this->points = reader->GetDataPoints();
-    this->points_count = reader->GetDataPointsCount();
+    this->points = reader->GetDataPoints() + front_discard;
+    this->points_count = min(0, reader->GetDataPointsCount() - front_discard);
   }
 }
 
@@ -40,7 +42,7 @@ bool ReadResponse::Deserialize(Buffer *payload) {
 std::vector<Buffer *> ReadResponse::Serialize() {
   std::vector<Buffer *> result;
 
-  if (this->points != nullptr) {
+  if (this->points_count != 0) {
     ShallowBuffer *points_fragment = new ShallowBuffer(
         (byte_t *)this->points,
         this->points_count * sizeof(data_point_t));

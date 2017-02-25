@@ -104,20 +104,24 @@ void WebServer::AddServerListener(WebServer::ServerListener *listener) {
   this->listeners.push_back(listener);
 }
 
-void WebServer::SendPacket(int client_id, DataPacket *packet) {
+bool WebServer::SendPacket(int client_id, DataPacket *packet) {
   auto lock = this->monitor.Enter();
   client_info_t *client = this->clients[client_id];
 
   if (client == nullptr) {
-    return;
+    return false;
   }
 
   auto client_lock = client->lock->Enter();
   lock->Exit();
 
   for (auto fragment: packet->GetFragments()) {
-    client->socket->Write(fragment->GetBuffer(), fragment->GetSize());
+    if (client->socket->Write(fragment->GetBuffer(), fragment->GetSize()) != fragment->GetSize()) {
+      return false;
+    }
   }
+
+  return true;
 }
 
 int WebServer::AllocateClient(SocketStream *socket) {

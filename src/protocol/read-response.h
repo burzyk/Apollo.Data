@@ -16,7 +16,7 @@ namespace shakadb {
 class ReadResponse : public DataPacket {
  public:
   ReadResponse();
-  ReadResponse(std::shared_ptr<DataPointsReader> reader);
+  ReadResponse(DataPointsReader *reader, int front_discard);
 
   PacketType GetType();
   int GetPointsCount();
@@ -27,7 +27,7 @@ class ReadResponse : public DataPacket {
  private:
   data_point_t *points;
   int points_count;
-  std::shared_ptr<DataPointsReader> reader;
+  DataPointsReader *reader;
 };
 
 }

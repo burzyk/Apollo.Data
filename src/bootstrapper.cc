@@ -18,7 +18,7 @@ Bootstrapper::Bootstrapper(Configuration *config) {
   this->packet_logger = new PacketLogger(this->server, this->log);
   this->db = StandardDatabase::Init(config->GetDbFolder(), this->log, config->GetDbPointsPerChunk(), 0);
   this->write_handler = new WriteHandler(this->db, this->server);
-  this->read_handler = new ReadHandler(this->db, this->server, 100);
+  this->read_handler = new ReadHandler(this->db, this->server, 65536);
 
   this->master_thread = new Thread([this](void *) -> void { this->MainRoutine(); }, this->log);
   this->server_thread = new Thread([this](void *) -> void { this->ServerRoutine(); }, this->log);
