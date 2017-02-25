@@ -14,10 +14,10 @@ int main() {
     return -1;
   }
 
-  if (!session->Ping()) {
-    printf("Ping failure\n");
-    return -1;
-  }
+//  if (!session->Ping()) {
+//    printf("Ping failure\n");
+//    return -1;
+//  }
 
 //  shakadb::DataPointsReader *reader = session->ReadPoints(
 //      "USD_AUD",
@@ -37,23 +37,24 @@ int main() {
 //
 //  delete reader;
 
-//  shakadb::data_point_t points[100] = {0};
-//  shakadb::Stopwatch sw;
-//  shakadb::Session *session = manager.GetSessionById(session_id);
-//
-//  sw.Start();
-//
-//  for (int i = 0; i < 10; i++) {
-//    for (int j = 0; j < 100; j++) {
-//      points[j].time = i * 100 + j + 1;
-//      points[j].value = j;
-//    }
-//
-//    session->WritePoints("USD_AUD", points, 100);
-//  }
-//
-//  sw.Stop();
-//  printf("Elapsed: %f[s]\n", sw.GetElapsedSeconds());
+  int points_count = 1000;
+
+  shakadb::data_point_t points[points_count];
+  shakadb::Stopwatch sw;
+
+  sw.Start();
+
+  for (int i = 0; i < 100000; i++) {
+    for (int j = 0; j < points_count; j++) {
+      points[j].time = i * points_count + j + 1;
+      points[j].value = j;
+    }
+
+    session->WritePoints("USD_AUD", points, points_count);
+  }
+
+  sw.Stop();
+  printf("Elapsed: %f[s]\n", sw.GetElapsedSeconds());
 
   delete session;
 

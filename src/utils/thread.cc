@@ -3,7 +3,7 @@
 //
 
 #include <src/fatal-exception.h>
-#include <zconf.h>
+#include <stdlib.h>
 #include "thread.h"
 
 namespace shakadb {
@@ -40,6 +40,7 @@ void *Thread::ThreadRoutine(void *data) {
     _this->thread_routine(_this->thread_data);
   } catch (FatalException ex) {
     _this->log->Fatal("Unhandled exception in thread routine: " + std::string(ex.what()));
+    exit(-1);
   }
 
   return nullptr;
