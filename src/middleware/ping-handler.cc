@@ -13,7 +13,8 @@ void PingHandler::OnReceived(ServerClient *client, DataPacket *packet) {
   }
 
   PingPacket *request = (PingPacket *)packet;
-  PingPacket *response = new PingPacket(request->GetPingData(), request->GetPingDataSize());
+  std::shared_ptr<DataPacket> response = std::shared_ptr<DataPacket>(
+      new PingPacket(request->GetPingData(), request->GetPingDataSize()));
 
   client->SendPacket(response);
 }

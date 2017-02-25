@@ -21,7 +21,7 @@ class ServerClient {
 
   virtual ~ServerClient() {};
   virtual void AddServerClientListener(ServerClientListener *listener) = 0;
-  virtual void SendPacket(DataPacket *packet) = 0;
+  virtual void SendPacket(std::shared_ptr<DataPacket> packet) = 0;
   virtual void Close() = 0;
 };
 

@@ -20,7 +20,7 @@ class UvServerClient : public ServerClient {
   static UvServerClient *Accept(uv_stream_t *server, uv_loop_t *loop);
 
   void AddServerClientListener(ServerClientListener *listener);
-  void SendPacket(DataPacket *packet);
+  void SendPacket(std::shared_ptr<DataPacket> packet);
   void Close();
   bool IsRunning();
  private:
@@ -28,7 +28,7 @@ class UvServerClient : public ServerClient {
     uv_buf_t *buffers;
     int buffers_count;
     UvServerClient *client;
-    DataPacket *packet;
+    std::shared_ptr<DataPacket> packet;
   };
 
   UvServerClient(uv_stream_t *client_connection, uv_loop_t *loop);
@@ -44,7 +44,7 @@ class UvServerClient : public ServerClient {
   uv_stream_t *client_connection;
   uv_loop_t *loop;
   RingBuffer receive_buffer;
-  std::list<DataPacket *> send_queue;
+  std::list<std::shared_ptr<DataPacket>> send_queue;
   Monitor send_queue_monitor;
   bool is_send_active;
   std::list<ServerClientListener *> server_client_listeners;

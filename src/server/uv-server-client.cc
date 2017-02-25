@@ -42,7 +42,7 @@ void UvServerClient::AddServerClientListener(ServerClientListener *listener) {
   this->server_client_listeners.push_back(listener);
 }
 
-void UvServerClient::SendPacket(DataPacket *packet) {
+void UvServerClient::SendPacket(std::shared_ptr<DataPacket> packet) {
   if (!this->IsRunning()) {
     throw FatalException("Sending data to closed client");
   }
@@ -106,7 +106,6 @@ void UvServerClient::OnDataWrite(uv_write_t *req, int status) {
     data->client->SendPendingData();
   }
 
-  delete data->packet;
   Allocator::Delete(data->buffers);
   Allocator::Delete(data);
   Allocator::Delete(req);
@@ -139,8 +138,12 @@ void UvServerClient::ReadData(ssize_t nread, const uv_buf_t *buf) {
 }
 
 void UvServerClient::SendPendingData() {
+  if (!this->IsRunning()) {
+    return;
+  }
+
   auto lock = this->send_queue_monitor.Enter();
-  DataPacket *packet = nullptr;
+  std::shared_ptr<DataPacket> packet = nullptr;
 
   if (this->send_queue.size() > 0) {
     packet = this->send_queue.front();
