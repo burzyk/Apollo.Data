@@ -29,13 +29,17 @@ int SocketStream::Read(byte_t *buffer, int buffer_size) {
   return total_read;
 }
 
-void SocketStream::Write(byte_t *buffer, int buffer_size) {
+int SocketStream::Write(byte_t *buffer, int buffer_size) {
   int sent = 0;
+  int total_send = 0;
 
   while ((sent = send(this->socket, buffer, buffer_size, 0)) > 0) {
     buffer += sent;
     buffer_size -= sent;
+    total_send += sent;
   }
+
+  return total_send;
 }
 
 void SocketStream::Close() {

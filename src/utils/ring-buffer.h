@@ -17,7 +17,7 @@ class RingBuffer : public Stream {
 
   int Read(byte_t *buffer, int buffer_size);
   int Peek(byte_t *buffer, int buffer_size);
-  void Write(byte_t *buffer, int buffer_size);
+  int Write(byte_t *buffer, int buffer_size);
   int GetSize();
  private:
   void EnsureBufferSize(int new_size);

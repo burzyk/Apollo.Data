@@ -19,7 +19,7 @@ PacketType WriteResponse::GetType() {
   return kWriteResponse;
 }
 
-WriteStatus WriteResponse::GetStatusCount() {
+WriteStatus WriteResponse::GetStatus() {
   return this->status;
 }
 

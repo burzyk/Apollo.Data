@@ -15,7 +15,7 @@ class SocketStream : public Stream {
   ~SocketStream();
 
   int Read(byte_t *buffer, int buffer_size);
-  void Write(byte_t *buffer, int buffer_size);
+  int Write(byte_t *buffer, int buffer_size);
   void Close();
  private:
   int socket;

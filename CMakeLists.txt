@@ -7,9 +7,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-point
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-
 set(SRC_DOMAIN src/database.h src/data-points-reader.h src/data-point.h src/fatal-exception.cc src/fatal-exception.h src/storage/standard-data-points-reader.h src/data-point.cc src/configuration.cc src/configuration.h)
-set(SRC_CLIENT src/client/session.cc src/client/session.h src/client/client-data-points-reader.cc src/client/client-data-points-reader.h)
+set(SRC_CLIENT src/client/session.cc src/client/session.h src/client/read-points-iterator.cc src/client/read-points-iterator.h)
 set(SRC_MIDDLEWARE src/middleware/packet-logger.cc src/middleware/packet-logger.h src/middleware/ping-handler.cc src/middleware/ping-handler.h src/middleware/write-handler.cc src/middleware/write-handler.h src/middleware/base-handler.cc src/middleware/base-handler.h src/middleware/read-handler.cc src/middleware/read-handler.h)
 set(SRC_PROTOCOL src/protocol/data-packet.h src/protocol/data-packet.cc src/protocol/ping-packet.cc src/protocol/ping-packet.h src/protocol/write-request.cc src/protocol/write-request.h src/protocol/read-request.cc src/protocol/read-request.h src/protocol/read-response.cc src/protocol/read-response.h src/protocol/write-response.cc src/protocol/write-response.h)
 set(SRC_SERVER src/server/server.h src/server/web-server.cc src/server/web-server.h)

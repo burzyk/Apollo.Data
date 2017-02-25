@@ -11,17 +11,17 @@
 
 namespace shakadb {
 
-class ClientDataPointsReader : public DataPointsReader {
+class ReadPointsIterator {
  public:
-  ClientDataPointsReader(std::function<ReadResponse *(void)> packet_provider);
-  virtual ~ClientDataPointsReader();
+  ReadPointsIterator(Stream *response);
+  ~ReadPointsIterator();
 
-  data_point_t *GetDataPoints();
-  int GetDataPointsCount();
+  data_point_t *CurrentDataPoints();
+  int CurrentDataPointsCount();
+  bool MoveNext();
  private:
-  data_point_t *received_points;
-  int points_count;
-  int position;
+  Stream *response;
+  ReadResponse *current;
 };
 
 }

@@ -53,9 +53,9 @@ int RingBuffer::Peek(byte_t *buffer, int buffer_size) {
   return read_size;
 }
 
-void RingBuffer::Write(byte_t *buffer, int buffer_size) {
+int RingBuffer::Write(byte_t *buffer, int buffer_size) {
   if (buffer_size == 0) {
-    return;
+    return 0;
   }
 
   this->EnsureBufferSize(this->size + buffer_size);
@@ -72,6 +72,7 @@ void RingBuffer::Write(byte_t *buffer, int buffer_size) {
   }
 
   this->size += buffer_size;
+  return buffer_size;
 }
 
 int RingBuffer::GetSize() {

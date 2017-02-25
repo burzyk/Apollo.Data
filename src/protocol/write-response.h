@@ -20,7 +20,7 @@ class WriteResponse : public DataPacket {
   WriteResponse(WriteStatus status);
 
   PacketType GetType();
-  WriteStatus GetStatusCount();
+  WriteStatus GetStatus();
  protected:
   bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
