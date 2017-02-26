@@ -4,7 +4,6 @@
 
 #include <sys/stat.h>
 #include <src/fatal-exception.h>
-#include <sys/dirent.h>
 #include <dirent.h>
 #include "directory.h"
 #include "src/log.h"

@@ -8,6 +8,7 @@
 #include <test/framework/test-context.h>
 #include <src/utils/ring-buffer.h>
 #include <test/framework/assert.h>
+#include <string.h>
 
 namespace shakadb {
 namespace test {

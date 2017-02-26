@@ -2,6 +2,7 @@
 // Created by Pawel Burzynski on 08/02/2017.
 //
 
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>

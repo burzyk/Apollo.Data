@@ -2,6 +2,7 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
+#include <string.h>
 #include <src/utils/memory-buffer.h>
 #include <src/fatal-exception.h>
 #include "read-request.h"

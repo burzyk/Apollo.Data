@@ -9,7 +9,6 @@
 namespace shakadb {
 
 Thread::Thread(std::function<void(void *)> thread_routine, Log *log) {
-  this->thread = nullptr;
   this->thread_data = nullptr;
   this->log = log;
   this->thread_routine = thread_routine;

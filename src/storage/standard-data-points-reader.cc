@@ -2,6 +2,7 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
+#include <string.h>
 #include <src/utils/common.h>
 #include <cstdlib>
 #include <src/utils/allocator.h>

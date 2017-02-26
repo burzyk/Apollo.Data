@@ -3,6 +3,7 @@
 //
 
 #include <cstdlib>
+#include <string.h>
 #include "ring-buffer.h"
 #include "allocator.h"
 #include "common.h"

@@ -6,6 +6,7 @@
 #include <src/utils/common.h>
 #include <src/log.h>
 #include <cstdlib>
+#include <string.h>
 #include <src/utils/file.h>
 #include <src/fatal-exception.h>
 #include <src/utils/allocator.h>

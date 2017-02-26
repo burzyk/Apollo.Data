@@ -3,6 +3,8 @@
 //
 
 #include <src/utils/memory-buffer.h>
+#include <string.h>
+#include <algorithm>
 #include <src/utils/shallow-buffer.h>
 #include "write-request.h"
 

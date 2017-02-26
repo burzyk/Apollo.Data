@@ -7,6 +7,7 @@
 
 #include <src/storage/database.h>
 #include <memory>
+#include <limits.h>
 #include <test/framework/assert.h>
 #include <src/file-log.h>
 #include <src/utils/stopwatch.h>

@@ -4,6 +4,7 @@
 
 #include <src/utils/stopwatch.h>
 #include <cstdlib>
+#include <algorithm>
 #include <src/utils/common.h>
 #include <src/utils/file.h>
 #include <src/utils/allocator.h>

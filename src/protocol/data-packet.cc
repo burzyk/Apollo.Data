@@ -6,6 +6,7 @@
 #include <vector>
 #include <src/utils/memory-buffer.h>
 #include <src/utils/shallow-buffer.h>
+#include <memory.h>
 #include "data-packet.h"
 #include "ping-packet.h"
 #include "write-request.h"
