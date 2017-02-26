@@ -24,6 +24,9 @@ Session::Session(int sock)
 }
 
 Session *Session::Open(std::string server, int port) {
+  // TODO: put this to common init code
+  signal(SIGPIPE, SIG_IGN);
+
   struct addrinfo hints = {0};
   struct addrinfo *result;
   int sock = -1;

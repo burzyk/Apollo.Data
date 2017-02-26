@@ -42,7 +42,7 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *l
   }
 
   sw.Stop();
-  log->Info("StandardDatabase loaded in: " + std::to_string(sw.GetElapsedSeconds() / 1000) + "[s]");
+  log->Info("Data series loaded in: " + std::to_string(sw.GetElapsedSeconds()) + "[s]");
   return series;
 }
 

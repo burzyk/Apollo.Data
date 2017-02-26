@@ -29,6 +29,8 @@ WebServer::~WebServer() {
 }
 
 void WebServer::Listen() {
+  signal(SIGPIPE, SIG_IGN);
+
   if ((this->master_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     throw FatalException("Unable to open main socket");
   }

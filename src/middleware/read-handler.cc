@@ -23,9 +23,8 @@ void ReadHandler::OnPacketReceived(int client_id, DataPacket *packet) {
 
   ReadRequest *request = (ReadRequest *)packet;
   timestamp_t begin = request->GetBegin();
-  bool send_more_data = true;
 
-  while (send_more_data) {
+  while (true) {
     auto reader = std::unique_ptr<DataPointsReader>(
         this->db->Read(request->GetSeriesName(), begin, request->GetEnd(), this->points_per_packet));
     ReadResponse response(reader.get(), begin == request->GetBegin() ? 0 : 1);
@@ -34,8 +33,11 @@ void ReadHandler::OnPacketReceived(int client_id, DataPacket *packet) {
       return;
     }
 
+    if (response.GetPointsCount() == 0) {
+      break;
+    }
+
     begin = reader->GetDataPoints()[reader->GetDataPointsCount() - 1].time;
-    send_more_data = reader->GetDataPointsCount() != 0;
   }
 }
 
