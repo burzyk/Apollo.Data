@@ -6,14 +6,16 @@
 #define SHAKADB_STORAGE_STOPWATCH_H
 
 #include <time.h>
+#include <cstdint>
 
 namespace shakadb {
 
 class Stopwatch {
  public:
+  static uint64_t GetTimestamp();
+
   void Start();
   void Stop();
-
   float GetElapsedSeconds();
  private:
   timespec start;

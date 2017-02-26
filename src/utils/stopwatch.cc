@@ -7,6 +7,13 @@
 
 namespace shakadb {
 
+uint64_t Stopwatch::GetTimestamp() {
+  timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+
+  return 1000000000 * ts.tv_sec + ts.tv_nsec;
+}
+
 void Stopwatch::Start() {
   clock_gettime(CLOCK_REALTIME, &this->start);
 }
