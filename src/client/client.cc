@@ -6,6 +6,8 @@
 #include "client.h"
 #include "session.h"
 
+extern "C" {
+
 shakadb_result_t shakadb_open_session(shakadb_session_t *session, const char *server, int port) {
   session->_session = shakadb::Session::Open(std::string(server), port);
   return session->_session == nullptr ? SHAKADB_RESULT_ERROR : SHAKADB_RESULT_OK;
@@ -58,4 +60,6 @@ int shakadb_read_points_iterator_next(shakadb_read_points_iterator_t *iterator) 
     iterator->points_count = i->CurrentDataPointsCount();
     return 1;
   }
+}
+
 }

@@ -5,9 +5,11 @@
 #ifndef SHAKADB_CLIENT_H_H
 #define SHAKADB_CLIENT_H_H
 
-#include <cstdint>
+#include <stdint.h>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 typedef uint64_t shakadb_timestamp_t;
 typedef uint32_t shakadb_result_t;
@@ -47,6 +49,8 @@ shakadb_result_t shakadb_read_points(shakadb_session_t *session,
                                      shakadb_read_points_iterator_t *iterator);
 int shakadb_read_points_iterator_next(shakadb_read_points_iterator_t *iterator);
 
-};
+#ifdef __cplusplus
+}
+#endif
 
 #endif //SHAKADB_CLIENT_H_H
