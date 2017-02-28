@@ -30,7 +30,7 @@
 
 namespace shakadb {
 
-class ShallowBuffer : public Buffer{
+class ShallowBuffer : public Buffer {
  public:
   ShallowBuffer(byte_t *buffer, int size);
 

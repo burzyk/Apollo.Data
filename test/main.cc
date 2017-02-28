@@ -36,22 +36,22 @@
 #include "test/tests/end-to-end.h"
 
 #define RUN_TESTS
-#define RUN_PERF_TESTS
+//#define RUN_PERF_TESTS
 
 #ifdef RUN_TESTS
 #define TEST(clazz, test_case) result |= runner.RunTest(\
-      "" #clazz " -> " #test_case "",\
+      "" #clazz "_" #test_case "",\
       [&clazz](shakadb::test::TestContext ctx) -> void { clazz.test_case(ctx); });
 #else
-#define TEST(test_case)
+#define TEST(clazz, test_case)
 #endif
 
 #ifdef RUN_PERF_TESTS
 #define TEST_PERF(clazz, test_case) result |= runner.RunPerfTest(\
-      "" #clazz " -> " #test_case "",\
+      "" #clazz "_" #test_case "",\
       [&clazz](shakadb::test::TestContext ctx) -> shakadb::Stopwatch { return clazz.test_case(ctx); });
 #else
-#define TEST_PERF(test_case)
+#define TEST_PERF(clazz, test_case)
 #endif
 
 int main() {
@@ -82,6 +82,9 @@ int main() {
   TEST(database_basic, database_read_chunk_edges);
   TEST(database_basic, database_read_duplicated_values);
   TEST(database_basic, database_read_with_limit);
+
+  auto end_to_end = shakadb::test::EndToEnd();
+  TEST(end_to_end, empty_read);
 
   auto ring_buffer = shakadb::test::RingBufferTests();
   TEST(ring_buffer, create_delete_test);
