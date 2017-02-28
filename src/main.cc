@@ -36,8 +36,6 @@ int main(int argc, char *argv[]) {
 
     bootstrapper->Stop();
     delete bootstrapper;
-
-    shakadb::Allocator::AssertAllDeleted();
   } catch (shakadb::FatalException ex) {
     fprintf(stderr, "Fatal Exception: %s\n", ex.what());
     return -1;

@@ -27,7 +27,8 @@
 
 namespace shakadb {
 
-RwLock Allocator::lock;
-std::map<void *, std::string> Allocator::memory;
+void Allocator::Delete(void *pointer) {
+  free(pointer);
+}
 
 }

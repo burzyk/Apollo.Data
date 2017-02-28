@@ -125,7 +125,5 @@ int main() {
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");
 
-  shakadb::Allocator::AssertAllDeleted();
-
   return result;
 }

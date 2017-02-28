@@ -39,37 +39,11 @@ namespace shakadb {
 class Allocator {
  public:
   template<typename T>
-  static T *New(int count = 1, const char *context = nullptr) {
-    auto scope = lock.LockWrite();
-
-    T *data = (T *)calloc(count, sizeof(T));
-    memory[data] = std::string(context != nullptr ? context : "");
-
-    return data;
+  static T *New(int count = 1) {
+    return (T *)calloc(count, sizeof(T));
   }
 
-  static void Delete(void *pointer) {
-    auto scope = lock.LockWrite();
-
-    if (memory.find(pointer) == memory.end()) {
-      throw FatalException("Deleting unknown pointer");
-    }
-
-    memory.erase(pointer);
-    free(pointer);
-  }
-
-  static void AssertAllDeleted() {
-    auto scope = lock.LockWrite();
-
-    if (memory.size() != 0) {
-      throw FatalException("Not all memory allocations have been deleted");
-    }
-  }
-
- private:
-  static RwLock lock;
-  static std::map<void *, std::string> memory;
+  static void Delete(void *pointer);
 };
 
 }
