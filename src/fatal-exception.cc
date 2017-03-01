@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#include "fatal-exception.h"
+#include "./src/fatal-exception.h"
 
 namespace shakadb {
 
@@ -34,4 +34,4 @@ const char *FatalException::what() const noexcept {
   return this->message;
 }
 
-}
+}  // namespace shakadb

@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_DATA_POINT_H
-#define SHAKADB_STORAGE_DATA_POINT_H
+#ifndef SRC_DATA_POINT_H_
+#define SRC_DATA_POINT_H_
 
 #include <cstdint>
 
@@ -40,6 +40,6 @@ struct data_point_t {
   float value;
 } __attribute__((packed));
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_DATA_POINT_H
+#endif  // SRC_DATA_POINT_H_

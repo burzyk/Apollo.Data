@@ -23,11 +23,12 @@
 // Created by Pawel Burzynski on 20/02/2017.
 //
 
-#include <src/utils/file.h>
-#include <src/utils/allocator.h>
-#include <sstream>
+#include "./src/configuration.h"
+
 #include <regex.h>
-#include "configuration.h"
+#include <sstream>
+
+#include "./src/utils/allocator.h"
 
 namespace shakadb {
 
@@ -46,7 +47,7 @@ Configuration *Configuration::Load(std::string config_file) {
 
   if (regcomp(&regex, "^.+=.+$", REG_EXTENDED)) {
     throw FatalException("Unable to compile a regex");
-  };
+  }
 
   while ((read = getline(&line, &line_size, f)) != -1) {
     if (read == 0 || line[0] == '#') {
@@ -90,11 +91,16 @@ Configuration::Configuration() {
 }
 
 int Configuration::ReadAsInt(std::string key, int defaultValue) {
-  return this->config.find(key) == this->config.end() ? defaultValue : atoi(this->config[key].c_str());
+  return this->config.find(key) == this->config.end()
+         ? defaultValue
+         : atoi(this->config[key].c_str());
 }
 
-std::string Configuration::ReadAsString(std::string key, std::string defaultValue) {
-  return this->config.find(key) == this->config.end() ? defaultValue : this->config[key];
+std::string Configuration::ReadAsString(std::string key,
+                                        std::string defaultValue) {
+  return this->config.find(key) == this->config.end()
+         ? defaultValue
+         : this->config[key];
 }
 
 std::string Configuration::GetLogFile() {
@@ -118,4 +124,4 @@ int Configuration::GetDbPointsPerChunk() {
   return this->ReadAsInt("db.points_per_chunk", 100000);
 }
 
-}
+}  // namespace shakadb

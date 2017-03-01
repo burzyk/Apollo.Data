@@ -23,16 +23,19 @@
 // Created by Pawel Burzynski on 14/02/2017.
 //
 
-#ifndef SHAKADB_BOOTSTRAPPER_H
-#define SHAKADB_BOOTSTRAPPER_H
+#ifndef SRC_BOOTSTRAPPER_H_
+#define SRC_BOOTSTRAPPER_H_
 
-#include <src/server/server.h>
-#include <src/middleware/ping-handler.h>
-#include <src/middleware/packet-logger.h>
-#include <src/utils/thread.h>
-#include <src/middleware/write-handler.h>
-#include <src/middleware/read-handler.h>
-#include "configuration.h"
+#include <memory>
+#include <string>
+
+#include "./src/server/server.h"
+#include "./src/middleware/ping-handler.h"
+#include "./src/middleware/packet-logger.h"
+#include "./src/utils/thread.h"
+#include "./src/middleware/write-handler.h"
+#include "./src/middleware/read-handler.h"
+#include "./src/configuration.h"
 
 namespace shakadb {
 
@@ -42,7 +45,7 @@ class Bootstrapper {
   static Bootstrapper *Run(std::string config_file);
   void Stop();
  private:
-  Bootstrapper(Configuration *config);
+  explicit Bootstrapper(Configuration *config);
 
   void ServerRoutine();
   void MainRoutine();
@@ -61,6 +64,6 @@ class Bootstrapper {
   Database *db;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_BOOTSTRAPPER_H
+#endif  // SRC_BOOTSTRAPPER_H_

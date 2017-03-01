@@ -23,26 +23,39 @@
 // Created by Pawel Burzynski on 14/02/2017.
 //
 
-#include <src/server/web-server.h>
-#include <src/file-log.h>
-#include <src/utils/allocator.h>
-#include <src/storage/standard-database.h>
-#include "bootstrapper.h"
-#include "configuration.h"
+#include "./src/bootstrapper.h"
+
+#include "./src/server/web-server.h"
+#include "./src/file-log.h"
+#include "./src/utils/allocator.h"
+#include "./src/storage/standard-database.h"
+#include "./src/configuration.h"
 
 namespace shakadb {
 
 Bootstrapper::Bootstrapper(Configuration *config) {
   this->log = new FileLog(config->GetLogFile());
-  this->server = new WebServer(config->GetServerPort(), config->GetServerBacklog(), config->GetServerBacklog(), this->log);
+  this->server = new WebServer(
+      config->GetServerPort(),
+      config->GetServerBacklog(),
+      config->GetServerBacklog(),
+      this->log);
   this->ping_handler = new PingHandler(this->server);
   this->packet_logger = new PacketLogger(this->server, this->log);
-  this->db = StandardDatabase::Init(config->GetDbFolder(), this->log, config->GetDbPointsPerChunk(), 0);
+  this->db = StandardDatabase::Init(
+      config->GetDbFolder(),
+      this->log,
+      config->GetDbPointsPerChunk(),
+      0);
   this->write_handler = new WriteHandler(this->db, this->server);
   this->read_handler = new ReadHandler(this->db, this->server, 65536);
 
-  this->master_thread = new Thread([this](void *) -> void { this->MainRoutine(); }, this->log);
-  this->server_thread = new Thread([this](void *) -> void { this->ServerRoutine(); }, this->log);
+  this->master_thread = new Thread(
+      [this](void *) -> void { this->MainRoutine(); },
+      this->log);
+  this->server_thread = new Thread(
+      [this](void *) -> void { this->ServerRoutine(); },
+      this->log);
 }
 
 Bootstrapper::~Bootstrapper() {
@@ -59,7 +72,10 @@ Bootstrapper::~Bootstrapper() {
 }
 
 Bootstrapper *Bootstrapper::Run(std::string config_file) {
-  Bootstrapper *bootstrapper = new Bootstrapper(Configuration::Load(config_file));
+  Configuration *config = Configuration::Load(config_file);
+  Bootstrapper *bootstrapper = new Bootstrapper(config);
+  delete config;
+
   bootstrapper->master_thread->Start(nullptr);
 
   return bootstrapper;
@@ -97,4 +113,4 @@ void Bootstrapper::ServerRoutine() {
   this->server->Listen();
 }
 
-}
+}  // namespace shakadb

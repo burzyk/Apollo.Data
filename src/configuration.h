@@ -23,11 +23,12 @@
 // Created by Pawel Burzynski on 20/02/2017.
 //
 
-#ifndef SHAKADB_CONFIGURATION_H
-#define SHAKADB_CONFIGURATION_H
+#ifndef SRC_CONFIGURATION_H_
+#define SRC_CONFIGURATION_H_
 
 #include <string>
 #include <map>
+
 namespace shakadb {
 
 class Configuration {
@@ -48,6 +49,6 @@ class Configuration {
   std::map<std::string, std::string> config;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_CONFIGURATION_H
+#endif  // SRC_CONFIGURATION_H_

@@ -23,10 +23,11 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
+#include "./src/file-log.h"
+
 #include <cstdlib>
 
 #include "./src/fatal-exception.h"
-#include "./src/file-log.h"
 
 namespace shakadb {
 
