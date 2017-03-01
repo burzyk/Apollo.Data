@@ -37,7 +37,7 @@
 #include "src/utils/allocator.h"
 #include "test/framework/test-context.h"
 #include "test/framework/assert.h"
-#include "test/common.h"
+#include "test/tests/null-log.h"
 
 namespace shakadb {
 namespace test {

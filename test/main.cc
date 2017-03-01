@@ -21,12 +21,13 @@
  */
 #include <cstdio>
 #include <functional>
-#include <test/framework/test-context.h>
-#include <test/framework/test-runner.h>
-#include <src/utils/directory.h>
-#include <test/tests/ring-buffer-tests.h>
-#include <src/utils/allocator.h>
-#include <test/tests/monitor-tests.h>
+
+#include "test/framework/test-context.h"
+#include "test/framework/test-runner.h"
+#include "src/utils/directory.h"
+#include "test/tests/ring-buffer-tests.h"
+#include "src/utils/allocator.h"
+#include "test/tests/monitor-tests.h"
 #include "test/tests/base-database-tests.h"
 #include "test/tests/database-basic-tests.h"
 #include "test/tests/database-performance-tests.h"
@@ -40,7 +41,7 @@
 
 #ifdef RUN_TESTS
 #define TEST(clazz, test_case) result |= runner.RunTest(\
-      "" #clazz "_" #test_case "",\
+      "" #clazz "_" #test_case "", \
       [&clazz](shakadb::test::TestContext ctx) -> void { clazz.test_case(ctx); });
 #else
 #define TEST(clazz, test_case)
@@ -48,7 +49,7 @@
 
 #ifdef RUN_PERF_TESTS
 #define TEST_PERF(clazz, test_case) result |= runner.RunPerfTest(\
-      "" #clazz "_" #test_case "",\
+      "" #clazz "_" #test_case "", \
       [&clazz](shakadb::test::TestContext ctx) -> shakadb::Stopwatch { return clazz.test_case(ctx); });
 #else
 #define TEST_PERF(clazz, test_case)

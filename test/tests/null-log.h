@@ -23,22 +23,24 @@
 // Created by Pawel Burzynski on 03/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_TESTS_COMMON_H
-#define SHAKADB_STORAGE_TESTS_COMMON_H
+#ifndef TEST_TESTS_NULL_LOG_H_
+#define TEST_TESTS_NULL_LOG_H_
 
-#include <src/log.h>
+#include <string>
+
+#include "src/log.h"
 
 namespace shakadb {
 namespace test {
 
 class NullLog : public Log {
  public:
-  virtual void Fatal(std::string message) {};
-  virtual void Info(std::string message) {};
-  virtual void Debug(std::string message) {};
+  void Fatal(std::string message) {}
+  void Info(std::string message) {}
+  void Debug(std::string message) {}
 };
 
-}
-}
+}  // namespace test
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_TESTS_COMMON_H
+#endif  // TEST_TESTS_NULL_LOG_H_
