@@ -141,6 +141,8 @@ class EndToEnd {
 
       this->WritePoints(series_name, batch, batch_size);
     }
+
+    Allocator::Delete(batch);
   }
 
   void WritePoints(std::string series_name, data_point_t *points, int points_count) {
@@ -157,7 +159,7 @@ class EndToEnd {
   }
 };
 
-}
-}
+}  // namespace test
+}  // namespace shakadb
 
 #endif //SHAKADB_END_TO_END_H

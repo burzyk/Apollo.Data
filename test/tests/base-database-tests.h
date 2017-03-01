@@ -20,65 +20,48 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 14/02/2017.
+// Created by Pawel Burzynski on 29/01/2017.
 //
 
-#ifndef SHAKADB_MONITOR_TESTS_H
-#define SHAKADB_MONITOR_TESTS_H
+#ifndef TEST_TESTS_BASE_DATABASE_TESTS_H_
+#define TEST_TESTS_BASE_DATABASE_TESTS_H_
 
-#include <test/framework/test-context.h>
-#include <src/utils/monitor.h>
-#include <src/utils/thread.h>
-#include <list>
-#include <vector>
-#include <test/framework/assert.h>
+#include <climits>
+#include <string>
+
+#include "src/storage/database.h"
+#include "src/file-log.h"
+#include "src/fatal-exception.h"
+#include "src/utils/stopwatch.h"
+#include "src/storage/standard-database.h"
+#include "src/utils/allocator.h"
+#include "test/framework/test-context.h"
+#include "test/framework/assert.h"
+#include "test/common.h"
 
 namespace shakadb {
 namespace test {
 
-class MonitorTests {
+class BaseDatabaseTests {
  public:
-  void create_delete_test(TestContext ctx) {
-    Monitor *monitor = new Monitor();
-    delete monitor;
-  };
+  virtual ~BaseDatabaseTests() {}
+ protected:
+  static void Write(Database *db, std::string series_name, int batches, int count, timestamp_t time = 1);
+  static void ValidateRead(Database *db,
+                           std::string series_name,
+                           int expected_count,
+                           timestamp_t begin,
+                           timestamp_t end,
+                           int max_points = INT_MAX);
 
-  void enter_test(TestContext ctx) {
-    Monitor monitor;
+  Database *CreateDatabase(int points_per_chunk, int max_pages, TestContext ctx);
+  Log *GetLog();
 
-    { auto scope2 = monitor.Enter(); }
-    auto scope1 = monitor.Enter();
-  };
-
-  void enter_two_threads_test(TestContext ctx) {
-    Monitor *monitor = new Monitor();
-    std::vector<int> *result = new std::vector<int>();
-
-    Thread worker([monitor, result](void *data) -> void {
-      auto scope = monitor->Enter();
-      scope->Wait();
-      result->push_back(1);
-    }, nullptr);
-
-    worker.Start(nullptr);
-    Thread::Sleep(100);
-    auto scope = monitor->Enter();
-    result->push_back(0);
-    scope->Signal();
-    scope->Exit();
-
-    worker.Join();
-
-    Assert::IsTrue(result->size() == 2);
-    Assert::IsTrue(result->at(0) == 0);
-    Assert::IsTrue(result->at(1) == 1);
-
-    delete result;
-    delete monitor;
-  };
+ private:
+  NullLog log;
 };
 
 }  // namespace test
 }  // namespace shakadb
 
-#endif //SHAKADB_MONITOR_TESTS_H
+#endif  // TEST_TESTS_BASE_DATABASE_TESTS_H_

@@ -50,7 +50,7 @@ int TestRunner::RunTest(std::string name, std::function<void(TestContext)> func)
     Directory::CreateDirectory(dir);
     TestContext ctx(dir);
 
-    func(dir);
+    func(ctx);
 
     printf(ANSI_COLOR_GREEN " [ OK ]\n" ANSI_COLOR_RESET);
     this->tests_success++;
@@ -70,7 +70,7 @@ int TestRunner::RunPerfTest(std::string name, std::function<Stopwatch(TestContex
     Directory::CreateDirectory(dir);
     TestContext ctx(dir);
 
-    Stopwatch sw = func(dir);
+    Stopwatch sw = func(ctx);
 
     printf(ANSI_COLOR_GREEN " [ OK ]" ANSI_COLOR_RESET);
     printf(ANSI_COLOR_GREEN " [ %fs ]\n" ANSI_COLOR_RESET, sw.GetElapsedSeconds());

@@ -62,7 +62,7 @@ class RwLockTests {
   };
 };
 
-}
-}
+}  // namespace test
+}  // namespace shakadb
 
 #endif //SHAKADB_STORAGE_RW_LOCK_TEST_H

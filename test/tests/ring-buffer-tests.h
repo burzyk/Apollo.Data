@@ -143,7 +143,7 @@ class RingBufferTests {
   };
 };
 
-}
-}
+}  // namespace test
+}  // namespace shakadb
 
 #endif //SHAKADB_STORAGE_RING_BUFFER_TESTS_H
