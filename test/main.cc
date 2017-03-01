@@ -85,6 +85,9 @@ int main() {
 
   auto end_to_end = shakadb::test::EndToEnd();
   TEST(end_to_end, empty_read);
+  TEST(end_to_end, write_multiple);
+  TEST(end_to_end, write_small);
+  TEST(end_to_end, write_stop_read);
 
   auto ring_buffer = shakadb::test::RingBufferTests();
   TEST(ring_buffer, create_delete_test);

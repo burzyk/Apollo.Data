@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <src/fatal-exception.h>
 #include <dirent.h>
+#include <cerrno>
 #include "directory.h"
 #include "src/log.h"
 
@@ -40,7 +41,9 @@ std::list<std::string> Directory::GetFiles(std::string path) {
 }
 
 void Directory::CreateDirectory(std::string path) {
-  if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+  int status = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+  if (status && errno != EEXIST) {
     throw FatalException("Unable to create a directory");
   }
 }

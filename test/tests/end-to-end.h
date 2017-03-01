@@ -42,6 +42,51 @@ class EndToEnd {
     bootstrapper->Stop();
     delete bootstrapper;
   }
+
+  void write_small(TestContext ctx) {
+    Bootstrapper *bootstrapper = this->BootstrapInit(ctx);
+    this->WriteSequencialPoints("USD_AUD", 10, 100);
+    this->WriteSequencialPoints("USD_PLN", 10, 100);
+    this->WriteSequencialPoints("USD_GBP", 10, 100);
+    this->WriteSequencialPoints("USD_CLP", 10, 100);
+
+    this->ValidateRead("USD_AUD", 1000);
+    this->ValidateRead("USD_PLN", 1000);
+    this->ValidateRead("USD_GBP", 1000);
+    this->ValidateRead("USD_CLP", 1000);
+
+    bootstrapper->Stop();
+    delete bootstrapper;
+  }
+
+  void write_multiple(TestContext ctx) {
+    Bootstrapper *bootstrapper = this->BootstrapInit(ctx);
+    this->WriteSequencialPoints("USD_AUD", 1000, 100);
+    this->WriteSequencialPoints("USD_PLN", 1000, 100);
+    this->WriteSequencialPoints("USD_GBP", 1000, 100);
+    this->WriteSequencialPoints("USD_CLP", 1000, 100);
+
+    this->ValidateRead("USD_AUD", 100000);
+    this->ValidateRead("USD_PLN", 100000);
+    this->ValidateRead("USD_GBP", 100000);
+    this->ValidateRead("USD_CLP", 100000);
+
+    bootstrapper->Stop();
+    delete bootstrapper;
+  }
+
+  void write_stop_read(TestContext ctx) {
+    Bootstrapper *bootstrapper = this->BootstrapInit(ctx);
+    this->WriteSequencialPoints("USD_AUD", 1000, 100);
+    this->ValidateRead("USD_AUD", 100000);
+    bootstrapper->Stop();
+    delete bootstrapper;
+
+    bootstrapper = this->BootstrapInit(ctx);
+    this->ValidateRead("USD_AUD", 100000);
+    bootstrapper->Stop();
+    delete bootstrapper;
+  }
  private:
   Bootstrapper *BootstrapInit(TestContext ctx) {
     std::string config_file_name = ctx.GetWorkingDirectory() + "/server.cfg";
@@ -82,6 +127,20 @@ class EndToEnd {
 
     Assert::IsTrue(expected_points_count == total_points);
     shakadb_destroy_session(&session);
+  }
+
+  void WriteSequencialPoints(std::string series_name, int batch_size, int count) {
+    data_point_t *batch = Allocator::New<data_point_t>(batch_size);
+    timestamp_t time = 1;
+
+    for (int i = 0; i < count; i++) {
+      for (int j = 0; j < batch_size; j++) {
+        batch[j].time = time++;
+        batch[j].value = j;
+      }
+
+      this->WritePoints(series_name, batch, batch_size);
+    }
   }
 
   void WritePoints(std::string series_name, data_point_t *points, int points_count) {
