@@ -109,8 +109,7 @@ void RingBuffer::EnsureBufferSize(int new_size) {
     return;
   }
 
-  int new_capacity =
-      ((new_size / this->grow_increment) + 1) * this->grow_increment;
+  int new_capacity = ((new_size / this->grow_increment) + 1) * this->grow_increment;
   byte_t *new_data = Allocator::New<byte_t>(new_capacity);
   this->Peek(new_data, this->size);
 

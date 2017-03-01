@@ -23,40 +23,40 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_STANDARDDATABASE_H
-#define SHAKADB_STORAGE_STANDARDDATABASE_H
+#ifndef SRC_STORAGE_STANDARD_DATABASE_H_
+#define SRC_STORAGE_STANDARD_DATABASE_H_
 
 #include <string>
 #include <list>
 #include <map>
-#include <src/utils/rw-lock.h>
-#include <src/log.h>
-#include "data-points-reader.h"
-#include "data-chunk.h"
-#include "data-series.h"
-#include "database.h"
+
+#include "src/utils/rw-lock.h"
+#include "src/log.h"
+#include "src/storage/data-points-reader.h"
+#include "src/storage/data-chunk.h"
+#include "src/storage/data-series.h"
+#include "src/storage/database.h"
 
 namespace shakadb {
 
 class StandardDatabase : public Database {
  public:
   ~StandardDatabase();
-  static StandardDatabase *Init(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit);
+  static StandardDatabase *Init(std::string directory, Log *log, int points_per_chunk);
 
   DataPointsReader *Read(std::string name, timestamp_t begin, timestamp_t end, int max_points);
   void Write(std::string name, data_point_t *points, int count);
  private:
-  StandardDatabase(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit);
+  StandardDatabase(std::string directory, Log *log, int points_per_chunk);
   DataSeries *FindDataSeries(std::string name);
 
   std::string directory;
   int points_per_chunk;
-  int cache_memory_limit;
   RwLock lock;
   Log *log;
   std::map<std::string, DataSeries *> series;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_STANDARDDATABASE_H
+#endif  // SRC_STORAGE_STANDARD_DATABASE_H_

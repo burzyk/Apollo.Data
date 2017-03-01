@@ -23,14 +23,16 @@
 // Created by Pawel Burzynski on 28/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_DATASERIES_H
-#define SHAKADB_STORAGE_DATASERIES_H
+#ifndef SRC_STORAGE_DATA_SERIES_H_
+#define SRC_STORAGE_DATA_SERIES_H_
 
-#include <src/log.h>
-#include <src/utils/rw-lock.h>
 #include <list>
-#include "data-points-reader.h"
-#include "data-chunk.h"
+#include <string>
+
+#include "src/log.h"
+#include "src/utils/rw-lock.h"
+#include "src/storage/data-points-reader.h"
+#include "src/storage/data-chunk.h"
 
 namespace shakadb {
 
@@ -41,6 +43,7 @@ class DataSeries {
 
   DataPointsReader *Read(timestamp_t begin, timestamp_t end, int max_points);
   void Write(data_point_t *points, int count);
+
  private:
   DataSeries(std::string file_name, int points_per_chunk, Log *log);
   void RegisterChunk(DataChunk *chunk);
@@ -55,6 +58,6 @@ class DataSeries {
   RwLock series_lock;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_DATASERIES_H
+#endif  // SRC_STORAGE_DATA_SERIES_H_

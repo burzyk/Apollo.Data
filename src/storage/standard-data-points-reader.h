@@ -23,32 +23,34 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_DATA_POINTS_READER_H
-#define SHAKADB_STORAGE_DATA_POINTS_READER_H
+#ifndef SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
+#define SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
 
-#include <src/data-point.h>
 #include <list>
 #include <vector>
-#include <src/utils/rw-lock-scope.h>
-#include <src/utils/ring-buffer.h>
-#include <src/utils/memory-buffer.h>
-#include "data-chunk.h"
-#include "data-points-reader.h"
+
+#include "src/data-point.h"
+#include "src/utils/rw-lock-scope.h"
+#include "src/utils/ring-buffer.h"
+#include "src/utils/memory-buffer.h"
+#include "src/storage/data-chunk.h"
+#include "src/storage/data-points-reader.h"
 
 namespace shakadb {
 
 class StandardDataPointsReader : public DataPointsReader {
  public:
-  StandardDataPointsReader(int points_count);
+  explicit StandardDataPointsReader(int points_count);
 
   bool WriteDataPoints(data_point_t *points, int count);
   data_point_t *GetDataPoints();
   int GetDataPointsCount();
+
  private:
   MemoryBuffer points_buffer;
   int write_position;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_DATA_POINTS_READER_H
+#endif  // SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_

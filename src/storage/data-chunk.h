@@ -23,12 +23,13 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_DATACHUNK_H
-#define SHAKADB_STORAGE_DATACHUNK_H
+#ifndef SRC_STORAGE_DATA_CHUNK_H_
+#define SRC_STORAGE_DATA_CHUNK_H_
 
 #include <string>
-#include <src/data-point.h>
-#include <src/utils/rw-lock.h>
+
+#include "src/data-point.h"
+#include "src/utils/rw-lock.h"
 
 namespace shakadb {
 
@@ -45,6 +46,7 @@ class DataChunk {
   timestamp_t GetEnd();
   int GetNumberOfPoints();
   int GetMaxNumberOfPoints();
+
  private:
   DataChunk(std::string file_name, uint64_t file_offset, int max_points);
 
@@ -59,6 +61,6 @@ class DataChunk {
   int number_of_points;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_DATACHUNK_H
+#endif  // SRC_STORAGE_DATA_CHUNK_H_

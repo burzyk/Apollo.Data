@@ -60,8 +60,7 @@ class StandardDatabaseContextFactory : public DatabaseContextFactory {
     Database *db = StandardDatabase::Init(
         ctx.GetWorkingDirectory(),
         log,
-        points_per_chunk,
-        max_pages * points_per_chunk * sizeof(data_point_t));
+        points_per_chunk);
     return new StandardDatabaseContext(log, db);
   }
  private:

@@ -23,21 +23,20 @@
 // Created by Pawel Burzynski on 15/02/2017.
 //
 
-#ifndef SHAKADB_DATA_POINTS_READER_H
-#define SHAKADB_DATA_POINTS_READER_H
+#ifndef SRC_STORAGE_DATA_POINTS_READER_H_
+#define SRC_STORAGE_DATA_POINTS_READER_H_
 
-#include <src/data-point.h>
+#include "src/data-point.h"
 
 namespace shakadb {
 
 class DataPointsReader {
  public:
-  virtual ~DataPointsReader() {};
-
+  virtual ~DataPointsReader() {}
   virtual data_point_t *GetDataPoints() = 0;
   virtual int GetDataPointsCount() = 0;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_DATA_POINTS_READER_H
+#endif  // SRC_STORAGE_DATA_POINTS_READER_H_

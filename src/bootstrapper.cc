@@ -45,8 +45,7 @@ Bootstrapper::Bootstrapper(Configuration *config) {
   this->db = StandardDatabase::Init(
       config->GetDbFolder(),
       this->log,
-      config->GetDbPointsPerChunk(),
-      0);
+      config->GetDbPointsPerChunk());
   this->write_handler = new WriteHandler(this->db, this->server);
   this->read_handler = new ReadHandler(this->db, this->server, 65536);
 

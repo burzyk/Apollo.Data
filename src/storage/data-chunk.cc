@@ -23,15 +23,18 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#include <cmath>
-#include <src/utils/common.h>
-#include <src/log.h>
-#include <cstdlib>
+#include "src/storage/data-chunk.h"
+
 #include <string.h>
-#include <src/utils/file.h>
-#include <src/fatal-exception.h>
-#include <src/utils/allocator.h>
-#include "data-chunk.h"
+#include <cmath>
+#include <cstdlib>
+#include <algorithm>
+
+#include "src/utils/common.h"
+#include "src/log.h"
+#include "src/utils/file.h"
+#include "src/fatal-exception.h"
+#include "src/utils/allocator.h"
 
 namespace shakadb {
 
@@ -138,5 +141,6 @@ DataChunk::DataChunk(std::string file_name, uint64_t file_offset, int max_points
   this->number_of_points = 0;
 }
 
-}
+}  // namespace shakadb
+
 

@@ -23,11 +23,14 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
+#include "src/storage/standard-data-points-reader.h"
+
 #include <string.h>
-#include <src/utils/common.h>
 #include <cstdlib>
-#include <src/utils/allocator.h>
-#include "standard-data-points-reader.h"
+#include <algorithm>
+
+#include "src/utils/common.h"
+#include "src/utils/allocator.h"
 
 namespace shakadb {
 
@@ -37,7 +40,7 @@ StandardDataPointsReader::StandardDataPointsReader(int points_count)
 }
 
 data_point_t *StandardDataPointsReader::GetDataPoints() {
-  return (data_point_t *)this->points_buffer.GetBuffer();
+  return reinterpret_cast<data_point_t *>(this->points_buffer.GetBuffer());
 }
 
 bool StandardDataPointsReader::WriteDataPoints(data_point_t *points, int count) {
@@ -56,4 +59,4 @@ int StandardDataPointsReader::GetDataPointsCount() {
   return this->points_buffer.GetSize() / sizeof(data_point_t);
 }
 
-}
+}  // namespace shakadb

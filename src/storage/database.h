@@ -23,21 +23,22 @@
 // Created by Pawel Burzynski on 15/02/2017.
 //
 
-#ifndef SHAKADB_DATABASE_H
-#define SHAKADB_DATABASE_H
+#ifndef SRC_STORAGE_DATABASE_H_
+#define SRC_STORAGE_DATABASE_H_
 
-#include "data-points-reader.h"
+#include <string>
+
+#include "src/storage/data-points-reader.h"
 
 namespace shakadb {
 
 class Database {
  public:
-  virtual ~Database() {};
-
+  virtual ~Database() {}
   virtual DataPointsReader *Read(std::string name, timestamp_t begin, timestamp_t end, int max_points) = 0;
   virtual void Write(std::string name, data_point_t *points, int count) = 0;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_DATABASE_H
+#endif  // SRC_STORAGE_DATABASE_H_

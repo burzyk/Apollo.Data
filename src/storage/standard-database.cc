@@ -23,30 +23,31 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
+#include "src/storage/standard-database.h"
+
 #include <cstdlib>
 #include <cmath>
-#include <src/utils/directory.h>
-#include "standard-database.h"
+
+#include "src/utils/directory.h"
 
 namespace shakadb {
 
-StandardDatabase::StandardDatabase(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit) {
+StandardDatabase::StandardDatabase(std::string directory, Log *log, int points_per_chunk) {
   this->directory = directory;
   this->log = log;
   this->points_per_chunk = points_per_chunk;
-  this->cache_memory_limit = cache_memory_limit;
 }
 
 StandardDatabase::~StandardDatabase() {
-  for (auto s: this->series) {
+  for (auto s : this->series) {
     delete s.second;
   }
 
   this->series.clear();
 }
 
-StandardDatabase *StandardDatabase::Init(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit) {
-  return new StandardDatabase(directory, log, points_per_chunk, cache_memory_limit);
+StandardDatabase *StandardDatabase::Init(std::string directory, Log *log, int points_per_chunk) {
+  return new StandardDatabase(directory, log, points_per_chunk);
 }
 
 void StandardDatabase::Write(std::string name, data_point_t *points, int count) {
@@ -73,4 +74,4 @@ DataSeries *StandardDatabase::FindDataSeries(std::string name) {
   return this->series[name];
 }
 
-}
+}  // namespace shakadb

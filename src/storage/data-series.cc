@@ -23,14 +23,16 @@
 // Created by Pawel Burzynski on 28/01/2017.
 //
 
-#include <src/utils/stopwatch.h>
+#include "src/storage/data-series.h"
+
 #include <cstdlib>
 #include <algorithm>
-#include <src/utils/common.h>
-#include <src/utils/file.h>
-#include <src/utils/allocator.h>
-#include "data-series.h"
-#include "standard-data-points-reader.h"
+
+#include "src/utils/stopwatch.h"
+#include "src/utils/common.h"
+#include "src/utils/file.h"
+#include "src/utils/allocator.h"
+#include "src/storage/standard-data-points-reader.h"
 
 namespace shakadb {
 
@@ -41,7 +43,7 @@ DataSeries::DataSeries(std::string file_name, int points_per_chunk, Log *log) {
 }
 
 DataSeries::~DataSeries() {
-  for (auto chunk: this->chunks) {
+  for (auto chunk : this->chunks) {
     delete chunk;
   }
 
@@ -88,7 +90,7 @@ void DataSeries::Write(data_point_t *points, int count) {
     int start = 0;
     int stop = 0;
 
-    for (auto chunk: this->chunks) {
+    for (auto chunk : this->chunks) {
       while (stop < first_current && points[stop].time <= chunk->GetEnd()) {
         stop++;
       }
@@ -106,7 +108,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
   auto lock_scope = this->series_lock.LockRead();
   std::list<DataChunk *> filtered_chunks;
 
-  for (auto chunk: this->chunks) {
+  for (auto chunk : this->chunks) {
     if (chunk->GetBegin() < end && chunk->GetEnd() >= begin) {
       filtered_chunks.push_back(chunk);
     }
@@ -128,7 +130,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
   data_point_t *read_end = std::lower_bound(back_begin, back_end, end, comp);
 
   if (filtered_chunks.size() == 1) {
-    int total_points = std::min((int)(read_end - read_begin), max_points);
+    int total_points = std::min(static_cast<int>(read_end - read_begin), max_points);
     StandardDataPointsReader *reader = new StandardDataPointsReader(total_points);
     reader->WriteDataPoints(read_begin, total_points);
 
@@ -142,7 +144,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
   total_points += points_from_front;
   total_points += points_from_back;
 
-  for (auto i: filtered_chunks) {
+  for (auto i : filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
       total_points += i->GetNumberOfPoints();
     }
@@ -154,7 +156,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
     return reader;
   }
 
-  for (auto i: filtered_chunks) {
+  for (auto i : filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
       if (!reader->WriteDataPoints(i->Read(), i->GetNumberOfPoints())) {
         return reader;
@@ -249,4 +251,5 @@ DataChunk *DataSeries::CreateEmptyChunk() {
       this->points_per_chunk);
 }
 
-}
+}  // namespace shakadb
+
