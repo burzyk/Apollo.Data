@@ -23,13 +23,14 @@
 // Created by Pawel Burzynski on 01/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_SERVER_H
-#define SHAKADB_STORAGE_SERVER_H
+#ifndef SRC_SERVER_SERVER_H_
+#define SRC_SERVER_SERVER_H_
 
 #include <vector>
-#include <src/log.h>
 #include <list>
-#include <src/protocol/data-packet.h>
+
+#include "src/log.h"
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
@@ -37,19 +38,19 @@ class Server {
  public:
   class ServerListener {
    public:
-    virtual ~ServerListener() {};
+    virtual ~ServerListener() {}
     virtual void OnClientConnected(int client_id) = 0;
     virtual void OnClientDisconnected(int client_id) = 0;
     virtual void OnPacketReceived(int client_id, DataPacket *packet) = 0;
   };
 
-  virtual ~Server() {};
+  virtual ~Server() {}
   virtual void Listen() = 0;
   virtual void Close() = 0;
   virtual void AddServerListener(ServerListener *listener) = 0;
   virtual bool SendPacket(int client_id, DataPacket *packet) = 0;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_SERVER_H
+#endif  // SRC_SERVER_SERVER_H_

@@ -23,16 +23,17 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SHAKADB_SIMPLESERVER_H
-#define SHAKADB_SIMPLESERVER_H
+#ifndef SRC_SERVER_WEB_SERVER_H_
+#define SRC_SERVER_WEB_SERVER_H_
 
-#include <src/protocol/data-packet.h>
-#include <src/utils/thread.h>
 #include <list>
 #include <map>
-#include <src/utils/socket-stream.h>
-#include <src/utils/monitor.h>
-#include <src/server/server.h>
+
+#include "src/protocol/data-packet.h"
+#include "src/utils/thread.h"
+#include "src/utils/socket-stream.h"
+#include "src/utils/monitor.h"
+#include "src/server/server.h"
 
 namespace shakadb {
 
@@ -45,6 +46,7 @@ class WebServer : public Server {
   void Close();
   void AddServerListener(Server::ServerListener *listener);
   bool SendPacket(int client_id, DataPacket *packet);
+
  private:
   struct client_info_t {
     SocketStream *socket;
@@ -66,9 +68,8 @@ class WebServer : public Server {
   Monitor monitor;
   std::map<int, client_info_t *> clients;
   int next_client_id;
-
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_SIMPLESERVER_H
+#endif  // SRC_SERVER_WEB_SERVER_H_

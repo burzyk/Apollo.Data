@@ -23,13 +23,15 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
+#include "src/server/web-server.h"
+
 #include <sys/socket.h>
-#include <src/fatal-exception.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <src/utils/allocator.h>
-#include "web-server.h"
+
+#include "src/fatal-exception.h"
+#include "src/utils/allocator.h"
 
 namespace shakadb {
 
@@ -86,21 +88,21 @@ void WebServer::WorkerRoutine() {
       SocketStream *socket = new SocketStream(client_socket);
       int client_id = this->AllocateClient(socket);
 
-      for (auto listener: this->listeners) {
+      for (auto listener : this->listeners) {
         listener->OnClientConnected(client_id);
       }
 
       DataPacket *packet = nullptr;
 
       while ((packet = DataPacket::Load(socket)) != nullptr) {
-        for (auto listener: this->listeners) {
+        for (auto listener : this->listeners) {
           listener->OnPacketReceived(client_id, packet);
         }
 
         delete packet;
       }
 
-      for (auto listener: this->listeners) {
+      for (auto listener : this->listeners) {
         listener->OnClientDisconnected(client_id);
       }
 
@@ -113,7 +115,7 @@ void WebServer::Close() {
   auto lock = this->monitor.Enter();
   this->is_running = 0;
 
-  for (auto client: this->clients) {
+  for (auto client : this->clients) {
     client.second->socket->Close();
   }
   lock->Exit();
@@ -121,7 +123,7 @@ void WebServer::Close() {
   shutdown(this->master_socket, SHUT_RDWR);
   close(this->master_socket);
 
-  for (auto thread: this->thread_pool) {
+  for (auto thread : this->thread_pool) {
     thread->Join();
     delete thread;
   }
@@ -142,7 +144,7 @@ bool WebServer::SendPacket(int client_id, DataPacket *packet) {
   auto client_lock = client->lock->Enter();
   lock->Exit();
 
-  for (auto fragment: packet->GetFragments()) {
+  for (auto fragment : packet->GetFragments()) {
     if (client->socket->Write(fragment->GetBuffer(), fragment->GetSize()) != fragment->GetSize()) {
       return false;
     }
@@ -177,4 +179,4 @@ void WebServer::CloseClient(int client_id) {
   Allocator::Delete(info);
 }
 
-}
+}  // namespace shakadb
