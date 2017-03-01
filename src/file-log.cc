@@ -23,9 +23,10 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#include <src/fatal-exception.h>
 #include <cstdlib>
-#include "file-log.h"
+
+#include "./src/fatal-exception.h"
+#include "./src/file-log.h"
 
 namespace shakadb {
 
@@ -61,19 +62,22 @@ void FileLog::ToLog(std::string level, std::string message) {
                    : fopen(this->log_file_name.c_str(), "a+");
 
     if (this->output == nullptr) {
-      fprintf(stderr, "Unable to open log file: %s\n", this->log_file_name.c_str());
+      fprintf(stderr,
+              "Unable to open log file: %s\n",
+              this->log_file_name.c_str());
       exit(-1);
     }
   }
 
   time_t t = time(nullptr);
-  struct tm *now = localtime(&t);
+  struct tm now;
+  localtime_r(&t, &now);
 
   fprintf(this->output,
           "%d/%02d/%02d [%s]: %s\n",
-          now->tm_year + 1900,
-          now->tm_mon + 1,
-          now->tm_mday,
+          now.tm_year + 1900,
+          now.tm_mon + 1,
+          now.tm_mday,
           level.c_str(),
           message.c_str());
 
@@ -82,4 +86,4 @@ void FileLog::ToLog(std::string level, std::string message) {
   }
 }
 
-}
+}  // namespace shakadb

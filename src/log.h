@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SRC_LOG_H
-#define SRC_LOG_H
+#ifndef SRC_LOG_H_
+#define SRC_LOG_H_
 
 #include <string>
 
@@ -32,12 +32,12 @@ namespace shakadb {
 
 class Log {
  public:
-  virtual ~Log() {};
+  virtual ~Log() {}
   virtual void Fatal(std::string message) = 0;
   virtual void Info(std::string message) = 0;
   virtual void Debug(std::string message) = 0;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SRC_LOG_H
+#endif  // SRC_LOG_H_

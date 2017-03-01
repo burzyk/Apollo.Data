@@ -23,18 +23,20 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_FILELOG_H
-#define SHAKADB_STORAGE_FILELOG_H
+#ifndef SRC_FILE_LOG_H_
+#define SRC_FILE_LOG_H_
 
-#include <src/utils/monitor.h>
-#include "log.h"
-#include "src/utils/rw-lock.h"
+#include <string>
+
+#include "./src/utils/monitor.h"
+#include "./src/log.h"
+#include "./src/utils/rw-lock.h"
 
 namespace shakadb {
 
 class FileLog : public Log {
  public:
-  FileLog(std::string log_file_name);
+  explicit FileLog(std::string log_file_name);
   ~FileLog();
 
   void Fatal(std::string message);
@@ -48,6 +50,6 @@ class FileLog : public Log {
   FILE *output;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_FILELOG_H
+#endif  // SRC_FILE_LOG_H_
