@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_STOPWATCH_H
-#define SHAKADB_STORAGE_STOPWATCH_H
+#ifndef SRC_UTILS_STOPWATCH_H_
+#define SRC_UTILS_STOPWATCH_H_
 
 #include <time.h>
 #include <cstdint>
@@ -43,6 +43,6 @@ class Stopwatch {
   timespec stop;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_STOPWATCH_H
+#endif  // SRC_UTILS_STOPWATCH_H_

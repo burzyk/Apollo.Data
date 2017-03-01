@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 14/02/2017.
 //
 
-#include "monitor.h"
+#include "src/utils/monitor.h"
 
 namespace shakadb {
 
@@ -44,4 +44,4 @@ std::shared_ptr<MonitorScope> Monitor::Enter() {
   return std::make_shared<MonitorScope>(&this->mutex, &this->cond);
 }
 
-}
+}  // namespace shakadb

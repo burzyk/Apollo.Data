@@ -23,16 +23,15 @@
 // Created by Pawel Burzynski on 11/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_ALLOCATOR_H
-#define SHAKADB_STORAGE_ALLOCATOR_H
+#ifndef SRC_UTILS_ALLOCATOR_H_
+#define SRC_UTILS_ALLOCATOR_H_
 
-#include <string>
-#include <map>
 #include <cstdlib>
-#include <src/fatal-exception.h>
+
+#include "src/fatal-exception.h"
 #include "src/log.h"
-#include "rw-lock-scope.h"
-#include "rw-lock.h"
+#include "src/utils/rw-lock-scope.h"
+#include "src/utils/rw-lock.h"
 
 namespace shakadb {
 
@@ -40,12 +39,12 @@ class Allocator {
  public:
   template<typename T>
   static T *New(int count = 1) {
-    return (T *)calloc(count, sizeof(T));
+    return static_cast<T *>(calloc(count, sizeof(T)));
   }
 
   static void Delete(void *pointer);
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_ALLOCATOR_H
+#endif  // SRC_UTILS_ALLOCATOR_H_

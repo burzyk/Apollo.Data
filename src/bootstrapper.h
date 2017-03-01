@@ -29,13 +29,13 @@
 #include <memory>
 #include <string>
 
-#include "./src/server/server.h"
-#include "./src/middleware/ping-handler.h"
-#include "./src/middleware/packet-logger.h"
-#include "./src/utils/thread.h"
-#include "./src/middleware/write-handler.h"
-#include "./src/middleware/read-handler.h"
-#include "./src/configuration.h"
+#include "src/server/server.h"
+#include "src/middleware/ping-handler.h"
+#include "src/middleware/packet-logger.h"
+#include "src/utils/thread.h"
+#include "src/middleware/write-handler.h"
+#include "src/middleware/read-handler.h"
+#include "src/configuration.h"
 
 namespace shakadb {
 

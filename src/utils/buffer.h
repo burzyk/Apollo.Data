@@ -23,20 +23,20 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SHAKADB_BUFFER_H
-#define SHAKADB_BUFFER_H
+#ifndef SRC_UTILS_BUFFER_H_
+#define SRC_UTILS_BUFFER_H_
 
-#include "common.h"
+#include "src/utils/common.h"
 
 namespace shakadb {
 
 class Buffer {
  public:
-  virtual ~Buffer() {};
+  virtual ~Buffer() {}
   virtual byte_t *GetBuffer() = 0;
   virtual int GetSize() = 0;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_BUFFER_H
+#endif  // SRC_UTILS_BUFFER_H_

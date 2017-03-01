@@ -23,17 +23,18 @@
 // Created by Pawel Burzynski on 11/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_RINGBUFFER_H
-#define SHAKADB_STORAGE_RINGBUFFER_H
+#ifndef SRC_UTILS_RING_BUFFER_H_
+#define SRC_UTILS_RING_BUFFER_H_
 
 #include <cstdint>
-#include "stream.h"
+
+#include "src/utils/stream.h"
 
 namespace shakadb {
 
 class RingBuffer : public Stream {
  public:
-  RingBuffer(int grow_increment);
+  explicit RingBuffer(int grow_increment);
   ~RingBuffer();
 
   int Read(byte_t *buffer, int buffer_size);
@@ -50,6 +51,6 @@ class RingBuffer : public Stream {
   int grow_increment;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_RINGBUFFER_H
+#endif  // SRC_UTILS_RING_BUFFER_H_

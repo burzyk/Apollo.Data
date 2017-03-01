@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 14/02/2017.
 //
 
-#include "monitor-scope.h"
+#include "src/utils/monitor-scope.h"
 
 namespace shakadb {
 
@@ -52,4 +52,4 @@ void MonitorScope::Exit() {
   pthread_mutex_unlock(this->mutex);
 }
 
-}
+}  // namespace shakadb

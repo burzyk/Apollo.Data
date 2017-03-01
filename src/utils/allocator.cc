@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 11/02/2017.
 //
 
-#include "allocator.h"
+#include "src/utils/allocator.h"
 
 namespace shakadb {
 
@@ -31,4 +31,4 @@ void Allocator::Delete(void *pointer) {
   free(pointer);
 }
 
-}
+}  // namespace shakadb

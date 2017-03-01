@@ -23,8 +23,9 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
+#include "src/utils/rw-lock.h"
+
 #include <cstdio>
-#include "rw-lock.h"
 
 namespace shakadb {
 
@@ -47,4 +48,4 @@ std::shared_ptr<RwLockScope> RwLock::LockWrite() {
   return std::make_shared<RwLockScope>(&this->rwlock);
 }
 
-}
+}  // namespace shakadb

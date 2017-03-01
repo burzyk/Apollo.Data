@@ -23,10 +23,10 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SHAKADB_SHALLOWBUFFER_H
-#define SHAKADB_SHALLOWBUFFER_H
+#ifndef SRC_UTILS_SHALLOW_BUFFER_H_
+#define SRC_UTILS_SHALLOW_BUFFER_H_
 
-#include "buffer.h"
+#include "src/utils/buffer.h"
 
 namespace shakadb {
 
@@ -41,6 +41,6 @@ class ShallowBuffer : public Buffer {
   int size;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_SHALLOWBUFFER_H
+#endif  // SRC_UTILS_SHALLOW_BUFFER_H_

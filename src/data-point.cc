@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 20/02/2017.
 //
 
-#include "./src/data-point.h"
+#include "src/data-point.h"
 
 namespace shakadb {
 

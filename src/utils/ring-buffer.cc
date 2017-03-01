@@ -23,11 +23,14 @@
 // Created by Pawel Burzynski on 11/02/2017.
 //
 
-#include <cstdlib>
+#include "src/utils/ring-buffer.h"
+
 #include <string.h>
-#include "ring-buffer.h"
-#include "allocator.h"
-#include "common.h"
+#include <cstdlib>
+#include <algorithm>
+
+#include "src/utils/allocator.h"
+#include "src/utils/common.h"
 
 namespace shakadb {
 
@@ -57,7 +60,7 @@ int RingBuffer::Read(byte_t *buffer, int buffer_size) {
 }
 
 int RingBuffer::Peek(byte_t *buffer, int buffer_size) {
-  int read_size = min(buffer_size, this->size);
+  int read_size = std::min(buffer_size, this->size);
   int read_end = (this->begin + read_size) % this->capacity;
 
   if (read_size == 0) {
@@ -106,7 +109,8 @@ void RingBuffer::EnsureBufferSize(int new_size) {
     return;
   }
 
-  int new_capacity = ((new_size / this->grow_increment) + 1) * this->grow_increment;
+  int new_capacity =
+      ((new_size / this->grow_increment) + 1) * this->grow_increment;
   byte_t *new_data = Allocator::New<byte_t>(new_capacity);
   this->Peek(new_data, this->size);
 
@@ -116,4 +120,4 @@ void RingBuffer::EnsureBufferSize(int new_size) {
   this->begin = 0;
 }
 
-}
+}  // namespace shakadb

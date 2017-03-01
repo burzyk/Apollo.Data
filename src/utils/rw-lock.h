@@ -23,12 +23,13 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_RW_LOCK_H
-#define SHAKADB_STORAGE_RW_LOCK_H
+#ifndef SRC_UTILS_RW_LOCK_H_
+#define SRC_UTILS_RW_LOCK_H_
 
 #include <pthread.h>
 #include <memory>
-#include "rw-lock-scope.h"
+
+#include "src/utils/rw-lock-scope.h"
 
 namespace shakadb {
 
@@ -43,6 +44,7 @@ class RwLock {
   pthread_rwlock_t rwlock;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_RWLOCK_H
+#endif  // SRC_UTILS_RW_LOCK_H_
+

@@ -23,9 +23,12 @@
 // Created by Pawel Burzynski on 03/02/2017.
 //
 
-#include <src/fatal-exception.h>
+#include "src/utils/thread.h"
+
 #include <stdlib.h>
-#include "thread.h"
+#include <string>
+
+#include "src/fatal-exception.h"
 
 namespace shakadb {
 
@@ -54,16 +57,17 @@ void Thread::Join() {
 }
 
 void *Thread::ThreadRoutine(void *data) {
-  Thread *_this = (Thread *)data;
+  Thread *_this = static_cast<Thread *>(data);
 
   try {
     _this->thread_routine(_this->thread_data);
   } catch (FatalException ex) {
-    _this->log->Fatal("Unhandled exception in thread routine: " + std::string(ex.what()));
+    _this->log->Fatal(
+        "Unhandled exception in thread routine: " + std::string(ex.what()));
     exit(-1);
   }
 
   return nullptr;
 }
 
-}
+}  // namespace shakadb

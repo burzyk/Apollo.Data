@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 14/02/2017.
 //
 
-#ifndef SHAKADB_MONITORSCOPE_H
-#define SHAKADB_MONITORSCOPE_H
+#ifndef SRC_UTILS_MONITOR_SCOPE_H_
+#define SRC_UTILS_MONITOR_SCOPE_H_
 
 #include <pthread.h>
 
@@ -44,6 +44,6 @@ class MonitorScope {
   pthread_cond_t *cond;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_MONITORSCOPE_H
+#endif  // SRC_UTILS_MONITOR_SCOPE_H_

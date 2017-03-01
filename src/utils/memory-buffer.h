@@ -23,16 +23,16 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SHAKADB_MEMORYBUFFER_H
-#define SHAKADB_MEMORYBUFFER_H
+#ifndef SRC_UTILS_MEMORY_BUFFER_H_
+#define SRC_UTILS_MEMORY_BUFFER_H_
 
-#include "buffer.h"
+#include "src/utils/buffer.h"
 
 namespace shakadb {
 
 class MemoryBuffer : public Buffer {
  public:
-  MemoryBuffer(int size);
+  explicit MemoryBuffer(int size);
   ~MemoryBuffer();
 
   byte_t *GetBuffer();
@@ -42,6 +42,6 @@ class MemoryBuffer : public Buffer {
   int size;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_MEMORYBUFFER_H
+#endif  // SRC_UTILS_MEMORY_BUFFER_H_

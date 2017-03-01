@@ -28,9 +28,9 @@
 
 #include <string>
 
-#include "./src/utils/monitor.h"
-#include "./src/log.h"
-#include "./src/utils/rw-lock.h"
+#include "src/utils/monitor.h"
+#include "src/log.h"
+#include "src/utils/rw-lock.h"
 
 namespace shakadb {
 

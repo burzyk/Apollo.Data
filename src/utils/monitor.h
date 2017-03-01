@@ -23,12 +23,13 @@
 // Created by Pawel Burzynski on 14/02/2017.
 //
 
-#ifndef SHAKADB_MONITOR_H
-#define SHAKADB_MONITOR_H
+#ifndef SRC_UTILS_MONITOR_H_
+#define SRC_UTILS_MONITOR_H_
 
-#include <memory>
 #include <pthread.h>
-#include "monitor-scope.h"
+#include <memory>
+
+#include "src/utils/monitor-scope.h"
 
 namespace shakadb {
 
@@ -43,6 +44,6 @@ class Monitor {
   pthread_cond_t cond;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_MONITOR_H
+#endif  // SRC_UTILS_MONITOR_H_

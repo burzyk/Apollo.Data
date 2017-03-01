@@ -23,8 +23,9 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#include "memory-buffer.h"
-#include "allocator.h"
+#include "src/utils/memory-buffer.h"
+
+#include "src/utils/allocator.h"
 
 namespace shakadb {
 
@@ -47,4 +48,4 @@ int MemoryBuffer::GetSize() {
   return this->size;
 }
 
-}
+}  // namespace shakadb

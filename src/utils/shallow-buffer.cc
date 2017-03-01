@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#include "shallow-buffer.h"
+#include "src/utils/shallow-buffer.h"
 
 namespace shakadb {
 
@@ -40,4 +40,4 @@ int ShallowBuffer::GetSize() {
   return this->size;
 }
 
-}
+}  // namespace shakadb

@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_DIRECTORY_H
-#define SHAKADB_STORAGE_DIRECTORY_H
+#ifndef SRC_UTILS_DIRECTORY_H_
+#define SRC_UTILS_DIRECTORY_H_
 
 #include <string>
 #include <list>
@@ -37,9 +37,11 @@ class Directory {
   static std::list<std::string> GetFiles(std::string path);
   static void CreateDirectory(std::string path);
  private:
-  static std::list<std::string> GetDiskItems(std::string path, unsigned char type);
+  static std::list<std::string> GetDiskItems(
+      std::string path,
+      unsigned char type);
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_DIRECTORY_H
+#endif  // SRC_UTILS_DIRECTORY_H_

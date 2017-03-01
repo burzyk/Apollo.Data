@@ -37,7 +37,7 @@ ReadResponse::ReadResponse(DataPointsReader *reader, int front_discard) {
 
   if (reader != nullptr) {
     this->points = reader->GetDataPoints() + front_discard;
-    this->points_count = max(0, reader->GetDataPointsCount() - front_discard);
+    this->points_count = std::max(0, reader->GetDataPointsCount() - front_discard);
   }
 }
 

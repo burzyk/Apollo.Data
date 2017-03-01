@@ -23,11 +23,12 @@
 // Created by Pawel Burzynski on 03/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_THREAD_H
-#define SHAKADB_STORAGE_THREAD_H
+#ifndef SRC_UTILS_THREAD_H_
+#define SRC_UTILS_THREAD_H_
 
-#include <functional>
 #include <pthread.h>
+#include <functional>
+
 #include "src/log.h"
 
 namespace shakadb {
@@ -49,6 +50,6 @@ class Thread {
   void *thread_data;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_THREAD_H
+#endif  // SRC_UTILS_THREAD_H_

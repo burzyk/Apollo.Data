@@ -23,16 +23,16 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SHAKADB_SOCKETSTREAM_H
-#define SHAKADB_SOCKETSTREAM_H
+#ifndef SRC_UTILS_SOCKET_STREAM_H_
+#define SRC_UTILS_SOCKET_STREAM_H_
 
-#include "stream.h"
+#include "src/utils/stream.h"
 
 namespace shakadb {
 
 class SocketStream : public Stream {
  public:
-  SocketStream(int socket);
+  explicit SocketStream(int socket);
   ~SocketStream();
 
   int Read(byte_t *buffer, int buffer_size);
@@ -42,6 +42,6 @@ class SocketStream : public Stream {
   int socket;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_SOCKETSTREAM_H
+#endif  // SRC_UTILS_SOCKET_STREAM_H_

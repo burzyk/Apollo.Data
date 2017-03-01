@@ -23,12 +23,12 @@
 // Created by Pawel Burzynski on 20/02/2017.
 //
 
-#include "./src/configuration.h"
+#include "src/configuration.h"
 
 #include <regex.h>
 #include <sstream>
 
-#include "./src/utils/allocator.h"
+#include "src/utils/allocator.h"
 
 namespace shakadb {
 

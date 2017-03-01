@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_RWLOCKSCOPE_H
-#define SHAKADB_STORAGE_RWLOCKSCOPE_H
+#ifndef SRC_UTILS_RW_LOCK_SCOPE_H_
+#define SRC_UTILS_RW_LOCK_SCOPE_H_
 
 #include <pthread.h>
 
@@ -32,7 +32,7 @@ namespace shakadb {
 
 class RwLockScope {
  public:
-  RwLockScope(pthread_rwlock_t *lock);
+  explicit RwLockScope(pthread_rwlock_t *lock);
   ~RwLockScope();
 
   void UpgradeToWrite();
@@ -40,6 +40,6 @@ class RwLockScope {
   pthread_rwlock_t *lock;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_RWLOCKSCOPE_H
+#endif  // SRC_UTILS_RW_LOCK_SCOPE_H_

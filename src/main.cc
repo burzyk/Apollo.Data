@@ -23,9 +23,9 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#include "./src/utils/allocator.h"
-#include "./src/bootstrapper.h"
-#include "./src/fatal-exception.h"
+#include "src/utils/allocator.h"
+#include "src/bootstrapper.h"
+#include "src/fatal-exception.h"
 
 int main(int argc, char *argv[]) {
   try {

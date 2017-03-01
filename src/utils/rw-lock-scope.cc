@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 22/01/2017.
 //
 
-#include "rw-lock-scope.h"
+#include "src/utils/rw-lock-scope.h"
 
 namespace shakadb {
 
@@ -40,4 +40,4 @@ void RwLockScope::UpgradeToWrite() {
   pthread_rwlock_wrlock(this->lock);
 }
 
-}
+}  // namespace shakadb

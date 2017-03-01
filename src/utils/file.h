@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 18/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_FILE_H
-#define SHAKADB_STORAGE_FILE_H
+#ifndef SRC_UTILS_FILE_H_
+#define SRC_UTILS_FILE_H_
 
 #include <string>
 
@@ -32,8 +32,8 @@ namespace shakadb {
 
 class File {
  public:
-  File(std::string file_name);
-  virtual ~File();
+  explicit File(std::string file_name);
+  ~File();
 
   void Write(void *buffer, size_t size);
   size_t Read(void *buffer, size_t size);
@@ -44,6 +44,6 @@ class File {
   FILE *f;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_FILE_H
+#endif  // SRC_UTILS_FILE_H_

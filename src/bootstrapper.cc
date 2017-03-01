@@ -23,13 +23,13 @@
 // Created by Pawel Burzynski on 14/02/2017.
 //
 
-#include "./src/bootstrapper.h"
+#include "src/bootstrapper.h"
 
-#include "./src/server/web-server.h"
-#include "./src/file-log.h"
-#include "./src/utils/allocator.h"
-#include "./src/storage/standard-database.h"
-#include "./src/configuration.h"
+#include "src/server/web-server.h"
+#include "src/file-log.h"
+#include "src/utils/allocator.h"
+#include "src/storage/standard-database.h"
+#include "src/configuration.h"
 
 namespace shakadb {
 

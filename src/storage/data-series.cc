@@ -128,7 +128,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
   data_point_t *read_end = std::lower_bound(back_begin, back_end, end, comp);
 
   if (filtered_chunks.size() == 1) {
-    int total_points = min(read_end - read_begin, max_points);
+    int total_points = std::min((int)(read_end - read_begin), max_points);
     StandardDataPointsReader *reader = new StandardDataPointsReader(total_points);
     reader->WriteDataPoints(read_begin, total_points);
 
@@ -148,7 +148,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
     }
   }
 
-  StandardDataPointsReader *reader = new StandardDataPointsReader(min(total_points, max_points));
+  StandardDataPointsReader *reader = new StandardDataPointsReader(std::min(total_points, max_points));
 
   if (!reader->WriteDataPoints(read_begin, points_from_front)) {
     return reader;
@@ -211,14 +211,14 @@ void DataSeries::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
 }
 
 void DataSeries::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points, int count) {
-  int to_write = min(count, chunk->GetMaxNumberOfPoints() - position);
+  int to_write = std::min(count, chunk->GetMaxNumberOfPoints() - position);
   chunk->Write(position, points, to_write);
   count -= to_write;
   points += to_write;
 
   while (count != 0) {
     chunk = this->CreateEmptyChunk();
-    to_write = min(count, chunk->GetMaxNumberOfPoints());
+    to_write = std::min(count, chunk->GetMaxNumberOfPoints());
     chunk->Write(0, points, to_write);
     this->RegisterChunk(chunk);
     count -= to_write;
@@ -235,7 +235,7 @@ DataChunk *DataSeries::CreateEmptyChunk() {
   file.Seek(0, SEEK_END);
 
   while (to_allocate > 0) {
-    int to_write = min(to_allocate, buffer_size);
+    int to_write = std::min(to_allocate, buffer_size);
     file.Write(buffer, (size_t)to_write);
     to_allocate -= to_write;
   }

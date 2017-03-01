@@ -23,21 +23,22 @@
 // Created by Pawel Burzynski on 16/02/2017.
 //
 
-#ifndef SHAKADB_STREAM_H
-#define SHAKADB_STREAM_H
+#ifndef SRC_UTILS_STREAM_H_
+#define SRC_UTILS_STREAM_H_
 
 #include <cstdint>
-#include "common.h"
+
+#include "src/utils/common.h"
 
 namespace shakadb {
 
 class Stream {
  public:
-  virtual ~Stream() {};
+  virtual ~Stream() {}
   virtual int Read(byte_t *buffer, int buffer_size) = 0;
   virtual int Write(byte_t *buffer, int buffer_size) = 0;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STREAM_H
+#endif  // SRC_UTILS_STREAM_H_

@@ -23,9 +23,10 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
+#include "src/utils/socket-stream.h"
+
 #include <sys/socket.h>
 #include <unistd.h>
-#include "socket-stream.h"
 
 namespace shakadb {
 
@@ -68,4 +69,4 @@ void SocketStream::Close() {
   close(this->socket);
 }
 
-}
+}  // namespace shakadb

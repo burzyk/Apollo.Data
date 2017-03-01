@@ -52,8 +52,8 @@ DataChunk *DataChunk::Load(std::string file_name, uint64_t file_offset, int max_
   f.Read(points, max_points * sizeof(data_point_t));
 
   for (int i = 0; i < max_points && points[i].time != 0; i++) {
-    chunk->begin = min(chunk->begin, points[i].time);
-    chunk->end = max(chunk->end, points[i].time);
+    chunk->begin = std::min(chunk->begin, points[i].time);
+    chunk->end = std::max(chunk->end, points[i].time);
     chunk->number_of_points++;
   }
 

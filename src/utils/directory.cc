@@ -23,11 +23,13 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
+#include "src/utils/directory.h"
+
 #include <sys/stat.h>
-#include <src/fatal-exception.h>
 #include <dirent.h>
 #include <cerrno>
-#include "directory.h"
+
+#include "src/fatal-exception.h"
 #include "src/log.h"
 
 namespace shakadb {
@@ -48,7 +50,9 @@ void Directory::CreateDirectory(std::string path) {
   }
 }
 
-std::list<std::string> Directory::GetDiskItems(std::string path, unsigned char type) {
+std::list<std::string> Directory::GetDiskItems(
+    std::string path,
+    unsigned char type) {
   std::list<std::string> result;
   struct dirent *ep = NULL;
   DIR *dir = opendir(path.c_str());
@@ -75,4 +79,4 @@ std::list<std::string> Directory::GetDiskItems(std::string path, unsigned char t
   return result;
 }
 
-}
+}  // namespace shakadb

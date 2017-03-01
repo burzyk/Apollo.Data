@@ -23,8 +23,9 @@
 // Created by Pawel Burzynski on 18/01/2017.
 //
 
-#include <src/fatal-exception.h>
-#include "file.h"
+#include "src/utils/file.h"
+
+#include "src/fatal-exception.h"
 #include "src/log.h"
 
 namespace shakadb {
@@ -55,8 +56,6 @@ void File::Write(void *buffer, size_t size) {
 }
 
 size_t File::Read(void *buffer, size_t size) {
-  // TODO: semaphore for amount of opened files
-
   return fread(buffer, 1, size, this->f);
 }
 
@@ -67,9 +66,9 @@ void File::Seek(off_t offset, int origin) {
 }
 
 size_t File::GetSize() {
-  long position = ftell(this->f);
+  uint64_t position = ftell(this->f);
   this->Seek(0, SEEK_END);
-  long size = ftell(this->f);
+  uint64_t size = ftell(this->f);
   this->Seek(position, SEEK_SET);
 
   return size;
@@ -79,4 +78,4 @@ void File::Flush() {
   fflush(this->f);
 }
 
-}
+}  // namespace shakadb
