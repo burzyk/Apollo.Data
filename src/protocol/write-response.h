@@ -23,10 +23,12 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SHAKADB_WRITERESPONSE_H
-#define SHAKADB_WRITERESPONSE_H
+#ifndef SRC_PROTOCOL_WRITE_RESPONSE_H_
+#define SRC_PROTOCOL_WRITE_RESPONSE_H_
 
-#include "data-packet.h"
+#include <vector>
+
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
@@ -38,13 +40,15 @@ enum WriteStatus {
 class WriteResponse : public DataPacket {
  public:
   WriteResponse();
-  WriteResponse(WriteStatus status);
+  explicit WriteResponse(WriteStatus status);
 
   PacketType GetType();
   WriteStatus GetStatus();
+
  protected:
   bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
+
  private:
   struct write_response_t {
     WriteStatus status;
@@ -53,6 +57,6 @@ class WriteResponse : public DataPacket {
   WriteStatus status;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_WRITERESPONSE_H
+#endif  // SRC_PROTOCOL_WRITE_RESPONSE_H_

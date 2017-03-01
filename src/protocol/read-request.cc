@@ -23,10 +23,12 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
+#include "src/protocol/read-request.h"
+
 #include <string.h>
-#include <src/utils/memory-buffer.h>
-#include <src/fatal-exception.h>
-#include "read-request.h"
+
+#include "src/utils/memory-buffer.h"
+#include "src/fatal-exception.h"
 
 namespace shakadb {
 
@@ -64,7 +66,7 @@ bool ReadRequest::Deserialize(Buffer *payload) {
     return false;
   }
 
-  read_request_t *request = (read_request_t *)payload->GetBuffer();
+  read_request_t *request = reinterpret_cast<read_request_t *>(payload->GetBuffer());
 
   this->begin = request->begin;
   this->end = request->end;
@@ -75,7 +77,7 @@ bool ReadRequest::Deserialize(Buffer *payload) {
 
 std::vector<Buffer *> ReadRequest::Serialize() {
   MemoryBuffer *buffer = new MemoryBuffer(sizeof(read_request_t));
-  read_request_t *request = (read_request_t *)buffer->GetBuffer();
+  read_request_t *request = reinterpret_cast<read_request_t *>(buffer->GetBuffer());
 
   request->begin = this->begin;
   request->end = this->end;
@@ -84,4 +86,4 @@ std::vector<Buffer *> ReadRequest::Serialize() {
   return std::vector<Buffer *> {buffer};
 }
 
-}
+}  // namespace shakadb

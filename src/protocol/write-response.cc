@@ -23,8 +23,9 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#include <src/utils/memory-buffer.h>
-#include "write-response.h"
+#include "src/protocol/write-response.h"
+
+#include "src/utils/memory-buffer.h"
 
 namespace shakadb {
 
@@ -48,7 +49,7 @@ bool WriteResponse::Deserialize(Buffer *payload) {
     return false;
   }
 
-  write_response_t *response = (write_response_t *)payload->GetBuffer();
+  write_response_t *response = reinterpret_cast<write_response_t *>(payload->GetBuffer());
 
   this->status = response->status;
 
@@ -57,11 +58,11 @@ bool WriteResponse::Deserialize(Buffer *payload) {
 
 std::vector<Buffer *> WriteResponse::Serialize() {
   MemoryBuffer *buffer = new MemoryBuffer(sizeof(write_response_t));
-  write_response_t *response = (write_response_t *)buffer->GetBuffer();
+  write_response_t *response = reinterpret_cast<write_response_t *>(buffer->GetBuffer());
 
   response->status = this->status;
 
   return std::vector<Buffer *> {buffer};
 }
 
-}
+}  // namespace shakadb

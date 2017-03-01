@@ -23,9 +23,11 @@
 // Created by Pawel Burzynski on 16/02/2017.
 //
 
+#include "src/protocol/ping-packet.h"
+
 #include <cstring>
-#include <src/utils/memory-buffer.h>
-#include "ping-packet.h"
+
+#include "src/utils/memory-buffer.h"
 
 namespace shakadb {
 
@@ -51,7 +53,7 @@ int PingPacket::GetPingDataSize() {
 
 bool PingPacket::Deserialize(Buffer *payload) {
   this->ping_data_size = payload->GetSize();
-  this->ping_data = (char *)payload->GetBuffer();
+  this->ping_data = reinterpret_cast<char *>(payload->GetBuffer());
 
   return true;
 }
@@ -63,4 +65,4 @@ std::vector<Buffer *> PingPacket::Serialize() {
   return std::vector<Buffer *> {buffer};
 }
 
-}
+}  // namespace shakadb

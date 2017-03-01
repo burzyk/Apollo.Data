@@ -23,26 +23,27 @@
 // Created by Pawel Burzynski on 16/02/2017.
 //
 
-#include <src/utils/allocator.h>
-#include <vector>
-#include <src/utils/memory-buffer.h>
-#include <src/utils/shallow-buffer.h>
+#include "src/protocol/data-packet.h"
+
 #include <memory.h>
-#include "data-packet.h"
-#include "ping-packet.h"
-#include "write-request.h"
-#include "read-request.h"
-#include "read-response.h"
-#include "write-response.h"
+#include <vector>
+
+#include "src/utils/allocator.h"
+#include "src/utils/memory-buffer.h"
+#include "src/utils/shallow-buffer.h"
+#include "src/protocol/ping-packet.h"
+#include "src/protocol/write-request.h"
+#include "src/protocol/read-request.h"
+#include "src/protocol/read-response.h"
+#include "src/protocol/write-response.h"
 
 namespace shakadb {
 
 DataPacket::DataPacket() {
-
 }
 
 DataPacket::~DataPacket() {
-  for (auto fragment: this->fragments) {
+  for (auto fragment : this->fragments) {
     delete fragment;
   }
 }
@@ -50,7 +51,7 @@ DataPacket::~DataPacket() {
 DataPacket *DataPacket::Load(Stream *stream) {
   data_packet_header_t header;
 
-  if (stream->Read((byte_t *)&header, sizeof(data_packet_header_t)) < sizeof(data_packet_header_t)) {
+  if (stream->Read(reinterpret_cast<byte_t *>(&header), sizeof(data_packet_header_t)) < sizeof(data_packet_header_t)) {
     return nullptr;
   }
 
@@ -110,21 +111,21 @@ std::vector<Buffer *> DataPacket::GetFragments() {
   std::vector<Buffer *> payload = this->Serialize();
   int payload_size = 0;
 
-  for (auto buffer: payload) {
+  for (auto buffer : payload) {
     payload_size += buffer->GetSize();
   }
 
   MemoryBuffer *header_fragment = new MemoryBuffer(sizeof(data_packet_header_t));
-  data_packet_header_t *header = (data_packet_header_t *)header_fragment->GetBuffer();
+  data_packet_header_t *header = reinterpret_cast<data_packet_header_t *>(header_fragment->GetBuffer());
   header->type = this->GetType();
   header->packet_length = payload_size + header_fragment->GetSize();
   this->fragments.push_back(header_fragment);
 
-  for (auto buffer: payload) {
+  for (auto buffer : payload) {
     this->fragments.push_back(buffer);
   }
 
   return this->fragments;
 }
 
-}
+}  // namespace shakadb

@@ -23,14 +23,16 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
-#ifndef SHAKADB_READRESPONSE_H
-#define SHAKADB_READRESPONSE_H
+#ifndef SRC_PROTOCOL_READ_RESPONSE_H_
+#define SRC_PROTOCOL_READ_RESPONSE_H_
 
-#include <src/data-point.h>
-#include <src/utils/common.h>
-#include <src/storage/data-points-reader.h>
-#include <src/utils/shallow-buffer.h>
-#include "data-packet.h"
+#include <vector>
+
+#include "src/data-point.h"
+#include "src/utils/common.h"
+#include "src/storage/data-points-reader.h"
+#include "src/utils/shallow-buffer.h"
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
@@ -42,15 +44,17 @@ class ReadResponse : public DataPacket {
   PacketType GetType();
   int GetPointsCount();
   data_point_t *GetPoints();
+
  protected:
   bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
+
  private:
   data_point_t *points;
   int points_count;
   DataPointsReader *reader;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_READRESPONSE_H
+#endif  // SRC_PROTOCOL_READ_RESPONSE_H_

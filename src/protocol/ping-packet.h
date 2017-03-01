@@ -23,10 +23,12 @@
 // Created by Pawel Burzynski on 16/02/2017.
 //
 
-#ifndef SHAKADB_PINGPACKET_H
-#define SHAKADB_PINGPACKET_H
+#ifndef SRC_PROTOCOL_PING_PACKET_H_
+#define SRC_PROTOCOL_PING_PACKET_H_
 
-#include "data-packet.h"
+#include <vector>
+
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
@@ -38,14 +40,16 @@ class PingPacket : public DataPacket {
   virtual PacketType GetType();
   char *GetPingData();
   int GetPingDataSize();
+
  protected:
   bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
+
  private:
   char *ping_data;
   int ping_data_size;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_PINGPACKET_H
+#endif  // SRC_PROTOCOL_PING_PACKET_H_

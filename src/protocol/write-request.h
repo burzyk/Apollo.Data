@@ -23,12 +23,14 @@
 // Created by Pawel Burzynski on 16/02/2017.
 //
 
-#ifndef SHAKADB_WRITEREQUEST_H
-#define SHAKADB_WRITEREQUEST_H
+#ifndef SRC_PROTOCOL_WRITE_REQUEST_H_
+#define SRC_PROTOCOL_WRITE_REQUEST_H_
 
-#include <src/data-point.h>
 #include <string>
-#include "data-packet.h"
+#include <vector>
+
+#include "src/data-point.h"
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
@@ -41,9 +43,11 @@ class WriteRequest : public DataPacket {
   int GetPointsCount();
   data_point_t *GetPoints();
   std::string GetSeriesName();
+
  protected:
   bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
+
  private:
   struct write_request_t {
     char series_name[SHAKADB_SERIES_NAME_MAX_LENGTH + 1];
@@ -55,6 +59,6 @@ class WriteRequest : public DataPacket {
   int points_count;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_WRITEREQUEST_H
+#endif  // SRC_PROTOCOL_WRITE_REQUEST_H_

@@ -23,14 +23,15 @@
 // Created by Pawel Burzynski on 01/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_DATA_PACKET_H
-#define SHAKADB_STORAGE_DATA_PACKET_H
+#ifndef SRC_PROTOCOL_DATA_PACKET_H_
+#define SRC_PROTOCOL_DATA_PACKET_H_
 
 #include <cstdint>
-#include <src/utils/ring-buffer.h>
-#include <memory>
 #include <vector>
-#include <src/utils/buffer.h>
+#include <memory>
+
+#include "src/utils/ring-buffer.h"
+#include "src/utils/buffer.h"
 
 namespace shakadb {
 
@@ -55,13 +56,15 @@ class DataPacket {
 
   virtual PacketType GetType() = 0;
   std::vector<Buffer *> GetFragments();
+
  protected:
   virtual bool Deserialize(Buffer *payload) = 0;
   virtual std::vector<Buffer *> Serialize() = 0;
+
  private:
   std::vector<Buffer *> fragments;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_DATA_PACKET_H
+#endif  // SRC_PROTOCOL_DATA_PACKET_H_

@@ -23,11 +23,13 @@
 // Created by Pawel Burzynski on 16/02/2017.
 //
 
-#include <src/utils/memory-buffer.h>
+#include "src/protocol/write-request.h"
+
 #include <string.h>
 #include <algorithm>
-#include <src/utils/shallow-buffer.h>
-#include "write-request.h"
+
+#include "src/utils/memory-buffer.h"
+#include "src/utils/shallow-buffer.h"
 
 namespace shakadb {
 
@@ -61,7 +63,7 @@ bool WriteRequest::Deserialize(Buffer *payload) {
     return false;
   }
 
-  write_request_t *request = (write_request_t *)payload->GetBuffer();
+  write_request_t *request = reinterpret_cast<write_request_t *>(payload->GetBuffer());
 
   this->points_count = request->points_count;
   this->series_name = std::string(request->series_name);
@@ -70,7 +72,7 @@ bool WriteRequest::Deserialize(Buffer *payload) {
     return false;
   }
 
-  this->points = (data_point_t *)(payload->GetBuffer() + sizeof(write_request_t));
+  this->points = reinterpret_cast<data_point_t *>(payload->GetBuffer() + sizeof(write_request_t));
 
   std::sort(this->points, this->points + this->points_count, [](data_point_t a, data_point_t b) -> bool {
     return a.time < b.time;
@@ -81,16 +83,16 @@ bool WriteRequest::Deserialize(Buffer *payload) {
 
 std::vector<Buffer *> WriteRequest::Serialize() {
   MemoryBuffer *info_fragment = new MemoryBuffer(sizeof(write_request_t));
-  write_request_t *request = (write_request_t *)info_fragment->GetBuffer();
+  write_request_t *request = reinterpret_cast<write_request_t *>(info_fragment->GetBuffer());
 
   request->points_count = this->points_count;
   memcpy(request->series_name, this->series_name.c_str(), this->series_name.size());
 
   ShallowBuffer *points_fragment = new ShallowBuffer(
-      (byte_t *)this->points,
+      reinterpret_cast<byte_t *>(this->points),
       this->points_count * sizeof(data_point_t));
 
   return std::vector<Buffer *> {info_fragment, points_fragment};
 }
 
-}
+}  // namespace shakadb

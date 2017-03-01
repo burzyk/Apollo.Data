@@ -23,12 +23,14 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
-#ifndef SHAKADB_READREQUEST_H
-#define SHAKADB_READREQUEST_H
+#ifndef SRC_PROTOCOL_READ_REQUEST_H_
+#define SRC_PROTOCOL_READ_REQUEST_H_
 
 #include <string>
-#include <src/data-point.h>
-#include "data-packet.h"
+#include <vector>
+
+#include "src/data-point.h"
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
@@ -41,9 +43,11 @@ class ReadRequest : public DataPacket {
   std::string GetSeriesName();
   timestamp_t GetBegin();
   timestamp_t GetEnd();
+
  protected:
   bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
+
  private:
   struct read_request_t {
     timestamp_t begin;
@@ -56,6 +60,6 @@ class ReadRequest : public DataPacket {
   timestamp_t end;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_READREQUEST_H
+#endif  // SRC_PROTOCOL_READ_REQUEST_H_

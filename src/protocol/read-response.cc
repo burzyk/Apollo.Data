@@ -23,7 +23,9 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
-#include "read-response.h"
+#include "src/protocol/read-response.h"
+
+#include <algorithm>
 
 namespace shakadb {
 
@@ -54,7 +56,7 @@ data_point_t *ReadResponse::GetPoints() {
 }
 
 bool ReadResponse::Deserialize(Buffer *payload) {
-  this->points = (data_point_t *)payload->GetBuffer();
+  this->points = reinterpret_cast<data_point_t *>(payload->GetBuffer());
   this->points_count = payload->GetSize() / sizeof(data_point_t);
 
   return true;
@@ -65,7 +67,7 @@ std::vector<Buffer *> ReadResponse::Serialize() {
 
   if (this->points_count != 0) {
     ShallowBuffer *points_fragment = new ShallowBuffer(
-        (byte_t *)this->points,
+    reinterpret_cast<byte_t *>(this->points),
         this->points_count * sizeof(data_point_t));
     result.push_back(points_fragment);
   }
@@ -73,4 +75,4 @@ std::vector<Buffer *> ReadResponse::Serialize() {
   return result;
 }
 
-}
+}  // namespace shakadb
