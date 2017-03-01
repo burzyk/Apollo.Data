@@ -23,6 +23,8 @@
 // Created by Pawel Burzynski on 08/02/2017.
 //
 
+#include "src/client/session.h"
+
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -30,13 +32,14 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <cstdlib>
-#include <src/utils/allocator.h>
-#include <src/protocol/ping-packet.h>
-#include <src/protocol/write-request.h>
-#include <src/protocol/read-request.h>
-#include <src/protocol/write-response.h>
-#include "session.h"
-#include "read-points-iterator.h"
+#include <memory>
+
+#include "src/utils/allocator.h"
+#include "src/protocol/ping-packet.h"
+#include "src/protocol/write-request.h"
+#include "src/protocol/read-request.h"
+#include "src/protocol/write-response.h"
+#include "src/client/read-points-iterator.h"
 
 namespace shakadb {
 
@@ -45,7 +48,7 @@ Session::Session(int sock)
 }
 
 Session *Session::Open(std::string server, int port) {
-  // TODO: put this to common init code
+  // TODO(burzyk): put this to common init code
   signal(SIGPIPE, SIG_IGN);
 
   struct addrinfo hints = {0};
@@ -63,7 +66,6 @@ Session *Session::Open(std::string server, int port) {
   }
 
   for (addrinfo *rp = result; rp != NULL; rp = rp->ai_next) {
-
     if ((sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) == -1) {
       continue;
     }
@@ -84,10 +86,10 @@ bool Session::Ping() {
   const char *ping_data = "ala ma kota";
   int ping_data_length = strlen(ping_data);
 
-  PingPacket request((char *)ping_data, ping_data_length);
+  PingPacket request(const_cast<char *>(ping_data), ping_data_length);
   this->SendPacket(&request);
 
-  auto response = std::unique_ptr<PingPacket>((PingPacket *)this->ReadPacket());
+  auto response = std::unique_ptr<PingPacket>(static_cast<PingPacket *>(this->ReadPacket()));
 
   return response != nullptr &&
       request.GetPingDataSize() == response->GetPingDataSize() &&
@@ -112,7 +114,7 @@ bool Session::WritePoints(std::string series_name, data_point_t *points, int cou
     return false;
   }
 
-  WriteResponse *response = (WriteResponse *)packet;
+  WriteResponse *response = static_cast<WriteResponse *>(packet);
   bool result = response->GetStatus() == kOk;
   delete response;
 
@@ -130,7 +132,7 @@ ReadPointsIterator *Session::ReadPoints(std::string series_name, timestamp_t beg
 }
 
 bool Session::SendPacket(DataPacket *packet) {
-  for (auto fragment: packet->GetFragments()) {
+  for (auto fragment : packet->GetFragments()) {
     if (this->sock.Write(fragment->GetBuffer(), fragment->GetSize()) != fragment->GetSize()) {
       return false;
     }
@@ -143,5 +145,4 @@ DataPacket *Session::ReadPacket() {
   return DataPacket::Load(&this->sock);
 }
 
-}
-
+}  // namespace shakadb

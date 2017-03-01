@@ -23,28 +23,30 @@
 // Created by Pawel Burzynski on 20/02/2017.
 //
 
-#ifndef SHAKADB_CLIENTDATAPOINTREADER_H
-#define SHAKADB_CLIENTDATAPOINTREADER_H
+#ifndef SRC_CLIENT_READ_POINTS_ITERATOR_H_
+#define SRC_CLIENT_READ_POINTS_ITERATOR_H_
 
-#include <src/storage/data-points-reader.h>
 #include <functional>
-#include <src/protocol/read-response.h>
+
+#include "src/storage/data-points-reader.h"
+#include "src/protocol/read-response.h"
 
 namespace shakadb {
 
 class ReadPointsIterator {
  public:
-  ReadPointsIterator(Stream *response);
+  explicit ReadPointsIterator(Stream *response);
   ~ReadPointsIterator();
 
   data_point_t *CurrentDataPoints();
   int CurrentDataPointsCount();
   bool MoveNext();
+
  private:
   Stream *response;
   ReadResponse *current;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_CLIENTDATAPOINTREADER_H
+#endif  // SRC_CLIENT_READ_POINTS_ITERATOR_H_

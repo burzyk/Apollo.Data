@@ -23,9 +23,11 @@
 // Created by Pawel Burzynski on 26/02/2017.
 //
 
+#include "src/client/client.h"
+
 #include <string>
-#include "client.h"
-#include "session.h"
+
+#include "src/client/session.h"
 
 extern "C" {
 
@@ -77,7 +79,7 @@ int shakadb_read_points_iterator_next(shakadb_read_points_iterator_t *iterator) 
     iterator->points_count = -1;
     return 0;
   } else {
-    iterator->points = (shakadb_data_point_t *)i->CurrentDataPoints();
+    iterator->points = reinterpret_cast<shakadb_data_point_t *>(i->CurrentDataPoints());
     iterator->points_count = i->CurrentDataPointsCount();
     return 1;
   }

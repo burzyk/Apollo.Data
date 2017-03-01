@@ -23,10 +23,12 @@
 // Created by Pawel Burzynski on 20/02/2017.
 //
 
+#include "src/client/read-points-iterator.h"
+
 #include <list>
-#include <src/utils/allocator.h>
-#include <src/utils/common.h>
-#include "read-points-iterator.h"
+
+#include "src/utils/allocator.h"
+#include "src/utils/common.h"
 
 namespace shakadb {
 
@@ -66,7 +68,7 @@ bool ReadPointsIterator::MoveNext() {
     return false;
   }
 
-  ReadResponse *response = (ReadResponse *)packet;
+  ReadResponse *response = static_cast<ReadResponse *>(packet);
 
   if (response->GetPointsCount() == 0) {
     delete response;
@@ -77,4 +79,4 @@ bool ReadPointsIterator::MoveNext() {
   return true;
 }
 
-}
+}  // namespace shakadb

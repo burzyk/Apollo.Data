@@ -23,17 +23,18 @@
 // Created by Pawel Burzynski on 08/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_SESSION_H
-#define SHAKADB_STORAGE_SESSION_H
+#ifndef SRC_CLIENT_SESSION_H_
+#define SRC_CLIENT_SESSION_H_
 
-#include <src/data-point.h>
 #include <string>
-#include <src/protocol/data-packet.h>
-#include <src/protocol/read-response.h>
-#include <src/storage/data-points-reader.h>
-#include <src/utils/common.h>
-#include <src/utils/socket-stream.h>
-#include "read-points-iterator.h"
+
+#include "src/data-point.h"
+#include "src/protocol/data-packet.h"
+#include "src/protocol/read-response.h"
+#include "src/storage/data-points-reader.h"
+#include "src/utils/common.h"
+#include "src/utils/socket-stream.h"
+#include "src/client/read-points-iterator.h"
 
 namespace shakadb {
 
@@ -44,8 +45,9 @@ class Session {
   bool Ping();
   bool WritePoints(std::string series_name, data_point_t *points, int count);
   ReadPointsIterator *ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end);
+
  private:
-  Session(int sock);
+  explicit Session(int sock);
 
   bool SendPacket(DataPacket *packet);
   DataPacket *ReadPacket();
@@ -53,6 +55,6 @@ class Session {
   SocketStream sock;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_SESSION_H
+#endif  // SRC_CLIENT_SESSION_H_
