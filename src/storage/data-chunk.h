@@ -45,8 +45,6 @@ class DataChunk {
   timestamp_t GetEnd();
   int GetNumberOfPoints();
   int GetMaxNumberOfPoints();
-
-  void PrintMetadata();
  private:
   DataChunk(std::string file_name, uint64_t file_offset, int max_points);
 

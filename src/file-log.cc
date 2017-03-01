@@ -53,7 +53,7 @@ void FileLog::Debug(std::string message) {
 }
 
 void FileLog::ToLog(std::string level, std::string message) {
-  auto scope = this->lock.LockWrite();
+  auto scope = this->lock.Enter();
 
   if (this->output == nullptr) {
     this->output = this->log_file_name == ""
@@ -76,6 +76,10 @@ void FileLog::ToLog(std::string level, std::string message) {
           now->tm_mday,
           level.c_str(),
           message.c_str());
+
+  if (level == "FATAL") {
+    fflush(this->output);
+  }
 }
 
 }

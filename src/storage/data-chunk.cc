@@ -128,20 +128,6 @@ int DataChunk::GetMaxNumberOfPoints() {
   return this->max_points;
 }
 
-void DataChunk::PrintMetadata() {
-  printf(
-      "begin: %llu, end: %llu, points: %d\n",
-      this->begin,
-      this->end,
-      this->number_of_points);
-
-  data_point_t *points = this->Read();
-
-  for (int i = 0; i < this->number_of_points; i++) {
-    printf("    %llu %f\n", points[i].time, points[i].value);
-  }
-}
-
 DataChunk::DataChunk(std::string file_name, uint64_t file_offset, int max_points) {
   this->file_name = file_name;
   this->file_offset = file_offset;

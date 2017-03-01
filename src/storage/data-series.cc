@@ -167,12 +167,6 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
   return reader;
 }
 
-void DataSeries::PrintMetadata() {
-  for (auto chunk: this->chunks) {
-    chunk->PrintMetadata();
-  }
-}
-
 void DataSeries::RegisterChunk(DataChunk *chunk) {
   auto i = this->chunks.begin();
 

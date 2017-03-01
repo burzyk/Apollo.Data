@@ -45,8 +45,6 @@ class StandardDatabase : public Database {
 
   DataPointsReader *Read(std::string name, timestamp_t begin, timestamp_t end, int max_points);
   void Write(std::string name, data_point_t *points, int count);
-
-  void PrintMetadata();
  private:
   StandardDatabase(std::string directory, Log *log, int points_per_chunk, int cache_memory_limit);
   DataSeries *FindDataSeries(std::string name);

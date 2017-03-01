@@ -59,17 +59,6 @@ DataPointsReader *StandardDatabase::Read(std::string name, timestamp_t begin, ti
   return series->Read(begin, end, max_points);
 }
 
-void StandardDatabase::PrintMetadata() {
-  printf("StandardDatabase:\n");
-
-  for (auto series: this->series) {
-    printf("==================================================\n");
-    printf("Series: %s\n", series.first.c_str());
-
-    series.second->PrintMetadata();
-  }
-}
-
 DataSeries *StandardDatabase::FindDataSeries(std::string name) {
   auto scope = this->lock.LockRead();
 
