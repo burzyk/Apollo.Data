@@ -23,8 +23,9 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#include "assert.h"
-#include "validation-exception.h"
+#include "test/framework/assert.h"
+
+#include "test/framework/validation-exception.h"
 
 namespace shakadb {
 namespace test {
@@ -35,5 +36,5 @@ void Assert::IsTrue(bool condition) {
   }
 }
 
-}
-}
+}  // namespace test
+}  // namespace shakadb

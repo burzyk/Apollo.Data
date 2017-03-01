@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_TEST_CONTEXT_H
-#define SHAKADB_STORAGE_TEST_CONTEXT_H
+#ifndef TEST_FRAMEWORK_TEST_CONTEXT_H_
+#define TEST_FRAMEWORK_TEST_CONTEXT_H_
 
 #include <string>
 #include <functional>
@@ -34,14 +34,14 @@ namespace test {
 
 class TestContext {
  public:
-  TestContext(std::string workingDirectory);
-
+  explicit TestContext(std::string workingDirectory);
   std::string GetWorkingDirectory();
+
  private:
   std::string wd;
 };
 
-}
-}
+}  // namespace test
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_TEST_CONTEXT_H
+#endif  // TEST_FRAMEWORK_TEST_CONTEXT_H_

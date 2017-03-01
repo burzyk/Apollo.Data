@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_VALIDATIONEXCEPTION_H
-#define SHAKADB_STORAGE_VALIDATIONEXCEPTION_H
+#ifndef TEST_FRAMEWORK_VALIDATION_EXCEPTION_H_
+#define TEST_FRAMEWORK_VALIDATION_EXCEPTION_H_
 
 #include <exception>
 
@@ -33,14 +33,14 @@ namespace test {
 
 class ValidationException : public std::exception {
  public:
-  ValidationException(const char *message);
-
+  explicit ValidationException(const char *message);
   virtual const char *what() const noexcept;
+
  private:
   const char *message;
 };
 
-}
-}
+}  // namespace test
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_VALIDATIONEXCEPTION_H
+#endif  // TEST_FRAMEWORK_VALIDATION_EXCEPTION_H_

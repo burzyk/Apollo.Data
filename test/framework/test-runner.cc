@@ -23,9 +23,11 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
+#include "test/framework/test-runner.h"
+
 #include <string>
-#include <src/utils/directory.h>
-#include "test-runner.h"
+
+#include "src/utils/directory.h"
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -85,5 +87,5 @@ void TestRunner::PrintSummary() {
   printf("Test run: %d, failed: %d\n", this->tests_success + this->tests_failed, this->tests_failed);
 }
 
-}
-}
+}  // namespace test
+}  // namespace shakadb

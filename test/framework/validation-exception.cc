@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#include "validation-exception.h"
+#include "test/framework/validation-exception.h"
 
 namespace shakadb {
 namespace test {
@@ -35,6 +35,5 @@ const char *ValidationException::what() const noexcept {
   return this->message;
 }
 
-}
-}
-
+}  // namespace test
+}  // namespace shakadb

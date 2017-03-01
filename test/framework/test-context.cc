@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#include "test-context.h"
+#include "test/framework/test-context.h"
 
 namespace shakadb {
 namespace test {
@@ -36,5 +36,5 @@ std::string TestContext::GetWorkingDirectory() {
   return this->wd;
 }
 
-}
-}
+}  // namespace test
+}  // namespace shakadb

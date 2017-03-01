@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_ASSERT_H
-#define SHAKADB_STORAGE_ASSERT_H
+#ifndef TEST_FRAMEWORK_ASSERT_H_
+#define TEST_FRAMEWORK_ASSERT_H_
 
 namespace shakadb {
 namespace test {
@@ -34,7 +34,7 @@ class Assert {
   static void IsTrue(bool condition);
 };
 
-}
-}
+}  // namespace test
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_ASSERT_H
+#endif  // TEST_FRAMEWORK_ASSERT_H_

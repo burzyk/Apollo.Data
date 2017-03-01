@@ -23,30 +23,33 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_TEST_RUNNER_H
-#define SHAKADB_STORAGE_TEST_RUNNER_H
+#ifndef TEST_FRAMEWORK_TEST_RUNNER_H_
+#define TEST_FRAMEWORK_TEST_RUNNER_H_
 
-#include <src/utils/stopwatch.h>
-#include "test-context.h"
+#include <string>
+
+#include "src/utils/stopwatch.h"
+#include "test/framework/test-context.h"
 
 namespace shakadb {
 namespace test {
 
 class TestRunner {
  public:
-  TestRunner(std::string directory);
+  explicit TestRunner(std::string directory);
 
   int RunTest(std::string name, std::function<void(TestContext)> func);
   int RunPerfTest(std::string name, std::function<Stopwatch(TestContext)> func);
 
   void PrintSummary();
+
  private:
   std::string directory;
   int tests_success;
   int tests_failed;
 };
 
-}
-}
+}  // namespace test
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_TESTRUNNER_H
+#endif  // TEST_FRAMEWORK_TEST_RUNNER_H_
