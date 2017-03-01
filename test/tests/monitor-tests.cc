@@ -1,16 +1,16 @@
 /*
  * Copyright (c) 2016 Pawel Burzynski. All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,29 +20,52 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 12/02/2017.
+// Created by Pawel Burzynski on 14/02/2017.
 //
 
-#ifndef TEST_TESTS_RING_BUFFER_TESTS_H_
-#define TEST_TESTS_RING_BUFFER_TESTS_H_
-
-#include "test/framework/test-context.h"
+#include "test/tests/monitor-tests.h"
 
 namespace shakadb {
 namespace test {
 
-class RingBufferTests {
- public:
-  void create_delete_test(TestContext ctx);
-  void empty_read_test(TestContext ctx);
-  void empty_peek_test(TestContext ctx);
-  void simple_write_test(TestContext ctx);
-  void multiple_write_with_peerk_and_read_test(TestContext ctx);
-  void multiple_write_hitting_limit_test(TestContext ctx);
-  void multiple_write_and_read_loop_test(TestContext ctx);
-};
+void MonitorTests::create_delete_test(TestContext ctx) {
+  Monitor *monitor = new Monitor();
+  delete monitor;
+}
+
+void MonitorTests::enter_test(TestContext ctx) {
+  Monitor monitor;
+
+  { auto scope2 = monitor.Enter(); }
+  auto scope1 = monitor.Enter();
+}
+
+void MonitorTests::enter_two_threads_test(TestContext ctx) {
+  Monitor *monitor = new Monitor();
+  std::vector<int> *result = new std::vector<int>();
+
+  Thread worker([monitor, result](void *data) -> void {
+    auto scope = monitor->Enter();
+    scope->Wait();
+    result->push_back(1);
+  }, nullptr);
+
+  worker.Start(nullptr);
+  Thread::Sleep(100);
+  auto scope = monitor->Enter();
+  result->push_back(0);
+  scope->Signal();
+  scope->Exit();
+
+  worker.Join();
+
+  Assert::IsTrue(result->size() == 2);
+  Assert::IsTrue(result->at(0) == 0);
+  Assert::IsTrue(result->at(1) == 1);
+
+  delete result;
+  delete monitor;
+}
 
 }  // namespace test
 }  // namespace shakadb
-
-#endif  // TEST_TESTS_RING_BUFFER_TESTS_H_

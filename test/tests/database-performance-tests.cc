@@ -109,7 +109,9 @@ Stopwatch DatabasePerformanceTests::RandomWrite(TestContext ctx, int batches, in
   sw.Start();
 
   for (int i = 0; i < batches; i++) {
-    int time = rand() % batch_size + 1;
+    unsigned int r;
+    rand_r(&r);
+    int time = r % batch_size + 1;
     Write(db.get(), "usd_gbp", 1, batch_size, (timestamp_t)time);
   }
 

@@ -23,46 +23,22 @@
 // Created by Pawel Burzynski on 29/01/2017.
 //
 
-#ifndef SHAKADB_STORAGE_RW_LOCK_TEST_H
-#define SHAKADB_STORAGE_RW_LOCK_TEST_H
+#ifndef TEST_TESTS_RW_LOCK_TESTS_H_
+#define TEST_TESTS_RW_LOCK_TESTS_H_
 
-#include <src/utils/rw-lock.h>
-#include <memory>
+#include "test/framework/test-context.h"
 
 namespace shakadb {
 namespace test {
 
 class RwLockTests {
  public:
-  void double_read_lock_test(TestContext ctx) {
-    RwLock lock;
-
-    auto s1 = lock.LockRead();
-    auto s2 = lock.LockRead();
-  };
-
-  void upgrade_lock_test(TestContext ctx) {
-    RwLock lock;
-
-    auto s1 = lock.LockRead();
-    s1->UpgradeToWrite();
-  };
-
-  void release_and_lock_again_test(TestContext ctx) {
-    RwLock lock;
-
-    auto s1 = lock.LockRead();
-
-    // Scope
-    {
-      auto s2 = lock.LockRead();
-    }
-
-    s1->UpgradeToWrite();
-  };
+  void double_read_lock_test(TestContext ctx);
+  void upgrade_lock_test(TestContext ctx);
+  void release_and_lock_again_test(TestContext ctx);
 };
 
 }  // namespace test
 }  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_RW_LOCK_TEST_H
+#endif  // TEST_TESTS_RW_LOCK_TESTS_H_
