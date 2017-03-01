@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 03/02/2017.
 //
 
-#include "packet-logger.h"
+#include "src/middleware/packet-logger.h"
 
 namespace shakadb {
 
@@ -36,4 +36,4 @@ void PacketLogger::OnPacketReceived(int client_id, DataPacket *packet) {
   this->log->Debug("Received packet: " + std::to_string(packet->GetType()));
 }
 
-}
+}  // namespace shakadb

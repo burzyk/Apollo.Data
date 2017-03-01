@@ -23,20 +23,20 @@
 // Created by Pawel Burzynski on 13/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_PINGHANDLER_H
-#define SHAKADB_STORAGE_PINGHANDLER_H
+#ifndef SRC_MIDDLEWARE_PING_HANDLER_H_
+#define SRC_MIDDLEWARE_PING_HANDLER_H_
 
-#include <src/server/server.h>
-#include "base-handler.h"
+#include "src/middleware/base-handler.h"
+#include "src/server/server.h"
 
 namespace shakadb {
 
 class PingHandler : public BaseHandler {
  public:
-  PingHandler(Server *server);
+  explicit PingHandler(Server *server);
   void OnPacketReceived(int client_id, DataPacket *packet);
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_PINGHANDLER_H
+#endif  // SRC_MIDDLEWARE_PING_HANDLER_H_

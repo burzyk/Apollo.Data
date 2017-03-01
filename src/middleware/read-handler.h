@@ -23,24 +23,24 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
-#ifndef SHAKADB_READHANDLER_H
-#define SHAKADB_READHANDLER_H
+#ifndef SRC_MIDDLEWARE_READ_HANDLER_H_
+#define SRC_MIDDLEWARE_READ_HANDLER_H_
 
-#include <src/storage/database.h>
-#include "base-handler.h"
+#include "src/middleware/base-handler.h"
+#include "src/storage/database.h"
 
 namespace shakadb {
 
 class ReadHandler : public BaseHandler {
  public:
   ReadHandler(Database *db, Server *server, int points_per_packet);
-
   void OnPacketReceived(int client_id, DataPacket *packet);
+
  private:
   Database *db;
   int points_per_packet;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_READHANDLER_H
+#endif  // SRC_MIDDLEWARE_READ_HANDLER_H_

@@ -23,8 +23,9 @@
 // Created by Pawel Burzynski on 13/02/2017.
 //
 
-#include <src/protocol/ping-packet.h>
-#include "ping-handler.h"
+#include "src/middleware/ping-handler.h"
+
+#include "src/protocol/ping-packet.h"
 
 namespace shakadb {
 
@@ -37,10 +38,10 @@ void PingHandler::OnPacketReceived(int client_id, DataPacket *packet) {
     return;
   }
 
-  PingPacket *request = (PingPacket *)packet;
+  PingPacket *request = static_cast<PingPacket *>(packet);
   PingPacket response(request->GetPingData(), request->GetPingDataSize());
 
   this->GetServer()->SendPacket(client_id, &response);
 }
 
-}
+}  // namespace shakadb

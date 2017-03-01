@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
-#include "base-handler.h"
+#include "src/middleware/base-handler.h"
 
 namespace shakadb {
 
@@ -44,4 +44,4 @@ Server *BaseHandler::GetServer() {
   return this->server;
 }
 
-}
+}  // namespace shakadb

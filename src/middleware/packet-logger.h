@@ -23,24 +23,24 @@
 // Created by Pawel Burzynski on 03/02/2017.
 //
 
-#ifndef SHAKADB_STORAGE_PACKETLOGGER_H
-#define SHAKADB_STORAGE_PACKETLOGGER_H
+#ifndef SRC_MIDDLEWARE_PACKET_LOGGER_H_
+#define SRC_MIDDLEWARE_PACKET_LOGGER_H_
 
-#include <src/log.h>
-#include <src/server/server.h>
-#include "base-handler.h"
+#include "src/middleware/base-handler.h"
+#include "src/log.h"
+#include "src/server/server.h"
 
 namespace shakadb {
 
 class PacketLogger : public BaseHandler {
  public:
   PacketLogger(Server *server, Log *log);
-
   void OnPacketReceived(int client_id, DataPacket *packet);
+
  private:
   Log *log;
 };
 
-}
+}  // namespace shakadb
 
-#endif //SHAKADB_STORAGE_PACKETLOGGER_H
+#endif  // SRC_MIDDLEWARE_PACKET_LOGGER_H_

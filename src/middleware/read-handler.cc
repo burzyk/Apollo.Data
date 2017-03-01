@@ -23,11 +23,13 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
-#include <src/protocol/read-request.h>
-#include <src/protocol/read-response.h>
-#include <src/utils/common.h>
-#include <src/utils/allocator.h>
-#include "read-handler.h"
+#include "src/middleware/read-handler.h"
+
+#include <memory>
+
+#include "src/protocol/read-request.h"
+#include "src/protocol/read-response.h"
+#include "src/utils/allocator.h"
 
 namespace shakadb {
 
@@ -42,7 +44,7 @@ void ReadHandler::OnPacketReceived(int client_id, DataPacket *packet) {
     return;
   }
 
-  ReadRequest *request = (ReadRequest *)packet;
+  ReadRequest *request = static_cast<ReadRequest *>(packet);
   timestamp_t begin = request->GetBegin();
 
   while (true) {
@@ -62,4 +64,4 @@ void ReadHandler::OnPacketReceived(int client_id, DataPacket *packet) {
   }
 }
 
-}
+}  // namespace shakadb
