@@ -190,5 +190,42 @@ void DatabaseBasicTests::database_read_with_limit(TestContext ctx) {
   ValidateRead(db.get(), "usd_gbp", 100, 0, 200, 200);
 }
 
+void DatabaseBasicTests::database_truncate(TestContext ctx) {
+  auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
+
+  Write(db.get(), "usd_gbp", 1, 100);
+  ValidateRead(db.get(), "usd_gbp", 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+
+  db->Truncate("usd_gbp");
+
+  ValidateRead(db.get(), "usd_gbp", 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+}
+
+void DatabaseBasicTests::database_truncate_multiple(TestContext ctx) {
+  auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
+
+  Write(db.get(), "usd_gbp", 100, 1);
+  ValidateRead(db.get(), "usd_gbp", 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+
+  db->Truncate("usd_gbp");
+  db->Truncate("USD_PLN");
+  db->Truncate("usd_gbp");
+
+  ValidateRead(db.get(), "usd_gbp", 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+}
+
+void DatabaseBasicTests::database_truncate_write_again(TestContext ctx) {
+  auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
+
+  Write(db.get(), "usd_gbp", 100, 1);
+  ValidateRead(db.get(), "usd_gbp", 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+
+  db->Truncate("usd_gbp");
+
+  ValidateRead(db.get(), "usd_gbp", 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), "usd_gbp", 100, 1);
+  ValidateRead(db.get(), "usd_gbp", 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+}
+
 }  // namespace test
 }  // namespace shakadb

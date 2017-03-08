@@ -50,6 +50,9 @@ class DatabaseBasicTests : public BaseDatabaseTests {
   void database_read_chunk_edges(TestContext ctx);
   void database_read_duplicated_values(TestContext ctx);
   void database_read_with_limit(TestContext ctx);
+  void database_truncate(TestContext ctx);
+  void database_truncate_multiple(TestContext ctx);
+  void database_truncate_write_again(TestContext ctx);
 };
 
 }  // namespace test

@@ -37,7 +37,7 @@
 #include "test/tests/end-to-end.h"
 
 #define RUN_TESTS
-#define RUN_PERF_TESTS
+//#define RUN_PERF_TESTS
 
 #ifdef RUN_TESTS
 #define TEST(clazz, test_case) result |= runner.RunTest(\
@@ -81,12 +81,15 @@ int main() {
   TEST(database_basic, database_read_chunk_edges);
   TEST(database_basic, database_read_duplicated_values);
   TEST(database_basic, database_read_with_limit);
+  TEST(database_basic, database_truncate);
+  TEST(database_basic, database_truncate_multiple);
+  TEST(database_basic, database_truncate_write_again);
 
-//  auto end_to_end = shakadb::test::EndToEnd();
-//  TEST(end_to_end, empty_read);
-//  TEST(end_to_end, write_multiple);
-//  TEST(end_to_end, write_small);
-//  TEST(end_to_end, write_stop_read);
+  auto end_to_end = shakadb::test::EndToEnd();
+  TEST(end_to_end, empty_read);
+  TEST(end_to_end, write_multiple);
+  TEST(end_to_end, write_small);
+  TEST(end_to_end, write_stop_read);
 
   auto ring_buffer = shakadb::test::RingBufferTests();
   TEST(ring_buffer, create_delete_test);
