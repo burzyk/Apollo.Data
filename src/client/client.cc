@@ -28,7 +28,6 @@
 #include <string>
 
 #include "src/client/session.h"
-#include "client.h"
 
 extern "C" {
 
