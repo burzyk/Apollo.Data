@@ -28,6 +28,7 @@
 #include <string>
 
 #include "src/client/session.h"
+#include "client.h"
 
 extern "C" {
 
@@ -72,8 +73,11 @@ shakadb_result_t shakadb_read_points(shakadb_session_t *session,
 int shakadb_read_points_iterator_next(shakadb_read_points_iterator_t *iterator) {
   shakadb::ReadPointsIterator *i = (shakadb::ReadPointsIterator *)iterator->_iterator;
 
+  if (iterator->_iterator == nullptr) {
+    return 0;
+  }
+
   if (!i->MoveNext()) {
-    delete i;
     iterator->_iterator = nullptr;
     iterator->points = nullptr;
     iterator->points_count = -1;
