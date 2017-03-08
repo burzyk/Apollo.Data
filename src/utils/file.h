@@ -40,6 +40,8 @@ class File {
   void Flush();
   void Seek(off_t offset, int origin);
   size_t GetSize();
+  void Truncate(uint64_t new_size);
+
  private:
   FILE *f;
 };

@@ -43,6 +43,7 @@ class DataSeries {
 
   DataPointsReader *Read(timestamp_t begin, timestamp_t end, int max_points);
   void Write(data_point_t *points, int count);
+  void Truncate();
 
  private:
   DataSeries(std::string file_name, int points_per_chunk, Log *log);

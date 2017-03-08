@@ -37,6 +37,7 @@ class Database {
   virtual ~Database() {}
   virtual DataPointsReader *Read(std::string name, timestamp_t begin, timestamp_t end, int max_points) = 0;
   virtual void Write(std::string name, data_point_t *points, int count) = 0;
+  virtual void Truncate(std::string name) = 0;
 };
 
 }  // namespace shakadb

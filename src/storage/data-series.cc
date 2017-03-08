@@ -104,6 +104,19 @@ void DataSeries::Write(data_point_t *points, int count) {
   }
 }
 
+void DataSeries::Truncate() {
+  auto lock_scope = this->series_lock.LockWrite();
+
+  for (auto chunk : this->chunks) {
+    delete chunk;
+  }
+
+  this->chunks.clear();
+
+  File f(this->file_name);
+  f.Truncate(0);
+}
+
 DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_points) {
   auto lock_scope = this->series_lock.LockRead();
   std::list<DataChunk *> filtered_chunks;
@@ -252,4 +265,3 @@ DataChunk *DataSeries::CreateEmptyChunk() {
 }
 
 }  // namespace shakadb
-

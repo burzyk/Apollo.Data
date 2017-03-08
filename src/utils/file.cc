@@ -25,6 +25,8 @@
 
 #include "src/utils/file.h"
 
+#include <unistd.h>
+
 #include "src/fatal-exception.h"
 #include "src/log.h"
 
@@ -76,6 +78,12 @@ size_t File::GetSize() {
 
 void File::Flush() {
   fflush(this->f);
+}
+
+void File::Truncate(uint64_t new_size) {
+  if (ftruncate(fileno(this->f), new_size)) {
+    throw FatalException("Unable to truncate the file");
+  }
 }
 
 }  // namespace shakadb
