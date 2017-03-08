@@ -20,52 +20,41 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 01/02/2017.
+// Created by Pawel Burzynski on 08/03/2017.
 //
 
-#ifndef SRC_PROTOCOL_DATA_PACKET_H_
-#define SRC_PROTOCOL_DATA_PACKET_H_
+#ifndef SRC_PROTOCOL_TRUNCATE_REQUEST_H_
+#define SRC_PROTOCOL_TRUNCATE_REQUEST_H_
 
-#include <cstdint>
+#include <string>
 #include <vector>
-#include <memory>
 
-#include "src/utils/ring-buffer.h"
-#include "src/utils/buffer.h"
+#include "src/data-point.h"
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
-enum PacketType {
-  kPing = 1,
-  kSimpleResponse = 2,
-  kWriteRequest = 3,
-  kReadRequest = 4,
-  kReadResponse = 5,
-  kTruncateRequest = 6
-};
-
-struct data_packet_header_t {
-  PacketType type;
-  uint32_t packet_length;
-};
-
-class DataPacket {
+class TruncateRequest : public DataPacket {
  public:
-  DataPacket();
-  virtual ~DataPacket();
-  static DataPacket *Load(Stream *stream);
+  TruncateRequest();
+  explicit TruncateRequest(std::string series_name);
 
-  virtual PacketType GetType() = 0;
-  std::vector<Buffer *> GetFragments();
+  PacketType GetType();
+  std::string GetSeriesName();
 
  protected:
-  virtual bool Deserialize(Buffer *payload) = 0;
-  virtual std::vector<Buffer *> Serialize() = 0;
+  bool Deserialize(Buffer *payload);
+  std::vector<Buffer *> Serialize();
 
  private:
-  std::vector<Buffer *> fragments;
+  struct truncate_request_t {
+    char series_name[SHAKADB_SERIES_NAME_MAX_LENGTH + 1];
+  };
+
+  std::string series_name;
 };
 
 }  // namespace shakadb
 
-#endif  // SRC_PROTOCOL_DATA_PACKET_H_
+#endif  // SRC_PROTOCOL_TRUNCATE_REQUEST_H_
+

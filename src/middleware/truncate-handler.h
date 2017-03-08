@@ -20,52 +20,30 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 01/02/2017.
+// Created by Pawel Burzynski on 15/02/2017.
 //
 
-#ifndef SRC_PROTOCOL_DATA_PACKET_H_
-#define SRC_PROTOCOL_DATA_PACKET_H_
+#ifndef SRC_MIDDLEWARE_TRUNCATE_HANDLER_H_
+#define SRC_MIDDLEWARE_TRUNCATE_HANDLER_H_
 
-#include <cstdint>
-#include <vector>
-#include <memory>
+#include <map>
 
-#include "src/utils/ring-buffer.h"
-#include "src/utils/buffer.h"
+#include "src/server/server.h"
+#include "src/storage/database.h"
+#include "src/utils/monitor.h"
+#include "src/middleware/base-handler.h"
 
 namespace shakadb {
 
-enum PacketType {
-  kPing = 1,
-  kSimpleResponse = 2,
-  kWriteRequest = 3,
-  kReadRequest = 4,
-  kReadResponse = 5,
-  kTruncateRequest = 6
-};
-
-struct data_packet_header_t {
-  PacketType type;
-  uint32_t packet_length;
-};
-
-class DataPacket {
+class TruncateHandler : public BaseHandler {
  public:
-  DataPacket();
-  virtual ~DataPacket();
-  static DataPacket *Load(Stream *stream);
-
-  virtual PacketType GetType() = 0;
-  std::vector<Buffer *> GetFragments();
-
- protected:
-  virtual bool Deserialize(Buffer *payload) = 0;
-  virtual std::vector<Buffer *> Serialize() = 0;
+  TruncateHandler(Database *db, Server *server);
+  void OnPacketReceived(int client_id, DataPacket *packet);
 
  private:
-  std::vector<Buffer *> fragments;
+  Database *db;
 };
 
 }  // namespace shakadb
 
-#endif  // SRC_PROTOCOL_DATA_PACKET_H_
+#endif  // SRC_MIDDLEWARE_TRUNCATE_HANDLER_H_

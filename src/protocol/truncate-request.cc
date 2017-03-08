@@ -20,52 +20,49 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 01/02/2017.
+// Created by Pawel Burzynski on 08/03/2017.
 //
 
-#ifndef SRC_PROTOCOL_DATA_PACKET_H_
-#define SRC_PROTOCOL_DATA_PACKET_H_
+#include "src/protocol/truncate-request.h"
 
-#include <cstdint>
-#include <vector>
-#include <memory>
-
-#include "src/utils/ring-buffer.h"
-#include "src/utils/buffer.h"
+#include "src/utils/memory-buffer.h"
 
 namespace shakadb {
 
-enum PacketType {
-  kPing = 1,
-  kSimpleResponse = 2,
-  kWriteRequest = 3,
-  kReadRequest = 4,
-  kReadResponse = 5,
-  kTruncateRequest = 6
-};
+TruncateRequest::TruncateRequest() : TruncateRequest("") {
+}
 
-struct data_packet_header_t {
-  PacketType type;
-  uint32_t packet_length;
-};
+TruncateRequest::TruncateRequest(std::string series_name) {
+  this->series_name = series_name;
+}
 
-class DataPacket {
- public:
-  DataPacket();
-  virtual ~DataPacket();
-  static DataPacket *Load(Stream *stream);
+PacketType TruncateRequest::GetType() {
+  return kTruncateRequest;
+}
 
-  virtual PacketType GetType() = 0;
-  std::vector<Buffer *> GetFragments();
+std::string TruncateRequest::GetSeriesName() {
+  return this->series_name;
+}
 
- protected:
-  virtual bool Deserialize(Buffer *payload) = 0;
-  virtual std::vector<Buffer *> Serialize() = 0;
+bool TruncateRequest::Deserialize(Buffer *payload) {
+  if (payload->GetSize() != sizeof(truncate_request_t)) {
+    return false;
+  }
 
- private:
-  std::vector<Buffer *> fragments;
-};
+  truncate_request_t *request = reinterpret_cast<truncate_request_t *>(payload->GetBuffer());
+
+  this->series_name = std::string(request->series_name);
+
+  return true;
+}
+
+std::vector<Buffer *> TruncateRequest::Serialize() {
+  MemoryBuffer *buffer = new MemoryBuffer(sizeof(truncate_request_t));
+  truncate_request_t *request = reinterpret_cast<truncate_request_t *>(buffer->GetBuffer());
+
+  memcpy(request->series_name, this->series_name.c_str(), this->series_name.size());
+
+  return std::vector<Buffer *> {buffer};
+}
 
 }  // namespace shakadb
-
-#endif  // SRC_PROTOCOL_DATA_PACKET_H_

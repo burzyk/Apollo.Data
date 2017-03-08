@@ -20,52 +20,22 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 01/02/2017.
+// Created by Pawel Burzynski on 08/03/2017.
 //
 
-#ifndef SRC_PROTOCOL_DATA_PACKET_H_
-#define SRC_PROTOCOL_DATA_PACKET_H_
+#include "src/middleware/truncate-handler.h"
 
-#include <cstdint>
-#include <vector>
-#include <memory>
-
-#include "src/utils/ring-buffer.h"
-#include "src/utils/buffer.h"
+#include "src/fatal-exception.h"
 
 namespace shakadb {
 
-enum PacketType {
-  kPing = 1,
-  kSimpleResponse = 2,
-  kWriteRequest = 3,
-  kReadRequest = 4,
-  kReadResponse = 5,
-  kTruncateRequest = 6
-};
+TruncateHandler::TruncateHandler(Database *db, Server *server)
+    : BaseHandler(server) {
+  this->db = db;
+}
 
-struct data_packet_header_t {
-  PacketType type;
-  uint32_t packet_length;
-};
-
-class DataPacket {
- public:
-  DataPacket();
-  virtual ~DataPacket();
-  static DataPacket *Load(Stream *stream);
-
-  virtual PacketType GetType() = 0;
-  std::vector<Buffer *> GetFragments();
-
- protected:
-  virtual bool Deserialize(Buffer *payload) = 0;
-  virtual std::vector<Buffer *> Serialize() = 0;
-
- private:
-  std::vector<Buffer *> fragments;
-};
+void TruncateHandler::OnPacketReceived(int client_id, DataPacket *packet) {
+  throw FatalException("Not Implemented");
+}
 
 }  // namespace shakadb
-
-#endif  // SRC_PROTOCOL_DATA_PACKET_H_

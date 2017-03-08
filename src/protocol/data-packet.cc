@@ -36,6 +36,7 @@
 #include "src/protocol/read-request.h"
 #include "src/protocol/read-response.h"
 #include "src/protocol/simple-response.h"
+#include "src/protocol/truncate-request.h"
 
 namespace shakadb {
 
@@ -81,6 +82,8 @@ DataPacket *DataPacket::Load(Stream *stream) {
     case kReadRequest: result = new ReadRequest();
       break;
     case kReadResponse: result = new ReadResponse();
+      break;
+    case kTruncateRequest: result = new TruncateRequest();
       break;
     default: result = nullptr;
   }
