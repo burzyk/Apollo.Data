@@ -37,8 +37,8 @@ namespace shakadb {
 
 enum PacketType {
   kPing = 1,
-  kWriteRequest = 2,
-  kWriteResponse = 3,
+  kSimpleResponse = 2,
+  kWriteRequest = 3,
   kReadRequest = 4,
   kReadResponse = 5
 };

@@ -35,7 +35,7 @@
 #include "src/protocol/write-request.h"
 #include "src/protocol/read-request.h"
 #include "src/protocol/read-response.h"
-#include "src/protocol/write-response.h"
+#include "src/protocol/simple-response.h"
 
 namespace shakadb {
 
@@ -76,7 +76,7 @@ DataPacket *DataPacket::Load(Stream *stream) {
       break;
     case kWriteRequest: result = new WriteRequest();
       break;
-    case kWriteResponse: result = new WriteResponse();
+    case kSimpleResponse: result = new SimpleResponse();
       break;
     case kReadRequest: result = new ReadRequest();
       break;

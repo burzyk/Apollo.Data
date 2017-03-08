@@ -23,46 +23,40 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#include "src/protocol/write-response.h"
+#ifndef SRC_PROTOCOL_SIMPLE_RESPONSE_H_
+#define SRC_PROTOCOL_SIMPLE_RESPONSE_H_
 
-#include "src/utils/memory-buffer.h"
+#include <vector>
+
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
-WriteResponse::WriteResponse() {
-}
+enum ResponseStatus {
+  kOk = 1,
+  kError = 2
+};
 
-WriteResponse::WriteResponse(WriteStatus status) {
-  this->status = status;
-}
+class SimpleResponse : public DataPacket {
+ public:
+  SimpleResponse();
+  explicit SimpleResponse(ResponseStatus status);
 
-PacketType WriteResponse::GetType() {
-  return kWriteResponse;
-}
+  PacketType GetType();
+  ResponseStatus GetStatus();
 
-WriteStatus WriteResponse::GetStatus() {
-  return this->status;
-}
+ protected:
+  bool Deserialize(Buffer *payload);
+  std::vector<Buffer *> Serialize();
 
-bool WriteResponse::Deserialize(Buffer *payload) {
-  if (payload->GetSize() != sizeof(write_response_t)) {
-    return false;
-  }
+ private:
+  struct simple_response_t {
+    ResponseStatus status;
+  };
 
-  write_response_t *response = reinterpret_cast<write_response_t *>(payload->GetBuffer());
-
-  this->status = response->status;
-
-  return true;
-}
-
-std::vector<Buffer *> WriteResponse::Serialize() {
-  MemoryBuffer *buffer = new MemoryBuffer(sizeof(write_response_t));
-  write_response_t *response = reinterpret_cast<write_response_t *>(buffer->GetBuffer());
-
-  response->status = this->status;
-
-  return std::vector<Buffer *> {buffer};
-}
+  ResponseStatus status;
+};
 
 }  // namespace shakadb
+
+#endif  // SRC_PROTOCOL_SIMPLE_RESPONSE_H_

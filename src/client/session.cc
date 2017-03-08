@@ -38,7 +38,7 @@
 #include "src/protocol/ping-packet.h"
 #include "src/protocol/write-request.h"
 #include "src/protocol/read-request.h"
-#include "src/protocol/write-response.h"
+#include "src/protocol/simple-response.h"
 #include "src/client/read-points-iterator.h"
 
 namespace shakadb {
@@ -109,12 +109,12 @@ bool Session::WritePoints(std::string series_name, data_point_t *points, int cou
     return false;
   }
 
-  if (packet->GetType() != kWriteResponse) {
+  if (packet->GetType() != kSimpleResponse) {
     delete packet;
     return false;
   }
 
-  WriteResponse *response = static_cast<WriteResponse *>(packet);
+  SimpleResponse *response = static_cast<SimpleResponse *>(packet);
   bool result = response->GetStatus() == kOk;
   delete response;
 
