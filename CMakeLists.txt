@@ -33,3 +33,7 @@ set_target_properties(shakadbc PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(shakadb.client PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(shakadb.server PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(shakadb.test PROPERTIES LINKER_LANGUAGE CXX)
+
+install(TARGETS shakadbc DESTINATION lib)
+install(TARGETS shakadb.server DESTINATION bin)
+install(FILES src/client/client.h DESTINATION include/shakadb)
