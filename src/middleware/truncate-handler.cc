@@ -25,6 +25,8 @@
 
 #include "src/middleware/truncate-handler.h"
 
+#include "src/protocol/truncate-request.h"
+#include "src/protocol/simple-response.h"
 #include "src/fatal-exception.h"
 
 namespace shakadb {
@@ -35,7 +37,15 @@ TruncateHandler::TruncateHandler(Database *db, Server *server)
 }
 
 void TruncateHandler::OnPacketReceived(int client_id, DataPacket *packet) {
-  throw FatalException("Not Implemented");
+  if (packet->GetType() != kTruncateRequest) {
+    return;
+  }
+
+  TruncateRequest *request = static_cast<TruncateRequest *>(packet);
+  this->db->Truncate(request->GetSeriesName());
+
+  SimpleResponse response(kOk);
+  this->GetServer()->SendPacket(client_id, &response);
 }
 
 }  // namespace shakadb

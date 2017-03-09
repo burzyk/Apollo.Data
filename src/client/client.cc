@@ -48,6 +48,12 @@ shakadb_result_t shakadb_ping(shakadb_session_t *session) {
   return s->Ping() ? SHAKADB_RESULT_OK : SHAKADB_RESULT_ERROR;
 }
 
+shakadb_result_t shakadb_truncate(shakadb_session_t *session, const char *series_name) {
+  shakadb::Session *s = (shakadb::Session *)session->_session;
+  bool result = s->Truncate(std::string(series_name));
+  return result ? SHAKADB_RESULT_OK : SHAKADB_RESULT_ERROR;
+}
+
 shakadb_result_t shakadb_write_points(shakadb_session_t *session,
                                       const char *series_name,
                                       shakadb_data_point_t *points,

@@ -59,6 +59,7 @@ typedef struct {
 shakadb_result_t shakadb_open_session(shakadb_session_t *session, const char *server, int port);
 shakadb_result_t shakadb_destroy_session(shakadb_session_t *session);
 shakadb_result_t shakadb_ping(shakadb_session_t *session);
+shakadb_result_t shakadb_truncate(shakadb_session_t *session, const char *series_name);
 shakadb_result_t shakadb_write_points(shakadb_session_t *session,
                                       const char *series_name,
                                       shakadb_data_point_t *points,

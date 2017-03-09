@@ -34,6 +34,7 @@
 #include <cstdlib>
 #include <memory>
 
+#include "src/protocol/truncate-request.h"
 #include "src/utils/allocator.h"
 #include "src/protocol/ping-packet.h"
 #include "src/protocol/write-request.h"
@@ -129,6 +130,31 @@ ReadPointsIterator *Session::ReadPoints(std::string series_name, timestamp_t beg
   }
 
   return new ReadPointsIterator(&this->sock);
+}
+
+bool Session::Truncate(std::string series_name) {
+  TruncateRequest request(series_name);
+
+  if (!this->SendPacket(&request)) {
+    return false;
+  }
+
+  DataPacket *packet = this->ReadPacket();
+
+  if (packet == nullptr) {
+    return false;
+  }
+
+  if (packet->GetType() != kSimpleResponse) {
+    delete packet;
+    return false;
+  }
+
+  SimpleResponse *response = static_cast<SimpleResponse *>(packet);
+  bool result = response->GetStatus() == kOk;
+  delete response;
+
+  return result;
 }
 
 bool Session::SendPacket(DataPacket *packet) {

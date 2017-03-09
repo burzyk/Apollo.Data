@@ -45,6 +45,7 @@ class Session {
   bool Ping();
   bool WritePoints(std::string series_name, data_point_t *points, int count);
   ReadPointsIterator *ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end);
+  bool Truncate(std::string series_name);
 
  private:
   explicit Session(int sock);
