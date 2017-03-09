@@ -48,6 +48,7 @@ Bootstrapper::Bootstrapper(Configuration *config) {
       config->GetDbPointsPerChunk());
   this->write_handler = new WriteHandler(this->db, this->server);
   this->read_handler = new ReadHandler(this->db, this->server, 65536);
+  this->truncate_handler = new TruncateHandler(this->db, this->server);
 
   this->master_thread = new Thread(
       [this](void *) -> void { this->MainRoutine(); },
@@ -61,6 +62,7 @@ Bootstrapper::~Bootstrapper() {
   delete this->server_thread;
   delete this->master_thread;
 
+  delete this->truncate_handler;
   delete this->read_handler;
   delete this->write_handler;
   delete this->db;
@@ -108,6 +110,7 @@ void Bootstrapper::ServerRoutine() {
   this->server->AddServerListener(this->ping_handler);
   this->server->AddServerListener(this->write_handler);
   this->server->AddServerListener(this->read_handler);
+  this->server->AddServerListener(this->truncate_handler);
 
   this->server->Listen();
 }

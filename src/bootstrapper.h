@@ -29,6 +29,7 @@
 #include <memory>
 #include <string>
 
+#include "src/middleware/truncate-handler.h"
 #include "src/server/server.h"
 #include "src/middleware/ping-handler.h"
 #include "src/middleware/packet-logger.h"
@@ -60,6 +61,7 @@ class Bootstrapper {
   PingHandler *ping_handler;
   PacketLogger *packet_logger;
   WriteHandler *write_handler;
+  TruncateHandler *truncate_handler;
   ReadHandler *read_handler;
   Database *db;
 };
