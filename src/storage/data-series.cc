@@ -43,11 +43,7 @@ DataSeries::DataSeries(std::string file_name, int points_per_chunk, Log *log) {
 }
 
 DataSeries::~DataSeries() {
-  for (auto chunk : this->chunks) {
-    delete chunk;
-  }
-
-  this->chunks.clear();
+  this->DeleteChunks();
 }
 
 DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *log) {
@@ -107,11 +103,7 @@ void DataSeries::Write(data_point_t *points, int count) {
 void DataSeries::Truncate() {
   auto lock_scope = this->series_lock.LockWrite();
 
-  for (auto chunk : this->chunks) {
-    delete chunk;
-  }
-
-  this->chunks.clear();
+  this->DeleteChunks();
 
   File f(this->file_name);
   f.Truncate(0);
@@ -262,6 +254,14 @@ DataChunk *DataSeries::CreateEmptyChunk() {
       this->file_name,
       DataChunk::CalculateChunkSize(this->points_per_chunk) * this->chunks.size(),
       this->points_per_chunk);
+}
+
+void DataSeries::DeleteChunks() {
+  for (auto chunk : this->chunks) {
+    delete chunk;
+  }
+
+  this->chunks.clear();
 }
 
 }  // namespace shakadb

@@ -51,6 +51,7 @@ class DataSeries {
   void WriteChunk(DataChunk *chunk, data_point_t *points, int count);
   void ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points, int count);
   DataChunk *CreateEmptyChunk();
+  void DeleteChunks();
 
   Log *log;
   std::string file_name;
