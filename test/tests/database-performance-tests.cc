@@ -117,11 +117,7 @@ Stopwatch DatabasePerformanceTests::RandomWrite(TestContext ctx, int batches, in
 
   sw.Stop();
 
-  ValidateRead(db.get(),
-               "usd_gbp",
-               batch_size * batches,
-               data_point_t::kMinTimestamp,
-               data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), "usd_gbp", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   return sw;
 }

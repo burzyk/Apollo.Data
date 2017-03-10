@@ -191,7 +191,7 @@ void DataSeries::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
     return;
   }
 
-  if (chunk->GetEnd() <= points[0].time) {
+  if (chunk->GetEnd() < points[0].time) {
     this->ChunkMemcpy(chunk, chunk->GetNumberOfPoints(), points, count);
   } else {
     int buffer_count = count + chunk->GetNumberOfPoints();
@@ -199,20 +199,25 @@ void DataSeries::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
     data_point_t *content = chunk->Read();
     int points_pos = count - 1;
     int content_pos = chunk->GetNumberOfPoints() - 1;
+    int duplicated_count = 0;
 
-    for (int i = buffer_count - 1; i >= 0; i--) {
+    for (int i = buffer_count - 1; i >= duplicated_count; i--) {
       if (points_pos < 0) {
         buffer[i] = content[content_pos--];
       } else if (content_pos < 0) {
         buffer[i] = points[points_pos--];
       } else if (points[points_pos].time < content[content_pos].time) {
         buffer[i] = content[content_pos--];
+      } else if (points[points_pos].time == content[content_pos].time) {
+        buffer[i] = points[points_pos--];
+        content_pos--;
+        duplicated_count++;
       } else {
         buffer[i] = points[points_pos--];
       }
     }
 
-    this->ChunkMemcpy(chunk, 0, buffer, buffer_count);
+    this->ChunkMemcpy(chunk, 0, buffer + duplicated_count, buffer_count - duplicated_count);
     Allocator::Delete(buffer);
   }
 }

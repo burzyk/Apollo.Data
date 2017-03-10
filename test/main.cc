@@ -37,7 +37,7 @@
 #include "test/tests/end-to-end.h"
 
 #define RUN_TESTS
-//#define RUN_PERF_TESTS
+#define RUN_PERF_TESTS
 
 #ifdef RUN_TESTS
 #define TEST(clazz, test_case) result |= runner.RunTest(\
@@ -75,6 +75,7 @@ int main() {
   TEST(database_basic, database_continuous_write_with_pickup);
   TEST(database_basic, database_write_batch_size_equal_to_page_capacity);
   TEST(database_basic, database_write_batch_size_greater_than_page_capacity);
+  TEST(database_basic, database_write_replace);
   TEST(database_basic, database_read_inside_single_chunk);
   TEST(database_basic, database_read_span_two_chunks);
   TEST(database_basic, database_read_span_three_chunks);
@@ -85,11 +86,11 @@ int main() {
   TEST(database_basic, database_truncate_multiple);
   TEST(database_basic, database_truncate_write_again);
 
-  auto end_to_end = shakadb::test::EndToEnd();
-  TEST(end_to_end, empty_read);
-  TEST(end_to_end, write_multiple);
-  TEST(end_to_end, write_small);
-  TEST(end_to_end, write_stop_read);
+//  auto end_to_end = shakadb::test::EndToEnd();
+//  TEST(end_to_end, empty_read);
+//  TEST(end_to_end, write_multiple);
+//  TEST(end_to_end, write_small);
+//  TEST(end_to_end, write_stop_read);
 
   auto ring_buffer = shakadb::test::RingBufferTests();
   TEST(ring_buffer, create_delete_test);

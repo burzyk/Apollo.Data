@@ -27,6 +27,7 @@
 
 #include <memory>
 #include <list>
+#include <vector>
 
 #include "src/utils/thread.h"
 #include "src/utils/stopwatch.h"
@@ -75,7 +76,7 @@ void DatabaseConcurrencyTests::ConcurrentAccessReader(Database *db, volatile boo
 
 Stopwatch DatabaseConcurrencyTests::ConcurrentAccess(TestContext ctx, int readers_count, int batches, int batch_size) {
   Database *db = this->CreateDatabase(10000, 100, ctx);
-  std::list<Thread *> readers;
+  std::vector<Thread *> readers;
   Stopwatch sw;
   bool should_terminate = false;
   bool *p_should_terminate = &should_terminate;
@@ -84,12 +85,14 @@ Stopwatch DatabaseConcurrencyTests::ConcurrentAccess(TestContext ctx, int reader
     readers.push_back(new Thread(
         [db, p_should_terminate](void *data) -> void { ConcurrentAccessReader(db, p_should_terminate); },
         this->GetLog()));
+    readers[i]->Start(nullptr);
   }
 
   sw.Start();
   Thread writer(
       [db, batches, batch_size](void *data) -> void { ConcurrentAccessWriter(db, batches, batch_size); },
       this->GetLog());
+  writer.Start(nullptr);
   writer.Join();
   sw.Stop();
 

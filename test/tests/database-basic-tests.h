@@ -44,6 +44,7 @@ class DatabaseBasicTests : public BaseDatabaseTests {
   void database_continuous_write_with_pickup(TestContext ctx);
   void database_write_batch_size_equal_to_page_capacity(TestContext ctx);
   void database_write_batch_size_greater_than_page_capacity(TestContext ctx);
+  void database_write_replace(TestContext ctx);
   void database_read_inside_single_chunk(TestContext ctx);
   void database_read_span_two_chunks(TestContext ctx);
   void database_read_span_three_chunks(TestContext ctx);

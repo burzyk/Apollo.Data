@@ -26,6 +26,7 @@
 #include "test/tests/database-basic-tests.h"
 
 #include <memory>
+#include <test/framework/validation-exception.h>
 
 namespace shakadb {
 namespace test {
@@ -59,11 +60,11 @@ void DatabaseBasicTests::write_database_in_multiple_small_batches(TestContext ct
 void DatabaseBasicTests::database_multi_write_and_read_all(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3);
-  Write(db.get(), "usd_gbp", 5, 3);
-  Write(db.get(), "usd_gbp", 5, 3);
-  Write(db.get(), "usd_gbp", 5, 3);
-  ValidateRead(db.get(), "usd_gbp", 60, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), "usd_gbp", 100, 3);
+  Write(db.get(), "usd_gbp", 100, 3);
+  Write(db.get(), "usd_gbp", 100, 3);
+  Write(db.get(), "usd_gbp", 100, 3);
+  ValidateRead(db.get(), "usd_gbp", 300, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_write_history(TestContext ctx) {
@@ -85,13 +86,13 @@ void DatabaseBasicTests::database_write_close_and_write_more(TestContext ctx) {
   db.reset();
   db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3);
+  Write(db.get(), "usd_gbp", 5, 3, 100);
   ValidateRead(db.get(), "usd_gbp", 30, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   db.reset();
   db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3);
+  Write(db.get(), "usd_gbp", 5, 3, 1000);
   ValidateRead(db.get(), "usd_gbp", 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
@@ -130,7 +131,7 @@ void DatabaseBasicTests::database_write_batch_size_equal_to_page_capacity(TestCo
   Write(db.get(), "usd_gbp", 5, 5);
   Write(db.get(), "usd_gbp", 5, 5);
   Write(db.get(), "usd_gbp", 5, 5);
-  ValidateRead(db.get(), "usd_gbp", 150, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), "usd_gbp", 25, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_write_batch_size_greater_than_page_capacity(TestContext ctx) {
@@ -138,7 +139,11 @@ void DatabaseBasicTests::database_write_batch_size_greater_than_page_capacity(Te
 
   Write(db.get(), "usd_gbp", 100, 7);
   Write(db.get(), "usd_gbp", 100, 7);
-  ValidateRead(db.get(), "usd_gbp", 1400, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), "usd_gbp", 700, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+}
+
+void DatabaseBasicTests::database_write_replace(TestContext ctx) {
+  throw ValidationException("Not implemented");
 }
 
 void DatabaseBasicTests::database_read_inside_single_chunk(TestContext ctx) {
@@ -177,8 +182,8 @@ void DatabaseBasicTests::database_read_duplicated_values(TestContext ctx) {
   Write(db.get(), "usd_gbp", 1, 2);
   Write(db.get(), "usd_gbp", 1, 2);
   Write(db.get(), "usd_gbp", 1, 2);
-  ValidateRead(db.get(), "usd_gbp", 5, 0, 2);
-  ValidateRead(db.get(), "usd_gbp", 5, 2, 3);
+  ValidateRead(db.get(), "usd_gbp", 2, 0, 3);
+  ValidateRead(db.get(), "usd_gbp", 1, 2, 3);
 }
 
 void DatabaseBasicTests::database_read_with_limit(TestContext ctx) {
