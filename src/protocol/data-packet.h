@@ -30,18 +30,16 @@
 #include <vector>
 #include <memory>
 
-#include "src/utils/ring-buffer.h"
+#include "src/utils/stream.h"
 #include "src/utils/buffer.h"
 
 namespace shakadb {
 
 enum PacketType {
-  kPing = 1,
-  kSimpleResponse = 2,
-  kWriteRequest = 3,
-  kReadRequest = 4,
-  kReadResponse = 5,
-  kTruncateRequest = 6
+  kWriteRequest = 1,
+  kWriteResponse = 2,
+  kReadRequest = 3,
+  kReadResponse = 4,
 };
 
 struct data_packet_header_t {

@@ -34,12 +34,10 @@
 #include <cstdlib>
 #include <memory>
 
-#include "src/protocol/truncate-request.h"
 #include "src/utils/allocator.h"
-#include "src/protocol/ping-packet.h"
 #include "src/protocol/write-request.h"
 #include "src/protocol/read-request.h"
-#include "src/protocol/simple-response.h"
+#include "src/protocol/write-response.h"
 #include "src/client/read-points-iterator.h"
 
 namespace shakadb {
@@ -83,20 +81,6 @@ Session *Session::Open(std::string server, int port) {
   return sock != -1 ? new Session(sock) : nullptr;
 }
 
-bool Session::Ping() {
-  const char *ping_data = "ala ma kota";
-  int ping_data_length = strlen(ping_data);
-
-  PingPacket request(const_cast<char *>(ping_data), ping_data_length);
-  this->SendPacket(&request);
-
-  auto response = std::unique_ptr<PingPacket>(static_cast<PingPacket *>(this->ReadPacket()));
-
-  return response != nullptr &&
-      request.GetPingDataSize() == response->GetPingDataSize() &&
-      memcmp(request.GetPingData(), response->GetPingData(), ping_data_length) == 0;
-}
-
 bool Session::WritePoints(std::string series_name, data_point_t *points, int count) {
   WriteRequest request(series_name, points, count);
 
@@ -110,12 +94,12 @@ bool Session::WritePoints(std::string series_name, data_point_t *points, int cou
     return false;
   }
 
-  if (packet->GetType() != kSimpleResponse) {
+  if (packet->GetType() != kWriteResponse) {
     delete packet;
     return false;
   }
 
-  SimpleResponse *response = static_cast<SimpleResponse *>(packet);
+  WriteResponse *response = static_cast<WriteResponse *>(packet);
   bool result = response->GetStatus() == kOk;
   delete response;
 
@@ -130,31 +114,6 @@ ReadPointsIterator *Session::ReadPoints(std::string series_name, timestamp_t beg
   }
 
   return new ReadPointsIterator(&this->sock);
-}
-
-bool Session::Truncate(std::string series_name) {
-  TruncateRequest request(series_name);
-
-  if (!this->SendPacket(&request)) {
-    return false;
-  }
-
-  DataPacket *packet = this->ReadPacket();
-
-  if (packet == nullptr) {
-    return false;
-  }
-
-  if (packet->GetType() != kSimpleResponse) {
-    delete packet;
-    return false;
-  }
-
-  SimpleResponse *response = static_cast<SimpleResponse *>(packet);
-  bool result = response->GetStatus() == kOk;
-  delete response;
-
-  return result;
 }
 
 bool Session::SendPacket(DataPacket *packet) {

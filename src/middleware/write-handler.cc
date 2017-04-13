@@ -26,7 +26,7 @@
 #include "src/middleware/write-handler.h"
 
 #include "src/protocol/write-request.h"
-#include "src/protocol/simple-response.h"
+#include "src/protocol/write-response.h"
 
 namespace shakadb {
 
@@ -42,7 +42,7 @@ void WriteHandler::OnPacketReceived(int client_id, DataPacket *packet) {
   WriteRequest *request = static_cast<WriteRequest *>(packet);
   this->db->Write(request->GetSeriesName(), request->GetPoints(), request->GetPointsCount());
 
-  SimpleResponse response(kOk);
+  WriteResponse response(kOk);
   this->GetServer()->SendPacket(client_id, &response);
 }
 

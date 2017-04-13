@@ -20,41 +20,43 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 08/03/2017.
+// Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SRC_PROTOCOL_TRUNCATE_REQUEST_H_
-#define SRC_PROTOCOL_TRUNCATE_REQUEST_H_
+#ifndef SRC_PROTOCOL_WRITE_RESPONSE_H_
+#define SRC_PROTOCOL_WRITE_RESPONSE_H_
 
-#include <string>
 #include <vector>
 
-#include "src/data-point.h"
 #include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
-class TruncateRequest : public DataPacket {
+enum ResponseStatus {
+  kOk = 1,
+  kError = 2
+};
+
+class WriteResponse : public DataPacket {
  public:
-  TruncateRequest();
-  explicit TruncateRequest(std::string series_name);
+  WriteResponse();
+  explicit WriteResponse(ResponseStatus status);
 
   PacketType GetType();
-  std::string GetSeriesName();
+  ResponseStatus GetStatus();
 
  protected:
   bool Deserialize(Buffer *payload);
   std::vector<Buffer *> Serialize();
 
  private:
-  struct truncate_request_t {
-    char series_name[SHAKADB_SERIES_NAME_MAX_LENGTH + 1];
+  struct simple_response_t {
+    ResponseStatus status;
   };
 
-  std::string series_name;
+  ResponseStatus status;
 };
 
 }  // namespace shakadb
 
-#endif  // SRC_PROTOCOL_TRUNCATE_REQUEST_H_
-
+#endif  // SRC_PROTOCOL_WRITE_RESPONSE_H_

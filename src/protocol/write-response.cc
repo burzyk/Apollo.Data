@@ -20,32 +20,49 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 08/03/2017.
+// Created by Pawel Burzynski on 25/02/2017.
 //
 
-#include "src/middleware/truncate-handler.h"
+#include "src/protocol/write-response.h"
 
-#include "src/protocol/truncate-request.h"
-#include "src/protocol/simple-response.h"
-#include "src/fatal-exception.h"
+#include "src/utils/memory-buffer.h"
 
 namespace shakadb {
 
-TruncateHandler::TruncateHandler(Database *db, Server *server)
-    : BaseHandler(server) {
-  this->db = db;
+WriteResponse::WriteResponse() {
 }
 
-void TruncateHandler::OnPacketReceived(int client_id, DataPacket *packet) {
-  if (packet->GetType() != kTruncateRequest) {
-    return;
+WriteResponse::WriteResponse(ResponseStatus status) {
+  this->status = status;
+}
+
+PacketType WriteResponse::GetType() {
+  return kWriteResponse;
+}
+
+ResponseStatus WriteResponse::GetStatus() {
+  return this->status;
+}
+
+bool WriteResponse::Deserialize(Buffer *payload) {
+  if (payload->GetSize() != sizeof(simple_response_t)) {
+    return false;
   }
 
-  TruncateRequest *request = static_cast<TruncateRequest *>(packet);
-  this->db->Truncate(request->GetSeriesName());
+  simple_response_t *response = reinterpret_cast<simple_response_t *>(payload->GetBuffer());
 
-  SimpleResponse response(kOk);
-  this->GetServer()->SendPacket(client_id, &response);
+  this->status = response->status;
+
+  return true;
+}
+
+std::vector<Buffer *> WriteResponse::Serialize() {
+  MemoryBuffer *buffer = new MemoryBuffer(sizeof(simple_response_t));
+  simple_response_t *response = reinterpret_cast<simple_response_t *>(buffer->GetBuffer());
+
+  response->status = this->status;
+
+  return std::vector<Buffer *> {buffer};
 }
 
 }  // namespace shakadb
