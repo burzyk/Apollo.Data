@@ -23,24 +23,28 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
-#ifndef SRC_MIDDLEWARE_READ_HANDLER_H_
-#define SRC_MIDDLEWARE_READ_HANDLER_H_
+#ifndef SRC_MIDDLEWARE_CLIENT_HANDLER_H_
+#define SRC_MIDDLEWARE_CLIENT_HANDLER_H_
 
-#include "src/middleware/base-handler.h"
-#include "src/storage/database.h"
+#include <src/server/server.h>
+#include <src/storage/database.h>
 
 namespace shakadb {
 
-class ReadHandler : public BaseHandler {
+class ClientHandler : public Server::ServerListener {
  public:
-  ReadHandler(Database *db, Server *server, int points_per_packet);
+  ClientHandler(Server *server, Database *db, int points_per_packet);
+
+  void OnClientConnected(int client_id);
+  void OnClientDisconnected(int client_id);
   void OnPacketReceived(int client_id, DataPacket *packet);
 
  private:
+  Server *server;
   Database *db;
   int points_per_packet;
 };
 
 }  // namespace shakadb
 
-#endif  // SRC_MIDDLEWARE_READ_HANDLER_H_
+#endif  // SRC_MIDDLEWARE_CLIENT_HANDLER_H_

@@ -31,9 +31,10 @@
 
 #include "src/server/server.h"
 #include "src/utils/thread.h"
-#include "src/middleware/write-handler.h"
-#include "src/middleware/read-handler.h"
 #include "src/configuration.h"
+#include "src/utils/monitor.h"
+#include "src/storage/database.h"
+#include "src/server/client-handler.h"
 
 namespace shakadb {
 
@@ -55,8 +56,7 @@ class Bootstrapper {
 
   Log *log;
   Server *server;
-  WriteHandler *write_handler;
-  ReadHandler *read_handler;
+  ClientHandler *client_handler;
   Database *db;
 };
 

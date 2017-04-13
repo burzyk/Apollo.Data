@@ -23,44 +23,58 @@
 // Created by Pawel Burzynski on 19/02/2017.
 //
 
-#include "src/middleware/read-handler.h"
+#include "client-handler.h"
 
-#include <memory>
-
+#include "src/protocol/write-request.h"
+#include "src/protocol/write-response.h"
 #include "src/protocol/read-request.h"
+#include "src/storage/data-points-reader.h"
 #include "src/protocol/read-response.h"
-#include "src/utils/allocator.h"
 
 namespace shakadb {
 
-ReadHandler::ReadHandler(Database *db, Server *server, int points_per_packet)
-    : BaseHandler(server) {
+ClientHandler::ClientHandler(Server *server, Database *db, int points_per_packet) {
+  this->server = server;
   this->db = db;
   this->points_per_packet = points_per_packet;
 }
 
-void ReadHandler::OnPacketReceived(int client_id, DataPacket *packet) {
-  if (packet->GetType() != kReadRequest) {
-    return;
+void ClientHandler::OnClientConnected(int client_id) {
+}
+
+void ClientHandler::OnClientDisconnected(int client_id) {
+}
+
+void ClientHandler::OnPacketReceived(int client_id, DataPacket *packet) {
+  if (packet->GetType() == kReadRequest) {
+
+    ReadRequest *request = static_cast<ReadRequest *>(packet);
+    timestamp_t begin = request->GetBegin();
+
+    while (true) {
+      auto reader = std::unique_ptr<DataPointsReader>(
+          this->db->Read(request->GetSeriesName(), begin, request->GetEnd(), this->points_per_packet));
+      ReadResponse response(reader.get(), begin == request->GetBegin() ? 0 : 1);
+
+      if (!this->server->SendPacket(client_id, &response)) {
+        return;
+      }
+
+      if (response.GetPointsCount() == 0) {
+        break;
+      }
+
+      begin = reader->GetDataPoints()[reader->GetDataPointsCount() - 1].time;
+    }
   }
 
-  ReadRequest *request = static_cast<ReadRequest *>(packet);
-  timestamp_t begin = request->GetBegin();
+  if (packet->GetType() == kWriteRequest) {
 
-  while (true) {
-    auto reader = std::unique_ptr<DataPointsReader>(
-        this->db->Read(request->GetSeriesName(), begin, request->GetEnd(), this->points_per_packet));
-    ReadResponse response(reader.get(), begin == request->GetBegin() ? 0 : 1);
+    WriteRequest *request = static_cast<WriteRequest *>(packet);
+    this->db->Write(request->GetSeriesName(), request->GetPoints(), request->GetPointsCount());
 
-    if (!this->GetServer()->SendPacket(client_id, &response)) {
-      return;
-    }
-
-    if (response.GetPointsCount() == 0) {
-      break;
-    }
-
-    begin = reader->GetDataPoints()[reader->GetDataPointsCount() - 1].time;
+    WriteResponse response(kOk);
+    this->server->SendPacket(client_id, &response);
   }
 }
 
