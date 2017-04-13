@@ -30,8 +30,8 @@
 
 namespace shakadb {
 
-#define SHAKADB_SERIES_NAME_MAX_LENGTH 255
 #define SHAKADB_PACKET_MAX_LEN  655360000
+#define SHAKADB_INVALID_SERIES_ID -1
 
 typedef uint8_t byte_t;
 

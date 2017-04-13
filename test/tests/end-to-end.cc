@@ -43,22 +43,22 @@ namespace test {
 
 void EndToEnd::empty_read(TestContext ctx) {
   Bootstrapper *bootstrapper = this->BootstrapInit(ctx);
-  this->ValidateRead("USD_AUD", 0);
+  this->ValidateRead(12345, 0);
   bootstrapper->Stop();
   delete bootstrapper;
 }
 
 void EndToEnd::write_small(TestContext ctx) {
   Bootstrapper *bootstrapper = this->BootstrapInit(ctx);
-  this->WriteSequencialPoints("USD_AUD", 10, 100);
-  this->WriteSequencialPoints("USD_PLN", 10, 100);
-  this->WriteSequencialPoints("USD_GBP", 10, 100);
-  this->WriteSequencialPoints("USD_CLP", 10, 100);
+  this->WriteSequencialPoints(12345, 10, 100);
+  this->WriteSequencialPoints(12346, 10, 100);
+  this->WriteSequencialPoints(12347, 10, 100);
+  this->WriteSequencialPoints(12348, 10, 100);
 
-  this->ValidateRead("USD_AUD", 1000);
-  this->ValidateRead("USD_PLN", 1000);
-  this->ValidateRead("USD_GBP", 1000);
-  this->ValidateRead("USD_CLP", 1000);
+  this->ValidateRead(12345, 1000);
+  this->ValidateRead(12346, 1000);
+  this->ValidateRead(12347, 1000);
+  this->ValidateRead(12348, 1000);
 
   bootstrapper->Stop();
   delete bootstrapper;
@@ -66,15 +66,15 @@ void EndToEnd::write_small(TestContext ctx) {
 
 void EndToEnd::write_multiple(TestContext ctx) {
   Bootstrapper *bootstrapper = this->BootstrapInit(ctx);
-  this->WriteSequencialPoints("USD_AUD", 1000, 100);
-  this->WriteSequencialPoints("USD_PLN", 1000, 100);
-  this->WriteSequencialPoints("USD_GBP", 1000, 100);
-  this->WriteSequencialPoints("USD_CLP", 1000, 100);
+  this->WriteSequencialPoints(12345, 1000, 100);
+  this->WriteSequencialPoints(12346, 1000, 100);
+  this->WriteSequencialPoints(12347, 1000, 100);
+  this->WriteSequencialPoints(12348, 1000, 100);
 
-  this->ValidateRead("USD_AUD", 100000);
-  this->ValidateRead("USD_PLN", 100000);
-  this->ValidateRead("USD_GBP", 100000);
-  this->ValidateRead("USD_CLP", 100000);
+  this->ValidateRead(12345, 100000);
+  this->ValidateRead(12346, 100000);
+  this->ValidateRead(12347, 100000);
+  this->ValidateRead(12348, 100000);
 
   bootstrapper->Stop();
   delete bootstrapper;
@@ -82,13 +82,13 @@ void EndToEnd::write_multiple(TestContext ctx) {
 
 void EndToEnd::write_stop_read(TestContext ctx) {
   Bootstrapper *bootstrapper = this->BootstrapInit(ctx);
-  this->WriteSequencialPoints("USD_AUD", 1000, 100);
-  this->ValidateRead("USD_AUD", 100000);
+  this->WriteSequencialPoints(12348, 1000, 100);
+  this->ValidateRead(12348, 100000);
   bootstrapper->Stop();
   delete bootstrapper;
 
   bootstrapper = this->BootstrapInit(ctx);
-  this->ValidateRead("USD_AUD", 100000);
+  this->ValidateRead(12348, 100000);
   bootstrapper->Stop();
   delete bootstrapper;
 }
@@ -109,7 +109,7 @@ Bootstrapper *EndToEnd::BootstrapInit(TestContext ctx) {
   return Bootstrapper::Run(config_file_name);
 }
 
-void EndToEnd::ValidateRead(std::string series_name, int expected_points_count) {
+void EndToEnd::ValidateRead(data_series_id_t series_id, int expected_points_count) {
   shakadb_session_t session;
   shakadb_read_points_iterator_t iterator;
   int total_points = 0;
@@ -117,7 +117,7 @@ void EndToEnd::ValidateRead(std::string series_name, int expected_points_count) 
   Assert::IsTrue(shakadb_open_session(&session, "localhost", 8099) != SHAKADB_RESULT_ERROR);
   Assert::IsTrue(shakadb_read_points(
       &session,
-      series_name.c_str(),
+      series_id,
       SHAKADB_MIN_TIMESTAMP,
       SHAKADB_MAX_TIMESTAMP,
       &iterator) != SHAKADB_RESULT_ERROR);
@@ -135,7 +135,7 @@ void EndToEnd::ValidateRead(std::string series_name, int expected_points_count) 
   shakadb_destroy_session(&session);
 }
 
-void EndToEnd::WriteSequencialPoints(std::string series_name, int batch_size, int count) {
+void EndToEnd::WriteSequencialPoints(data_series_id_t series_id, int batch_size, int count) {
   data_point_t *batch = Allocator::New<data_point_t>(batch_size);
   timestamp_t time = 1;
 
@@ -145,20 +145,20 @@ void EndToEnd::WriteSequencialPoints(std::string series_name, int batch_size, in
       batch[j].value = j;
     }
 
-    this->WritePoints(series_name, batch, batch_size);
+    this->WritePoints(series_id, batch, batch_size);
   }
 
   Allocator::Delete(batch);
 }
 
-void EndToEnd::WritePoints(std::string series_name, data_point_t *points, int points_count) {
+void EndToEnd::WritePoints(data_series_id_t series_id, data_point_t *points, int points_count) {
   shakadb_session_t session;
   shakadb_data_point_t *shaka_points = reinterpret_cast<shakadb_data_point_t *>(points);
 
   Assert::IsTrue(shakadb_open_session(&session, "localhost", 8099) != SHAKADB_RESULT_ERROR);
   Assert::IsTrue(shakadb_write_points(
       &session,
-      series_name.c_str(),
+      series_id,
       shaka_points,
       points_count) != SHAKADB_RESULT_ERROR);
   shakadb_destroy_session(&session);

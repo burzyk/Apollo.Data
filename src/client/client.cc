@@ -44,21 +44,21 @@ shakadb_result_t shakadb_destroy_session(shakadb_session_t *session) {
 }
 
 shakadb_result_t shakadb_write_points(shakadb_session_t *session,
-                                      const char *series_name,
+                                      data_series_id_t series_id,
                                       shakadb_data_point_t *points,
                                       int points_count) {
   shakadb::Session *s = (shakadb::Session *)session->_session;
-  bool result = s->WritePoints(std::string(series_name), (shakadb::data_point_t *)points, points_count);
+  bool result = s->WritePoints(series_id, (shakadb::data_point_t *)points, points_count);
   return result ? SHAKADB_RESULT_OK : SHAKADB_RESULT_ERROR;
 }
 
 shakadb_result_t shakadb_read_points(shakadb_session_t *session,
-                                     const char *series_name,
+                                     data_series_id_t series_id,
                                      shakadb_timestamp_t begin,
                                      shakadb_timestamp_t end,
                                      shakadb_read_points_iterator_t *iterator) {
   shakadb::Session *s = (shakadb::Session *)session->_session;
-  iterator->_iterator = s->ReadPoints(std::string(series_name), begin, end);
+  iterator->_iterator = s->ReadPoints(series_id, begin, end);
   iterator->points = nullptr;
   iterator->points_count = -1;
   return iterator->_iterator == nullptr ? SHAKADB_RESULT_ERROR : SHAKADB_RESULT_OK;

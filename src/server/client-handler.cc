@@ -53,7 +53,7 @@ void ClientHandler::OnPacketReceived(int client_id, DataPacket *packet) {
 
     while (true) {
       auto reader = std::unique_ptr<DataPointsReader>(
-          this->db->Read(request->GetSeriesName(), begin, request->GetEnd(), this->points_per_packet));
+          this->db->Read(request->GetSeriesId(), begin, request->GetEnd(), this->points_per_packet));
       ReadResponse response(reader.get(), begin == request->GetBegin() ? 0 : 1);
 
       if (!this->server->SendPacket(client_id, &response)) {
@@ -71,7 +71,7 @@ void ClientHandler::OnPacketReceived(int client_id, DataPacket *packet) {
   if (packet->GetType() == kWriteRequest) {
 
     WriteRequest *request = static_cast<WriteRequest *>(packet);
-    this->db->Write(request->GetSeriesName(), request->GetPoints(), request->GetPointsCount());
+    this->db->Write(request->GetSeriesId(), request->GetPoints(), request->GetPointsCount());
 
     WriteResponse response(kOk);
     this->server->SendPacket(client_id, &response);

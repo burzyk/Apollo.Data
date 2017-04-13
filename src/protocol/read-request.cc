@@ -32,15 +32,13 @@
 
 namespace shakadb {
 
-ReadRequest::ReadRequest() : ReadRequest("", data_point_t::kMinTimestamp, data_point_t::kMinTimestamp) {
+ReadRequest::ReadRequest() : ReadRequest(SHAKADB_INVALID_SERIES_ID,
+                                         data_point_t::kMinTimestamp,
+                                         data_point_t::kMinTimestamp) {
 }
 
-ReadRequest::ReadRequest(std::string series_name, timestamp_t begin, timestamp_t end) {
-  if (series_name.size() > SHAKADB_SERIES_NAME_MAX_LENGTH) {
-    throw FatalException("series name is too long");
-  }
-
-  this->series_name = series_name;
+ReadRequest::ReadRequest(data_series_id_t series_id, timestamp_t begin, timestamp_t end) {
+  this->series_id = series_id;
   this->begin = begin;
   this->end = end;
 }
@@ -49,8 +47,8 @@ PacketType ReadRequest::GetType() {
   return kReadRequest;
 }
 
-std::string ReadRequest::GetSeriesName() {
-  return this->series_name;
+data_series_id_t ReadRequest::GetSeriesId() {
+  return this->series_id;
 }
 
 timestamp_t ReadRequest::GetBegin() {
@@ -70,7 +68,7 @@ bool ReadRequest::Deserialize(Buffer *payload) {
 
   this->begin = request->begin;
   this->end = request->end;
-  this->series_name = std::string(request->series_name);
+  this->series_id = request->series_id;
 
   return true;
 }
@@ -81,7 +79,7 @@ std::vector<Buffer *> ReadRequest::Serialize() {
 
   request->begin = this->begin;
   request->end = this->end;
-  memcpy(request->series_name, this->series_name.c_str(), this->series_name.size());
+  request->series_id = this->series_id;
 
   return std::vector<Buffer *> {buffer};
 }

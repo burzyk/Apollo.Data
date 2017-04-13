@@ -52,10 +52,10 @@ Stopwatch DatabaseConcurrencyTests::access_large(TestContext ctx) {
 
 void DatabaseConcurrencyTests::ConcurrentAccessWriter(Database *db, int batches, int batch_size) {
   try {
-    Write(db, "XOM_US", batches, batch_size);
-    Write(db, "MSFT_US", batches, batch_size);
-    Write(db, "APPL_US", batches, batch_size);
-    Write(db, "AAL_LN", batches, batch_size);
+    Write(db, 1, batches, batch_size);
+    Write(db, 2, batches, batch_size);
+    Write(db, 3, batches, batch_size);
+    Write(db, 4, batches, batch_size);
   } catch (FatalException ex) {
     printf("Writer fatal exception: %s\n", ex.what());
   }
@@ -64,10 +64,10 @@ void DatabaseConcurrencyTests::ConcurrentAccessWriter(Database *db, int batches,
 void DatabaseConcurrencyTests::ConcurrentAccessReader(Database *db, volatile bool *should_terminate) {
   try {
     while (!*should_terminate) {
-      ValidateRead(db, "XOM_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-      ValidateRead(db, "MSFT_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-      ValidateRead(db, "APPL_US", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-      ValidateRead(db, "AAL_LN", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+      ValidateRead(db, 1, -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+      ValidateRead(db, 2, -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+      ValidateRead(db, 3, -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+      ValidateRead(db, 4, -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
     }
   } catch (FatalException ex) {
     printf("Reader fatal exception: %s\n", ex.what());

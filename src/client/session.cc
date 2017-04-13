@@ -81,8 +81,8 @@ Session *Session::Open(std::string server, int port) {
   return sock != -1 ? new Session(sock) : nullptr;
 }
 
-bool Session::WritePoints(std::string series_name, data_point_t *points, int count) {
-  WriteRequest request(series_name, points, count);
+bool Session::WritePoints(data_series_id_t series_id, data_point_t *points, int count) {
+  WriteRequest request(series_id, points, count);
 
   if (!this->SendPacket(&request)) {
     return false;
@@ -106,8 +106,8 @@ bool Session::WritePoints(std::string series_name, data_point_t *points, int cou
   return result;
 }
 
-ReadPointsIterator *Session::ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end) {
-  ReadRequest request(series_name, begin, end);
+ReadPointsIterator *Session::ReadPoints(data_series_id_t series_id, timestamp_t begin, timestamp_t end) {
+  ReadRequest request(series_id, begin, end);
 
   if (!this->SendPacket(&request)) {
     return nullptr;

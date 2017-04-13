@@ -42,8 +42,8 @@ class Session {
  public:
   static Session *Open(std::string server, int port);
 
-  bool WritePoints(std::string series_name, data_point_t *points, int count);
-  ReadPointsIterator *ReadPoints(std::string series_name, timestamp_t begin, timestamp_t end);
+  bool WritePoints(data_series_id_t series_id, data_point_t *points, int count);
+  ReadPointsIterator *ReadPoints(data_series_id_t series_id, timestamp_t begin, timestamp_t end);
 
  private:
   explicit Session(int sock);

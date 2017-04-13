@@ -74,7 +74,7 @@ Stopwatch DatabasePerformanceTests::SequentialWrite(TestContext ctx, int batches
   Stopwatch sw;
 
   sw.Start();
-  Write(db.get(), "usd_gbp", batches, batch_size);
+  Write(db.get(), 12345, batches, batch_size);
   sw.Stop();
 
   return sw;
@@ -84,12 +84,12 @@ Stopwatch DatabasePerformanceTests::Read(TestContext ctx, int windows_count, int
   auto db = std::unique_ptr<Database>(this->CreateDatabase(10000, 100, ctx));
   Stopwatch sw;
 
-  Write(db.get(), "usd_gbp", windows_count, window_size);
+  Write(db.get(), 12345, windows_count, window_size);
 
   sw.Start();
   for (int i = 0; i < windows_count; i++) {
     ValidateRead(db.get(),
-                 "usd_gbp",
+                 12345,
                  i == 0 ? window_size - 1 : window_size,
                  (timestamp_t)(i * window_size),
                  (timestamp_t)((i + 1) * window_size));
@@ -112,12 +112,12 @@ Stopwatch DatabasePerformanceTests::RandomWrite(TestContext ctx, int batches, in
     unsigned int r;
     rand_r(&r);
     int time = r % batch_size + 1;
-    Write(db.get(), "usd_gbp", 1, batch_size, (timestamp_t)time);
+    Write(db.get(), 12345, 1, batch_size, (timestamp_t)time);
   }
 
   sw.Stop();
 
-  ValidateRead(db.get(), "usd_gbp", -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, -1, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   return sw;
 }

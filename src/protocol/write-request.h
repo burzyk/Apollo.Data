@@ -37,12 +37,12 @@ namespace shakadb {
 class WriteRequest : public DataPacket {
  public:
   WriteRequest();
-  WriteRequest(std::string series_name, data_point_t *points, int points_count);
+  WriteRequest(data_series_id_t series_id, data_point_t *points, int points_count);
 
   PacketType GetType();
   int GetPointsCount();
   data_point_t *GetPoints();
-  std::string GetSeriesName();
+  data_series_id_t GetSeriesId();
 
  protected:
   bool Deserialize(Buffer *payload);
@@ -50,11 +50,11 @@ class WriteRequest : public DataPacket {
 
  private:
   struct write_request_t {
-    char series_name[SHAKADB_SERIES_NAME_MAX_LENGTH + 1];
+    data_series_id_t series_id;
     uint32_t points_count;
   };
 
-  std::string series_name;
+  data_series_id_t series_id;
   data_point_t *points;
   int points_count;
 };
