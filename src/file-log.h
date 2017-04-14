@@ -44,7 +44,7 @@ class FileLog : public Log {
  private:
   void ToLog(std::string level, std::string message);
 
-  sdb_monitor_t *lock;
+  sdb_mutex_t *lock;
   std::string log_file_name;
   FILE *output;
 };

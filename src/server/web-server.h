@@ -49,7 +49,7 @@ class WebServer : public Server {
  private:
   struct client_info_t {
     sdb_socket_t socket;
-    sdb_monitor_t *lock;
+    sdb_mutex_t *lock;
   };
 
   static void WorkerRoutine(void *data);
@@ -64,7 +64,7 @@ class WebServer : public Server {
   std::list<ServerListener *> listeners;
   int master_socket;
   volatile bool is_running;
-  sdb_monitor_t *server_lock;
+  sdb_mutex_t *server_lock;
   std::map<int, client_info_t *> clients;
   int next_client_id;
 };

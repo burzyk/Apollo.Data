@@ -43,7 +43,7 @@ WebServer::WebServer(int port, int backlog, int max_clients, Log *log) {
   this->is_running = false;
   this->master_socket = -1;
   this->next_client_id = 10;
-  this->server_lock = sdb_monitor_create();
+  this->server_lock = sdb_mutex_create();
 }
 
 WebServer::~WebServer() {
@@ -51,7 +51,7 @@ WebServer::~WebServer() {
     this->Close();
   }
 
-  sdb_monitor_destroy(this->server_lock);
+  sdb_mutex_destroy(this->server_lock);
 }
 
 void WebServer::Listen() {
@@ -108,13 +108,13 @@ void WebServer::WorkerRoutine(void *data) {
 }
 
 void WebServer::Close() {
-  sdb_monitor_enter(this->server_lock);
+  sdb_mutex_lock(this->server_lock);
   this->is_running = 0;
 
   for (auto client : this->clients) {
     sdb_socket_close(client.second->socket);
   }
-  sdb_monitor_exit(this->server_lock);
+  sdb_mutex_unlock(this->server_lock);
 
   shutdown(this->master_socket, SHUT_RDWR);
   close(this->master_socket);
@@ -129,53 +129,53 @@ void WebServer::AddServerListener(WebServer::ServerListener *listener) {
 }
 
 bool WebServer::SendPacket(int client_id, sdb_packet_t *packet) {
-  sdb_monitor_enter(this->server_lock);
+  sdb_mutex_lock(this->server_lock);
   client_info_t *client = this->clients[client_id];
 
   if (client == nullptr) {
-    sdb_monitor_exit(this->server_lock);
+    sdb_mutex_unlock(this->server_lock);
     return false;
   }
 
-  sdb_monitor_enter(client->lock);
-  sdb_monitor_exit(this->server_lock);
+  sdb_mutex_lock(client->lock);
+  sdb_mutex_unlock(this->server_lock);
   int status = sdb_packet_send(packet, client->socket);
-  sdb_monitor_exit(client->lock);
+  sdb_mutex_unlock(client->lock);
 
   return status == 0;
 }
 
 int WebServer::AllocateClient(sdb_socket_t socket) {
-  sdb_monitor_enter(this->server_lock);
+  sdb_mutex_lock(this->server_lock);
 
   client_info_t *client = Allocator::New<client_info_t>();
   client->socket = socket;
-  client->lock = sdb_monitor_create();
+  client->lock = sdb_mutex_create();
 
   int client_id = this->next_client_id++;
   this->clients[client_id] = client;
 
-  sdb_monitor_exit(this->server_lock);
+  sdb_mutex_unlock(this->server_lock);
   return client_id;
 }
 
 void WebServer::CloseClient(int client_id) {
-  sdb_monitor_enter(this->server_lock);
+  sdb_mutex_lock(this->server_lock);
   client_info_t *info = this->clients[client_id];
 
   if (info == nullptr) {
-    sdb_monitor_exit(this->server_lock);
+    sdb_mutex_unlock(this->server_lock);
     return;
   }
 
-  sdb_monitor_enter(info->lock);
+  sdb_mutex_lock(info->lock);
   this->clients.erase(client_id);
 
   sdb_socket_close(info->socket);
-  sdb_monitor_destroy(info->lock);
+  sdb_mutex_destroy(info->lock);
 
   Allocator::Delete(info);
-  sdb_monitor_exit(this->server_lock);
+  sdb_mutex_unlock(this->server_lock);
 }
 
 }  // namespace shakadb

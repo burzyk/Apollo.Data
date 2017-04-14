@@ -35,7 +35,7 @@ namespace shakadb {
 FileLog::FileLog(std::string log_file_name) {
   this->log_file_name = log_file_name;
   this->output = nullptr;
-  this->lock = sdb_monitor_create();
+  this->lock = sdb_mutex_create();
 }
 
 FileLog::~FileLog() {
@@ -43,7 +43,7 @@ FileLog::~FileLog() {
     fclose(this->output);
   }
 
-  sdb_monitor_destroy(this->lock);
+  sdb_mutex_destroy(this->lock);
 }
 
 void FileLog::Fatal(std::string message) {
@@ -59,7 +59,7 @@ void FileLog::Debug(std::string message) {
 }
 
 void FileLog::ToLog(std::string level, std::string message) {
-  sdb_monitor_enter(this->lock);
+  sdb_mutex_lock(this->lock);
 
   if (this->output == nullptr) {
     this->output = this->log_file_name == ""
@@ -87,7 +87,7 @@ void FileLog::ToLog(std::string level, std::string message) {
     fflush(this->output);
   }
 
-  sdb_monitor_exit(this->lock);
+  sdb_mutex_unlock(this->lock);
 }
 
 }  // namespace shakadb
