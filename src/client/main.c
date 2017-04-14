@@ -47,7 +47,7 @@ void read_points(shakadb_session_t *session) {
   shakadb_read_points_iterator_t iterator;
   shakadb_result_t result = shakadb_read_points(
       session,
-      "USD_AUD",
+      12345,
       SHAKADB_MIN_TIMESTAMP,
       SHAKADB_MAX_TIMESTAMP,
       &iterator);
@@ -92,18 +92,10 @@ void write_points(shakadb_session_t *session) {
       points[j].value = j;
     }
 
-    shakadb_write_points(session, "USD_AUD", points, points_count);
+    shakadb_write_points(session, 12345, points, points_count);
   }
 
   printf("Elapsed: %f[s]\n", stopwatch_elapsed(sw));
-}
-
-void ping_server(shakadb_session_t *session) {
-  if (shakadb_ping(session) == SHAKADB_RESULT_ERROR) {
-    printf("Ping failed\n");
-  } else {
-    printf("Ping failed\n");
-  }
 }
 
 int main() {

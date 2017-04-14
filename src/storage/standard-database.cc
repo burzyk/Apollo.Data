@@ -28,8 +28,6 @@
 #include <cstdlib>
 #include <cmath>
 
-#include "src/utils/directory.h"
-
 namespace shakadb {
 
 StandardDatabase::StandardDatabase(std::string directory, Log *log, int points_per_chunk) {

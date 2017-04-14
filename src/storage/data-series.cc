@@ -30,7 +30,7 @@
 
 #include "src/utils/stopwatch.h"
 #include "src/utils/common.h"
-#include "src/utils/file.h"
+#include "src/utils/disk.h"
 #include "src/utils/allocator.h"
 #include "src/storage/standard-data-points-reader.h"
 
@@ -50,14 +50,18 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *l
   log->Info("Loading data series ...");
   Stopwatch sw;
   DataSeries *series = new DataSeries(file_name, points_per_chunk, log);
-  File f(file_name);
   int chunk_size = DataChunk::CalculateChunkSize(points_per_chunk);
 
   sw.Start();
 
-  for (int i = 0; i < f.GetSize() / chunk_size; i++) {
+  for (int i = 0; i < sdb_file_size(file_name.c_str()) / chunk_size; i++) {
     DataChunk *chunk = DataChunk::Load(file_name, (uint64_t)i * chunk_size, points_per_chunk);
-    series->RegisterChunk(chunk);
+
+    if (chunk != NULL) {
+      series->RegisterChunk(chunk);
+    } else {
+      log->Info("Unable to load chunk");
+    }
   }
 
   sw.Stop();
@@ -105,8 +109,7 @@ void DataSeries::Truncate() {
 
   this->DeleteChunks();
 
-  File f(this->file_name);
-  f.Truncate(0);
+  sdb_file_truncate(this->file_name.c_str());
 }
 
 DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_points) {
@@ -243,17 +246,17 @@ DataChunk *DataSeries::CreateEmptyChunk() {
   byte_t *buffer = Allocator::New<byte_t>(buffer_size);
   int to_allocate = DataChunk::CalculateChunkSize(this->points_per_chunk);
 
-  File file(this->file_name);
-  file.Seek(0, SEEK_END);
+  sdb_file_t *file = sdb_file_open(this->file_name.c_str());
+  sdb_file_seek(file, 0, SEEK_END);
 
   while (to_allocate > 0) {
     int to_write = std::min(to_allocate, buffer_size);
-    file.Write(buffer, (size_t)to_write);
+    sdb_file_write(file, buffer, (size_t)to_write);
     to_allocate -= to_write;
   }
 
   Allocator::Delete(buffer);
-  file.Flush();
+  sdb_file_close(file);
 
   return DataChunk::Load(
       this->file_name,

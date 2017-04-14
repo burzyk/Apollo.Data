@@ -32,9 +32,9 @@
 
 #include "src/utils/common.h"
 #include "src/log.h"
-#include "src/utils/file.h"
 #include "src/fatal-exception.h"
 #include "src/utils/allocator.h"
+#include "src/utils/disk.h"
 
 namespace shakadb {
 
@@ -49,10 +49,15 @@ DataChunk *DataChunk::Load(std::string file_name, uint64_t file_offset, int max_
   DataChunk *chunk = new DataChunk(file_name, file_offset, max_points);
   data_point_t *points = Allocator::New<data_point_t>(max_points);
 
-  File f(file_name);
+  sdb_file_t *file = sdb_file_open(file_name.c_str());
 
-  f.Seek(file_offset, SEEK_SET);
-  f.Read(points, max_points * sizeof(data_point_t));
+  if (file == NULL) {
+    return NULL;
+  }
+
+  sdb_file_seek(file, file_offset, SEEK_SET);
+  sdb_file_read(file, points, max_points * sizeof(data_point_t));
+  sdb_file_close(file);
 
   for (int i = 0; i < max_points && points[i].time != 0; i++) {
     chunk->begin = std::min(chunk->begin, points[i].time);
@@ -77,9 +82,10 @@ data_point_t *DataChunk::Read() {
     if (this->cached_content == nullptr) {
       this->cached_content = Allocator::New<data_point_t>(this->max_points);
 
-      File f(this->file_name);
-      f.Seek(this->file_offset, SEEK_SET);
-      f.Read(this->cached_content, this->max_points * sizeof(data_point_t));
+      sdb_file_t *file = sdb_file_open(this->file_name.c_str());
+      sdb_file_seek(file, this->file_offset, SEEK_SET);
+      sdb_file_read(file, this->cached_content, this->max_points * sizeof(data_point_t));
+      sdb_file_close(file);
     }
   }
 
@@ -97,9 +103,10 @@ void DataChunk::Write(int offset, data_point_t *points, int count) {
     throw FatalException("Trying to write outside data chunk");
   }
 
-  File f(this->file_name);
-  f.Seek(this->file_offset + offset * sizeof(data_point_t), SEEK_SET);
-  f.Write(points, count * sizeof(data_point_t));
+  sdb_file_t *file = sdb_file_open(this->file_name.c_str());
+  sdb_file_seek(file, this->file_offset + offset * sizeof(data_point_t), SEEK_SET);
+  sdb_file_write(file, points, count * sizeof(data_point_t));
+  sdb_file_close(file);
 
   if (this->cached_content != nullptr) {
     memcpy(this->cached_content + offset, points, count * sizeof(data_point_t));

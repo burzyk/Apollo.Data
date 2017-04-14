@@ -27,7 +27,7 @@
 
 #include <string>
 
-#include "src/utils/directory.h"
+#include "src/utils/disk.h"
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -47,7 +47,7 @@ int TestRunner::RunTest(std::string name, std::function<void(TestContext)> func)
 
   try {
     std::string dir = this->directory + "/" + name;
-    Directory::CreateDirectory(dir);
+    sdb_directory_create(dir.c_str());
     TestContext ctx(dir);
 
     func(ctx);
@@ -67,7 +67,7 @@ int TestRunner::RunPerfTest(std::string name, std::function<Stopwatch(TestContex
 
   try {
     std::string dir = this->directory + "/" + name;
-    Directory::CreateDirectory(dir);
+    sdb_directory_create(dir.c_str());
     TestContext ctx(dir);
 
     Stopwatch sw = func(ctx);

@@ -24,9 +24,9 @@
 
 #include "test/framework/test-context.h"
 #include "test/framework/test-runner.h"
-#include "src/utils/directory.h"
 #include "test/tests/ring-buffer-tests.h"
 #include "src/utils/allocator.h"
+#include "src/utils/disk.h"
 #include "test/tests/monitor-tests.h"
 #include "test/tests/base-database-tests.h"
 #include "test/tests/database-basic-tests.h"
@@ -34,7 +34,6 @@
 #include "test/tests/database-concurrency-tests.h"
 #include "test/tests/rw-lock-tests.h"
 #include "test/tests/configuration-tests.h"
-#include "test/tests/end-to-end.h"
 
 #define RUN_TESTS
 //#define RUN_PERF_TESTS
@@ -57,7 +56,7 @@
 
 int main() {
   std::string dir("/Users/pburzynski/shakadb-test/data/test-stuff");
-  shakadb::Directory::CreateDirectory(dir);
+  sdb_directory_create(dir.c_str());
   shakadb::test::TestRunner runner(dir);
   int result = 0;
 
@@ -85,12 +84,6 @@ int main() {
   TEST(database_basic, database_truncate);
   TEST(database_basic, database_truncate_multiple);
   TEST(database_basic, database_truncate_write_again);
-
-//  auto end_to_end = shakadb::test::EndToEnd();
-//  TEST(end_to_end, empty_read);
-//  TEST(end_to_end, write_multiple);
-//  TEST(end_to_end, write_small);
-//  TEST(end_to_end, write_stop_read);
 
   auto ring_buffer = shakadb::test::RingBufferTests();
   TEST(ring_buffer, create_delete_test);

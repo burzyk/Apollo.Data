@@ -27,7 +27,6 @@
 #define TEST_TESTS_CONFIGURATION_TESTS_H_
 
 #include "src/configuration.h"
-#include "src/utils/file.h"
 #include "test/framework/test-context.h"
 #include "test/framework/assert.h"
 

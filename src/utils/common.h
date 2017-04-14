@@ -35,6 +35,10 @@ namespace shakadb {
 
 typedef uint8_t byte_t;
 
+
+
+
+
 }  // namespace shakadb
 
 #endif  // SRC_UTILS_COMMON_H_
