@@ -28,19 +28,21 @@
 #include <string.h>
 #include <cstdlib>
 #include <algorithm>
+#include <src/utils/memory.h>
 
 #include "src/utils/common.h"
 #include "src/utils/allocator.h"
 
 namespace shakadb {
 
-StandardDataPointsReader::StandardDataPointsReader(int points_count)
-    : points_buffer(points_count * sizeof(data_point_t)) {
+StandardDataPointsReader::StandardDataPointsReader(int points_count) {
+  this->points_count = points_count;
+  this->points = (data_point_t *)sdb_alloc(points_count * sizeof(data_point_t));
   this->write_position = 0;
 }
 
 data_point_t *StandardDataPointsReader::GetDataPoints() {
-  return reinterpret_cast<data_point_t *>(this->points_buffer.GetBuffer());
+  return this->points;
 }
 
 bool StandardDataPointsReader::WriteDataPoints(data_point_t *points, int count) {
@@ -56,7 +58,7 @@ bool StandardDataPointsReader::WriteDataPoints(data_point_t *points, int count) 
 }
 
 int StandardDataPointsReader::GetDataPointsCount() {
-  return this->points_buffer.GetSize() / sizeof(data_point_t);
+  return this->points_count / sizeof(data_point_t);
 }
 
 }  // namespace shakadb

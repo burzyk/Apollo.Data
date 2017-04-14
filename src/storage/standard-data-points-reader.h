@@ -32,7 +32,6 @@
 #include "src/data-point.h"
 #include "src/utils/rw-lock-scope.h"
 #include "src/utils/ring-buffer.h"
-#include "src/utils/memory-buffer.h"
 #include "src/storage/data-chunk.h"
 #include "src/storage/data-points-reader.h"
 
@@ -47,7 +46,8 @@ class StandardDataPointsReader : public DataPointsReader {
   int GetDataPointsCount();
 
  private:
-  MemoryBuffer points_buffer;
+  data_point_t *points;
+  int points_count;
   int write_position;
 };
 
