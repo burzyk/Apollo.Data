@@ -26,6 +26,7 @@
 #include "test/tests/base-database-tests.h"
 
 #include <test/framework/validation-exception.h>
+#include <src/utils/memory.h>
 
 namespace shakadb {
 namespace test {
@@ -39,7 +40,7 @@ void BaseDatabaseTests::Write(Database *db,
     throw ValidationException("Time cannot be 0");
   }
 
-  sdb_data_point_t *points = Allocator::New<sdb_data_point_t>(count);
+  sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(sizeof(sdb_data_point_t) * count);
 
   for (int i = 0; i < batches; i++) {
     for (int j = 0; j < count; j++) {
@@ -51,7 +52,7 @@ void BaseDatabaseTests::Write(Database *db,
     db->Write(series_id, points, count);
   }
 
-  shakadb::Allocator::Delete(points);
+  sdb_free(points);
 }
 
 void BaseDatabaseTests::ValidateRead(Database *db,

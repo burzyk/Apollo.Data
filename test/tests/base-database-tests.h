@@ -31,7 +31,6 @@
 
 #include "src/storage/database.h"
 #include "src/storage/standard-database.h"
-#include "src/utils/allocator.h"
 #include "test/framework/test-context.h"
 #include "test/framework/assert.h"
 

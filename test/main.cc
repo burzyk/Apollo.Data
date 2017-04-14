@@ -24,7 +24,6 @@
 
 #include "test/framework/test-context.h"
 #include "test/framework/test-runner.h"
-#include "src/utils/allocator.h"
 #include "src/utils/disk.h"
 #include "test/tests/base-database-tests.h"
 #include "test/tests/database-basic-tests.h"

@@ -29,8 +29,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-
-#include "src/utils/allocator.h"
+#include <signal.h>
+#include <src/utils/memory.h>
 
 namespace shakadb {
 
@@ -147,7 +147,7 @@ bool WebServer::SendPacket(int client_id, sdb_packet_t *packet) {
 int WebServer::AllocateClient(sdb_socket_t socket) {
   sdb_mutex_lock(this->server_lock);
 
-  client_info_t *client = Allocator::New<client_info_t>();
+  client_info_t *client = (client_info_t *)sdb_alloc(sizeof(client_info_t));
   client->socket = socket;
   client->lock = sdb_mutex_create();
 
@@ -173,7 +173,7 @@ void WebServer::CloseClient(int client_id) {
   sdb_socket_close(info->socket);
   sdb_mutex_destroy(info->lock);
 
-  Allocator::Delete(info);
+  sdb_free(info);
   sdb_mutex_unlock(this->server_lock);
 }
 

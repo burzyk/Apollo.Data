@@ -30,7 +30,6 @@
 #include <src/utils/diagnostics.h>
 
 #include "src/utils/disk.h"
-#include "src/utils/allocator.h"
 #include "src/storage/data-points-reader.h"
 
 namespace shakadb {
@@ -228,7 +227,7 @@ void DataSeries::WriteChunk(sdb_data_chunk_t *chunk, sdb_data_point_t *points, i
     }
 
     this->ChunkMemcpy(chunk, 0, buffer + duplicated_count, buffer_count - duplicated_count);
-    Allocator::Delete(buffer);
+    sdb_free(buffer);
   }
 }
 
@@ -262,7 +261,7 @@ sdb_data_chunk_t *DataSeries::CreateEmptyChunk() {
     to_allocate -= to_write;
   }
 
-  Allocator::Delete(buffer);
+  sdb_free(buffer);
   sdb_file_close(file);
 
   return sdb_data_chunk_create(
