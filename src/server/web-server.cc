@@ -43,12 +43,15 @@ WebServer::WebServer(int port, int backlog, int max_clients, Log *log) {
   this->is_running = false;
   this->master_socket = -1;
   this->next_client_id = 10;
+  this->server_lock = sdb_monitor_create();
 }
 
 WebServer::~WebServer() {
   if (this->is_running) {
     this->Close();
   }
+
+  sdb_monitor_destroy(this->server_lock);
 }
 
 void WebServer::Listen() {
@@ -105,13 +108,13 @@ void WebServer::WorkerRoutine(void *data) {
 }
 
 void WebServer::Close() {
-  auto lock = this->monitor.Enter();
+  sdb_monitor_enter(this->server_lock);
   this->is_running = 0;
 
   for (auto client : this->clients) {
     sdb_socket_close(client.second->socket);
   }
-  lock->Exit();
+  sdb_monitor_exit(this->server_lock);
 
   shutdown(this->master_socket, SHUT_RDWR);
   close(this->master_socket);
@@ -126,43 +129,53 @@ void WebServer::AddServerListener(WebServer::ServerListener *listener) {
 }
 
 bool WebServer::SendPacket(int client_id, sdb_packet_t *packet) {
-  auto lock = this->monitor.Enter();
+  sdb_monitor_enter(this->server_lock);
   client_info_t *client = this->clients[client_id];
 
   if (client == nullptr) {
+    sdb_monitor_exit(this->server_lock);
     return false;
   }
 
-  auto client_lock = client->lock->Enter();
-  lock->Exit();
+  sdb_monitor_enter(client->lock);
+  sdb_monitor_exit(this->server_lock);
+  int status = sdb_packet_send(packet, client->socket);
+  sdb_monitor_exit(client->lock);
 
-  return sdb_packet_send(packet, client->socket) == 0;
+  return status == 0;
 }
 
 int WebServer::AllocateClient(sdb_socket_t socket) {
-  auto lock = this->monitor.Enter();
+  sdb_monitor_enter(this->server_lock);
+
   client_info_t *client = Allocator::New<client_info_t>();
   client->socket = socket;
-  client->lock = new Monitor();
+  client->lock = sdb_monitor_create();
 
   int client_id = this->next_client_id++;
   this->clients[client_id] = client;
+
+  sdb_monitor_exit(this->server_lock);
   return client_id;
 }
 
 void WebServer::CloseClient(int client_id) {
-  auto lock = this->monitor.Enter();
+  sdb_monitor_enter(this->server_lock);
   client_info_t *info = this->clients[client_id];
 
   if (info == nullptr) {
+    sdb_monitor_exit(this->server_lock);
     return;
   }
 
-  auto info_lock = info->lock->Enter();
+  sdb_monitor_enter(info->lock);
   this->clients.erase(client_id);
+
   sdb_socket_close(info->socket);
-  delete info->lock;
+  sdb_monitor_destroy(info->lock);
+
   Allocator::Delete(info);
+  sdb_monitor_exit(this->server_lock);
 }
 
 }  // namespace shakadb

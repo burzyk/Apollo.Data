@@ -28,18 +28,22 @@
 #include <cstdlib>
 
 #include "src/fatal-exception.h"
+#include "c_common.h"
 
 namespace shakadb {
 
 FileLog::FileLog(std::string log_file_name) {
   this->log_file_name = log_file_name;
   this->output = nullptr;
+  this->lock = sdb_monitor_create();
 }
 
 FileLog::~FileLog() {
   if (this->output != nullptr && this->log_file_name != "") {
     fclose(this->output);
   }
+
+  sdb_monitor_destroy(this->lock);
 }
 
 void FileLog::Fatal(std::string message) {
@@ -55,7 +59,7 @@ void FileLog::Debug(std::string message) {
 }
 
 void FileLog::ToLog(std::string level, std::string message) {
-  auto scope = this->lock.Enter();
+  sdb_monitor_enter(this->lock);
 
   if (this->output == nullptr) {
     this->output = this->log_file_name == ""
@@ -63,10 +67,7 @@ void FileLog::ToLog(std::string level, std::string message) {
                    : fopen(this->log_file_name.c_str(), "a+");
 
     if (this->output == nullptr) {
-      fprintf(stderr,
-              "Unable to open log file: %s\n",
-              this->log_file_name.c_str());
-      exit(-1);
+      die("Unable to open log file");
     }
   }
 
@@ -85,6 +86,8 @@ void FileLog::ToLog(std::string level, std::string message) {
   if (level == "FATAL") {
     fflush(this->output);
   }
+
+  sdb_monitor_exit(this->lock);
 }
 
 }  // namespace shakadb

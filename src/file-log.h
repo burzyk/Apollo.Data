@@ -28,7 +28,7 @@
 
 #include <string>
 
-#include "src/utils/monitor.h"
+#include "src/utils/threading.h"
 #include "src/log.h"
 
 namespace shakadb {
@@ -44,7 +44,7 @@ class FileLog : public Log {
  private:
   void ToLog(std::string level, std::string message);
 
-  Monitor lock;
+  sdb_monitor_t *lock;
   std::string log_file_name;
   FILE *output;
 };

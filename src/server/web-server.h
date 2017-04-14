@@ -30,7 +30,7 @@
 #include <map>
 
 #include "src/utils/threading.h"
-#include "src/utils/monitor.h"
+#include "src/utils/threading.h"
 #include "src/server/server.h"
 #include "src/protocol.h"
 
@@ -49,7 +49,7 @@ class WebServer : public Server {
  private:
   struct client_info_t {
     sdb_socket_t socket;
-    Monitor *lock;
+    sdb_monitor_t *lock;
   };
 
   static void WorkerRoutine(void *data);
@@ -64,7 +64,7 @@ class WebServer : public Server {
   std::list<ServerListener *> listeners;
   int master_socket;
   volatile bool is_running;
-  Monitor monitor;
+  sdb_monitor_t *server_lock;
   std::map<int, client_info_t *> clients;
   int next_client_id;
 };
