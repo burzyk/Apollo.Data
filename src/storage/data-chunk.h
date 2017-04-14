@@ -29,7 +29,7 @@
 #include <string>
 
 #include "src/data-point.h"
-#include "src/utils/rw-lock.h"
+#include "src/utils/threading.h"
 
 namespace shakadb {
 
@@ -54,7 +54,7 @@ class DataChunk {
   uint64_t file_offset;
   int max_points;
   data_point_t *cached_content;
-  RwLock lock;
+  sdb_rwlock_t *lock;
 
   timestamp_t begin;
   timestamp_t end;

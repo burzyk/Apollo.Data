@@ -28,7 +28,6 @@
 #include "src/utils/disk.h"
 #include "test/tests/base-database-tests.h"
 #include "test/tests/database-basic-tests.h"
-#include "test/tests/rw-lock-tests.h"
 
 #define RUN_TESTS
 //#define RUN_PERF_TESTS
@@ -79,11 +78,6 @@ int main() {
   TEST(database_basic, database_truncate);
   TEST(database_basic, database_truncate_multiple);
   TEST(database_basic, database_truncate_write_again);
-
-  auto rwlock = shakadb::test::RwLockTests();
-  TEST(rwlock, double_read_lock_test);
-  TEST(rwlock, upgrade_lock_test);
-  TEST(rwlock, release_and_lock_again_test);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");

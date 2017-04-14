@@ -30,8 +30,6 @@
 
 #include "src/fatal-exception.h"
 #include "src/log.h"
-#include "src/utils/rw-lock-scope.h"
-#include "src/utils/rw-lock.h"
 
 namespace shakadb {
 

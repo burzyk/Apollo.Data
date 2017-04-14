@@ -22,6 +22,8 @@ typedef struct sdb_data_point_s {
   float value;
 } __attribute__((packed)) sdb_data_point_t;
 
+void die(const char *message);
+
 #ifdef __cplusplus
 }
 #endif

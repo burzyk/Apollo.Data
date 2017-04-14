@@ -30,7 +30,6 @@
 #include <string>
 
 #include "src/log.h"
-#include "src/utils/rw-lock.h"
 #include "src/storage/data-points-reader.h"
 #include "src/storage/data-chunk.h"
 
@@ -57,7 +56,7 @@ class DataSeries {
   std::string file_name;
   int points_per_chunk;
   std::list<DataChunk *> chunks;
-  RwLock series_lock;
+  sdb_rwlock_t *series_lock;
 };
 
 }  // namespace shakadb

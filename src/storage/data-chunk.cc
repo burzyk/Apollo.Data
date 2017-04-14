@@ -43,6 +43,8 @@ DataChunk::~DataChunk() {
     Allocator::Delete(this->cached_content);
     this->cached_content = nullptr;
   }
+
+  sdb_rwlock_destroy(this->lock);
 }
 
 DataChunk *DataChunk::Load(std::string file_name, uint64_t file_offset, int max_points) {
@@ -74,10 +76,10 @@ int DataChunk::CalculateChunkSize(int points) {
 }
 
 data_point_t *DataChunk::Read() {
-  auto scope = this->lock.LockRead();
+  sdb_rwlock_rdlock(this->lock);
 
   if (this->cached_content == nullptr) {
-    scope->UpgradeToWrite();
+    sdb_rwlock_upgrade(this->lock);
 
     if (this->cached_content == nullptr) {
       this->cached_content = Allocator::New<data_point_t>(this->max_points);
@@ -87,17 +89,19 @@ data_point_t *DataChunk::Read() {
       sdb_file_read(file, this->cached_content, this->max_points * sizeof(data_point_t));
       sdb_file_close(file);
     }
+
+    sdb_rwlock_unlock(this->lock);
   }
 
   return this->cached_content;
 }
 
 void DataChunk::Write(int offset, data_point_t *points, int count) {
-  auto scope = this->lock.LockWrite();
-
   if (count == 0) {
     return;
   }
+
+  sdb_rwlock_wrlock(this->lock);
 
   if (this->max_points < offset + count) {
     throw FatalException("Trying to write outside data chunk");
@@ -120,6 +124,8 @@ void DataChunk::Write(int offset, data_point_t *points, int count) {
     this->end = points[count - 1].time;
     this->number_of_points = offset + count;
   }
+
+  sdb_rwlock_unlock(this->lock);
 }
 
 timestamp_t DataChunk::GetBegin() {
@@ -146,6 +152,7 @@ DataChunk::DataChunk(std::string file_name, uint64_t file_offset, int max_points
   this->begin = data_point_t::kMaxTimestamp;
   this->end = data_point_t::kMinTimestamp;
   this->number_of_points = 0;
+  this->lock = sdb_rwlock_create();
 }
 
 }  // namespace shakadb

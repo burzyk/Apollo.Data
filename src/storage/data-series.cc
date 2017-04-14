@@ -40,10 +40,12 @@ DataSeries::DataSeries(std::string file_name, int points_per_chunk, Log *log) {
   this->file_name = file_name;
   this->points_per_chunk = points_per_chunk;
   this->log = log;
+  this->series_lock = sdb_rwlock_create();
 }
 
 DataSeries::~DataSeries() {
   this->DeleteChunks();
+  sdb_rwlock_destroy(this->series_lock);
 }
 
 DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *log) {
@@ -70,7 +72,7 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *l
 }
 
 void DataSeries::Write(data_point_t *points, int count) {
-  auto lock_scope = this->series_lock.LockWrite();
+  sdb_rwlock_wrlock(this->series_lock);
 
   if (this->chunks.size() == 0) {
     DataChunk *chunk = this->CreateEmptyChunk();
@@ -102,18 +104,21 @@ void DataSeries::Write(data_point_t *points, int count) {
       start = stop;
     }
   }
+
+  sdb_rwlock_unlock(this->series_lock);
 }
 
 void DataSeries::Truncate() {
-  auto lock_scope = this->series_lock.LockWrite();
+  sdb_rwlock_wrlock(this->series_lock);
 
   this->DeleteChunks();
-
   sdb_file_truncate(this->file_name.c_str());
+
+  sdb_rwlock_unlock(this->series_lock);
 }
 
 DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_points) {
-  auto lock_scope = this->series_lock.LockRead();
+  sdb_rwlock_rdlock(this->series_lock);
   std::list<DataChunk *> filtered_chunks;
 
   for (auto chunk : this->chunks) {
@@ -123,6 +128,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
   }
 
   if (filtered_chunks.size() == 0) {
+    sdb_rwlock_unlock(this->series_lock);
     return new StandardDataPointsReader(0);
   }
 
@@ -142,6 +148,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
     StandardDataPointsReader *reader = new StandardDataPointsReader(total_points);
     reader->WriteDataPoints(read_begin, total_points);
 
+    sdb_rwlock_unlock(this->series_lock);
     return reader;
   }
 
@@ -161,12 +168,14 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
   StandardDataPointsReader *reader = new StandardDataPointsReader(std::min(total_points, max_points));
 
   if (!reader->WriteDataPoints(read_begin, points_from_front)) {
+    sdb_rwlock_unlock(this->series_lock);
     return reader;
   }
 
   for (auto i : filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
       if (!reader->WriteDataPoints(i->Read(), i->GetNumberOfPoints())) {
+        sdb_rwlock_unlock(this->series_lock);
         return reader;
       }
     }
@@ -174,6 +183,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
 
   reader->WriteDataPoints(back_begin, points_from_back);
 
+  sdb_rwlock_unlock(this->series_lock);
   return reader;
 }
 

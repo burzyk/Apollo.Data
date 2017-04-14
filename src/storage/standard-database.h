@@ -30,7 +30,6 @@
 #include <list>
 #include <map>
 
-#include "src/utils/rw-lock.h"
 #include "src/log.h"
 #include "src/storage/data-points-reader.h"
 #include "src/storage/data-chunk.h"
@@ -54,7 +53,7 @@ class StandardDatabase : public Database {
 
   std::string directory;
   int points_per_chunk;
-  RwLock lock;
+  sdb_rwlock_t *lock;
   Log *log;
   std::map<data_series_id_t, DataSeries *> series;
 };

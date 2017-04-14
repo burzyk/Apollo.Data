@@ -34,6 +34,7 @@ StandardDatabase::StandardDatabase(std::string directory, Log *log, int points_p
   this->directory = directory;
   this->log = log;
   this->points_per_chunk = points_per_chunk;
+  this->lock = sdb_rwlock_create();
 }
 
 StandardDatabase::~StandardDatabase() {
@@ -42,6 +43,7 @@ StandardDatabase::~StandardDatabase() {
   }
 
   this->series.clear();
+  sdb_rwlock_destroy(this->lock);
 }
 
 StandardDatabase *StandardDatabase::Init(std::string directory, Log *log, int points_per_chunk) {
@@ -66,10 +68,10 @@ DataPointsReader *StandardDatabase::Read(data_series_id_t series_id, timestamp_t
 }
 
 DataSeries *StandardDatabase::FindDataSeries(data_series_id_t series_id) {
-  auto scope = this->lock.LockRead();
+  sdb_rwlock_rdlock(this->lock);
 
   if (this->series.find(series_id) == this->series.end()) {
-    scope->UpgradeToWrite();
+    sdb_rwlock_upgrade(this->lock);
 
     if (this->series.find(series_id) == this->series.end()) {
       this->series[series_id] = DataSeries::Init(this->directory + "/" + std::to_string(series_id), this->points_per_chunk, this->log);

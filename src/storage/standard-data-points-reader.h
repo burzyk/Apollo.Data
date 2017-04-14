@@ -30,7 +30,6 @@
 #include <vector>
 
 #include "src/data-point.h"
-#include "src/utils/rw-lock-scope.h"
 #include "src/storage/data-chunk.h"
 #include "src/storage/data-points-reader.h"
 
