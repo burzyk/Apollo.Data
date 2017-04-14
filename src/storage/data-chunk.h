@@ -26,41 +26,35 @@
 #ifndef SRC_STORAGE_DATA_CHUNK_H_
 #define SRC_STORAGE_DATA_CHUNK_H_
 
-#include <string>
-
-#include "src/data-point.h"
+#include "src/c_common.h"
 #include "src/utils/threading.h"
 
-namespace shakadb {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class DataChunk {
- public:
-  ~DataChunk();
-  static DataChunk *Load(std::string file_name, uint64_t file_offset, int max_points);
-  static int CalculateChunkSize(int points);
+#define SDB_FILE_MAX_LEN  1024
 
-  data_point_t *Read();
-  void Write(int offset, data_point_t *points, int count);
-
-  timestamp_t GetBegin();
-  timestamp_t GetEnd();
-  int GetNumberOfPoints();
-  int GetMaxNumberOfPoints();
-
- private:
-  DataChunk(std::string file_name, uint64_t file_offset, int max_points);
-
-  std::string file_name;
+typedef struct sdb_data_chunk_s {
+  char file_name[SDB_FILE_MAX_LEN];
   uint64_t file_offset;
-  int max_points;
-  data_point_t *cached_content;
+  sdb_data_point_t *cached_content;
   sdb_rwlock_t *lock;
 
-  timestamp_t begin;
-  timestamp_t end;
+  sdb_timestamp_t begin;
+  sdb_timestamp_t end;
   int number_of_points;
-};
+  int max_points;
+} sdb_data_chunk_t;
 
-}  // namespace shakadb
+int sdb_data_chunk_calculate_size(int points_count);
+sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points);
+void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
+sdb_data_point_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk);
+void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SRC_STORAGE_DATA_CHUNK_H_

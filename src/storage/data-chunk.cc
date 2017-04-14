@@ -26,135 +26,106 @@
 #include "src/storage/data-chunk.h"
 
 #include <string.h>
-#include <cmath>
-#include <cstdlib>
-#include <algorithm>
 
-#include "src/utils/common.h"
-#include "src/log.h"
-#include "src/fatal-exception.h"
-#include "src/utils/allocator.h"
+#include "src/utils/memory.h"
 #include "src/utils/disk.h"
 
-namespace shakadb {
-
-DataChunk::~DataChunk() {
-  if (this->cached_content != nullptr) {
-    Allocator::Delete(this->cached_content);
-    this->cached_content = nullptr;
-  }
-
-  sdb_rwlock_destroy(this->lock);
+int sdb_data_chunk_calculate_size(int points_count) {
+  return points_count * sizeof(sdb_data_point_t);
 }
 
-DataChunk *DataChunk::Load(std::string file_name, uint64_t file_offset, int max_points) {
-  DataChunk *chunk = new DataChunk(file_name, file_offset, max_points);
-  data_point_t *points = Allocator::New<data_point_t>(max_points);
+sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points) {
+  sdb_data_chunk_t *chunk = (sdb_data_chunk_t *)sdb_alloc(sizeof(sdb_data_chunk_t));
+  strncpy(chunk->file_name, file_name, SDB_FILE_MAX_LEN);
+  chunk->file_offset = file_offset;
+  chunk->max_points = max_points;
+  chunk->cached_content = NULL;
+  chunk->begin = SDB_TIMESTAMP_MAX;
+  chunk->end = SDB_TIMESTAMP_MIN;
+  chunk->number_of_points = 0;
+  chunk->lock = sdb_rwlock_create();
 
-  sdb_file_t *file = sdb_file_open(file_name.c_str());
+  size_t points_size = sizeof(sdb_data_point_t) * max_points;
+  sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(points_size);
+
+  sdb_file_t *file = sdb_file_open(file_name);
 
   if (file == NULL) {
     return NULL;
   }
 
   sdb_file_seek(file, file_offset, SEEK_SET);
-  sdb_file_read(file, points, max_points * sizeof(data_point_t));
+  sdb_file_read(file, points, points_size);
   sdb_file_close(file);
 
   for (int i = 0; i < max_points && points[i].time != 0; i++) {
-    chunk->begin = std::min(chunk->begin, points[i].time);
-    chunk->end = std::max(chunk->end, points[i].time);
+    chunk->begin = sdb_min(chunk->begin, points[i].time);
+    chunk->end = sdb_max(chunk->end, points[i].time);
     chunk->number_of_points++;
   }
 
-  Allocator::Delete(points);
+  sdb_free(points);
   return chunk;
 }
 
-int DataChunk::CalculateChunkSize(int points) {
-  return points * sizeof(data_point_t);
-}
-
-data_point_t *DataChunk::Read() {
-  sdb_rwlock_rdlock(this->lock);
-
-  if (this->cached_content == nullptr) {
-    sdb_rwlock_upgrade(this->lock);
-
-    if (this->cached_content == nullptr) {
-      this->cached_content = Allocator::New<data_point_t>(this->max_points);
-
-      sdb_file_t *file = sdb_file_open(this->file_name.c_str());
-      sdb_file_seek(file, this->file_offset, SEEK_SET);
-      sdb_file_read(file, this->cached_content, this->max_points * sizeof(data_point_t));
-      sdb_file_close(file);
-    }
-
-    sdb_rwlock_unlock(this->lock);
+void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk) {
+  if (chunk->cached_content != NULL) {
+    sdb_free(chunk->cached_content);
   }
 
-  return this->cached_content;
+  sdb_rwlock_destroy(chunk->lock);
+  sdb_free(chunk);
 }
 
-void DataChunk::Write(int offset, data_point_t *points, int count) {
+sdb_data_point_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk) {
+  sdb_rwlock_rdlock(chunk->lock);
+
+  if (chunk->cached_content == NULL) {
+    sdb_rwlock_upgrade(chunk->lock);
+
+    if (chunk->cached_content == NULL) {
+      size_t cached_content_size = sizeof(sdb_data_point_t) * chunk->max_points;
+      chunk->cached_content = (sdb_data_point_t *)sdb_alloc(cached_content_size);
+
+      sdb_file_t *file = sdb_file_open(chunk->file_name);
+      sdb_file_seek(file, chunk->file_offset, SEEK_SET);
+      sdb_file_read(file, chunk->cached_content, cached_content_size);
+      sdb_file_close(file);
+    }
+  }
+
+  sdb_rwlock_unlock(chunk->lock);
+  return chunk->cached_content;
+}
+
+void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count) {
   if (count == 0) {
     return;
   }
 
-  sdb_rwlock_wrlock(this->lock);
+  sdb_rwlock_wrlock(chunk->lock);
 
-  if (this->max_points < offset + count) {
-    throw FatalException("Trying to write outside data chunk");
+  if (chunk->max_points < offset + count) {
+    die("Trying to write outside data chunk");
   }
 
-  sdb_file_t *file = sdb_file_open(this->file_name.c_str());
-  sdb_file_seek(file, this->file_offset + offset * sizeof(data_point_t), SEEK_SET);
-  sdb_file_write(file, points, count * sizeof(data_point_t));
+  sdb_file_t *file = sdb_file_open(chunk->file_name);
+  sdb_file_seek(file, chunk->file_offset + offset * sizeof(sdb_data_point_t), SEEK_SET);
+  sdb_file_write(file, points, count * sizeof(sdb_data_point_t));
   sdb_file_close(file);
 
-  if (this->cached_content != nullptr) {
-    memcpy(this->cached_content + offset, points, count * sizeof(data_point_t));
+  if (chunk->cached_content != NULL) {
+    memcpy(chunk->cached_content + offset, points, count * sizeof(sdb_data_point_t));
   }
 
   if (offset == 0) {
-    this->begin = points[0].time;
+    chunk->begin = points[0].time;
   }
 
-  if (this->number_of_points <= offset + count) {
-    this->end = points[count - 1].time;
-    this->number_of_points = offset + count;
+  if (chunk->number_of_points <= offset + count) {
+    chunk->end = points[count - 1].time;
+    chunk->number_of_points = offset + count;
   }
 
-  sdb_rwlock_unlock(this->lock);
+  sdb_rwlock_unlock(chunk->lock);
 }
-
-timestamp_t DataChunk::GetBegin() {
-  return this->begin;
-}
-
-timestamp_t DataChunk::GetEnd() {
-  return this->end;
-}
-
-int DataChunk::GetNumberOfPoints() {
-  return this->number_of_points;
-}
-
-int DataChunk::GetMaxNumberOfPoints() {
-  return this->max_points;
-}
-
-DataChunk::DataChunk(std::string file_name, uint64_t file_offset, int max_points) {
-  this->file_name = file_name;
-  this->file_offset = file_offset;
-  this->max_points = max_points;
-  this->cached_content = nullptr;
-  this->begin = data_point_t::kMaxTimestamp;
-  this->end = data_point_t::kMinTimestamp;
-  this->number_of_points = 0;
-  this->lock = sdb_rwlock_create();
-}
-
-}  // namespace shakadb
-
-

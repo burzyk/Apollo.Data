@@ -39,12 +39,12 @@ class StandardDataPointsReader : public DataPointsReader {
  public:
   explicit StandardDataPointsReader(int points_count);
 
-  bool WriteDataPoints(data_point_t *points, int count);
-  data_point_t *GetDataPoints();
+  bool WriteDataPoints(sdb_data_point_t *points, int count);
+  sdb_data_point_t *GetDataPoints();
   int GetDataPointsCount();
 
  private:
-  data_point_t *points;
+  sdb_data_point_t *points;
   int points_count;
   int write_position;
 };

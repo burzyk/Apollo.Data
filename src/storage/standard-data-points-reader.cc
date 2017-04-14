@@ -37,15 +37,15 @@ namespace shakadb {
 
 StandardDataPointsReader::StandardDataPointsReader(int points_count) {
   this->points_count = points_count;
-  this->points = (data_point_t *)sdb_alloc(points_count * sizeof(data_point_t));
+  this->points = (sdb_data_point_t *)sdb_alloc(points_count * sizeof(sdb_data_point_t));
   this->write_position = 0;
 }
 
-data_point_t *StandardDataPointsReader::GetDataPoints() {
+sdb_data_point_t *StandardDataPointsReader::GetDataPoints() {
   return this->points;
 }
 
-bool StandardDataPointsReader::WriteDataPoints(data_point_t *points, int count) {
+bool StandardDataPointsReader::WriteDataPoints(sdb_data_point_t *points, int count) {
   if (count == 0) {
     return false;
   }
@@ -58,7 +58,7 @@ bool StandardDataPointsReader::WriteDataPoints(data_point_t *points, int count) 
 }
 
 int StandardDataPointsReader::GetDataPointsCount() {
-  return this->points_count / sizeof(data_point_t);
+  return this->points_count;
 }
 
 }  // namespace shakadb

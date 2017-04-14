@@ -14,9 +14,10 @@ sdb_socket_t sdb_socket_open() {
 int sdb_socket_receive(sdb_socket_t socket, void *buffer, size_t size) {
   ssize_t read = 0;
   int total_read = 0;
+  char *ptr = (char *)buffer;
 
-  while ((read = recv(socket, buffer, size, 0)) > 0) {
-    buffer += read;
+  while ((read = recv(socket, ptr, size, 0)) > 0) {
+    ptr += read;
     size -= read;
     total_read += read;
   }
@@ -27,10 +28,11 @@ int sdb_socket_receive(sdb_socket_t socket, void *buffer, size_t size) {
 int sdb_socket_send(sdb_socket_t socket, void *buffer, size_t size) {
   ssize_t sent = 0;
   int total_send = 0;
+  char *ptr = (char *)buffer;
 
-  while ((sent = send(socket, buffer, size, 0)) > 0) {
-    buffer += sent;
-    buffer -= sent;
+  while ((sent = send(socket, ptr, size, 0)) > 0) {
+    ptr += sent;
+    size -= sent;
     total_send += sent;
   }
 

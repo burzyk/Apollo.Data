@@ -41,21 +41,21 @@ class DataSeries {
   static DataSeries *Init(std::string file_name, int points_per_chunk, Log *log);
 
   DataPointsReader *Read(timestamp_t begin, timestamp_t end, int max_points);
-  void Write(data_point_t *points, int count);
+  void Write(sdb_data_point_t *points, int count);
   void Truncate();
 
  private:
   DataSeries(std::string file_name, int points_per_chunk, Log *log);
-  void RegisterChunk(DataChunk *chunk);
-  void WriteChunk(DataChunk *chunk, data_point_t *points, int count);
-  void ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points, int count);
-  DataChunk *CreateEmptyChunk();
+  void RegisterChunk(sdb_data_chunk_t *chunk);
+  void WriteChunk(sdb_data_chunk_t *chunk, sdb_data_point_t *points, int count);
+  void ChunkMemcpy(sdb_data_chunk_t *chunk, int position, sdb_data_point_t *points, int count);
+  sdb_data_chunk_t *CreateEmptyChunk();
   void DeleteChunks();
 
   Log *log;
   std::string file_name;
   int points_per_chunk;
-  std::list<DataChunk *> chunks;
+  std::list<sdb_data_chunk_t *> chunks;
   sdb_rwlock_t *series_lock;
 };
 

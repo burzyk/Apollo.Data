@@ -26,6 +26,7 @@
 #ifndef SRC_STORAGE_DATA_POINTS_READER_H_
 #define SRC_STORAGE_DATA_POINTS_READER_H_
 
+#include <src/c_common.h>
 #include "src/data-point.h"
 
 namespace shakadb {
@@ -33,7 +34,7 @@ namespace shakadb {
 class DataPointsReader {
  public:
   virtual ~DataPointsReader() {}
-  virtual data_point_t *GetDataPoints() = 0;
+  virtual sdb_data_point_t *GetDataPoints() = 0;
   virtual int GetDataPointsCount() = 0;
 };
 

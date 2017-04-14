@@ -38,7 +38,7 @@ void BaseDatabaseTests::Write(Database *db, data_series_id_t series_id, int batc
     throw FatalException("Time cannot be 0");
   }
 
-  shakadb::data_point_t *points = Allocator::New<shakadb::data_point_t>(count);
+  sdb_data_point_t *points = Allocator::New<sdb_data_point_t>(count);
 
   for (int i = 0; i < batches; i++) {
     for (int j = 0; j < count; j++) {
@@ -61,7 +61,7 @@ void BaseDatabaseTests::ValidateRead(Database *db,
                                      int max_points) {
   auto reader = std::unique_ptr<DataPointsReader>(db->Read(series_id, begin, end, max_points));
   int total_read = reader->GetDataPointsCount();
-  data_point_t *points = reader->GetDataPoints();
+  sdb_data_point_t *points = reader->GetDataPoints();
 
   for (int i = 1; i < total_read; i++) {
     Assert::IsTrue(points[i - 1].time <= points[i].time);

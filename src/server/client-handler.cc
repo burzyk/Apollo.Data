@@ -66,7 +66,7 @@ void ClientHandler::OnPacketReceived(int client_id, sdb_packet_t *packet) {
   if (packet->header.type == SDB_WRITE_REQUEST) {
 
     sdb_write_request_t *request = (sdb_write_request_t *)packet->payload;
-    int status = this->db->Write(request->data_series_id, (data_point_t *)request->points, request->points_count);
+    int status = this->db->Write(request->data_series_id, request->points, request->points_count);
 
     sdb_packet_t *response = sdb_write_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK);
     this->server->SendPacket(client_id, response);

@@ -36,7 +36,7 @@ class Database {
  public:
   virtual ~Database() {}
   virtual DataPointsReader *Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points) = 0;
-  virtual int Write(data_series_id_t series_id, data_point_t *points, int count) = 0;
+  virtual int Write(data_series_id_t series_id, sdb_data_point_t *points, int count) = 0;
   virtual void Truncate(data_series_id_t series_id) = 0;
 };
 

@@ -34,7 +34,7 @@ void sdb_thread_join_and_destroy(sdb_thread_t *thread) {
 sdb_rwlock_t *sdb_rwlock_create() {
   sdb_rwlock_t *lock = (sdb_rwlock_t *)sdb_alloc(sizeof(sdb_rwlock_t));
 
-  if (!pthread_rwlock_init(&lock->lock, NULL)) {
+  if (pthread_rwlock_init(&lock->lock, NULL)) {
     die("Unable to create a rwlock");
   }
 
@@ -42,13 +42,13 @@ sdb_rwlock_t *sdb_rwlock_create() {
 }
 
 void sdb_rwlock_rdlock(sdb_rwlock_t *lock) {
-  if (!pthread_rwlock_rdlock(&lock->lock)) {
+  if (pthread_rwlock_rdlock(&lock->lock)) {
     die("Unable to lock for reading");
   }
 }
 
 void sdb_rwlock_wrlock(sdb_rwlock_t *lock) {
-  if (!pthread_rwlock_wrlock(&lock->lock)) {
+  if (pthread_rwlock_wrlock(&lock->lock)) {
     die("Unable to lock for writing");
   }
 }
@@ -59,7 +59,7 @@ void sdb_rwlock_upgrade(sdb_rwlock_t *lock) {
 }
 
 void sdb_rwlock_unlock(sdb_rwlock_t *lock) {
-  if (!pthread_rwlock_unlock(&lock->lock)) {
+  if (pthread_rwlock_unlock(&lock->lock)) {
     die("Unable to unlock the lock");
   }
 }
@@ -74,7 +74,7 @@ void sdb_rwlock_destroy(sdb_rwlock_t *lock) {
 sdb_monitor_t *sdb_monitor_create() {
   sdb_monitor_t *monitor = (sdb_monitor_t *)sdb_alloc(sizeof(sdb_monitor_t));
 
-  if (!pthread_mutex_init(&monitor->mutex, NULL) || !pthread_cond_init(&monitor->cond, NULL)) {
+  if (pthread_mutex_init(&monitor->mutex, NULL) || pthread_cond_init(&monitor->cond, NULL)) {
     die("Unable to create a server_lock");
   }
 
@@ -82,25 +82,25 @@ sdb_monitor_t *sdb_monitor_create() {
 }
 
 void sdb_monitor_enter(sdb_monitor_t *monitor) {
-  if (!pthread_mutex_lock(&monitor->mutex)) {
+  if (pthread_mutex_lock(&monitor->mutex)) {
     die("Unable to enter server_lock");
   }
 }
 
 void sdb_monitor_signal(sdb_monitor_t *monitor) {
-  if (!pthread_cond_signal(&monitor->cond)) {
+  if (pthread_cond_signal(&monitor->cond)) {
     die("Unable to signal server_lock");
   }
 }
 
 void sdb_monitor_wait(sdb_monitor_t *monitor) {
-  if (!pthread_cond_wait(&monitor->cond, &monitor->mutex)) {
+  if (pthread_cond_wait(&monitor->cond, &monitor->mutex)) {
     die("Unable to wait for server_lock");
   }
 }
 
 void sdb_monitor_exit(sdb_monitor_t *monitor) {
-  if (!pthread_mutex_unlock(&monitor->mutex)) {
+  if (pthread_mutex_unlock(&monitor->mutex)) {
     die("Unable to exit server_lock");
   }
 }

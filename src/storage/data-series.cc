@@ -27,6 +27,7 @@
 
 #include <cstdlib>
 #include <algorithm>
+#include <src/utils/memory.h>
 
 #include "src/utils/stopwatch.h"
 #include "src/utils/common.h"
@@ -52,12 +53,12 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *l
   log->Info("Loading data series ...");
   Stopwatch sw;
   DataSeries *series = new DataSeries(file_name, points_per_chunk, log);
-  int chunk_size = DataChunk::CalculateChunkSize(points_per_chunk);
+  int chunk_size = sdb_data_chunk_calculate_size(points_per_chunk);
 
   sw.Start();
 
   for (int i = 0; i < sdb_file_size(file_name.c_str()) / chunk_size; i++) {
-    DataChunk *chunk = DataChunk::Load(file_name, (uint64_t)i * chunk_size, points_per_chunk);
+    sdb_data_chunk_t *chunk = sdb_data_chunk_create(file_name.c_str(), (uint64_t)i * chunk_size, points_per_chunk);
 
     if (chunk != NULL) {
       series->RegisterChunk(chunk);
@@ -71,18 +72,18 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *l
   return series;
 }
 
-void DataSeries::Write(data_point_t *points, int count) {
+void DataSeries::Write(sdb_data_point_t *points, int count) {
   sdb_rwlock_wrlock(this->series_lock);
 
   if (this->chunks.size() == 0) {
-    DataChunk *chunk = this->CreateEmptyChunk();
+    sdb_data_chunk_t *chunk = this->CreateEmptyChunk();
     this->RegisterChunk(chunk);
   }
 
   int first_current = 0;
-  DataChunk *last_chunk = this->chunks.back();
+  sdb_data_chunk_t *last_chunk = this->chunks.back();
 
-  while (first_current < count && points[first_current].time <= last_chunk->GetEnd()) {
+  while (first_current < count && points[first_current].time <= last_chunk->end) {
     first_current++;
   }
 
@@ -93,7 +94,7 @@ void DataSeries::Write(data_point_t *points, int count) {
     int stop = 0;
 
     for (auto chunk : this->chunks) {
-      while (stop < first_current && points[stop].time <= chunk->GetEnd()) {
+      while (stop < first_current && points[stop].time <= chunk->end) {
         stop++;
       }
 
@@ -119,10 +120,10 @@ void DataSeries::Truncate() {
 
 DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_points) {
   sdb_rwlock_rdlock(this->series_lock);
-  std::list<DataChunk *> filtered_chunks;
+  std::list<sdb_data_chunk_t *> filtered_chunks;
 
   for (auto chunk : this->chunks) {
-    if (chunk->GetBegin() < end && chunk->GetEnd() >= begin) {
+    if (chunk->begin < end && chunk->end >= begin) {
       filtered_chunks.push_back(chunk);
     }
   }
@@ -132,16 +133,16 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
     return new StandardDataPointsReader(0);
   }
 
-  auto comp = [](data_point_t p, timestamp_t t) -> bool { return p.time < t; };
+  auto comp = [](sdb_data_point_t p, timestamp_t t) -> bool { return p.time < t; };
 
-  data_point_t *front_begin = filtered_chunks.front()->Read();
-  data_point_t *front_end = front_begin + filtered_chunks.front()->GetNumberOfPoints();
+  sdb_data_point_t *front_begin = sdb_data_chunk_read(filtered_chunks.front());
+  sdb_data_point_t *front_end = front_begin + filtered_chunks.front()->number_of_points;
 
-  data_point_t *back_begin = filtered_chunks.back()->Read();
-  data_point_t *back_end = back_begin + filtered_chunks.back()->GetNumberOfPoints();
+  sdb_data_point_t *back_begin = sdb_data_chunk_read(filtered_chunks.back());
+  sdb_data_point_t *back_end = back_begin + filtered_chunks.back()->number_of_points;
 
-  data_point_t *read_begin = std::lower_bound(front_begin, front_end, begin, comp);
-  data_point_t *read_end = std::lower_bound(back_begin, back_end, end, comp);
+  sdb_data_point_t *read_begin = std::lower_bound(front_begin, front_end, begin, comp);
+  sdb_data_point_t *read_end = std::lower_bound(back_begin, back_end, end, comp);
 
   if (filtered_chunks.size() == 1) {
     int total_points = std::min(static_cast<int>(read_end - read_begin), max_points);
@@ -161,7 +162,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
 
   for (auto i : filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
-      total_points += i->GetNumberOfPoints();
+      total_points += i->number_of_points;
     }
   }
 
@@ -174,7 +175,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
 
   for (auto i : filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
-      if (!reader->WriteDataPoints(i->Read(), i->GetNumberOfPoints())) {
+      if (!reader->WriteDataPoints(sdb_data_chunk_read(i), i->number_of_points)) {
         sdb_rwlock_unlock(this->series_lock);
         return reader;
       }
@@ -187,31 +188,33 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
   return reader;
 }
 
-void DataSeries::RegisterChunk(DataChunk *chunk) {
+void DataSeries::RegisterChunk(sdb_data_chunk_t *chunk) {
   auto i = this->chunks.begin();
 
+  // TODO: (pburzynski) can be optimized
   while (i != this->chunks.end() && (
-      ((*i)->GetBegin() < chunk->GetBegin()) ||
-          ((*i)->GetBegin() == chunk->GetBegin() && (*i)->GetEnd() < chunk->GetEnd()))) {
+      ((*i)->begin < chunk->begin) ||
+          ((*i)->begin == chunk->begin
+              && (*i)->end < chunk->end))) {
     i++;
   }
 
   this->chunks.insert(i, chunk);
 }
 
-void DataSeries::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
+void DataSeries::WriteChunk(sdb_data_chunk_t *chunk, sdb_data_point_t *points, int count) {
   if (count == 0) {
     return;
   }
 
-  if (chunk->GetEnd() < points[0].time) {
-    this->ChunkMemcpy(chunk, chunk->GetNumberOfPoints(), points, count);
+  if (chunk->end < points[0].time) {
+    this->ChunkMemcpy(chunk, chunk->number_of_points, points, count);
   } else {
-    int buffer_count = count + chunk->GetNumberOfPoints();
-    data_point_t *buffer = Allocator::New<data_point_t>(buffer_count);
-    data_point_t *content = chunk->Read();
+    int buffer_count = count + chunk->number_of_points;
+    sdb_data_point_t *buffer = (sdb_data_point_t *)sdb_alloc(buffer_count * sizeof(sdb_data_point_t));
+    sdb_data_point_t *content = sdb_data_chunk_read(chunk);
     int points_pos = count - 1;
-    int content_pos = chunk->GetNumberOfPoints() - 1;
+    int content_pos = chunk->number_of_points - 1;
     int duplicated_count = 0;
 
     for (int i = buffer_count - 1; i >= duplicated_count; i--) {
@@ -235,26 +238,26 @@ void DataSeries::WriteChunk(DataChunk *chunk, data_point_t *points, int count) {
   }
 }
 
-void DataSeries::ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points, int count) {
-  int to_write = std::min(count, chunk->GetMaxNumberOfPoints() - position);
-  chunk->Write(position, points, to_write);
+void DataSeries::ChunkMemcpy(sdb_data_chunk_t *chunk, int position, sdb_data_point_t *points, int count) {
+  int to_write = std::min(count, chunk->max_points - position);
+  sdb_data_chunk_write(chunk, position, points, to_write);
   count -= to_write;
   points += to_write;
 
   while (count != 0) {
     chunk = this->CreateEmptyChunk();
-    to_write = std::min(count, chunk->GetMaxNumberOfPoints());
-    chunk->Write(0, points, to_write);
+    to_write = std::min(count, chunk->max_points);
+    sdb_data_chunk_write(chunk, 0, points, to_write);
     this->RegisterChunk(chunk);
     count -= to_write;
     points += to_write;
   }
 }
 
-DataChunk *DataSeries::CreateEmptyChunk() {
+sdb_data_chunk_t *DataSeries::CreateEmptyChunk() {
   int buffer_size = this->points_per_chunk / 2;
-  byte_t *buffer = Allocator::New<byte_t>(buffer_size);
-  int to_allocate = DataChunk::CalculateChunkSize(this->points_per_chunk);
+  void *buffer = sdb_alloc(buffer_size);
+  int to_allocate = sdb_data_chunk_calculate_size(this->points_per_chunk);
 
   sdb_file_t *file = sdb_file_open(this->file_name.c_str());
   sdb_file_seek(file, 0, SEEK_END);
@@ -268,15 +271,15 @@ DataChunk *DataSeries::CreateEmptyChunk() {
   Allocator::Delete(buffer);
   sdb_file_close(file);
 
-  return DataChunk::Load(
-      this->file_name,
-      DataChunk::CalculateChunkSize(this->points_per_chunk) * this->chunks.size(),
+  return sdb_data_chunk_create(
+      this->file_name.c_str(),
+      sdb_data_chunk_calculate_size(this->points_per_chunk) * this->chunks.size(),
       this->points_per_chunk);
 }
 
 void DataSeries::DeleteChunks() {
   for (auto chunk : this->chunks) {
-    delete chunk;
+    sdb_data_chunk_destroy(chunk);
   }
 
   this->chunks.clear();

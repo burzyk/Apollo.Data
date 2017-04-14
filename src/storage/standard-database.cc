@@ -50,7 +50,7 @@ StandardDatabase *StandardDatabase::Init(std::string directory, Log *log, int po
   return new StandardDatabase(directory, log, points_per_chunk);
 }
 
-int StandardDatabase::Write(data_series_id_t series_id, data_point_t *points, int count) {
+int StandardDatabase::Write(data_series_id_t series_id, sdb_data_point_t *points, int count) {
   DataSeries *series = this->FindDataSeries(series_id);
   series->Write(points, count);
 
@@ -78,7 +78,10 @@ DataSeries *StandardDatabase::FindDataSeries(data_series_id_t series_id) {
     }
   }
 
-  return this->series[series_id];
+  DataSeries *result = this->series[series_id];
+  sdb_rwlock_unlock(this->lock);
+
+  return result;
 }
 
 }  // namespace shakadb
