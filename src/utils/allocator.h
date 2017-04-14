@@ -28,8 +28,6 @@
 
 #include <cstdlib>
 
-#include "src/fatal-exception.h"
-
 namespace shakadb {
 
 class Allocator {

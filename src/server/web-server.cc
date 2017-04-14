@@ -30,7 +30,6 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include "src/fatal-exception.h"
 #include "src/utils/allocator.h"
 
 namespace shakadb {
@@ -57,7 +56,7 @@ void WebServer::Listen() {
   signal(SIGPIPE, SIG_IGN);
 
   if ((this->master_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    throw FatalException("Unable to open main socket");
+    die("Unable to open main socket");
   }
 
   sockaddr_in addr;
@@ -66,11 +65,11 @@ void WebServer::Listen() {
   addr.sin_addr.s_addr = inet_addr("0.0.0.0");
 
   if (bind(this->master_socket, (struct sockaddr *)&addr, sizeof(sockaddr_in)) == -1) {
-    throw FatalException("Unable to bind to the socket");
+    die("Unable to bind to the socket");
   }
 
   if (listen(this->master_socket, this->backlog) == -1) {
-    throw FatalException("Unable to listen");
+    die("Unable to listen");
   }
 
   this->is_running = true;

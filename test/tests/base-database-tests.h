@@ -30,7 +30,6 @@
 #include <string>
 
 #include "src/storage/database.h"
-#include "src/fatal-exception.h"
 #include "src/storage/standard-database.h"
 #include "src/utils/allocator.h"
 #include "test/framework/test-context.h"
