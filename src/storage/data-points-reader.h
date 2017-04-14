@@ -26,7 +26,7 @@
 #ifndef SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
 #define SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
 
-#include "src/c_common.h"
+#include "src/common.h"
 
 #ifdef __cplusplus
 extern "C" {

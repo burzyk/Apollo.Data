@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 14/04/2017.
 //
 
-#ifndef SRC_C_COMMON_H_
-#define SRC_C_COMMON_H_
+#ifndef SRC_COMMON_H_
+#define SRC_COMMON_H_
 
 #include <stdint.h>
 
@@ -33,4 +33,4 @@ sdb_timestamp_t sdb_max(sdb_timestamp_t a, sdb_timestamp_t b);
 }
 #endif
 
-#endif  // SRC_C_COMMON_H_
+#endif  // SRC_COMMON_H_

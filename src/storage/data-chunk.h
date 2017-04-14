@@ -26,7 +26,7 @@
 #ifndef SRC_STORAGE_DATA_CHUNK_H_
 #define SRC_STORAGE_DATA_CHUNK_H_
 
-#include "src/c_common.h"
+#include "src/common.h"
 #include "src/utils/threading.h"
 
 #ifdef __cplusplus

@@ -2,7 +2,7 @@
 // Created by Pawel Burzynski on 14/04/2017.
 //
 
-#include "src/c_common.h"
+#include "src/common.h"
 
 #include <stdio.h>
 #include <stdlib.h>

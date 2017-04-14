@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "src/c_common.h"
+#include "src/common.h"
 #include "src/utils/diagnostics.h"
 #include "src/utils/memory.h"
 #include "src/utils/threading.h"
@@ -88,7 +88,7 @@ void sdb_log_write(const char *level, const char *message) {
     }
   }
 
-  time_t t = time(g_log);
+  time_t t = time(NULL);
   struct tm now;
   localtime_r(&t, &now);
 
@@ -100,7 +100,7 @@ void sdb_log_write(const char *level, const char *message) {
           level,
           message);
 
-  if (level == "FATAL") {
+  if (!strcmp(level, "FATAL")) {
     fflush(g_log->output);
   }
 

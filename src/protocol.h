@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "src/c_common.h"
+#include "src/common.h"
 
 #include "src/utils/network.h"
 

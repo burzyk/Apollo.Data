@@ -4,7 +4,7 @@
 
 #include "src/utils/threading.h"
 #include "src/utils/memory.h"
-#include "src/c_common.h"
+#include "src/common.h"
 
 sdb_thread_t *sdb_thread_create() {
   return (sdb_thread_t *)sdb_alloc(sizeof(sdb_thread_t));
