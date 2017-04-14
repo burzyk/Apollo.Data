@@ -29,7 +29,7 @@
 #include <list>
 #include <map>
 
-#include "src/utils/thread.h"
+#include "src/utils/threading.h"
 #include "src/utils/monitor.h"
 #include "src/server/server.h"
 #include "src/protocol.h"
@@ -52,7 +52,7 @@ class WebServer : public Server {
     Monitor *lock;
   };
 
-  void WorkerRoutine();
+  static void WorkerRoutine(void *data);
   int AllocateClient(sdb_socket_t socket);
   void CloseClient(int client_id);
 
@@ -60,7 +60,7 @@ class WebServer : public Server {
   int port;
   int backlog;
   int max_clients;
-  std::list<Thread *> thread_pool;
+  std::list<sdb_thread_t *> thread_pool;
   std::list<ServerListener *> listeners;
   int master_socket;
   volatile bool is_running;

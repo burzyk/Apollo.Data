@@ -26,11 +26,8 @@
 #include "test/framework/test-runner.h"
 #include "src/utils/allocator.h"
 #include "src/utils/disk.h"
-#include "test/tests/monitor-tests.h"
 #include "test/tests/base-database-tests.h"
 #include "test/tests/database-basic-tests.h"
-#include "test/tests/database-performance-tests.h"
-#include "test/tests/database-concurrency-tests.h"
 #include "test/tests/rw-lock-tests.h"
 
 #define RUN_TESTS
@@ -87,27 +84,6 @@ int main() {
   TEST(rwlock, double_read_lock_test);
   TEST(rwlock, upgrade_lock_test);
   TEST(rwlock, release_and_lock_again_test);
-
-  auto monitor = shakadb::test::MonitorTests();
-  TEST(monitor, create_delete_test);
-  TEST(monitor, enter_test);
-  TEST(monitor, enter_two_threads_test);
-
-  auto database_performance = shakadb::test::DatabasePerformanceTests();
-  TEST_PERF(database_performance, sequential_write_small);
-  TEST_PERF(database_performance, sequential_write_medium);
-  TEST_PERF(database_performance, sequential_write_large);
-  TEST_PERF(database_performance, read_small);
-  TEST_PERF(database_performance, read_medium);
-  TEST_PERF(database_performance, read_large);
-  TEST_PERF(database_performance, random_write_small);
-  TEST_PERF(database_performance, random_write_medium);
-  TEST_PERF(database_performance, random_write_large);
-
-  auto database_concurrent = shakadb::test::DatabaseConcurrencyTests();
-  TEST_PERF(database_concurrent, access_small);
-  TEST_PERF(database_concurrent, access_medium);
-  TEST_PERF(database_concurrent, access_large);
 
   runner.PrintSummary();
   printf("==================== Tests finished ===================\n");

@@ -74,29 +74,32 @@ void WebServer::Listen() {
   this->is_running = true;
 
   for (int i = 0; i < this->max_clients; i++) {
-    Thread *worker = new Thread([this](void *) -> void { this->WorkerRoutine(); }, this->log);
+    sdb_thread_t *worker = sdb_thread_create();
+    sdb_thread_start(worker, (sdb_thread_routine_t)WorkerRoutine, this);
     this->thread_pool.push_back(worker);
-    worker->Start(this);
+
   }
 }
 
-void WebServer::WorkerRoutine() {
-  while (this->is_running) {
+void WebServer::WorkerRoutine(void *data) {
+  WebServer *_this = (WebServer *)data;
+
+  while (_this->is_running) {
     int client_socket;
 
-    if ((client_socket = sdb_socket_accept(this->master_socket)) != -1) {
-      int client_id = this->AllocateClient(client_socket);
+    if ((client_socket = sdb_socket_accept(_this->master_socket)) != -1) {
+      int client_id = _this->AllocateClient(client_socket);
       sdb_packet_t *packet = NULL;
 
       while ((packet = sdb_packet_receive(client_socket)) != NULL) {
-        for (auto listener : this->listeners) {
+        for (auto listener : _this->listeners) {
           listener->OnPacketReceived(client_id, packet);
         }
 
         sdb_packet_destroy(packet);
       }
 
-      this->CloseClient(client_id);
+      _this->CloseClient(client_id);
     }
   }
 }
@@ -114,8 +117,7 @@ void WebServer::Close() {
   close(this->master_socket);
 
   for (auto thread : this->thread_pool) {
-    thread->Join();
-    delete thread;
+    sdb_thread_join_and_destroy(thread);
   }
 }
 

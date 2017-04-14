@@ -20,7 +20,7 @@ typedef char sdb_packet_type_t;
 typedef char sdb_response_code_t;
 
 #define SDB_RESPONSE_OK ((sdb_response_code_t)0)
-#define SDB_RESPONSE_ERROR  ((sdb_response_code_t)0)
+#define SDB_RESPONSE_ERROR  ((sdb_response_code_t)1)
 
 #define SDB_WRITE_REQUEST ((sdb_packet_type_t)1)
 #define SDB_WRITE_RESPONSE  ((sdb_packet_type_t)2)
