@@ -30,7 +30,6 @@
 #include <map>
 
 #include "src/utils/thread.h"
-#include "src/utils/socket-stream.h"
 #include "src/utils/monitor.h"
 #include "src/server/server.h"
 #include "src/protocol.h"

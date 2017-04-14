@@ -24,7 +24,6 @@
 
 #include "test/framework/test-context.h"
 #include "test/framework/test-runner.h"
-#include "test/tests/ring-buffer-tests.h"
 #include "src/utils/allocator.h"
 #include "src/utils/disk.h"
 #include "test/tests/monitor-tests.h"
@@ -83,15 +82,6 @@ int main() {
   TEST(database_basic, database_truncate);
   TEST(database_basic, database_truncate_multiple);
   TEST(database_basic, database_truncate_write_again);
-
-  auto ring_buffer = shakadb::test::RingBufferTests();
-  TEST(ring_buffer, create_delete_test);
-  TEST(ring_buffer, empty_read_test);
-  TEST(ring_buffer, empty_peek_test);
-  TEST(ring_buffer, simple_write_test);
-  TEST(ring_buffer, multiple_write_with_peerk_and_read_test);
-  TEST(ring_buffer, multiple_write_hitting_limit_test);
-  TEST(ring_buffer, multiple_write_and_read_loop_test);
 
   auto rwlock = shakadb::test::RwLockTests();
   TEST(rwlock, double_read_lock_test);
