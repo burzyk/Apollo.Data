@@ -40,21 +40,21 @@ void DatabaseBasicTests::basic_database_write_and_read_all(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
   Write(db.get(), 12345, 5, 3);
-  ValidateRead(db.get(), 12345, 15, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::write_database_in_one_big_batch(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
   Write(db.get(), 12345, 1, 32);
-  ValidateRead(db.get(), 12345, 32, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 32, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::write_database_in_multiple_small_batches(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
   Write(db.get(), 12345, 32, 1);
-  ValidateRead(db.get(), 12345, 32, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 32, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_multi_write_and_read_all(TestContext ctx) {
@@ -64,7 +64,7 @@ void DatabaseBasicTests::database_multi_write_and_read_all(TestContext ctx) {
   Write(db.get(), 12345, 100, 3);
   Write(db.get(), 12345, 100, 3);
   Write(db.get(), 12345, 100, 3);
-  ValidateRead(db.get(), 12345, 300, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 300, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_write_history(TestContext ctx) {
@@ -74,26 +74,26 @@ void DatabaseBasicTests::database_write_history(TestContext ctx) {
   Write(db.get(), 12345, 5, 3, 1000);
   Write(db.get(), 12345, 5, 3, 100);
   Write(db.get(), 12345, 5, 3, 10);
-  ValidateRead(db.get(), 12345, 60, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_write_close_and_write_more(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
   Write(db.get(), 12345, 5, 3);
-  ValidateRead(db.get(), 12345, 15, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
   db.reset();
   db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
   Write(db.get(), 12345, 5, 3, 100);
-  ValidateRead(db.get(), 12345, 30, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 30, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
   db.reset();
   db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
   Write(db.get(), 12345, 5, 3, 1000);
-  ValidateRead(db.get(), 12345, 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_continuous_write(TestContext ctx) {
@@ -102,7 +102,7 @@ void DatabaseBasicTests::database_continuous_write(TestContext ctx) {
   Write(db.get(), 12345, 5, 3);
   Write(db.get(), 12345, 5, 3, 30);
   Write(db.get(), 12345, 5, 3, 100);
-  ValidateRead(db.get(), 12345, 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_continuous_write_with_pickup(TestContext ctx) {
@@ -111,7 +111,7 @@ void DatabaseBasicTests::database_continuous_write_with_pickup(TestContext ctx) 
   Write(db.get(), 12345, 5, 3);
   Write(db.get(), 12345, 5, 3, 30);
   Write(db.get(), 12345, 5, 3, 100);
-  ValidateRead(db.get(), 12345, 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
   db.reset();
   db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
@@ -119,7 +119,7 @@ void DatabaseBasicTests::database_continuous_write_with_pickup(TestContext ctx) 
   Write(db.get(), 12345, 5, 3, 800);
   Write(db.get(), 12345, 5, 3, 10000);
   Write(db.get(), 12345, 5, 3, 100000);
-  ValidateRead(db.get(), 12345, 90, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 90, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_write_batch_size_equal_to_page_capacity(TestContext ctx) {
@@ -131,7 +131,7 @@ void DatabaseBasicTests::database_write_batch_size_equal_to_page_capacity(TestCo
   Write(db.get(), 12345, 5, 5);
   Write(db.get(), 12345, 5, 5);
   Write(db.get(), 12345, 5, 5);
-  ValidateRead(db.get(), 12345, 25, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 25, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_write_batch_size_greater_than_page_capacity(TestContext ctx) {
@@ -139,7 +139,7 @@ void DatabaseBasicTests::database_write_batch_size_greater_than_page_capacity(Te
 
   Write(db.get(), 12345, 100, 7);
   Write(db.get(), 12345, 100, 7);
-  ValidateRead(db.get(), 12345, 700, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 700, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_write_replace(TestContext ctx) {
@@ -199,37 +199,37 @@ void DatabaseBasicTests::database_truncate(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
 
   Write(db.get(), 12345, 1, 100);
-  ValidateRead(db.get(), 12345, 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
   db->Truncate(12345);
 
-  ValidateRead(db.get(), 12345, 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_truncate_multiple(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
 
   Write(db.get(), 12345, 100, 1);
-  ValidateRead(db.get(), 12345, 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
   db->Truncate(12345);
   db->Truncate(1234555);
   db->Truncate(12345);
 
-  ValidateRead(db.get(), 12345, 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 void DatabaseBasicTests::database_truncate_write_again(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
 
   Write(db.get(), 12345, 100, 1);
-  ValidateRead(db.get(), 12345, 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
   db->Truncate(12345);
 
-  ValidateRead(db.get(), 12345, 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
   Write(db.get(), 12345, 100, 1);
-  ValidateRead(db.get(), 12345, 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 }
 
 }  // namespace test

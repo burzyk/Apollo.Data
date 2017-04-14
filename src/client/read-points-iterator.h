@@ -29,7 +29,6 @@
 #include <functional>
 #include <src/utils/network.h>
 #include <src/protocol.h>
-#include <src/data-point.h>
 
 namespace shakadb {
 
@@ -38,7 +37,7 @@ class ReadPointsIterator {
   explicit ReadPointsIterator(sdb_socket_t sock);
   ~ReadPointsIterator();
 
-  data_point_t *CurrentDataPoints();
+  sdb_data_point_t *CurrentDataPoints();
   int CurrentDataPointsCount();
   bool MoveNext();
 

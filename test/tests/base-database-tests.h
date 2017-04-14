@@ -42,12 +42,12 @@ class BaseDatabaseTests {
  public:
   virtual ~BaseDatabaseTests() {}
  protected:
-  static void Write(Database *db, data_series_id_t series_id, int batches, int count, timestamp_t time = 1);
+  static void Write(Database *db, sdb_data_series_id_t series_id, int batches, int count, sdb_timestamp_t time = 1);
   static void ValidateRead(Database *db,
-                           data_series_id_t series_id,
+                           sdb_data_series_id_t series_id,
                            int expected_count,
-                           timestamp_t begin,
-                           timestamp_t end,
+                           sdb_timestamp_t begin,
+                           sdb_timestamp_t end,
                            int max_points = INT_MAX);
 
   Database *CreateDatabase(int points_per_chunk, int max_pages, TestContext ctx);

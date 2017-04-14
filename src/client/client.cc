@@ -48,7 +48,7 @@ shakadb_result_t shakadb_write_points(shakadb_session_t *session,
                                       shakadb_data_point_t *points,
                                       int points_count) {
   shakadb::Session *s = (shakadb::Session *)session->_session;
-  bool result = s->WritePoints(series_id, (shakadb::data_point_t *)points, points_count);
+  bool result = s->WritePoints(series_id, (sdb_data_point_t *)points, points_count);
   return result ? SHAKADB_RESULT_OK : SHAKADB_RESULT_ERROR;
 }
 

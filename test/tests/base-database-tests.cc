@@ -30,7 +30,11 @@
 namespace shakadb {
 namespace test {
 
-void BaseDatabaseTests::Write(Database *db, data_series_id_t series_id, int batches, int count, timestamp_t time) {
+void BaseDatabaseTests::Write(Database *db,
+                              sdb_data_series_id_t series_id,
+                              int batches,
+                              int count,
+                              sdb_timestamp_t time) {
   if (time == 0) {
     throw ValidationException("Time cannot be 0");
   }
@@ -51,10 +55,10 @@ void BaseDatabaseTests::Write(Database *db, data_series_id_t series_id, int batc
 }
 
 void BaseDatabaseTests::ValidateRead(Database *db,
-                                     data_series_id_t series_id,
+                                     sdb_data_series_id_t series_id,
                                      int expected_count,
-                                     timestamp_t begin,
-                                     timestamp_t end,
+                                     sdb_timestamp_t begin,
+                                     sdb_timestamp_t end,
                                      int max_points) {
   sdb_data_points_reader_t *reader = db->Read(series_id, begin, end, max_points);
   int total_read = reader->points_count;

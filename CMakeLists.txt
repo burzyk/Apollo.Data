@@ -8,7 +8,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address  -fno-omit-frame-pointer 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(SRC_DOMAIN src/data-point.h src/storage/data-points-reader.h src/data-point.cc src/c_common.h src/c_common.c)
+set(SRC_DOMAIN src/storage/data-points-reader.h src/c_common.h src/c_common.c)
 set(SRC_CLIENT src/client/session.cc src/client/session.h src/client/read-points-iterator.cc src/client/read-points-iterator.h src/client/client.h src/client/client.cc)
 set(SRC_PROTOCOL src/protocol.h src/protocol.c)
 set(SRC_SERVER src/server/client-handler.cc src/server/client-handler.h src/server/server.h src/server/web-server.cc src/server/web-server.h)

@@ -38,8 +38,8 @@ ReadPointsIterator::~ReadPointsIterator() {
   }
 }
 
-data_point_t *ReadPointsIterator::CurrentDataPoints() {
-  return this->current == NULL ? NULL : (data_point_t *)((sdb_read_response_t *)this->current->payload)->points;
+sdb_data_point_t *ReadPointsIterator::CurrentDataPoints() {
+  return this->current == NULL ? NULL : ((sdb_read_response_t *)this->current->payload)->points;
 }
 
 int ReadPointsIterator::CurrentDataPointsCount() {

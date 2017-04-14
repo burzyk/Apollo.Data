@@ -112,7 +112,7 @@ void DataSeries::Truncate() {
   sdb_rwlock_unlock(this->series_lock);
 }
 
-sdb_data_points_reader_t *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_points) {
+sdb_data_points_reader_t *DataSeries::Read(sdb_timestamp_t begin, sdb_timestamp_t end, int max_points) {
   sdb_rwlock_rdlock(this->series_lock);
   std::list<sdb_data_chunk_t *> filtered_chunks;
 
@@ -127,7 +127,7 @@ sdb_data_points_reader_t *DataSeries::Read(timestamp_t begin, timestamp_t end, i
     return sdb_data_points_reader_create(0);
   }
 
-  auto comp = [](sdb_data_point_t p, timestamp_t t) -> bool { return p.time < t; };
+  auto comp = [](sdb_data_point_t p, sdb_timestamp_t t) -> bool { return p.time < t; };
 
   sdb_data_point_t *front_begin = sdb_data_chunk_read(filtered_chunks.front());
   sdb_data_point_t *front_end = front_begin + filtered_chunks.front()->number_of_points;

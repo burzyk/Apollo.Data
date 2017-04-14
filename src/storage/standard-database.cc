@@ -49,27 +49,27 @@ StandardDatabase *StandardDatabase::Init(std::string directory, int points_per_c
   return new StandardDatabase(directory, points_per_chunk);
 }
 
-int StandardDatabase::Write(data_series_id_t series_id, sdb_data_point_t *points, int count) {
+int StandardDatabase::Write(sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
   DataSeries *series = this->FindDataSeries(series_id);
   series->Write(points, count);
 
   return 0;
 }
 
-void StandardDatabase::Truncate(data_series_id_t series_id) {
+void StandardDatabase::Truncate(sdb_data_series_id_t series_id) {
   DataSeries *series = this->FindDataSeries(series_id);
   series->Truncate();
 }
 
-sdb_data_points_reader_t *StandardDatabase::Read(data_series_id_t series_id,
-                                         timestamp_t begin,
-                                         timestamp_t end,
-                                         int max_points) {
+sdb_data_points_reader_t *StandardDatabase::Read(sdb_data_series_id_t series_id,
+                                                 sdb_timestamp_t begin,
+                                                 sdb_timestamp_t end,
+                                                 int max_points) {
   DataSeries *series = this->FindDataSeries(series_id);
   return series->Read(begin, end, max_points);
 }
 
-DataSeries *StandardDatabase::FindDataSeries(data_series_id_t series_id) {
+DataSeries *StandardDatabase::FindDataSeries(sdb_data_series_id_t series_id) {
   sdb_rwlock_rdlock(this->lock);
 
   if (this->series.find(series_id) == this->series.end()) {

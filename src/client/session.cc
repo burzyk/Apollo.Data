@@ -78,8 +78,8 @@ Session *Session::Open(std::string server, int port) {
   return sock != -1 ? new Session(sock) : nullptr;
 }
 
-bool Session::WritePoints(data_series_id_t series_id, data_point_t *points, int count) {
-  sdb_packet_t *request = sdb_write_request_create(series_id, (sdb_data_point_t *)points, count);
+bool Session::WritePoints(sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
+  sdb_packet_t *request = sdb_write_request_create(series_id, points, count);
 
   if (!sdb_packet_send_and_destroy(request, this->sock)) {
     return false;
@@ -103,7 +103,7 @@ bool Session::WritePoints(data_series_id_t series_id, data_point_t *points, int 
   return result;
 }
 
-ReadPointsIterator *Session::ReadPoints(data_series_id_t series_id, timestamp_t begin, timestamp_t end) {
+ReadPointsIterator *Session::ReadPoints(sdb_data_series_id_t series_id, sdb_timestamp_t begin, sdb_timestamp_t end) {
   if (!sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), this->sock)) {
     return nullptr;
   }

@@ -37,7 +37,7 @@ void ClientHandler::OnPacketReceived(int client_id, sdb_packet_t *packet) {
   if (packet->header.type == SDB_READ_REQUEST) {
 
     sdb_read_request_t *request = (sdb_read_request_t *)packet->payload;
-    timestamp_t begin = request->begin;
+    sdb_timestamp_t begin = request->begin;
 
     while (true) {
       sdb_data_points_reader_t *reader =

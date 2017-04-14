@@ -29,7 +29,6 @@
 #include <string>
 
 #include "src/protocol.h"
-#include "src/data-point.h"
 #include "src/client/read-points-iterator.h"
 
 namespace shakadb {
@@ -38,8 +37,8 @@ class Session {
  public:
   static Session *Open(std::string server, int port);
 
-  bool WritePoints(data_series_id_t series_id, data_point_t *points, int count);
-  ReadPointsIterator *ReadPoints(data_series_id_t series_id, timestamp_t begin, timestamp_t end);
+  bool WritePoints(sdb_data_series_id_t series_id, sdb_data_point_t *points, int count);
+  ReadPointsIterator *ReadPoints(sdb_data_series_id_t series_id, sdb_timestamp_t begin, sdb_timestamp_t end);
 
  private:
   explicit Session(sdb_socket_t sock);

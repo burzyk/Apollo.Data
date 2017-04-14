@@ -28,7 +28,6 @@
 
 #include <list>
 #include <string>
-#include <src/data-point.h>
 
 #include "src/storage/data-chunk.h"
 #include "data-points-reader.h"
@@ -40,7 +39,7 @@ class DataSeries {
   ~DataSeries();
   static DataSeries *Init(std::string file_name, int points_per_chunk);
 
-  sdb_data_points_reader_t *Read(timestamp_t begin, timestamp_t end, int max_points);
+  sdb_data_points_reader_t *Read(sdb_timestamp_t begin, sdb_timestamp_t end, int max_points);
   void Write(sdb_data_point_t *points, int count);
   void Truncate();
 
