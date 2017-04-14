@@ -4,7 +4,7 @@
 
 #include <string.h>
 #include <src/utils/memory.h>
-#include "c_data_packet.h"
+#include "protocol.h"
 
 sdb_write_request_t *sdb_write_request_deserialize(void *payload, size_t size);
 sdb_write_response_t *sdb_write_response_deserialize(void *payload, size_t size);
@@ -237,6 +237,13 @@ int sdb_packet_send(sdb_packet_t *packet, sdb_socket_t socket) {
 
   // TODO: (pburzynski) return a value
   return 0;
+}
+
+int sdb_packet_send_and_destroy(sdb_packet_t *packet, sdb_socket_t socket) {
+  int status = sdb_packet_send(packet, socket);
+  sdb_packet_destroy(packet);
+
+  return status;
 }
 
 void sdb_packet_destroy(sdb_packet_t *packet) {

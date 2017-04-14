@@ -45,7 +45,7 @@ class StandardDatabase : public Database {
   static StandardDatabase *Init(std::string directory, Log *log, int points_per_chunk);
 
   DataPointsReader *Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points);
-  void Write(data_series_id_t series_id, data_point_t *points, int count);
+  int Write(data_series_id_t series_id, data_point_t *points, int count);
   void Truncate(data_series_id_t series_id);
 
  private:

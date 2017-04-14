@@ -28,9 +28,8 @@
 
 #include <string>
 
+#include "src/protocol.h"
 #include "src/data-point.h"
-#include "src/protocol/data-packet.h"
-#include "src/protocol/read-response.h"
 #include "src/storage/data-points-reader.h"
 #include "src/utils/common.h"
 #include "src/utils/socket-stream.h"
@@ -46,12 +45,9 @@ class Session {
   ReadPointsIterator *ReadPoints(data_series_id_t series_id, timestamp_t begin, timestamp_t end);
 
  private:
-  explicit Session(int sock);
+  explicit Session(sdb_socket_t sock);
 
-  bool SendPacket(DataPacket *packet);
-  DataPacket *ReadPacket();
-
-  SocketStream sock;
+  sdb_socket_t sock;
 };
 
 }  // namespace shakadb

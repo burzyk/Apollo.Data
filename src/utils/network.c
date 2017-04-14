@@ -41,3 +41,7 @@ void sdb_socket_close(sdb_socket_t socket) {
   shutdown(socket, SHUT_RDWR);
   close(socket);
 }
+
+sdb_socket_t sdb_socket_accept(sdb_socket_t socket) {
+  return accept(socket, NULL, NULL);
+}

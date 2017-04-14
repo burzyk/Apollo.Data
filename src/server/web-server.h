@@ -29,11 +29,11 @@
 #include <list>
 #include <map>
 
-#include "src/protocol/data-packet.h"
 #include "src/utils/thread.h"
 #include "src/utils/socket-stream.h"
 #include "src/utils/monitor.h"
 #include "src/server/server.h"
+#include "src/protocol.h"
 
 namespace shakadb {
 
@@ -45,16 +45,16 @@ class WebServer : public Server {
   void Listen();
   void Close();
   void AddServerListener(Server::ServerListener *listener);
-  bool SendPacket(int client_id, DataPacket *packet);
+  bool SendPacket(int client_id, sdb_packet_t *packet);
 
  private:
   struct client_info_t {
-    SocketStream *socket;
+    sdb_socket_t socket;
     Monitor *lock;
   };
 
   void WorkerRoutine();
-  int AllocateClient(SocketStream *socket);
+  int AllocateClient(sdb_socket_t socket);
   void CloseClient(int client_id);
 
   Log *log;

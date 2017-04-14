@@ -48,9 +48,11 @@ StandardDatabase *StandardDatabase::Init(std::string directory, Log *log, int po
   return new StandardDatabase(directory, log, points_per_chunk);
 }
 
-void StandardDatabase::Write(data_series_id_t series_id, data_point_t *points, int count) {
+int StandardDatabase::Write(data_series_id_t series_id, data_point_t *points, int count) {
   DataSeries *series = this->FindDataSeries(series_id);
   series->Write(points, count);
+
+  return 0;
 }
 
 void StandardDatabase::Truncate(data_series_id_t series_id) {

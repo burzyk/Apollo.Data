@@ -25,12 +25,6 @@
 
 #include "client-handler.h"
 
-#include "src/protocol/write-request.h"
-#include "src/protocol/write-response.h"
-#include "src/protocol/read-request.h"
-#include "src/storage/data-points-reader.h"
-#include "src/protocol/read-response.h"
-
 namespace shakadb {
 
 ClientHandler::ClientHandler(Server *server, Database *db, int points_per_packet) {
@@ -39,28 +33,29 @@ ClientHandler::ClientHandler(Server *server, Database *db, int points_per_packet
   this->points_per_packet = points_per_packet;
 }
 
-void ClientHandler::OnClientConnected(int client_id) {
-}
+void ClientHandler::OnPacketReceived(int client_id, sdb_packet_t *packet) {
+  if (packet->header.type == SDB_READ_REQUEST) {
 
-void ClientHandler::OnClientDisconnected(int client_id) {
-}
-
-void ClientHandler::OnPacketReceived(int client_id, DataPacket *packet) {
-  if (packet->GetType() == kReadRequest) {
-
-    ReadRequest *request = static_cast<ReadRequest *>(packet);
-    timestamp_t begin = request->GetBegin();
+    sdb_read_request_t *request = (sdb_read_request_t *)packet->payload;
+    timestamp_t begin = request->begin;
 
     while (true) {
       auto reader = std::unique_ptr<DataPointsReader>(
-          this->db->Read(request->GetSeriesId(), begin, request->GetEnd(), this->points_per_packet));
-      ReadResponse response(reader.get(), begin == request->GetBegin() ? 0 : 1);
+          this->db->Read(request->data_series_id, begin, request->end, this->points_per_packet));
 
-      if (!this->server->SendPacket(client_id, &response)) {
+      int skip = begin == request->begin || reader.get()->GetDataPointsCount() == 0 ? 0 : 1;
+      int sent_points_count = reader->GetDataPointsCount() - skip;
+      sdb_data_point_t *points = (sdb_data_point_t *)&reader->GetDataPoints()[skip];
+
+      sdb_packet_t *response = sdb_read_response_create(SDB_RESPONSE_OK, points, sent_points_count);
+      int send_status = this->server->SendPacket(client_id, response);
+      sdb_packet_destroy(response);
+
+      if (!send_status) {
         return;
       }
 
-      if (response.GetPointsCount() == 0) {
+      if (sent_points_count == 0) {
         break;
       }
 
@@ -68,13 +63,14 @@ void ClientHandler::OnPacketReceived(int client_id, DataPacket *packet) {
     }
   }
 
-  if (packet->GetType() == kWriteRequest) {
+  if (packet->header.type == SDB_WRITE_REQUEST) {
 
-    WriteRequest *request = static_cast<WriteRequest *>(packet);
-    this->db->Write(request->GetSeriesId(), request->GetPoints(), request->GetPointsCount());
+    sdb_write_request_t *request = (sdb_write_request_t *)packet->payload;
+    int status = this->db->Write(request->data_series_id, (data_point_t *)request->points, request->points_count);
 
-    WriteResponse response(kOk);
-    this->server->SendPacket(client_id, &response);
+    sdb_packet_t *response = sdb_write_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK);
+    this->server->SendPacket(client_id, response);
+    sdb_packet_destroy(response);
   }
 }
 

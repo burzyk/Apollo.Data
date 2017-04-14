@@ -27,15 +27,16 @@
 #define SRC_CLIENT_READ_POINTS_ITERATOR_H_
 
 #include <functional>
+#include <src/utils/network.h>
+#include <src/protocol.h>
 
 #include "src/storage/data-points-reader.h"
-#include "src/protocol/read-response.h"
 
 namespace shakadb {
 
 class ReadPointsIterator {
  public:
-  explicit ReadPointsIterator(Stream *response);
+  explicit ReadPointsIterator(sdb_socket_t sock);
   ~ReadPointsIterator();
 
   data_point_t *CurrentDataPoints();
@@ -43,8 +44,8 @@ class ReadPointsIterator {
   bool MoveNext();
 
  private:
-  Stream *response;
-  ReadResponse *current;
+  sdb_socket_t sock;
+  sdb_packet_t *current;
 };
 
 }  // namespace shakadb

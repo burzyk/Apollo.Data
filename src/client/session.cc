@@ -35,14 +35,11 @@
 #include <memory>
 
 #include "src/utils/allocator.h"
-#include "src/protocol/write-request.h"
-#include "src/protocol/read-request.h"
-#include "src/protocol/write-response.h"
 #include "src/client/read-points-iterator.h"
 
 namespace shakadb {
 
-Session::Session(int sock)
+Session::Session(sdb_socket_t sock)
     : sock(sock) {
 }
 
@@ -82,52 +79,36 @@ Session *Session::Open(std::string server, int port) {
 }
 
 bool Session::WritePoints(data_series_id_t series_id, data_point_t *points, int count) {
-  WriteRequest request(series_id, points, count);
+  sdb_packet_t *request = sdb_write_request_create(series_id, (sdb_data_point_t *)points, count);
 
-  if (!this->SendPacket(&request)) {
+  if (!sdb_packet_send_and_destroy(request, this->sock)) {
     return false;
   }
 
-  DataPacket *packet = this->ReadPacket();
+  sdb_packet_t *packet = sdb_packet_receive(this->sock);
 
-  if (packet == nullptr) {
+  if (packet == NULL) {
     return false;
   }
 
-  if (packet->GetType() != kWriteResponse) {
-    delete packet;
+  if (packet->header.type != SDB_WRITE_RESPONSE) {
+    sdb_packet_destroy(packet);
     return false;
   }
 
-  WriteResponse *response = static_cast<WriteResponse *>(packet);
-  bool result = response->GetStatus() == kOk;
-  delete response;
+  sdb_write_response_t *response = (sdb_write_response_t *)packet->payload;
+  bool result = response->code == SDB_RESPONSE_OK;
+  sdb_packet_destroy(packet);
 
   return result;
 }
 
 ReadPointsIterator *Session::ReadPoints(data_series_id_t series_id, timestamp_t begin, timestamp_t end) {
-  ReadRequest request(series_id, begin, end);
-
-  if (!this->SendPacket(&request)) {
+  if (!sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), this->sock)) {
     return nullptr;
   }
 
-  return new ReadPointsIterator(&this->sock);
-}
-
-bool Session::SendPacket(DataPacket *packet) {
-  for (auto fragment : packet->GetFragments()) {
-    if (this->sock.Write(fragment->GetBuffer(), fragment->GetSize()) != fragment->GetSize()) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-DataPacket *Session::ReadPacket() {
-  return DataPacket::Load(&this->sock);
+  return new ReadPointsIterator(this->sock);
 }
 
 }  // namespace shakadb

@@ -17,7 +17,7 @@ typedef uint32_t sdb_data_series_id_t;
 #define SDB_TIMESTAMP_MIN 0;
 #define SDB_TIMESTAMP_MAX UINT64_MAX;
 
-typedef struct {
+typedef struct sdb_data_point_s {
   sdb_timestamp_t time;
   float value;
 } __attribute__((packed)) sdb_data_point_t;

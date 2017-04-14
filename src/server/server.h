@@ -30,7 +30,7 @@
 #include <list>
 
 #include "src/log.h"
-#include "src/protocol/data-packet.h"
+#include "src/protocol.h"
 
 namespace shakadb {
 
@@ -39,16 +39,14 @@ class Server {
   class ServerListener {
    public:
     virtual ~ServerListener() {}
-    virtual void OnClientConnected(int client_id) = 0;
-    virtual void OnClientDisconnected(int client_id) = 0;
-    virtual void OnPacketReceived(int client_id, DataPacket *packet) = 0;
+    virtual void OnPacketReceived(int client_id, sdb_packet_t *packet) = 0;
   };
 
   virtual ~Server() {}
   virtual void Listen() = 0;
   virtual void Close() = 0;
   virtual void AddServerListener(ServerListener *listener) = 0;
-  virtual bool SendPacket(int client_id, DataPacket *packet) = 0;
+  virtual bool SendPacket(int client_id, sdb_packet_t *packet) = 0;
 };
 
 }  // namespace shakadb

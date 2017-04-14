@@ -2,8 +2,8 @@
 // Created by Pawel Burzynski on 14/04/2017.
 //
 
-#ifndef SRC_PROTOCOL_C_DATA_PACKET_H_
-#define SRC_PROTOCOL_C_DATA_PACKET_H_
+#ifndef SRC_PROTOCOL_H_
+#define SRC_PROTOCOL_H_
 
 #include <stdint.h>
 #include <stddef.h>
@@ -66,13 +66,14 @@ sdb_packet_t *sdb_write_request_create(sdb_data_series_id_t data_series_id, sdb_
 sdb_packet_t *sdb_write_response_create(sdb_response_code_t code);
 sdb_packet_t *sdb_read_request_create(sdb_data_series_id_t data_series_id, sdb_timestamp_t begin, sdb_timestamp_t end);
 sdb_packet_t *sdb_read_response_create(sdb_response_code_t code, sdb_data_point_t *points, int points_count);
-sdb_packet_t *sdb_packet_receive(sdb_socket_t socket);
 
+sdb_packet_t *sdb_packet_receive(sdb_socket_t socket);
 int sdb_packet_send(sdb_packet_t *packet, sdb_socket_t socket);
+int sdb_packet_send_and_destroy(sdb_packet_t *packet, sdb_socket_t socket);
 void sdb_packet_destroy(sdb_packet_t *packet);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // SRC_PROTOCOL_C_DATA_PACKET_H_
+#endif  // SRC_PROTOCOL_H_

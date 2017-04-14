@@ -32,50 +32,50 @@
 
 namespace shakadb {
 
-ReadPointsIterator::ReadPointsIterator(Stream *response) {
-  this->response = response;
-  this->current = nullptr;
+ReadPointsIterator::ReadPointsIterator(sdb_socket_t sock) {
+  this->sock = sock;
+  this->current = NULL;
 }
 
 ReadPointsIterator::~ReadPointsIterator() {
-  if (this->current != nullptr) {
-    delete this->current;
+  if (this->current != NULL) {
+    sdb_packet_destroy(this->current);
   }
 }
 
 data_point_t *ReadPointsIterator::CurrentDataPoints() {
-  return this->current == nullptr ? nullptr : this->current->GetPoints();
+  return this->current == NULL ? NULL : (data_point_t *)((sdb_read_response_t *)this->current->payload)->points;
 }
 
 int ReadPointsIterator::CurrentDataPointsCount() {
-  return this->current == nullptr ? -1 : this->current->GetPointsCount();
+  return this->current == NULL ? -1 : ((sdb_read_response_t *)this->current->payload)->points_count;
 }
 
 bool ReadPointsIterator::MoveNext() {
-  if (this->current != nullptr) {
-    delete this->current;
-    this->current = nullptr;
+  if (this->current != NULL) {
+    sdb_packet_destroy(this->current);
+    this->current = NULL;
   }
 
-  DataPacket *packet = DataPacket::Load(this->response);
+  sdb_packet_t *packet = sdb_packet_receive(this->sock);
 
-  if (packet == nullptr) {
+  if (packet == NULL) {
     return false;
   }
 
-  if (packet->GetType() != kReadResponse) {
-    delete packet;
+  if (packet->header.type != SDB_READ_RESPONSE) {
+    sdb_packet_destroy(packet);
     return false;
   }
 
-  ReadResponse *response = static_cast<ReadResponse *>(packet);
+  sdb_read_response_t *response = (sdb_read_response_t *)packet->payload;
 
-  if (response->GetPointsCount() == 0) {
-    delete response;
+  if (response->points_count == 0) {
+    sdb_packet_destroy(packet);
     return false;
   }
 
-  this->current = response;
+  this->current = packet;
   return true;
 }
 

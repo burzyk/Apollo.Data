@@ -34,10 +34,7 @@ namespace shakadb {
 class ClientHandler : public Server::ServerListener {
  public:
   ClientHandler(Server *server, Database *db, int points_per_packet);
-
-  void OnClientConnected(int client_id);
-  void OnClientDisconnected(int client_id);
-  void OnPacketReceived(int client_id, DataPacket *packet);
+  void OnPacketReceived(int client_id, sdb_packet_t *packet);
 
  private:
   Server *server;
