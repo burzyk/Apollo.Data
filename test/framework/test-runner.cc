@@ -62,27 +62,6 @@ int TestRunner::RunTest(std::string name, std::function<void(TestContext)> func)
   }
 }
 
-int TestRunner::RunPerfTest(std::string name, std::function<Stopwatch(TestContext)> func) {
-  printf("Running performance: %s ...", name.c_str());
-
-  try {
-    std::string dir = this->directory + "/" + name;
-    sdb_directory_create(dir.c_str());
-    TestContext ctx(dir);
-
-    Stopwatch sw = func(ctx);
-
-    printf(ANSI_COLOR_GREEN " [ OK ]" ANSI_COLOR_RESET);
-    printf(ANSI_COLOR_GREEN " [ %fs ]\n" ANSI_COLOR_RESET, sw.GetElapsedSeconds());
-    this->tests_success++;
-    return 0;
-  } catch (...) {
-    printf(ANSI_COLOR_RED " [ Failed ]\n" ANSI_COLOR_RESET);
-    this->tests_failed++;
-    return -1;
-  }
-}
-
 void TestRunner::PrintSummary() {
   printf("Test run: %d, failed: %d\n", this->tests_success + this->tests_failed, this->tests_failed);
 }

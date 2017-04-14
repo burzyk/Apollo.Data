@@ -25,12 +25,9 @@
 
 #include "src/storage/standard-data-points-reader.h"
 
-#include <string.h>
 #include <cstdlib>
-#include <algorithm>
 #include <src/utils/memory.h>
 
-#include "src/utils/common.h"
 #include "src/utils/allocator.h"
 
 namespace shakadb {

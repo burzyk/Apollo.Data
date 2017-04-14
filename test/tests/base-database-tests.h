@@ -32,7 +32,6 @@
 #include "src/storage/database.h"
 #include "src/file-log.h"
 #include "src/fatal-exception.h"
-#include "src/utils/stopwatch.h"
 #include "src/storage/standard-database.h"
 #include "src/utils/allocator.h"
 #include "test/framework/test-context.h"

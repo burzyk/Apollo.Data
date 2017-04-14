@@ -26,11 +26,9 @@
 #include "src/storage/data-series.h"
 
 #include <cstdlib>
-#include <algorithm>
 #include <src/utils/memory.h>
+#include <src/utils/diagnostics.h>
 
-#include "src/utils/stopwatch.h"
-#include "src/utils/common.h"
 #include "src/utils/disk.h"
 #include "src/utils/allocator.h"
 #include "src/storage/standard-data-points-reader.h"
@@ -51,11 +49,10 @@ DataSeries::~DataSeries() {
 
 DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *log) {
   log->Info("Loading data series ...");
-  Stopwatch sw;
   DataSeries *series = new DataSeries(file_name, points_per_chunk, log);
   int chunk_size = sdb_data_chunk_calculate_size(points_per_chunk);
 
-  sw.Start();
+  sdb_stopwatch_t *sw = sdb_stopwatch_start();
 
   for (int i = 0; i < sdb_file_size(file_name.c_str()) / chunk_size; i++) {
     sdb_data_chunk_t *chunk = sdb_data_chunk_create(file_name.c_str(), (uint64_t)i * chunk_size, points_per_chunk);
@@ -67,8 +64,7 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *l
     }
   }
 
-  sw.Stop();
-  log->Info("Data series loaded in: " + std::to_string(sw.GetElapsedSeconds()) + "[s]");
+  log->Info("Data series loaded in: " + std::to_string(sdb_stopwatch_stop_and_destroy(sw)) + "[s]");
   return series;
 }
 

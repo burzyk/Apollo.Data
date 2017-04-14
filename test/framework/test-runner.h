@@ -28,7 +28,7 @@
 
 #include <string>
 
-#include "src/utils/stopwatch.h"
+#include "src/utils/diagnostics.h"
 #include "test/framework/test-context.h"
 
 namespace shakadb {
@@ -39,7 +39,6 @@ class TestRunner {
   explicit TestRunner(std::string directory);
 
   int RunTest(std::string name, std::function<void(TestContext)> func);
-  int RunPerfTest(std::string name, std::function<Stopwatch(TestContext)> func);
 
   void PrintSummary();
 

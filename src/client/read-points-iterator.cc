@@ -25,11 +25,6 @@
 
 #include "src/client/read-points-iterator.h"
 
-#include <list>
-
-#include "src/utils/allocator.h"
-#include "src/utils/common.h"
-
 namespace shakadb {
 
 ReadPointsIterator::ReadPointsIterator(sdb_socket_t sock) {
