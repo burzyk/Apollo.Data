@@ -74,11 +74,7 @@ void BaseDatabaseTests::ValidateRead(Database *db,
 }
 
 Database *BaseDatabaseTests::CreateDatabase(int points_per_chunk, int max_pages, TestContext ctx) {
-  return StandardDatabase::Init(ctx.GetWorkingDirectory(), this->GetLog(), points_per_chunk);
-}
-
-Log *BaseDatabaseTests::GetLog() {
-  return &this->log;
+  return StandardDatabase::Init(ctx.GetWorkingDirectory(), points_per_chunk);
 }
 
 }  // namespace test

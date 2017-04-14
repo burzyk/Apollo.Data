@@ -29,7 +29,6 @@
 #include <vector>
 #include <list>
 
-#include "src/log.h"
 #include "src/protocol.h"
 
 namespace shakadb {

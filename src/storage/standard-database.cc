@@ -30,9 +30,8 @@
 
 namespace shakadb {
 
-StandardDatabase::StandardDatabase(std::string directory, Log *log, int points_per_chunk) {
+StandardDatabase::StandardDatabase(std::string directory, int points_per_chunk) {
   this->directory = directory;
-  this->log = log;
   this->points_per_chunk = points_per_chunk;
   this->lock = sdb_rwlock_create();
 }
@@ -46,8 +45,8 @@ StandardDatabase::~StandardDatabase() {
   sdb_rwlock_destroy(this->lock);
 }
 
-StandardDatabase *StandardDatabase::Init(std::string directory, Log *log, int points_per_chunk) {
-  return new StandardDatabase(directory, log, points_per_chunk);
+StandardDatabase *StandardDatabase::Init(std::string directory, int points_per_chunk) {
+  return new StandardDatabase(directory, points_per_chunk);
 }
 
 int StandardDatabase::Write(data_series_id_t series_id, sdb_data_point_t *points, int count) {
@@ -62,7 +61,10 @@ void StandardDatabase::Truncate(data_series_id_t series_id) {
   series->Truncate();
 }
 
-DataPointsReader *StandardDatabase::Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points) {
+DataPointsReader *StandardDatabase::Read(data_series_id_t series_id,
+                                         timestamp_t begin,
+                                         timestamp_t end,
+                                         int max_points) {
   DataSeries *series = this->FindDataSeries(series_id);
   return series->Read(begin, end, max_points);
 }
@@ -74,7 +76,8 @@ DataSeries *StandardDatabase::FindDataSeries(data_series_id_t series_id) {
     sdb_rwlock_upgrade(this->lock);
 
     if (this->series.find(series_id) == this->series.end()) {
-      this->series[series_id] = DataSeries::Init(this->directory + "/" + std::to_string(series_id), this->points_per_chunk, this->log);
+      this->series[series_id] =
+          DataSeries::Init(this->directory + "/" + std::to_string(series_id), this->points_per_chunk);
     }
   }
 

@@ -30,7 +30,6 @@
 #include <list>
 #include <map>
 
-#include "src/log.h"
 #include "src/storage/data-points-reader.h"
 #include "src/storage/data-chunk.h"
 #include "src/storage/data-series.h"
@@ -41,20 +40,19 @@ namespace shakadb {
 class StandardDatabase : public Database {
  public:
   ~StandardDatabase();
-  static StandardDatabase *Init(std::string directory, Log *log, int points_per_chunk);
+  static StandardDatabase *Init(std::string directory, int points_per_chunk);
 
   DataPointsReader *Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points);
   int Write(data_series_id_t series_id, sdb_data_point_t *points, int count);
   void Truncate(data_series_id_t series_id);
 
  private:
-  StandardDatabase(std::string directory, Log *log, int points_per_chunk);
+  StandardDatabase(std::string directory, int points_per_chunk);
   DataSeries *FindDataSeries(data_series_id_t series_id);
 
   std::string directory;
   int points_per_chunk;
   sdb_rwlock_t *lock;
-  Log *log;
   std::map<data_series_id_t, DataSeries *> series;
 };
 

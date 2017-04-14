@@ -35,10 +35,9 @@
 
 namespace shakadb {
 
-DataSeries::DataSeries(std::string file_name, int points_per_chunk, Log *log) {
+DataSeries::DataSeries(std::string file_name, int points_per_chunk) {
   this->file_name = file_name;
   this->points_per_chunk = points_per_chunk;
-  this->log = log;
   this->series_lock = sdb_rwlock_create();
 }
 
@@ -47,12 +46,11 @@ DataSeries::~DataSeries() {
   sdb_rwlock_destroy(this->series_lock);
 }
 
-DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *log) {
-  log->Info("Loading data series ...");
-  DataSeries *series = new DataSeries(file_name, points_per_chunk, log);
+DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk) {
+  DataSeries *series = new DataSeries(file_name, points_per_chunk);
   int chunk_size = sdb_data_chunk_calculate_size(points_per_chunk);
 
-  sdb_stopwatch_t *sw = sdb_stopwatch_start();
+  // sdb_stopwatch_t *sw = sdb_stopwatch_start();
 
   for (int i = 0; i < sdb_file_size(file_name.c_str()) / chunk_size; i++) {
     sdb_data_chunk_t *chunk = sdb_data_chunk_create(file_name.c_str(), (uint64_t)i * chunk_size, points_per_chunk);
@@ -60,11 +58,11 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk, Log *l
     if (chunk != NULL) {
       series->RegisterChunk(chunk);
     } else {
-      log->Info("Unable to load chunk");
+      // TODO: (pburzynki): Improve logging : log->Info("Unable to load chunk");
     }
   }
 
-  log->Info("Data series loaded in: " + std::to_string(sdb_stopwatch_stop_and_destroy(sw)) + "[s]");
+  // log->Info("Data series loaded in: " + std::to_string(sdb_stopwatch_stop_and_destroy(sw)) + "[s]");
   return series;
 }
 

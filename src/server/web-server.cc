@@ -35,8 +35,7 @@
 
 namespace shakadb {
 
-WebServer::WebServer(int port, int backlog, int max_clients, Log *log) {
-  this->log = log;
+WebServer::WebServer(int port, int backlog, int max_clients) {
   this->port = port;
   this->backlog = backlog;
   this->max_clients = max_clients;

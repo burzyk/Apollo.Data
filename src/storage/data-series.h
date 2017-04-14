@@ -29,7 +29,6 @@
 #include <list>
 #include <string>
 
-#include "src/log.h"
 #include "src/storage/data-points-reader.h"
 #include "src/storage/data-chunk.h"
 
@@ -38,21 +37,20 @@ namespace shakadb {
 class DataSeries {
  public:
   ~DataSeries();
-  static DataSeries *Init(std::string file_name, int points_per_chunk, Log *log);
+  static DataSeries *Init(std::string file_name, int points_per_chunk);
 
   DataPointsReader *Read(timestamp_t begin, timestamp_t end, int max_points);
   void Write(sdb_data_point_t *points, int count);
   void Truncate();
 
  private:
-  DataSeries(std::string file_name, int points_per_chunk, Log *log);
+  DataSeries(std::string file_name, int points_per_chunk);
   void RegisterChunk(sdb_data_chunk_t *chunk);
   void WriteChunk(sdb_data_chunk_t *chunk, sdb_data_point_t *points, int count);
   void ChunkMemcpy(sdb_data_chunk_t *chunk, int position, sdb_data_point_t *points, int count);
   sdb_data_chunk_t *CreateEmptyChunk();
   void DeleteChunks();
 
-  Log *log;
   std::string file_name;
   int points_per_chunk;
   std::list<sdb_data_chunk_t *> chunks;

@@ -30,13 +30,11 @@
 #include <string>
 
 #include "src/storage/database.h"
-#include "src/file-log.h"
 #include "src/fatal-exception.h"
 #include "src/storage/standard-database.h"
 #include "src/utils/allocator.h"
 #include "test/framework/test-context.h"
 #include "test/framework/assert.h"
-#include "test/tests/null-log.h"
 
 namespace shakadb {
 namespace test {
@@ -54,10 +52,6 @@ class BaseDatabaseTests {
                            int max_points = INT_MAX);
 
   Database *CreateDatabase(int points_per_chunk, int max_pages, TestContext ctx);
-  Log *GetLog();
-
- private:
-  NullLog log;
 };
 
 }  // namespace test

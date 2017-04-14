@@ -33,8 +33,6 @@
 extern "C" {
 #endif
 
-#define SDB_FILE_MAX_LEN  1024
-
 typedef struct sdb_data_chunk_s {
   char file_name[SDB_FILE_MAX_LEN];
   uint64_t file_offset;

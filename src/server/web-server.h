@@ -38,7 +38,7 @@ namespace shakadb {
 
 class WebServer : public Server {
  public:
-  WebServer(int port, int backlog, int max_clients, Log *log);
+  WebServer(int port, int backlog, int max_clients);
   ~WebServer();
 
   void Listen();
@@ -56,7 +56,6 @@ class WebServer : public Server {
   int AllocateClient(sdb_socket_t socket);
   void CloseClient(int client_id);
 
-  Log *log;
   int port;
   int backlog;
   int max_clients;

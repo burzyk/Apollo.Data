@@ -29,7 +29,6 @@
 #include <cstdlib>
 
 #include "src/fatal-exception.h"
-#include "src/log.h"
 
 namespace shakadb {
 
