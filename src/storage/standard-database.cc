@@ -50,26 +50,26 @@ StandardDatabase *StandardDatabase::Init(std::string directory, int points_per_c
 }
 
 int StandardDatabase::Write(sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
-  DataSeries *series = this->FindDataSeries(series_id);
-  series->Write(points, count);
+  sdb_data_series_t *series = this->FindDataSeries(series_id);
+  sdb_data_series_write(series, points, count);
 
   return 0;
 }
 
 void StandardDatabase::Truncate(sdb_data_series_id_t series_id) {
-  DataSeries *series = this->FindDataSeries(series_id);
-  series->Truncate();
+  sdb_data_series_t *series = this->FindDataSeries(series_id);
+  sdb_data_series_truncate(series);
 }
 
 sdb_data_points_reader_t *StandardDatabase::Read(sdb_data_series_id_t series_id,
                                                  sdb_timestamp_t begin,
                                                  sdb_timestamp_t end,
                                                  int max_points) {
-  DataSeries *series = this->FindDataSeries(series_id);
-  return series->Read(begin, end, max_points);
+  sdb_data_series_t *series = this->FindDataSeries(series_id);
+  return sdb_data_series_read(series, begin, end, max_points);
 }
 
-DataSeries *StandardDatabase::FindDataSeries(sdb_data_series_id_t series_id) {
+sdb_data_series_t *StandardDatabase::FindDataSeries(sdb_data_series_id_t series_id) {
   sdb_rwlock_rdlock(this->lock);
 
   if (this->series.find(series_id) == this->series.end()) {
@@ -77,11 +77,13 @@ DataSeries *StandardDatabase::FindDataSeries(sdb_data_series_id_t series_id) {
 
     if (this->series.find(series_id) == this->series.end()) {
       this->series[series_id] =
-          DataSeries::Init(this->directory + "/" + std::to_string(series_id), this->points_per_chunk);
+          sdb_data_series_create(
+              (this->directory + "/" + std::to_string(series_id)).c_str(),
+              this->points_per_chunk);
     }
   }
 
-  DataSeries *result = this->series[series_id];
+  sdb_data_series_t *result = this->series[series_id];
   sdb_rwlock_unlock(this->lock);
 
   return result;

@@ -12,6 +12,7 @@ extern "C" {
 #endif
 
 void *sdb_alloc(size_t size);
+void *sdb_realloc(void *buffer, size_t size);
 void sdb_free(void *buffer);
 
 typedef struct sdb_binary_reader_s {

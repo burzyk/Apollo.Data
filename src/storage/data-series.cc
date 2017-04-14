@@ -28,34 +28,42 @@
 #include <cstdlib>
 #include <src/utils/memory.h>
 #include <src/utils/diagnostics.h>
+#include <cmath>
 
 #include "src/utils/disk.h"
 #include "src/storage/data-points-reader.h"
 
-namespace shakadb {
+void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk);
+void sdb_data_series_delete_chunks(sdb_data_series_t *series);
+sdb_data_chunk_t *sdb_data_series_create_empty_chunk(sdb_data_series_t *series);
+void sdb_data_series_write_chunk(sdb_data_series_t *series,
+                                 sdb_data_chunk_t *chunk,
+                                 sdb_data_point_t *points,
+                                 int count);
+void sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
+                                  sdb_data_chunk_t *chunk,
+                                  int position,
+                                  sdb_data_point_t *points,
+                                  int count);
 
-DataSeries::DataSeries(std::string file_name, int points_per_chunk) {
-  this->file_name = file_name;
-  this->points_per_chunk = points_per_chunk;
-  this->series_lock = sdb_rwlock_create();
-}
+sdb_data_series_t *sdb_data_series_create(const char *file_name, int points_per_chunk) {
+  sdb_data_series_t *series = (sdb_data_series_t *)sdb_alloc(sizeof(sdb_data_series_t));
+  strncpy(series->_file_name, file_name, SDB_FILE_MAX_LEN);
+  series->_points_per_chunk = points_per_chunk;
+  series->_series_lock = sdb_rwlock_create();
+  series->_chunks = NULL;
+  series->_max_chunks = 0;
+  series->_chunks_count = 0;
 
-DataSeries::~DataSeries() {
-  this->DeleteChunks();
-  sdb_rwlock_destroy(this->series_lock);
-}
-
-DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk) {
-  DataSeries *series = new DataSeries(file_name, points_per_chunk);
   int chunk_size = sdb_data_chunk_calculate_size(points_per_chunk);
 
   // sdb_stopwatch_t *sw = sdb_stopwatch_start();
 
-  for (int i = 0; i < sdb_file_size(file_name.c_str()) / chunk_size; i++) {
-    sdb_data_chunk_t *chunk = sdb_data_chunk_create(file_name.c_str(), (uint64_t)i * chunk_size, points_per_chunk);
+  for (int i = 0; i < sdb_file_size(file_name) / chunk_size; i++) {
+    sdb_data_chunk_t *chunk = sdb_data_chunk_create(file_name, (uint64_t)i * chunk_size, points_per_chunk);
 
     if (chunk != NULL) {
-      series->RegisterChunk(chunk);
+      sdb_data_series_register_chunk(series, chunk);
     } else {
       // TODO: (pburzynki): Improve logging : log->Info("Unable to load chunk");
     }
@@ -65,64 +73,79 @@ DataSeries *DataSeries::Init(std::string file_name, int points_per_chunk) {
   return series;
 }
 
-void DataSeries::Write(sdb_data_point_t *points, int count) {
-  sdb_rwlock_wrlock(this->series_lock);
+void sdb_data_series_destroy(sdb_data_series_t *series) {
+  sdb_data_series_delete_chunks(series);
 
-  if (this->chunks.size() == 0) {
-    sdb_data_chunk_t *chunk = this->CreateEmptyChunk();
-    this->RegisterChunk(chunk);
+  sdb_rwlock_destroy(series->_series_lock);
+  sdb_free(series);
+}
+
+int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count) {
+  sdb_rwlock_wrlock(series->_series_lock);
+
+  if (series->_chunks_count == 0) {
+    sdb_data_chunk_t *chunk = sdb_data_series_create_empty_chunk(series);
+    sdb_data_series_register_chunk(series, chunk);
   }
 
   int first_current = 0;
-  sdb_data_chunk_t *last_chunk = this->chunks.back();
+  sdb_data_chunk_t *last_chunk = series->_chunks[series->_chunks_count - 1];
 
   while (first_current < count && points[first_current].time <= last_chunk->end) {
     first_current++;
   }
 
-  this->WriteChunk(last_chunk, points + first_current, count - first_current);
+  sdb_data_series_write_chunk(series, last_chunk, points + first_current, count - first_current);
 
   if (first_current != 0) {
     int start = 0;
     int stop = 0;
 
-    for (auto chunk : this->chunks) {
+    for (int i = 0; i < series->_chunks_count; i++) {
+      sdb_data_chunk_t *chunk = series->_chunks[i];
+
       while (stop < first_current && points[stop].time <= chunk->end) {
         stop++;
       }
 
       if (stop != start) {
-        this->WriteChunk(chunk, points + start, stop - start);
+        sdb_data_series_write_chunk(series, chunk, points + start, stop - start);
       }
 
       start = stop;
     }
   }
 
-  sdb_rwlock_unlock(this->series_lock);
+  sdb_rwlock_unlock(series->_series_lock);
+
+  return 0;
 }
 
-void DataSeries::Truncate() {
-  sdb_rwlock_wrlock(this->series_lock);
+void sdb_data_series_truncate(sdb_data_series_t *series) {
+  sdb_rwlock_wrlock(series->_series_lock);
 
-  this->DeleteChunks();
-  sdb_file_truncate(this->file_name.c_str());
+  sdb_data_series_delete_chunks(series);
+  sdb_file_truncate(series->_file_name);
 
-  sdb_rwlock_unlock(this->series_lock);
+  sdb_rwlock_unlock(series->_series_lock);
 }
 
-sdb_data_points_reader_t *DataSeries::Read(sdb_timestamp_t begin, sdb_timestamp_t end, int max_points) {
-  sdb_rwlock_rdlock(this->series_lock);
+sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
+                                               sdb_timestamp_t begin,
+                                               sdb_timestamp_t end,
+                                               int max_points) {
+  sdb_rwlock_rdlock(series->_series_lock);
   std::list<sdb_data_chunk_t *> filtered_chunks;
 
-  for (auto chunk : this->chunks) {
+  for (int i = 0; i < series->_chunks_count; i++) {
+    sdb_data_chunk_t *chunk = series->_chunks[i];
     if (chunk->begin < end && chunk->end >= begin) {
       filtered_chunks.push_back(chunk);
     }
   }
 
   if (filtered_chunks.size() == 0) {
-    sdb_rwlock_unlock(this->series_lock);
+    sdb_rwlock_unlock(series->_series_lock);
     return sdb_data_points_reader_create(0);
   }
 
@@ -142,7 +165,7 @@ sdb_data_points_reader_t *DataSeries::Read(sdb_timestamp_t begin, sdb_timestamp_
     sdb_data_points_reader_t *reader = sdb_data_points_reader_create(total_points);
     sdb_data_points_reader_write(reader, read_begin, total_points);
 
-    sdb_rwlock_unlock(this->series_lock);
+    sdb_rwlock_unlock(series->_series_lock);
     return reader;
   }
 
@@ -162,14 +185,14 @@ sdb_data_points_reader_t *DataSeries::Read(sdb_timestamp_t begin, sdb_timestamp_
   sdb_data_points_reader_t *reader = sdb_data_points_reader_create(std::min(total_points, max_points));
 
   if (!sdb_data_points_reader_write(reader, read_begin, points_from_front)) {
-    sdb_rwlock_unlock(this->series_lock);
+    sdb_rwlock_unlock(series->_series_lock);
     return reader;
   }
 
   for (auto i : filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
       if (!sdb_data_points_reader_write(reader, sdb_data_chunk_read(i), i->number_of_points)) {
-        sdb_rwlock_unlock(this->series_lock);
+        sdb_rwlock_unlock(series->_series_lock);
         return reader;
       }
     }
@@ -177,31 +200,51 @@ sdb_data_points_reader_t *DataSeries::Read(sdb_timestamp_t begin, sdb_timestamp_
 
   sdb_data_points_reader_write(reader, back_begin, points_from_back);
 
-  sdb_rwlock_unlock(this->series_lock);
+  sdb_rwlock_unlock(series->_series_lock);
   return reader;
 }
 
-void DataSeries::RegisterChunk(sdb_data_chunk_t *chunk) {
-  auto i = this->chunks.begin();
-
-  // TODO: (pburzynski) can be optimized
-  while (i != this->chunks.end() && (
-      ((*i)->begin < chunk->begin) ||
-          ((*i)->begin == chunk->begin
-              && (*i)->end < chunk->end))) {
-    i++;
+void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk) {
+  if (series->_chunks_count + 1 >= series->_max_chunks) {
+    series->_max_chunks += SDB_SERIES_GROW_INCREMENT;
+    size_t new_size = series->_max_chunks * sizeof(sdb_data_chunk_t *);
+    series->_chunks = (sdb_data_chunk_t **)sdb_realloc(series->_chunks, new_size);
   }
 
-  this->chunks.insert(i, chunk);
+  sdb_data_chunk_t **chunks_begin = series->_chunks;
+  sdb_data_chunk_t **curr = chunks_begin;
+  sdb_data_chunk_t **chunks_end = chunks_begin + series->_chunks_count;
+
+  // TODO: (pburzynski) can be optimized
+  while (curr != chunks_end && (
+      ((*curr)->begin < chunk->begin) ||
+          ((*curr)->begin == chunk->begin
+              && (*curr)->end < chunk->end))) {
+    curr++;
+  }
+
+  uint64_t index = curr - chunks_begin;
+
+  if (index != series->_chunks_count) {
+    for (int i = series->_chunks_count; i > index; i--) {
+      series->_chunks[i] = series->_chunks[i - 1];
+    }
+  }
+
+  series->_chunks[index] = chunk;
+  series->_chunks_count++;
 }
 
-void DataSeries::WriteChunk(sdb_data_chunk_t *chunk, sdb_data_point_t *points, int count) {
+void sdb_data_series_write_chunk(sdb_data_series_t *series,
+                                 sdb_data_chunk_t *chunk,
+                                 sdb_data_point_t *points,
+                                 int count) {
   if (count == 0) {
     return;
   }
 
   if (chunk->end < points[0].time) {
-    this->ChunkMemcpy(chunk, chunk->number_of_points, points, count);
+    sdb_data_series_chunk_memcpy(series, chunk, chunk->number_of_points, points, count);
   } else {
     int buffer_count = count + chunk->number_of_points;
     sdb_data_point_t *buffer = (sdb_data_point_t *)sdb_alloc(buffer_count * sizeof(sdb_data_point_t));
@@ -226,37 +269,41 @@ void DataSeries::WriteChunk(sdb_data_chunk_t *chunk, sdb_data_point_t *points, i
       }
     }
 
-    this->ChunkMemcpy(chunk, 0, buffer + duplicated_count, buffer_count - duplicated_count);
+    sdb_data_series_chunk_memcpy(series, chunk, 0, buffer + duplicated_count, buffer_count - duplicated_count);
     sdb_free(buffer);
   }
 }
 
-void DataSeries::ChunkMemcpy(sdb_data_chunk_t *chunk, int position, sdb_data_point_t *points, int count) {
+void sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
+                                  sdb_data_chunk_t *chunk,
+                                  int position,
+                                  sdb_data_point_t *points,
+                                  int count) {
   int to_write = std::min(count, chunk->max_points - position);
   sdb_data_chunk_write(chunk, position, points, to_write);
   count -= to_write;
   points += to_write;
 
   while (count != 0) {
-    chunk = this->CreateEmptyChunk();
+    chunk = sdb_data_series_create_empty_chunk(series);
     to_write = std::min(count, chunk->max_points);
     sdb_data_chunk_write(chunk, 0, points, to_write);
-    this->RegisterChunk(chunk);
+    sdb_data_series_register_chunk(series, chunk);
     count -= to_write;
     points += to_write;
   }
 }
 
-sdb_data_chunk_t *DataSeries::CreateEmptyChunk() {
-  int buffer_size = this->points_per_chunk / 2;
+sdb_data_chunk_t *sdb_data_series_create_empty_chunk(sdb_data_series_t *series) {
+  size_t buffer_size = (size_t)series->_points_per_chunk / 2;
   void *buffer = sdb_alloc(buffer_size);
-  int to_allocate = sdb_data_chunk_calculate_size(this->points_per_chunk);
+  int to_allocate = sdb_data_chunk_calculate_size(series->_points_per_chunk);
 
-  sdb_file_t *file = sdb_file_open(this->file_name.c_str());
+  sdb_file_t *file = sdb_file_open(series->_file_name);
   sdb_file_seek(file, 0, SEEK_END);
 
   while (to_allocate > 0) {
-    int to_write = std::min(to_allocate, buffer_size);
+    int to_write = (int)fmin(to_allocate, buffer_size);
     sdb_file_write(file, buffer, (size_t)to_write);
     to_allocate -= to_write;
   }
@@ -265,17 +312,24 @@ sdb_data_chunk_t *DataSeries::CreateEmptyChunk() {
   sdb_file_close(file);
 
   return sdb_data_chunk_create(
-      this->file_name.c_str(),
-      sdb_data_chunk_calculate_size(this->points_per_chunk) * this->chunks.size(),
-      this->points_per_chunk);
+      series->_file_name,
+      sdb_data_chunk_calculate_size(series->_points_per_chunk) * (uint64_t)series->_chunks_count,
+      series->_points_per_chunk);
 }
 
-void DataSeries::DeleteChunks() {
-  for (auto chunk : this->chunks) {
+void sdb_data_series_delete_chunks(sdb_data_series_t *series) {
+  if (series->_chunks == NULL) {
+    return;
+  }
+
+  for (int i = 0; i < series->_chunks_count; i++) {
+    sdb_data_chunk_t *chunk = series->_chunks[i];
     sdb_data_chunk_destroy(chunk);
   }
 
-  this->chunks.clear();
-}
+  sdb_free(series->_chunks);
 
-}  // namespace shakadb
+  series->_chunks = NULL;
+  series->_chunks_count = 0;
+  series->_max_chunks = 0;
+}

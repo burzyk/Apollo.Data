@@ -50,12 +50,12 @@ class StandardDatabase : public Database {
 
  private:
   StandardDatabase(std::string directory, int points_per_chunk);
-  DataSeries *FindDataSeries(sdb_data_series_id_t series_id);
+  sdb_data_series_t *FindDataSeries(sdb_data_series_id_t series_id);
 
   std::string directory;
   int points_per_chunk;
   sdb_rwlock_t *lock;
-  std::map<sdb_data_series_id_t, DataSeries *> series;
+  std::map<sdb_data_series_id_t, sdb_data_series_t *> series;
 };
 
 }  // namespace shakadb

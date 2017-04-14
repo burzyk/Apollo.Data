@@ -11,6 +11,10 @@ void *sdb_alloc(size_t size) {
   return calloc(1, size);
 }
 
+void *sdb_realloc(void *buffer, size_t size) {
+  return realloc(buffer, size);
+}
+
 void sdb_free(void *buffer) {
   free(buffer);
 }
