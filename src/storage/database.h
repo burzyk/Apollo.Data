@@ -28,7 +28,7 @@
 
 #include <string>
 #include <src/data-point.h>
-#include "standard-data-points-reader.h"
+#include "data-points-reader.h"
 
 namespace shakadb {
 

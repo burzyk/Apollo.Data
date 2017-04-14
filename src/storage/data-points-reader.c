@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#include "src/storage/standard-data-points-reader.h"
+#include "src/storage/data-points-reader.h"
 
 #include <stdlib.h>
 #include <math.h>

@@ -31,7 +31,7 @@
 
 #include "src/utils/disk.h"
 #include "src/utils/allocator.h"
-#include "src/storage/standard-data-points-reader.h"
+#include "src/storage/data-points-reader.h"
 
 namespace shakadb {
 
