@@ -33,7 +33,6 @@
 #include "test/tests/database-performance-tests.h"
 #include "test/tests/database-concurrency-tests.h"
 #include "test/tests/rw-lock-tests.h"
-#include "test/tests/configuration-tests.h"
 
 #define RUN_TESTS
 //#define RUN_PERF_TESTS
@@ -103,10 +102,6 @@ int main() {
   TEST(monitor, create_delete_test);
   TEST(monitor, enter_test);
   TEST(monitor, enter_two_threads_test);
-
-  auto configuration = shakadb::test::ConfigurationTests();
-  TEST(configuration, init_test);
-  TEST(configuration, full_test);
 
   auto database_performance = shakadb::test::DatabasePerformanceTests();
   TEST_PERF(database_performance, sequential_write_small);
