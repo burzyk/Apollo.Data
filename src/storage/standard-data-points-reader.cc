@@ -25,37 +25,37 @@
 
 #include "src/storage/standard-data-points-reader.h"
 
-#include <cstdlib>
-#include <src/utils/memory.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
 
-#include "src/utils/allocator.h"
+#include "src/utils/memory.h"
 
-namespace shakadb {
+sdb_data_points_reader_t *sdb_data_points_reader_create(int points_count) {
+  sdb_data_points_reader_t *reader = (sdb_data_points_reader_t *)sdb_alloc(sizeof(sdb_data_points_reader_t));
 
-StandardDataPointsReader::StandardDataPointsReader(int points_count) {
-  this->points_count = points_count;
-  this->points = (sdb_data_point_t *)sdb_alloc(points_count * sizeof(sdb_data_point_t));
-  this->write_position = 0;
+  reader->points_count = points_count;
+  reader->points = points_count == 0
+                   ? NULL
+                   : (sdb_data_point_t *)sdb_alloc(points_count * sizeof(sdb_data_point_t));
+  reader->_write_position = 0;
+
+  return reader;
 }
 
-sdb_data_point_t *StandardDataPointsReader::GetDataPoints() {
-  return this->points;
-}
-
-bool StandardDataPointsReader::WriteDataPoints(sdb_data_point_t *points, int count) {
-  if (count == 0) {
-    return false;
+int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, sdb_data_point_t *points, int count) {
+  if (count == 0 || reader->points == NULL) {
+    return 0;
   }
 
-  int to_write = std::min(count, this->GetDataPointsCount() - this->write_position);
-  memcpy(this->GetDataPoints() + this->write_position, points, to_write * sizeof(data_point_t));
-  this->write_position += to_write;
+  int to_write = (int)fmin(count, reader->points_count - reader->_write_position);
+  memcpy(reader->points + reader->_write_position, points, to_write * sizeof(sdb_data_point_t));
+  reader->_write_position += to_write;
 
-  return this->write_position < this->GetDataPointsCount();
+  return reader->_write_position < reader->points_count;
 }
 
-int StandardDataPointsReader::GetDataPointsCount() {
-  return this->points_count;
+void sdb_data_points_reader_destroy(sdb_data_points_reader_t *reader) {
+  sdb_free(reader->points);
+  sdb_free(reader);
 }
-
-}  // namespace shakadb

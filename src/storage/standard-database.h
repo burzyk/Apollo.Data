@@ -30,7 +30,6 @@
 #include <list>
 #include <map>
 
-#include "src/storage/data-points-reader.h"
 #include "src/storage/data-chunk.h"
 #include "src/storage/data-series.h"
 #include "src/storage/database.h"
@@ -42,7 +41,7 @@ class StandardDatabase : public Database {
   ~StandardDatabase();
   static StandardDatabase *Init(std::string directory, int points_per_chunk);
 
-  DataPointsReader *Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points);
+  sdb_data_points_reader_t *Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points);
   int Write(data_series_id_t series_id, sdb_data_point_t *points, int count);
   void Truncate(data_series_id_t series_id);
 

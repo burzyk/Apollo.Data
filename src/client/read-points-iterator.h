@@ -29,8 +29,7 @@
 #include <functional>
 #include <src/utils/network.h>
 #include <src/protocol.h>
-
-#include "src/storage/data-points-reader.h"
+#include <src/data-point.h>
 
 namespace shakadb {
 

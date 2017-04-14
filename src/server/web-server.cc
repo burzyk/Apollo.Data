@@ -127,6 +127,7 @@ void WebServer::AddServerListener(WebServer::ServerListener *listener) {
   this->listeners.push_back(listener);
 }
 
+// TODO: (pburzynski): refactor to send_and_destroy
 bool WebServer::SendPacket(int client_id, sdb_packet_t *packet) {
   sdb_mutex_lock(this->server_lock);
   client_info_t *client = this->clients[client_id];

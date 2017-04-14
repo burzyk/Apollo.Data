@@ -30,7 +30,6 @@
 
 #include "src/protocol.h"
 #include "src/data-point.h"
-#include "src/storage/data-points-reader.h"
 #include "src/client/read-points-iterator.h"
 
 namespace shakadb {

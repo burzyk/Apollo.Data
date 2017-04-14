@@ -40,16 +40,19 @@ void ClientHandler::OnPacketReceived(int client_id, sdb_packet_t *packet) {
     timestamp_t begin = request->begin;
 
     while (true) {
-      auto reader = std::unique_ptr<DataPointsReader>(
-          this->db->Read(request->data_series_id, begin, request->end, this->points_per_packet));
+      sdb_data_points_reader_t *reader =
+          this->db->Read(request->data_series_id, begin, request->end, this->points_per_packet);
 
-      int skip = begin == request->begin || reader.get()->GetDataPointsCount() == 0 ? 0 : 1;
-      int sent_points_count = reader->GetDataPointsCount() - skip;
-      sdb_data_point_t *points = (sdb_data_point_t *)&reader->GetDataPoints()[skip];
+      int skip = begin == request->begin || reader->points_count == 0 ? 0 : 1;
+      int sent_points_count = reader->points_count - skip;
+      sdb_data_point_t *points = &reader->points[skip];
 
       sdb_packet_t *response = sdb_read_response_create(SDB_RESPONSE_OK, points, sent_points_count);
       int send_status = this->server->SendPacket(client_id, response);
       sdb_packet_destroy(response);
+
+      begin = reader->points[reader->points_count - 1].time;
+      sdb_data_points_reader_destroy(reader);
 
       if (!send_status) {
         return;
@@ -58,8 +61,6 @@ void ClientHandler::OnPacketReceived(int client_id, sdb_packet_t *packet) {
       if (sent_points_count == 0) {
         break;
       }
-
-      begin = reader->GetDataPoints()[reader->GetDataPointsCount() - 1].time;
     }
   }
 

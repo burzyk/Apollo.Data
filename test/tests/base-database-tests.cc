@@ -59,9 +59,9 @@ void BaseDatabaseTests::ValidateRead(Database *db,
                                      timestamp_t begin,
                                      timestamp_t end,
                                      int max_points) {
-  auto reader = std::unique_ptr<DataPointsReader>(db->Read(series_id, begin, end, max_points));
-  int total_read = reader->GetDataPointsCount();
-  sdb_data_point_t *points = reader->GetDataPoints();
+  sdb_data_points_reader_t *reader = db->Read(series_id, begin, end, max_points);
+  int total_read = reader->points_count;
+  sdb_data_point_t *points = reader->points;
 
   for (int i = 1; i < total_read; i++) {
     Assert::IsTrue(points[i - 1].time <= points[i].time);
@@ -71,6 +71,8 @@ void BaseDatabaseTests::ValidateRead(Database *db,
   if (expected_count > 0) {
     Assert::IsTrue(expected_count == total_read);
   }
+
+  sdb_data_points_reader_destroy(reader);
 }
 
 Database *BaseDatabaseTests::CreateDatabase(int points_per_chunk, int max_pages, TestContext ctx) {

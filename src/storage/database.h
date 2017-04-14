@@ -27,15 +27,18 @@
 #define SRC_STORAGE_DATABASE_H_
 
 #include <string>
-
-#include "src/storage/data-points-reader.h"
+#include <src/data-point.h>
+#include "standard-data-points-reader.h"
 
 namespace shakadb {
 
 class Database {
  public:
   virtual ~Database() {}
-  virtual DataPointsReader *Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points) = 0;
+  virtual sdb_data_points_reader_t *Read(data_series_id_t series_id,
+                                         timestamp_t begin,
+                                         timestamp_t end,
+                                         int max_points) = 0;
   virtual int Write(data_series_id_t series_id, sdb_data_point_t *points, int count) = 0;
   virtual void Truncate(data_series_id_t series_id) = 0;
 };

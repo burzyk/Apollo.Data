@@ -61,7 +61,7 @@ void StandardDatabase::Truncate(data_series_id_t series_id) {
   series->Truncate();
 }
 
-DataPointsReader *StandardDatabase::Read(data_series_id_t series_id,
+sdb_data_points_reader_t *StandardDatabase::Read(data_series_id_t series_id,
                                          timestamp_t begin,
                                          timestamp_t end,
                                          int max_points) {

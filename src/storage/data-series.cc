@@ -112,7 +112,7 @@ void DataSeries::Truncate() {
   sdb_rwlock_unlock(this->series_lock);
 }
 
-DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_points) {
+sdb_data_points_reader_t *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_points) {
   sdb_rwlock_rdlock(this->series_lock);
   std::list<sdb_data_chunk_t *> filtered_chunks;
 
@@ -124,7 +124,7 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
 
   if (filtered_chunks.size() == 0) {
     sdb_rwlock_unlock(this->series_lock);
-    return new StandardDataPointsReader(0);
+    return sdb_data_points_reader_create(0);
   }
 
   auto comp = [](sdb_data_point_t p, timestamp_t t) -> bool { return p.time < t; };
@@ -140,8 +140,8 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
 
   if (filtered_chunks.size() == 1) {
     int total_points = std::min(static_cast<int>(read_end - read_begin), max_points);
-    StandardDataPointsReader *reader = new StandardDataPointsReader(total_points);
-    reader->WriteDataPoints(read_begin, total_points);
+    sdb_data_points_reader_t *reader = sdb_data_points_reader_create(total_points);
+    sdb_data_points_reader_write(reader, read_begin, total_points);
 
     sdb_rwlock_unlock(this->series_lock);
     return reader;
@@ -160,23 +160,23 @@ DataPointsReader *DataSeries::Read(timestamp_t begin, timestamp_t end, int max_p
     }
   }
 
-  StandardDataPointsReader *reader = new StandardDataPointsReader(std::min(total_points, max_points));
+  sdb_data_points_reader_t *reader = sdb_data_points_reader_create(std::min(total_points, max_points));
 
-  if (!reader->WriteDataPoints(read_begin, points_from_front)) {
+  if (!sdb_data_points_reader_write(reader, read_begin, points_from_front)) {
     sdb_rwlock_unlock(this->series_lock);
     return reader;
   }
 
   for (auto i : filtered_chunks) {
     if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
-      if (!reader->WriteDataPoints(sdb_data_chunk_read(i), i->number_of_points)) {
+      if (!sdb_data_points_reader_write(reader, sdb_data_chunk_read(i), i->number_of_points)) {
         sdb_rwlock_unlock(this->series_lock);
         return reader;
       }
     }
   }
 
-  reader->WriteDataPoints(back_begin, points_from_back);
+  sdb_data_points_reader_write(reader, back_begin, points_from_back);
 
   sdb_rwlock_unlock(this->series_lock);
   return reader;

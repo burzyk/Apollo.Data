@@ -28,9 +28,10 @@
 
 #include <list>
 #include <string>
+#include <src/data-point.h>
 
-#include "src/storage/data-points-reader.h"
 #include "src/storage/data-chunk.h"
+#include "standard-data-points-reader.h"
 
 namespace shakadb {
 
@@ -39,7 +40,7 @@ class DataSeries {
   ~DataSeries();
   static DataSeries *Init(std::string file_name, int points_per_chunk);
 
-  DataPointsReader *Read(timestamp_t begin, timestamp_t end, int max_points);
+  sdb_data_points_reader_t *Read(timestamp_t begin, timestamp_t end, int max_points);
   void Write(sdb_data_point_t *points, int count);
   void Truncate();
 

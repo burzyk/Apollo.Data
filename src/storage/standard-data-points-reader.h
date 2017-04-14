@@ -26,29 +26,24 @@
 #ifndef SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
 #define SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
 
-#include <list>
-#include <vector>
+#include "src/c_common.h"
 
-#include "src/data-point.h"
-#include "src/storage/data-chunk.h"
-#include "src/storage/data-points-reader.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-namespace shakadb {
-
-class StandardDataPointsReader : public DataPointsReader {
- public:
-  explicit StandardDataPointsReader(int points_count);
-
-  bool WriteDataPoints(sdb_data_point_t *points, int count);
-  sdb_data_point_t *GetDataPoints();
-  int GetDataPointsCount();
-
- private:
+typedef struct sdb_data_points_reader_s {
   sdb_data_point_t *points;
   int points_count;
-  int write_position;
-};
+  int _write_position;
+} sdb_data_points_reader_t;
 
-}  // namespace shakadb
+sdb_data_points_reader_t *sdb_data_points_reader_create(int points_count);
+int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, sdb_data_point_t *points, int count);
+void sdb_data_points_reader_destroy(sdb_data_points_reader_t *reader);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
