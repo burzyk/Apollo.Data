@@ -12,10 +12,6 @@
 
 #include "src/utils/network.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef char sdb_packet_type_t;
 typedef char sdb_response_code_t;
 
@@ -37,7 +33,7 @@ typedef struct sdb_packet_header_s {
 typedef struct sdb_packet_s {
   sdb_packet_header_t header;
   void *payload;
-  void *raw_payload;
+  void *_raw_payload;
 } sdb_packet_t;
 
 typedef struct sdb_write_request_s {
@@ -71,9 +67,5 @@ sdb_packet_t *sdb_packet_receive(sdb_socket_t socket);
 int sdb_packet_send(sdb_packet_t *packet, sdb_socket_t socket);
 int sdb_packet_send_and_destroy(sdb_packet_t *packet, sdb_socket_t socket);
 void sdb_packet_destroy(sdb_packet_t *packet);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // SRC_PROTOCOL_H_

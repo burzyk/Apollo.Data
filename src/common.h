@@ -7,10 +7,6 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef uint64_t sdb_timestamp_t;
 typedef uint32_t sdb_data_series_id_t;
 
@@ -36,9 +32,5 @@ void die(const char *message);
 #define sdb_max(a, b) ((a) < (b) ? (b) : (a))
 
 #define sdb_assert(status, message) if (!(status)) { die(message); }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // SRC_COMMON_H_

@@ -10,15 +10,15 @@
 typedef void *(*sdb_thread_routine_t)(void *);
 
 typedef struct sdb_thread_s {
-  pthread_t thread;
+  pthread_t _thread;
 } sdb_thread_t;
 
 typedef struct sdb_rwlock_s {
-  pthread_rwlock_t lock;
+  pthread_rwlock_t _lock;
 } sdb_rwlock_t;
 
 typedef struct sdb_mutex_s {
-  pthread_mutex_t mutex;
+  pthread_mutex_t _mutex;
 } sdb_mutex_t;
 
 sdb_thread_t *sdb_thread_start(sdb_thread_routine_t routine, void *data);

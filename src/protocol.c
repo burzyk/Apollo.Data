@@ -193,21 +193,21 @@ sdb_packet_t *sdb_packet_receive(sdb_socket_t socket) {
 
   sdb_packet_t *packet = (sdb_packet_t *)sdb_alloc(sizeof(sdb_packet_t));
   packet->header = header;
-  packet->raw_payload = sdb_alloc(header.payload_size);
+  packet->_raw_payload = sdb_alloc(header.payload_size);
 
-  if (sdb_socket_receive(socket, packet->raw_payload, header.payload_size) != header.payload_size) {
+  if (sdb_socket_receive(socket, packet->_raw_payload, header.payload_size) != header.payload_size) {
     sdb_packet_destroy(packet);
     return NULL;
   }
 
   switch (header.type) {
-    case SDB_WRITE_REQUEST:packet->payload = sdb_write_request_deserialize(packet->raw_payload, header.payload_size);
+    case SDB_WRITE_REQUEST:packet->payload = sdb_write_request_deserialize(packet->_raw_payload, header.payload_size);
       break;
-    case SDB_WRITE_RESPONSE:packet->payload = sdb_write_response_deserialize(packet->raw_payload, header.payload_size);
+    case SDB_WRITE_RESPONSE:packet->payload = sdb_write_response_deserialize(packet->_raw_payload, header.payload_size);
       break;
-    case SDB_READ_REQUEST:packet->payload = sdb_read_request_deserialize(packet->raw_payload, header.payload_size);
+    case SDB_READ_REQUEST:packet->payload = sdb_read_request_deserialize(packet->_raw_payload, header.payload_size);
       break;
-    case SDB_READ_RESPONSE:packet->payload = sdb_read_response_deserialize(packet->raw_payload, header.payload_size);
+    case SDB_READ_RESPONSE:packet->payload = sdb_read_response_deserialize(packet->_raw_payload, header.payload_size);
       break;
     default: packet->payload = NULL;
   }
@@ -251,8 +251,8 @@ void sdb_packet_destroy(sdb_packet_t *packet) {
     sdb_free(packet->payload);
   }
 
-  if (packet->raw_payload != NULL) {
-    sdb_free(packet->raw_payload);
+  if (packet->_raw_payload != NULL) {
+    sdb_free(packet->_raw_payload);
   }
 
   sdb_free(packet);

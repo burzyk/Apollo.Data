@@ -24,13 +24,13 @@ int sdb_binary_reader_can_read(sdb_binary_reader_t *reader, size_t size) {
     return 0;
   }
 
-  return reader->success = ((char *)reader->current - (char *)reader->buffer) + size <= reader->size;
+  return reader->success = ((char *)reader->_current - (char *)reader->_buffer) + size <= reader->_size;
 }
 
 void sdb_binary_reader_init(sdb_binary_reader_t *reader, void *buffer, size_t size) {
-  reader->buffer = buffer;
-  reader->current = buffer;
-  reader->size = size;
+  reader->_buffer = buffer;
+  reader->_current = buffer;
+  reader->_size = size;
   reader->success = 1;
 }
 
@@ -39,8 +39,8 @@ void sdb_binary_reader_read(sdb_binary_reader_t *reader, void *buffer, size_t si
     return;
   }
 
-  memcpy(buffer, reader->current, size);
-  reader->current = (char *)reader->current + size;
+  memcpy(buffer, reader->_current, size);
+  reader->_current = (char *)reader->_current + size;
 }
 
 void sdb_binary_reader_read_pointer(sdb_binary_reader_t *reader, void *buffer, size_t size) {
@@ -48,6 +48,6 @@ void sdb_binary_reader_read_pointer(sdb_binary_reader_t *reader, void *buffer, s
     return;
   }
 
-  memcpy(&buffer, &reader->current, sizeof(reader->current));
-  reader->current = (char *)reader->current + size;
+  memcpy(&buffer, &reader->_current, sizeof(reader->_current));
+  reader->_current = (char *)reader->_current + size;
 }
