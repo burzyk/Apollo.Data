@@ -14,7 +14,7 @@ set(SRC_PROTOCOL src/protocol.h src/protocol.c)
 set(SRC_SERVER src/server/client-handler.cc src/server/client-handler.h src/server/server.h src/server/web-server.cc src/server/web-server.h)
 set(SRC_STORAGE src/storage/database.h src/storage/data-chunk.c src/storage/data-chunk.h src/storage/data-points-reader.c src/storage/standard-database.cc src/storage/standard-database.h src/storage/data-series.c src/storage/data-series.h)
 set(SRC_UTILS src/utils/disk.h src/utils/disk.c src/utils/network.h src/utils/memory.h src/utils/memory.c src/utils/network.c src/utils/threading.h src/utils/threading.c)
-set(SRC_TEST test/tests/database-basic-tests.h  test/tests/database-basic-tests.cc src/protocol.h src/utils/diagnostics.c src/utils/diagnostics.h test/framework.c test/framework.h)
+set(SRC_TEST test/database-tests.h test/database-tests.cc src/protocol.h src/utils/diagnostics.c src/utils/diagnostics.h test/framework.c test/framework.h)
 
 set(SRC_SHAKADB ${SRC_DOMAIN} ${SRC_SERVER} ${SRC_PROTOCOL} ${SRC_UTILS} ${SRC_STORAGE})
 set(SRC_SHAKADB_CLIENT ${SRC_CLIENT} ${SRC_UTILS} ${SRC_DOMAIN} ${SRC_PROTOCOL})

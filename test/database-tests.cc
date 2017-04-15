@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#include "test/tests/database-basic-tests.h"
+#include "database-tests.h"
 
 #include <memory>
 #include <src/utils/memory.h>
