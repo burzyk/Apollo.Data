@@ -29,17 +29,9 @@
 #include "src/protocol.h"
 #include "src/client/data-points-iterator.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct sdb_client_session_s {
   sdb_socket_t _sock;
 } sdb_client_session_t;
-
-#ifdef __cplusplus
-}
-#endif
 
 sdb_client_session_t *sdb_client_session_create(const char *server, int port);
 void sdb_client_session_destroy(sdb_client_session_t *session);

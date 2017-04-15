@@ -24,7 +24,6 @@
 //
 
 #include "src/client/client.h"
-
 #include "src/client/session.h"
 
 int shakadb_session_open(shakadb_session_t *session, const char *server, int port) {

@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 26/02/2017.
 //
 
-#ifndef SRC_CLIENT_CLIENT_H_
-#define SRC_CLIENT_CLIENT_H_
+#ifndef SHAKADB_CLIENT_H_
+#define SHAKADB_CLIENT_H_
 
 #include <stdint.h>
 
@@ -73,4 +73,4 @@ int shakadb_data_points_iterator_next(shakadb_data_points_iterator_t *iterator);
 }
 #endif
 
-#endif  // SRC_CLIENT_CLIENT_H_
+#endif  // SHAKADB_CLIENT_H_

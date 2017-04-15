@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 20/02/2017.
 //
 
-#include <src/utils/memory.h>
 #include "src/client/data-points-iterator.h"
+#include "src/utils/memory.h"
 
 sdb_data_points_iterator_t *sdb_data_points_iterator_create(sdb_socket_t sock) {
   sdb_data_points_iterator_t *iterator = (sdb_data_points_iterator_t *)sdb_alloc(sizeof(sdb_data_points_iterator_t));

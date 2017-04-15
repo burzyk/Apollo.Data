@@ -24,7 +24,6 @@
 //
 
 #include "src/client/session.h"
-
 #include "src/utils/memory.h"
 
 sdb_client_session_t *sdb_client_session_create(const char *server, int port) {
