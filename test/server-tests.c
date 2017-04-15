@@ -67,7 +67,7 @@ void sdb_test_server_write_small(sdb_tests_context_t ctx) {
   shakadb_data_point_t points[] = {
       {.time=3, .value = 13},
       {.time=5, .value = 76},
-      {.time=15, .value = 44.3}
+      {.time=15, .value = 44}
   };
 
   status = shakadb_write_points(&session, SDB_EUR_USD_ID, points, 3);
@@ -86,7 +86,10 @@ void sdb_test_server_write_small(sdb_tests_context_t ctx) {
   sdb_assert(it.points[2].time == 15, "Time should be 15");
   sdb_assert(it.points[0].value == 13, "Value should be 13");
   sdb_assert(it.points[1].value == 76, "Value should be 76");
-  sdb_assert(it.points[2].value == 44.3, "Value should be 44.3");
+  sdb_assert(it.points[2].value == 44, "Value should be 44.3");
+
+  status = shakadb_data_points_iterator_next(&it);
+  sdb_assert(status == 0, "Data left in iterator")
 
   shakadb_session_close(&session);
 

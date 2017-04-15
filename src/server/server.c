@@ -111,7 +111,7 @@ void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sd
     begin = reader->points[reader->points_count - 1].time;
     sdb_data_points_reader_destroy(reader);
 
-    if (!send_status) {
+    if (send_status) {
       return;
     }
 

@@ -69,6 +69,6 @@ void sdb_binary_reader_read_pointer(sdb_binary_reader_t *reader, void *buffer, s
     return;
   }
 
-  memcpy(&buffer, &reader->_current, sizeof(reader->_current));
+  memcpy(buffer, &reader->_current, sizeof(reader->_current));
   reader->_current = (char *)reader->_current + size;
 }

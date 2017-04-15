@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.6)
 project(shakadb)
 
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address  -fno-omit-frame-pointer -Wall -Wpointer-arith")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fprofile-instr-generate -fcoverage-mapping  -fno-omit-frame-pointer -Wall -Wpointer-arith")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
