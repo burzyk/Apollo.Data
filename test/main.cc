@@ -19,67 +19,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <cstdio>
-#include <functional>
+#include <stdio.h>
 
-#include "test/framework/test-context.h"
-#include "test/framework/test-runner.h"
-#include "src/utils/disk.h"
-#include "test/tests/base-database-tests.h"
 #include "test/tests/database-basic-tests.h"
+#include "test/framework.h"
 
-#define RUN_TESTS
-//#define RUN_PERF_TESTS
-
-#ifdef RUN_TESTS
-#define TEST(clazz, test_case) result |= runner.RunTest(\
-      "" #clazz "_" #test_case "", \
-      [&clazz](shakadb::test::TestContext ctx) -> void { clazz.test_case(ctx); });
-#else
-#define TEST(clazz, test_case)
-#endif
-
-#ifdef RUN_PERF_TESTS
-#define TEST_PERF(clazz, test_case) result |= runner.RunPerfTest(\
-      "" #clazz "_" #test_case "", \
-      [&clazz](shakadb::test::TestContext ctx) -> shakadb::Stopwatch { return clazz.test_case(ctx); });
-#else
-#define TEST_PERF(clazz, test_case)
-#endif
+#define TEST(test_case) result |= sdb_tests_session_run(session, #test_case, test_case);
 
 int main() {
-  std::string dir("/Users/pburzynski/shakadb-test/data/test-stuff");
-  sdb_directory_create(dir.c_str());
-  shakadb::test::TestRunner runner(dir);
+  const char *root_directory = "/Users/pburzynski/shakadb-test/data/test-stuff";
+
+  sdb_tests_session_t *session = sdb_tests_session_create(root_directory);
   int result = 0;
 
   printf("==================== Running tests ====================\n");
 
-  auto database_basic = shakadb::test::DatabaseBasicTests();
-  TEST(database_basic, simple_database_initialization_test);
-  TEST(database_basic, basic_database_write_and_read_all);
-  TEST(database_basic, write_database_in_one_big_batch);
-  TEST(database_basic, write_database_in_multiple_small_batches);
-  TEST(database_basic, database_write_history);
-  TEST(database_basic, database_write_close_and_write_more);
-  TEST(database_basic, database_multi_write_and_read_all);
-  TEST(database_basic, database_continuous_write);
-  TEST(database_basic, database_continuous_write_with_pickup);
-  TEST(database_basic, database_write_batch_size_equal_to_page_capacity);
-  TEST(database_basic, database_write_batch_size_greater_than_page_capacity);
-  TEST(database_basic, database_write_replace);
-  TEST(database_basic, database_read_inside_single_chunk);
-  TEST(database_basic, database_read_span_two_chunks);
-  TEST(database_basic, database_read_span_three_chunks);
-  TEST(database_basic, database_read_chunk_edges);
-  TEST(database_basic, database_read_duplicated_values);
-  TEST(database_basic, database_read_with_limit);
-  TEST(database_basic, database_truncate);
-  TEST(database_basic, database_truncate_multiple);
-  TEST(database_basic, database_truncate_write_again);
+  TEST(sdb_test_database_simple_initialization_test);
+  TEST(sdb_test_database_write_and_read_all);
+  TEST(sdb_test_database_write_database_in_one_big_batch);
+  TEST(sdb_test_database_write_database_in_multiple_small_batches);
+  TEST(sdb_test_database_multi_write_and_read_all);
+  TEST(sdb_test_database_write_history);
+  TEST(sdb_test_database_write_close_and_write_more);
+  TEST(sdb_test_database_continuous_write);
+  TEST(sdb_test_database_continuous_write_with_pickup);
+  TEST(sdb_test_database_write_batch_size_equal_to_page_capacity);
+  TEST(sdb_test_database_write_batch_size_greater_than_page_capacity);
+  TEST(sdb_test_database_write_replace);
+  TEST(sdb_test_database_read_inside_single_chunk);
+  TEST(sdb_test_database_read_span_two_chunks);
+  TEST(sdb_test_database_read_span_three_chunks);
+  TEST(sdb_test_database_read_chunk_edges);
+  TEST(sdb_test_database_read_duplicated_values);
+  TEST(sdb_test_database_read_with_limit);
+  TEST(sdb_test_database_truncate);
+  TEST(sdb_test_database_truncate_multiple);
+  TEST(sdb_test_database_truncate_write_again);
 
-  runner.PrintSummary();
+  sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");
 
+  sdb_tests_session_destroy(session);
   return result;
 }

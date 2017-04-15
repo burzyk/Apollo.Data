@@ -23,40 +23,39 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef TEST_TESTS_DATABASE_BASIC_TESTS_H_
-#define TEST_TESTS_DATABASE_BASIC_TESTS_H_
+#ifndef TEST_DATABASE_TESTS_H_
+#define TEST_DATABASE_TESTS_H_
 
-#include "test/tests/base-database-tests.h"
+#include <test/framework.h>
 
-namespace shakadb {
-namespace test {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class DatabaseBasicTests : public BaseDatabaseTests {
- public:
-  void simple_database_initialization_test(TestContext ctx);
-  void basic_database_write_and_read_all(TestContext ctx);
-  void write_database_in_one_big_batch(TestContext ctx);
-  void write_database_in_multiple_small_batches(TestContext ctx);
-  void database_multi_write_and_read_all(TestContext ctx);
-  void database_write_history(TestContext ctx);
-  void database_write_close_and_write_more(TestContext ctx);
-  void database_continuous_write(TestContext ctx);
-  void database_continuous_write_with_pickup(TestContext ctx);
-  void database_write_batch_size_equal_to_page_capacity(TestContext ctx);
-  void database_write_batch_size_greater_than_page_capacity(TestContext ctx);
-  void database_write_replace(TestContext ctx);
-  void database_read_inside_single_chunk(TestContext ctx);
-  void database_read_span_two_chunks(TestContext ctx);
-  void database_read_span_three_chunks(TestContext ctx);
-  void database_read_chunk_edges(TestContext ctx);
-  void database_read_duplicated_values(TestContext ctx);
-  void database_read_with_limit(TestContext ctx);
-  void database_truncate(TestContext ctx);
-  void database_truncate_multiple(TestContext ctx);
-  void database_truncate_write_again(TestContext ctx);
-};
+void sdb_test_database_simple_initialization_test(sdb_tests_context_t ctx);
+void sdb_test_database_write_and_read_all(sdb_tests_context_t ctx);
+void sdb_test_database_write_database_in_one_big_batch(sdb_tests_context_t ctx);
+void sdb_test_database_write_database_in_multiple_small_batches(sdb_tests_context_t ctx);
+void sdb_test_database_multi_write_and_read_all(sdb_tests_context_t ctx);
+void sdb_test_database_write_history(sdb_tests_context_t ctx);
+void sdb_test_database_write_close_and_write_more(sdb_tests_context_t ctx);
+void sdb_test_database_continuous_write(sdb_tests_context_t ctx);
+void sdb_test_database_continuous_write_with_pickup(sdb_tests_context_t ctx);
+void sdb_test_database_write_batch_size_equal_to_page_capacity(sdb_tests_context_t ctx);
+void sdb_test_database_write_batch_size_greater_than_page_capacity(sdb_tests_context_t ctx);
+void sdb_test_database_write_replace(sdb_tests_context_t ctx);
+void sdb_test_database_read_inside_single_chunk(sdb_tests_context_t ctx);
+void sdb_test_database_read_span_two_chunks(sdb_tests_context_t ctx);
+void sdb_test_database_read_span_three_chunks(sdb_tests_context_t ctx);
+void sdb_test_database_read_chunk_edges(sdb_tests_context_t ctx);
+void sdb_test_database_read_duplicated_values(sdb_tests_context_t ctx);
+void sdb_test_database_read_with_limit(sdb_tests_context_t ctx);
+void sdb_test_database_truncate(sdb_tests_context_t ctx);
+void sdb_test_database_truncate_multiple(sdb_tests_context_t ctx);
+void sdb_test_database_truncate_write_again(sdb_tests_context_t ctx);
 
-}  // namespace test
-}  // namespace shakadb
+#ifdef __cplusplus
+}
+#endif
 
-#endif  // TEST_TESTS_DATABASE_BASIC_TESTS_H_
+#endif  // TEST_DATABASE_TESTS_H_

@@ -21,6 +21,10 @@ typedef uint32_t sdb_data_series_id_t;
 
 #define SDB_REALLOC_GROW_INCREMENT 65536
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 typedef struct sdb_data_point_s {
   sdb_timestamp_t time;
   float value;
@@ -30,6 +34,8 @@ void die(const char *message);
 
 #define sdb_min(a, b) ((a) < (b) ? (a) : (b))
 #define sdb_max(a, b) ((a) < (b) ? (b) : (a))
+
+#define sdb_assert(status, message) if (!(status)) { die(message); }
 
 #ifdef __cplusplus
 }
