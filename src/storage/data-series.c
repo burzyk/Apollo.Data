@@ -25,13 +25,11 @@
 
 #include "src/storage/data-series.h"
 
-#include <cstdlib>
-#include <src/utils/memory.h>
-#include <src/utils/diagnostics.h>
-#include <cmath>
+#include <math.h>
+#include <string.h>
 
+#include "src/utils/memory.h"
 #include "src/utils/disk.h"
-#include "src/storage/data-points-reader.h"
 
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk);
 void sdb_data_series_delete_chunks(sdb_data_series_t *series);
@@ -130,38 +128,55 @@ void sdb_data_series_truncate(sdb_data_series_t *series) {
   sdb_rwlock_unlock(series->_series_lock);
 }
 
+sdb_data_point_t *__lower_bound(sdb_data_point_t *begin, sdb_data_point_t *end, sdb_timestamp_t value) {
+  while (begin != end && begin->value <= value) {
+    begin++;
+  }
+
+  return begin;
+}
+
 sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                sdb_timestamp_t begin,
                                                sdb_timestamp_t end,
                                                int max_points) {
   sdb_rwlock_rdlock(series->_series_lock);
-  std::list<sdb_data_chunk_t *> filtered_chunks;
+
+  sdb_data_chunk_t *first_chunk = NULL;
+  sdb_data_chunk_t *last_chunk = NULL;
+  int filtered_chunks_count = 0;
+  int first_chunk_index = -1;
 
   for (int i = 0; i < series->_chunks_count; i++) {
     sdb_data_chunk_t *chunk = series->_chunks[i];
+
     if (chunk->begin < end && chunk->end >= begin) {
-      filtered_chunks.push_back(chunk);
+      if (first_chunk == NULL) {
+        first_chunk = chunk;
+        first_chunk_index = i;
+      }
+
+      last_chunk = chunk;
+      filtered_chunks_count++;
     }
   }
 
-  if (filtered_chunks.size() == 0) {
+  if (filtered_chunks_count == 0) {
     sdb_rwlock_unlock(series->_series_lock);
     return sdb_data_points_reader_create(0);
   }
 
-  auto comp = [](sdb_data_point_t p, sdb_timestamp_t t) -> bool { return p.time < t; };
+  sdb_data_point_t *front_begin = sdb_data_chunk_read(first_chunk);
+  sdb_data_point_t *front_end = front_begin + first_chunk->number_of_points;
 
-  sdb_data_point_t *front_begin = sdb_data_chunk_read(filtered_chunks.front());
-  sdb_data_point_t *front_end = front_begin + filtered_chunks.front()->number_of_points;
+  sdb_data_point_t *back_begin = sdb_data_chunk_read(last_chunk);
+  sdb_data_point_t *back_end = back_begin + last_chunk->number_of_points;
 
-  sdb_data_point_t *back_begin = sdb_data_chunk_read(filtered_chunks.back());
-  sdb_data_point_t *back_end = back_begin + filtered_chunks.back()->number_of_points;
+  sdb_data_point_t *read_begin = __lower_bound(front_begin, front_end, begin);
+  sdb_data_point_t *read_end = __lower_bound(back_begin, back_end, end);
 
-  sdb_data_point_t *read_begin = std::lower_bound(front_begin, front_end, begin, comp);
-  sdb_data_point_t *read_end = std::lower_bound(back_begin, back_end, end, comp);
-
-  if (filtered_chunks.size() == 1) {
-    int total_points = std::min(static_cast<int>(read_end - read_begin), max_points);
+  if (filtered_chunks_count == 1) {
+    int total_points = sdb_min((int)(read_end - read_begin), max_points);
     sdb_data_points_reader_t *reader = sdb_data_points_reader_create(total_points);
     sdb_data_points_reader_write(reader, read_begin, total_points);
 
@@ -170,31 +185,29 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
   }
 
   int total_points = 0;
-  int points_from_front = front_end - read_begin;
-  int points_from_back = read_end - back_begin;
+  int points_from_front = (int)(front_end - read_begin);
+  int points_from_back = (int)(read_end - back_begin);
 
   total_points += points_from_front;
   total_points += points_from_back;
 
-  for (auto i : filtered_chunks) {
-    if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
-      total_points += i->number_of_points;
-    }
+  for (int i = first_chunk_index + 1; i < first_chunk_index + filtered_chunks_count - 1; i++) {
+    total_points += series->_chunks[i]->number_of_points;
   }
 
-  sdb_data_points_reader_t *reader = sdb_data_points_reader_create(std::min(total_points, max_points));
+  sdb_data_points_reader_t *reader = sdb_data_points_reader_create(sdb_min(total_points, max_points));
 
   if (!sdb_data_points_reader_write(reader, read_begin, points_from_front)) {
     sdb_rwlock_unlock(series->_series_lock);
     return reader;
   }
 
-  for (auto i : filtered_chunks) {
-    if (i != filtered_chunks.front() && i != filtered_chunks.back()) {
-      if (!sdb_data_points_reader_write(reader, sdb_data_chunk_read(i), i->number_of_points)) {
-        sdb_rwlock_unlock(series->_series_lock);
-        return reader;
-      }
+  for (int i = first_chunk_index + 1; i < first_chunk_index + filtered_chunks_count - 1; i++) {
+    sdb_data_chunk_t *curr = series->_chunks[i];
+
+    if (!sdb_data_points_reader_write(reader, sdb_data_chunk_read(curr), curr->number_of_points)) {
+      sdb_rwlock_unlock(series->_series_lock);
+      return reader;
     }
   }
 
@@ -267,14 +280,14 @@ void sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
                                   int position,
                                   sdb_data_point_t *points,
                                   int count) {
-  int to_write = std::min(count, chunk->max_points - position);
+  int to_write = sdb_min(count, chunk->max_points - position);
   sdb_data_chunk_write(chunk, position, points, to_write);
   count -= to_write;
   points += to_write;
 
   while (count != 0) {
     chunk = sdb_data_series_create_empty_chunk(series);
-    to_write = std::min(count, chunk->max_points);
+    to_write = sdb_min(count, chunk->max_points);
     sdb_data_chunk_write(chunk, 0, points, to_write);
     sdb_data_series_register_chunk(series, chunk);
     count -= to_write;
@@ -283,7 +296,7 @@ void sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
 }
 
 sdb_data_chunk_t *sdb_data_series_create_empty_chunk(sdb_data_series_t *series) {
-  size_t buffer_size = (size_t)series->_points_per_chunk / 2;
+  int buffer_size = series->_points_per_chunk / 2;
   void *buffer = sdb_alloc(buffer_size);
   int to_allocate = sdb_data_chunk_calculate_size(series->_points_per_chunk);
 
@@ -291,7 +304,7 @@ sdb_data_chunk_t *sdb_data_series_create_empty_chunk(sdb_data_series_t *series) 
   sdb_file_seek(file, 0, SEEK_END);
 
   while (to_allocate > 0) {
-    int to_write = (int)fmin(to_allocate, buffer_size);
+    int to_write = sdb_min(to_allocate, buffer_size);
     sdb_file_write(file, buffer, (size_t)to_write);
     to_allocate -= to_write;
   }

@@ -12,7 +12,7 @@ set(SRC_DOMAIN src/storage/data-points-reader.h src/common.h src/common.c)
 set(SRC_CLIENT src/client/session.cc src/client/session.h src/client/read-points-iterator.cc src/client/read-points-iterator.h src/client/client.h src/client/client.cc)
 set(SRC_PROTOCOL src/protocol.h src/protocol.c)
 set(SRC_SERVER src/server/client-handler.cc src/server/client-handler.h src/server/server.h src/server/web-server.cc src/server/web-server.h)
-set(SRC_STORAGE src/storage/database.h src/storage/data-chunk.c src/storage/data-chunk.h src/storage/data-points-reader.c src/storage/standard-database.cc src/storage/standard-database.h src/storage/data-series.cc src/storage/data-series.h)
+set(SRC_STORAGE src/storage/database.h src/storage/data-chunk.c src/storage/data-chunk.h src/storage/data-points-reader.c src/storage/standard-database.cc src/storage/standard-database.h src/storage/data-series.c src/storage/data-series.h)
 set(SRC_UTILS src/utils/disk.h src/utils/disk.c src/utils/network.h src/utils/memory.h src/utils/memory.c src/utils/network.c src/utils/threading.h src/utils/threading.c)
 set(SRC_TEST test/tests/database-basic-tests.h test/framework/test-context.cc test/framework/test-context.h test/framework/test-runner.cc test/framework/test-runner.h test/framework/assert.cc test/framework/assert.h test/framework/validation-exception.cc test/framework/validation-exception.h test/tests/base-database-tests.h test/tests/base-database-tests.cc test/tests/database-basic-tests.cc src/protocol.h src/utils/diagnostics.c src/utils/diagnostics.h)
 

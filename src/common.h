@@ -26,8 +26,8 @@ typedef struct sdb_data_point_s {
 
 void die(const char *message);
 
-sdb_timestamp_t sdb_min(sdb_timestamp_t a, sdb_timestamp_t b);
-sdb_timestamp_t sdb_max(sdb_timestamp_t a, sdb_timestamp_t b);
+#define sdb_min(a, b) ((a) < (b) ? (a) : (b))
+#define sdb_max(a, b) ((a) < (b) ? (b) : (a))
 
 #ifdef __cplusplus
 }

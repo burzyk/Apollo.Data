@@ -26,9 +26,6 @@
 #ifndef SRC_STORAGE_DATA_SERIES_H_
 #define SRC_STORAGE_DATA_SERIES_H_
 
-#include <list>
-#include <string>
-
 #include "src/storage/data-chunk.h"
 #include "data-points-reader.h"
 
