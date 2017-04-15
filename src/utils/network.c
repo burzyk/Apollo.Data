@@ -10,9 +10,10 @@
 #include <src/common.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
+#include <stdio.h>
 
 sdb_socket_t sdb_socket_listen(int port, int backlog) {
-  signal(SIGPIPE, SIG_IGN);
   sdb_socket_t sock;
 
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -32,6 +33,37 @@ sdb_socket_t sdb_socket_listen(int port, int backlog) {
     return -1;
   }
 
+  return sock;
+}
+
+sdb_socket_t sdb_socket_connect(const char *hostname, int port) {
+  struct addrinfo hints = {0};
+  struct addrinfo *result;
+  sdb_socket_t sock = -1;
+  char port_string[SDB_FILE_MAX_LEN] = {0};
+  snprintf(port_string, SDB_FILE_MAX_LEN, "%d", port);
+
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+
+  if (getaddrinfo(hostname, port_string, &hints, &result) != 0) {
+    return sock;
+  }
+
+  for (struct addrinfo *rp = result; rp != NULL; rp = rp->ai_next) {
+    if ((sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) == -1) {
+      continue;
+    }
+
+    if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
+      break;
+    }
+
+    close(sock);
+    sock = -1;
+  }
+
+  freeaddrinfo(result);
   return sock;
 }
 
