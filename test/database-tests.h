@@ -26,11 +26,7 @@
 #ifndef TEST_DATABASE_TESTS_H_
 #define TEST_DATABASE_TESTS_H_
 
-#include <test/framework.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "test/framework.h"
 
 void sdb_test_database_simple_initialization_test(sdb_tests_context_t ctx);
 void sdb_test_database_write_and_read_all(sdb_tests_context_t ctx);
@@ -53,9 +49,5 @@ void sdb_test_database_read_with_limit(sdb_tests_context_t ctx);
 void sdb_test_database_truncate(sdb_tests_context_t ctx);
 void sdb_test_database_truncate_multiple(sdb_tests_context_t ctx);
 void sdb_test_database_truncate_write_again(sdb_tests_context_t ctx);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // TEST_DATABASE_TESTS_H_

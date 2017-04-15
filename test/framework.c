@@ -2,12 +2,14 @@
 // Created by Pawel Burzynski on 15/04/2017.
 //
 
-#include <src/utils/memory.h>
+#include "test/framework.h"
+
 #include <stdio.h>
 #include <string.h>
-#include <src/utils/disk.h>
 #include <time.h>
-#include "framework.h"
+
+#include "src/utils/memory.h"
+#include "src/utils/disk.h"
 
 sdb_tests_session_t *sdb_tests_session_create(const char *root_directory) {
   sdb_tests_session_t *session = (sdb_tests_session_t *)sdb_alloc(sizeof(sdb_tests_session_t));

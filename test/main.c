@@ -21,8 +21,8 @@
  */
 #include <stdio.h>
 
-#include "database-tests.h"
 #include "test/framework.h"
+#include "test/database-tests.h"
 
 #define TEST(test_case) result |= sdb_tests_session_run(session, #test_case, test_case);
 
