@@ -13,7 +13,7 @@ extern "C" {
 
 typedef int sdb_socket_t;
 
-sdb_socket_t sdb_socket_open();
+sdb_socket_t sdb_socket_listen(int port, int backlog);
 int sdb_socket_receive(sdb_socket_t socket, void *buffer, size_t size);
 int sdb_socket_send(sdb_socket_t socket, void *buffer, size_t size);
 void sdb_socket_close(sdb_socket_t socket);

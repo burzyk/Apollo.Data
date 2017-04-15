@@ -6,9 +6,33 @@
 
 #include <sys/socket.h>
 #include <unistd.h>
+#include <signal.h>
+#include <src/common.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
-sdb_socket_t sdb_socket_open() {
-  return socket(AF_INET, SOCK_STREAM, 0);
+sdb_socket_t sdb_socket_listen(int port, int backlog) {
+  signal(SIGPIPE, SIG_IGN);
+  sdb_socket_t sock;
+
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    return -1;
+  }
+
+  struct sockaddr_in addr = {};
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(port);
+  addr.sin_addr.s_addr = inet_addr("0.0.0.0");
+
+  if (bind(sock, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) == -1) {
+    return -1;
+  }
+
+  if (listen(sock, backlog) == -1) {
+    return -1;
+  }
+
+  return sock;
 }
 
 int sdb_socket_receive(sdb_socket_t socket, void *buffer, size_t size) {

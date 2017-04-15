@@ -58,22 +58,9 @@ WebServer::~WebServer() {
 }
 
 void WebServer::Listen() {
-  signal(SIGPIPE, SIG_IGN);
+  this->master_socket = sdb_socket_listen(this->port, this->max_clients);
 
-  if ((this->master_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    die("Unable to open main socket");
-  }
-
-  sockaddr_in addr;
-  addr.sin_family = AF_INET;
-  addr.sin_port = htons(this->port);
-  addr.sin_addr.s_addr = inet_addr("0.0.0.0");
-
-  if (bind(this->master_socket, (struct sockaddr *)&addr, sizeof(sockaddr_in)) == -1) {
-    die("Unable to bind to the socket");
-  }
-
-  if (listen(this->master_socket, this->backlog) == -1) {
+  if (this->master_socket == -1) {
     die("Unable to listen");
   }
 
