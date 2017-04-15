@@ -35,16 +35,9 @@ namespace shakadb {
 
 class Server {
  public:
-  class ServerListener {
-   public:
-    virtual ~ServerListener() {}
-    virtual void OnPacketReceived(int client_id, sdb_packet_t *packet) = 0;
-  };
-
   virtual ~Server() {}
   virtual void Listen() = 0;
   virtual void Close() = 0;
-  virtual void AddServerListener(ServerListener *listener) = 0;
   virtual bool SendPacket(int client_id, sdb_packet_t *packet) = 0;
 };
 

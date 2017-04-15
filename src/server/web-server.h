@@ -28,6 +28,7 @@
 
 #include <list>
 #include <map>
+#include <src/storage/database.h>
 
 #include "src/utils/threading.h"
 #include "src/utils/threading.h"
@@ -38,12 +39,11 @@ namespace shakadb {
 
 class WebServer : public Server {
  public:
-  WebServer(int port, int backlog, int max_clients);
+  WebServer(int port, int backlog, int max_clients, int points_per_packet, sdb_database_t *db);
   ~WebServer();
 
   void Listen();
   void Close();
-  void AddServerListener(Server::ServerListener *listener);
   bool SendPacket(int client_id, sdb_packet_t *packet);
 
  private:
@@ -56,11 +56,15 @@ class WebServer : public Server {
   int AllocateClient(sdb_socket_t socket);
   void CloseClient(int client_id);
 
+  void HandleRead(int client_id, sdb_packet_t *packet);
+  void HandleWrite(int client_id, sdb_packet_t *packet);
+
   int port;
   int backlog;
   int max_clients;
   std::list<sdb_thread_t *> thread_pool;
-  std::list<ServerListener *> listeners;
+  sdb_database_t *db;
+  int points_per_packet;
   int master_socket;
   volatile bool is_running;
   sdb_mutex_t *server_lock;

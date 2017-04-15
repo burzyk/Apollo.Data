@@ -16,8 +16,12 @@ typedef struct sdb_stopwatch_s {
   struct timespec stop;
 } sdb_stopwatch_t;
 
-sdb_stopwatch_t * sdb_stopwatch_start();
+sdb_stopwatch_t *sdb_stopwatch_start();
 float sdb_stopwatch_stop_and_destroy(sdb_stopwatch_t *stopwatch);
+
+void sdb_log_fatal(const char *message);
+void sdb_log_info(const char *message);
+void sdb_log_debug(const char *message);
 
 #ifdef __cplusplus
 }
