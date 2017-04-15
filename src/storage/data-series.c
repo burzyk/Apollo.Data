@@ -63,7 +63,7 @@ sdb_data_series_t *sdb_data_series_create(const char *file_name, int points_per_
     if (chunk != NULL) {
       sdb_data_series_register_chunk(series, chunk);
     } else {
-      // TODO: (pburzynki): Improve logging : log->Info("Unable to load chunk");
+      // TODO: (pburzynski): Improve logging : log->Info("Unable to load chunk");
     }
   }
 
@@ -128,98 +128,43 @@ void sdb_data_series_truncate(sdb_data_series_t *series) {
   sdb_rwlock_unlock(series->_series_lock);
 }
 
-sdb_data_point_t *__lower_bound(sdb_data_point_t *begin, sdb_data_point_t *end, sdb_timestamp_t value) {
-  while (begin != end && begin->value <= value) {
-    begin++;
-  }
-
-  return begin;
-}
-
 sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                sdb_timestamp_t begin,
                                                sdb_timestamp_t end,
                                                int max_points) {
   sdb_rwlock_rdlock(series->_series_lock);
 
-  sdb_data_chunk_t *first_chunk = NULL;
-  sdb_data_chunk_t *last_chunk = NULL;
-  int filtered_chunks_count = 0;
-  int first_chunk_index = -1;
-
-  for (int i = 0; i < series->_chunks_count; i++) {
-    sdb_data_chunk_t *chunk = series->_chunks[i];
-
-    if (chunk->begin < end && chunk->end >= begin) {
-      if (first_chunk == NULL) {
-        first_chunk = chunk;
-        first_chunk_index = i;
-      }
-
-      last_chunk = chunk;
-      filtered_chunks_count++;
-    }
-  }
-
-  if (filtered_chunks_count == 0) {
-    sdb_rwlock_unlock(series->_series_lock);
-    return sdb_data_points_reader_create(0);
-  }
-
-  sdb_data_point_t *front_begin = sdb_data_chunk_read(first_chunk);
-  sdb_data_point_t *front_end = front_begin + first_chunk->number_of_points;
-
-  sdb_data_point_t *back_begin = sdb_data_chunk_read(last_chunk);
-  sdb_data_point_t *back_end = back_begin + last_chunk->number_of_points;
-
-  sdb_data_point_t *read_begin = __lower_bound(front_begin, front_end, begin);
-  sdb_data_point_t *read_end = __lower_bound(back_begin, back_end, end);
-
-  if (filtered_chunks_count == 1) {
-    int total_points = sdb_min((int)(read_end - read_begin), max_points);
-    sdb_data_points_reader_t *reader = sdb_data_points_reader_create(total_points);
-    sdb_data_points_reader_write(reader, read_begin, total_points);
-
-    sdb_rwlock_unlock(series->_series_lock);
-    return reader;
-  }
-
+  sdb_data_points_range_t *ranges = (sdb_data_points_range_t *)sdb_alloc(
+      series->_chunks_count * sizeof(sdb_data_points_range_t));
+  int ranges_count = 0;
   int total_points = 0;
-  int points_from_front = (int)(front_end - read_begin);
-  int points_from_back = (int)(read_end - back_begin);
 
-  total_points += points_from_front;
-  total_points += points_from_back;
+  // TODO (pburzynski): refactor to binary search
+  for (int i = 0; i < series->_chunks_count && total_points < max_points; i++) {
+    sdb_data_chunk_t *chunk = series->_chunks[i];
+    sdb_data_points_range_t range = sdb_data_chunk_read(chunk, begin, end);
 
-  for (int i = first_chunk_index + 1; i < first_chunk_index + filtered_chunks_count - 1; i++) {
-    total_points += series->_chunks[i]->number_of_points;
-  }
-
-  sdb_data_points_reader_t *reader = sdb_data_points_reader_create(sdb_min(total_points, max_points));
-
-  if (!sdb_data_points_reader_write(reader, read_begin, points_from_front)) {
-    sdb_rwlock_unlock(series->_series_lock);
-    return reader;
-  }
-
-  for (int i = first_chunk_index + 1; i < first_chunk_index + filtered_chunks_count - 1; i++) {
-    sdb_data_chunk_t *curr = series->_chunks[i];
-
-    if (!sdb_data_points_reader_write(reader, sdb_data_chunk_read(curr), curr->number_of_points)) {
-      sdb_rwlock_unlock(series->_series_lock);
-      return reader;
+    if (range.number_of_points > 0) {
+      ranges[ranges_count++] = range;
+      total_points += range.number_of_points;
     }
   }
 
-  sdb_data_points_reader_write(reader, back_begin, points_from_back);
+  sdb_data_points_reader_t *reader = sdb_data_points_reader_create(sdb_min(max_points, total_points));
+
+  for (int i = 0; i < ranges_count; i++) {
+    sdb_data_points_reader_write(reader, ranges[i].points, ranges[i].number_of_points);
+  }
 
   sdb_rwlock_unlock(series->_series_lock);
+  sdb_free(ranges);
+
   return reader;
 }
 
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk) {
   if (series->_chunks_count + 1 >= series->_max_chunks) {
-    series->_max_chunks += SDB_SERIES_GROW_INCREMENT;
+    series->_max_chunks += SDB_REALLOC_GROW_INCREMENT;
     series->_chunks = (sdb_data_chunk_t **)sdb_realloc(
         series->_chunks,
         series->_max_chunks * sizeof(sdb_data_chunk_t *));
@@ -248,10 +193,11 @@ void sdb_data_series_write_chunk(sdb_data_series_t *series,
     sdb_data_series_chunk_memcpy(series, chunk, chunk->number_of_points, points, count);
   } else {
     int buffer_count = count + chunk->number_of_points;
+    sdb_data_points_range_t range = sdb_data_chunk_read(chunk, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
     sdb_data_point_t *buffer = (sdb_data_point_t *)sdb_alloc(buffer_count * sizeof(sdb_data_point_t));
-    sdb_data_point_t *content = sdb_data_chunk_read(chunk);
+    sdb_data_point_t *content = range.points;
     int points_pos = count - 1;
-    int content_pos = chunk->number_of_points - 1;
+    int content_pos = range.number_of_points - 1;
     int duplicated_count = 0;
 
     for (int i = buffer_count - 1; i >= duplicated_count; i--) {

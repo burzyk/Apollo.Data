@@ -33,8 +33,6 @@
 extern "C" {
 #endif
 
-#define SDB_SERIES_GROW_INCREMENT 65536
-
 typedef struct sdb_data_series_s {
   char _file_name[SDB_FILE_MAX_LEN];
   int _points_per_chunk;

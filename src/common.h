@@ -19,6 +19,8 @@ typedef uint32_t sdb_data_series_id_t;
 
 #define SDB_FILE_MAX_LEN  1024
 
+#define SDB_REALLOC_GROW_INCREMENT 65536
+
 typedef struct sdb_data_point_s {
   sdb_timestamp_t time;
   float value;

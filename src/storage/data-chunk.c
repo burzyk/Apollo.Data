@@ -77,7 +77,7 @@ void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk) {
   sdb_free(chunk);
 }
 
-sdb_data_point_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk) {
+sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end) {
   sdb_rwlock_rdlock(chunk->lock);
 
   if (chunk->cached_content == NULL) {
@@ -94,8 +94,21 @@ sdb_data_point_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk) {
     }
   }
 
+  sdb_data_points_range_t range = {.points = NULL, .number_of_points = 0};
+
+  // TODO (pburzynski): refactor to binary search and check chunk begin and end
+  for (int i = 0; i < chunk->number_of_points; i++) {
+    if (begin <= chunk->cached_content[i].time && chunk->cached_content[i].time < end) {
+      if (range.points == NULL) {
+        range.points = chunk->cached_content + i;
+      }
+
+      range.number_of_points++;
+    }
+  }
+
   sdb_rwlock_unlock(chunk->lock);
-  return chunk->cached_content;
+  return range;
 }
 
 void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count) {

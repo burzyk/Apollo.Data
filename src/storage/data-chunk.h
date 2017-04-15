@@ -45,10 +45,15 @@ typedef struct sdb_data_chunk_s {
   int max_points;
 } sdb_data_chunk_t;
 
+typedef struct sdb_data_points_range_s {
+  sdb_data_point_t *points;
+  int number_of_points;
+} sdb_data_points_range_t;
+
 int sdb_data_chunk_calculate_size(int points_count);
 sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points);
 void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_point_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk);
+sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin , sdb_timestamp_t end);
 void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
 
 #ifdef __cplusplus
