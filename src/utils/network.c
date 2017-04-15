@@ -6,12 +6,12 @@
 
 #include <sys/socket.h>
 #include <unistd.h>
-#include <signal.h>
-#include <src/common.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <stdio.h>
+
+#include "src/common.h"
 
 sdb_socket_t sdb_socket_listen(int port, int backlog) {
   sdb_socket_t sock;

@@ -2,7 +2,7 @@
 // Created by Pawel Burzynski on 14/04/2017.
 //
 
-#include "disk.h"
+#include "src/utils/disk.h"
 
 #include <sys/stat.h>
 #include <errno.h>

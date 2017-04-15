@@ -6,14 +6,13 @@
 #include "src/utils/memory.h"
 #include "src/common.h"
 
-sdb_thread_t *sdb_thread_create() {
-  return (sdb_thread_t *)sdb_alloc(sizeof(sdb_thread_t));
-}
-
-void sdb_thread_start(sdb_thread_t *thread, sdb_thread_routine_t routine, void *data) {
+sdb_thread_t *sdb_thread_start(sdb_thread_routine_t routine, void *data) {
+  sdb_thread_t *thread = (sdb_thread_t *)sdb_alloc(sizeof(sdb_thread_t));
   if (!pthread_create(&thread->thread, NULL, routine, data)) {
     die("Unable to start a thread");
   }
+
+  return thread;
 }
 
 void sdb_thread_join_and_destroy(sdb_thread_t *thread) {

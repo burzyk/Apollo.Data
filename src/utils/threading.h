@@ -7,10 +7,6 @@
 
 #include <pthread.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef void *(*sdb_thread_routine_t)(void *);
 
 typedef struct sdb_thread_s {
@@ -25,8 +21,7 @@ typedef struct sdb_mutex_s {
   pthread_mutex_t mutex;
 } sdb_mutex_t;
 
-sdb_thread_t *sdb_thread_create();
-void sdb_thread_start(sdb_thread_t *thread, sdb_thread_routine_t routine, void *data);
+sdb_thread_t *sdb_thread_start(sdb_thread_routine_t routine, void *data);
 void sdb_thread_join_and_destroy(sdb_thread_t *thread);
 
 sdb_rwlock_t *sdb_rwlock_create();
@@ -40,9 +35,5 @@ sdb_mutex_t *sdb_mutex_create();
 void sdb_mutex_lock(sdb_mutex_t *monitor);
 void sdb_mutex_unlock(sdb_mutex_t *monitor);
 void sdb_mutex_destroy(sdb_mutex_t *monitor);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // SRC_UTILS_THREADING_H_

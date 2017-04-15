@@ -45,7 +45,7 @@ sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, int poin
   }
 
   for (int i = 0; i < server->_thread_pool_size; i++) {
-    sdb_thread_start(server->_thread_pool[i], sdb_server_worker_routine, server);
+    server->_thread_pool[i] = sdb_thread_start(sdb_server_worker_routine, server);
   }
 
   return server;
@@ -95,7 +95,7 @@ void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sd
   sdb_read_request_t *request = (sdb_read_request_t *)packet->payload;
   sdb_timestamp_t begin = request->begin;
 
-  for(;;) {
+  for (;;) {
     sdb_data_points_reader_t *reader =
         sdb_database_read(server->_db, request->data_series_id, begin, request->end, server->_points_per_packet);
 
