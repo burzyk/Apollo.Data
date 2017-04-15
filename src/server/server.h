@@ -23,18 +23,14 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SRC_SERVER_WEB_SERVER_H_
-#define SRC_SERVER_WEB_SERVER_H_
+#ifndef SRC_SERVER_SERVER_H_
+#define SRC_SERVER_SERVER_H_
 
-#include <src/storage/database.h>
+#include "src/storage/database.h"
 
 #include "src/utils/threading.h"
 #include "src/utils/threading.h"
 #include "src/protocol.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef struct sdb_server_s {
   sdb_thread_t **_thread_pool;
@@ -48,8 +44,4 @@ typedef struct sdb_server_s {
 sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, int points_per_packet, sdb_database_t *db);
 void sdb_server_destroy(sdb_server_t *server);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // SRC_SERVER_WEB_SERVER_H_
+#endif  // SRC_SERVER_SERVER_H_

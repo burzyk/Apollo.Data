@@ -24,9 +24,8 @@
 //
 
 #include "src/server/server.h"
-
-#include <src/utils/memory.h>
-#include <src/utils/diagnostics.h>
+#include "src/utils/memory.h"
+#include "src/utils/diagnostics.h"
 
 void *sdb_server_worker_routine(void *data);
 void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
