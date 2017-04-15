@@ -20,26 +20,32 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 15/02/2017.
+// Created by Pawel Burzynski on 17/01/2017.
 //
 
 #ifndef SRC_STORAGE_DATABASE_H_
 #define SRC_STORAGE_DATABASE_H_
 
-#include <string>
+#include "src/storage/data-chunk.h"
+#include "src/storage/data-series.h"
 
-#include "src/storage/data-points-reader.h"
+typedef struct sdb_database_s {
+  char _directory[SDB_FILE_MAX_LEN];
+  int _points_per_chunk;
+  sdb_rwlock_t *_lock;
 
-namespace shakadb {
+  sdb_data_series_t **_series;
+  int _series_count;
+  int _max_series_count;
+} sdb_database_t;
 
-class Database {
- public:
-  virtual ~Database() {}
-  virtual DataPointsReader *Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points) = 0;
-  virtual void Write(data_series_id_t series_id, data_point_t *points, int count) = 0;
-  virtual void Truncate(data_series_id_t series_id) = 0;
-};
-
-}  // namespace shakadb
+sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk);
+void sdb_database_destroy(sdb_database_t *db);
+int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count);
+int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id);
+sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
+                                            sdb_timestamp_t begin,
+                                            sdb_timestamp_t end,
+                                            int max_points);
 
 #endif  // SRC_STORAGE_DATABASE_H_

@@ -20,36 +20,41 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 17/01/2017.
+// Created by Pawel Burzynski on 14/04/2017.
 //
 
-#ifndef SRC_STORAGE_DATA_CHUNK_H_
-#define SRC_STORAGE_DATA_CHUNK_H_
+#ifndef SRC_UTILS_THREADING_H_
+#define SRC_UTILS_THREADING_H_
 
-#include "src/common.h"
-#include "src/utils/threading.h"
+#include <pthread.h>
 
-typedef struct sdb_data_chunk_s {
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
-  int number_of_points;
-  int max_points;
+typedef void *(*sdb_thread_routine_t)(void *);
 
-  char _file_name[SDB_FILE_MAX_LEN];
-  uint64_t _file_offset;
-  sdb_data_point_t *_cached_content;
-  sdb_rwlock_t *_lock;
-} sdb_data_chunk_t;
+typedef struct sdb_thread_s {
+  pthread_t _thread;
+} sdb_thread_t;
 
-typedef struct sdb_data_points_range_s {
-  sdb_data_point_t *points;
-  int number_of_points;
-} sdb_data_points_range_t;
+typedef struct sdb_rwlock_s {
+  pthread_rwlock_t _lock;
+} sdb_rwlock_t;
 
-int sdb_data_chunk_calculate_size(int points_count);
-sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points);
-void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
-void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
+typedef struct sdb_mutex_s {
+  pthread_mutex_t _mutex;
+} sdb_mutex_t;
 
-#endif  // SRC_STORAGE_DATA_CHUNK_H_
+sdb_thread_t *sdb_thread_start(sdb_thread_routine_t routine, void *data);
+void sdb_thread_join_and_destroy(sdb_thread_t *thread);
+
+sdb_rwlock_t *sdb_rwlock_create();
+void sdb_rwlock_rdlock(sdb_rwlock_t *lock);
+void sdb_rwlock_wrlock(sdb_rwlock_t *lock);
+void sdb_rwlock_upgrade(sdb_rwlock_t *lock);
+void sdb_rwlock_unlock(sdb_rwlock_t *lock);
+void sdb_rwlock_destroy(sdb_rwlock_t *lock);
+
+sdb_mutex_t *sdb_mutex_create();
+void sdb_mutex_lock(sdb_mutex_t *monitor);
+void sdb_mutex_unlock(sdb_mutex_t *monitor);
+void sdb_mutex_destroy(sdb_mutex_t *monitor);
+
+#endif  // SRC_UTILS_THREADING_H_

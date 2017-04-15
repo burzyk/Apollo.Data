@@ -20,36 +20,30 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 17/01/2017.
+// Created by Pawel Burzynski on 15/04/2017.
 //
 
-#ifndef SRC_STORAGE_DATA_CHUNK_H_
-#define SRC_STORAGE_DATA_CHUNK_H_
+#ifndef TEST_FRAMEWORK_H_
+#define TEST_FRAMEWORK_H_
 
 #include "src/common.h"
-#include "src/utils/threading.h"
 
-typedef struct sdb_data_chunk_s {
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
-  int number_of_points;
-  int max_points;
+typedef struct sdb_tests_session_s {
+  char _directory[SDB_FILE_MAX_LEN];
+  int _tests_success;
+  int _tests_failed;
+} sdb_tests_session_t;
 
-  char _file_name[SDB_FILE_MAX_LEN];
-  uint64_t _file_offset;
-  sdb_data_point_t *_cached_content;
-  sdb_rwlock_t *_lock;
-} sdb_data_chunk_t;
+typedef struct sdb_tests_context_s {
+  char working_directory[SDB_FILE_MAX_LEN];
+  sdb_tests_session_t *session;
+} sdb_tests_context_t;
 
-typedef struct sdb_data_points_range_s {
-  sdb_data_point_t *points;
-  int number_of_points;
-} sdb_data_points_range_t;
+typedef void (*sdb_test_function_t)(sdb_tests_context_t);
 
-int sdb_data_chunk_calculate_size(int points_count);
-sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points);
-void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
-void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
+sdb_tests_session_t *sdb_tests_session_create(const char *root_directory);
+void sdb_tests_session_destroy(sdb_tests_session_t *session);
+int sdb_tests_session_run(sdb_tests_session_t *session, const char *name, sdb_test_function_t test_function);
+void sdb_tests_session_print_summary(sdb_tests_session_t *session);
 
-#endif  // SRC_STORAGE_DATA_CHUNK_H_
+#endif  // TEST_FRAMEWORK_H_

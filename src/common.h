@@ -20,36 +20,38 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 17/01/2017.
+// Created by Pawel Burzynski on 14/04/2017.
 //
 
-#ifndef SRC_STORAGE_DATA_CHUNK_H_
-#define SRC_STORAGE_DATA_CHUNK_H_
+#ifndef SRC_COMMON_H_
+#define SRC_COMMON_H_
 
-#include "src/common.h"
-#include "src/utils/threading.h"
+#include <stdint.h>
 
-typedef struct sdb_data_chunk_s {
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
-  int number_of_points;
-  int max_points;
+typedef uint64_t sdb_timestamp_t;
+typedef uint32_t sdb_data_series_id_t;
 
-  char _file_name[SDB_FILE_MAX_LEN];
-  uint64_t _file_offset;
-  sdb_data_point_t *_cached_content;
-  sdb_rwlock_t *_lock;
-} sdb_data_chunk_t;
+#define SDB_TIMESTAMP_MIN ((sdb_timestamp_t)0)
+#define SDB_TIMESTAMP_MAX ((sdb_timestamp_t)UINT64_MAX)
 
-typedef struct sdb_data_points_range_s {
-  sdb_data_point_t *points;
-  int number_of_points;
-} sdb_data_points_range_t;
+#define SDB_FILE_MAX_LEN  1024
 
-int sdb_data_chunk_calculate_size(int points_count);
-sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points);
-void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
-void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
+#define SDB_REALLOC_GROW_INCREMENT 65536
 
-#endif  // SRC_STORAGE_DATA_CHUNK_H_
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+typedef struct sdb_data_point_s {
+  sdb_timestamp_t time;
+  float value;
+} __attribute__((packed)) sdb_data_point_t;
+
+void die(const char *message);
+
+#define sdb_min(a, b) ((a) < (b) ? (a) : (b))
+#define sdb_max(a, b) ((a) < (b) ? (b) : (a))
+
+#define sdb_assert(status, message) if (!(status)) { die(message); }
+
+#endif  // SRC_COMMON_H_

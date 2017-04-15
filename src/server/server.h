@@ -20,37 +20,28 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 01/02/2017.
+// Created by Pawel Burzynski on 25/02/2017.
 //
 
 #ifndef SRC_SERVER_SERVER_H_
 #define SRC_SERVER_SERVER_H_
 
-#include <vector>
-#include <list>
+#include "src/storage/database.h"
 
-#include "src/log.h"
-#include "src/protocol/data-packet.h"
+#include "src/utils/threading.h"
+#include "src/utils/threading.h"
+#include "src/protocol.h"
 
-namespace shakadb {
+typedef struct sdb_server_s {
+  sdb_thread_t **_thread_pool;
+  int _thread_pool_size;
+  sdb_database_t *_db;
+  int _points_per_packet;
+  int _master_socket;
+  volatile int _is_running;
+} sdb_server_t;
 
-class Server {
- public:
-  class ServerListener {
-   public:
-    virtual ~ServerListener() {}
-    virtual void OnClientConnected(int client_id) = 0;
-    virtual void OnClientDisconnected(int client_id) = 0;
-    virtual void OnPacketReceived(int client_id, DataPacket *packet) = 0;
-  };
-
-  virtual ~Server() {}
-  virtual void Listen() = 0;
-  virtual void Close() = 0;
-  virtual void AddServerListener(ServerListener *listener) = 0;
-  virtual bool SendPacket(int client_id, DataPacket *packet) = 0;
-};
-
-}  // namespace shakadb
+sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, int points_per_packet, sdb_database_t *db);
+void sdb_server_destroy(sdb_server_t *server);
 
 #endif  // SRC_SERVER_SERVER_H_

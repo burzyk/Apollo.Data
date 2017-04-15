@@ -20,23 +20,22 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 15/02/2017.
+// Created by Pawel Burzynski on 17/01/2017.
 //
 
 #ifndef SRC_STORAGE_DATA_POINTS_READER_H_
 #define SRC_STORAGE_DATA_POINTS_READER_H_
 
-#include "src/data-point.h"
+#include "src/common.h"
 
-namespace shakadb {
+typedef struct sdb_data_points_reader_s {
+  sdb_data_point_t *points;
+  int points_count;
+  int _write_position;
+} sdb_data_points_reader_t;
 
-class DataPointsReader {
- public:
-  virtual ~DataPointsReader() {}
-  virtual data_point_t *GetDataPoints() = 0;
-  virtual int GetDataPointsCount() = 0;
-};
-
-}  // namespace shakadb
+sdb_data_points_reader_t *sdb_data_points_reader_create(int points_count);
+int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, sdb_data_point_t *points, int count);
+void sdb_data_points_reader_destroy(sdb_data_points_reader_t *reader);
 
 #endif  // SRC_STORAGE_DATA_POINTS_READER_H_

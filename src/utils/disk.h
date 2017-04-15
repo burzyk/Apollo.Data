@@ -20,36 +20,24 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 17/01/2017.
+// Created by Pawel Burzynski on 14/04/2017.
 //
 
-#ifndef SRC_STORAGE_DATA_CHUNK_H_
-#define SRC_STORAGE_DATA_CHUNK_H_
+#ifndef SRC_UTILS_DISK_H_
+#define SRC_UTILS_DISK_H_
 
-#include "src/common.h"
-#include "src/utils/threading.h"
+#include <stdio.h>
 
-typedef struct sdb_data_chunk_s {
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
-  int number_of_points;
-  int max_points;
+typedef FILE sdb_file_t;
 
-  char _file_name[SDB_FILE_MAX_LEN];
-  uint64_t _file_offset;
-  sdb_data_point_t *_cached_content;
-  sdb_rwlock_t *_lock;
-} sdb_data_chunk_t;
+int sdb_directory_create(const char *directory_name);
 
-typedef struct sdb_data_points_range_s {
-  sdb_data_point_t *points;
-  int number_of_points;
-} sdb_data_points_range_t;
+sdb_file_t *sdb_file_open(const char *file_name);
+void sdb_file_close(sdb_file_t *file);
+size_t sdb_file_write(sdb_file_t *file, void *buffer, size_t size);
+size_t sdb_file_read(sdb_file_t *file, void *buffer, size_t size);
+int sdb_file_seek(sdb_file_t *file, off_t offset, int origin);
+long sdb_file_size(const char *file_name);
+int sdb_file_truncate(const char *file_name);
 
-int sdb_data_chunk_calculate_size(int points_count);
-sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points);
-void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
-void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
-
-#endif  // SRC_STORAGE_DATA_CHUNK_H_
+#endif  // SRC_UTILS_DISK_H_

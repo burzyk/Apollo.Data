@@ -26,40 +26,28 @@
 #ifndef SRC_STORAGE_DATA_SERIES_H_
 #define SRC_STORAGE_DATA_SERIES_H_
 
-#include <list>
-#include <string>
-
-#include "src/log.h"
-#include "src/utils/rw-lock.h"
-#include "src/storage/data-points-reader.h"
 #include "src/storage/data-chunk.h"
+#include "data-points-reader.h"
 
-namespace shakadb {
+typedef struct sdb_data_series_s {
+  sdb_data_series_id_t id;
 
-class DataSeries {
- public:
-  ~DataSeries();
-  static DataSeries *Init(std::string file_name, int points_per_chunk, Log *log);
+  char _file_name[SDB_FILE_MAX_LEN];
+  int _points_per_chunk;
+  sdb_rwlock_t *_series_lock;
 
-  DataPointsReader *Read(timestamp_t begin, timestamp_t end, int max_points);
-  void Write(data_point_t *points, int count);
-  void Truncate();
+  sdb_data_chunk_t **_chunks;
+  int _chunks_count;
+  int _max_chunks;
+} sdb_data_series_t;
 
- private:
-  DataSeries(std::string file_name, int points_per_chunk, Log *log);
-  void RegisterChunk(DataChunk *chunk);
-  void WriteChunk(DataChunk *chunk, data_point_t *points, int count);
-  void ChunkMemcpy(DataChunk *chunk, int position, data_point_t *points, int count);
-  DataChunk *CreateEmptyChunk();
-  void DeleteChunks();
-
-  Log *log;
-  std::string file_name;
-  int points_per_chunk;
-  std::list<DataChunk *> chunks;
-  RwLock series_lock;
-};
-
-}  // namespace shakadb
+sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id, const char *file_name, int points_per_chunk);
+void sdb_data_series_destroy(sdb_data_series_t *series);
+int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count);
+int sdb_data_series_truncate(sdb_data_series_t *series);
+sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
+                                               sdb_timestamp_t begin,
+                                               sdb_timestamp_t end,
+                                               int max_points);
 
 #endif  // SRC_STORAGE_DATA_SERIES_H_

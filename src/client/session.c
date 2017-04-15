@@ -23,25 +23,62 @@
 // Created by Pawel Burzynski on 08/02/2017.
 //
 
-#ifndef SRC_CLIENT_SESSION_H_
-#define SRC_CLIENT_SESSION_H_
+#include "src/client/session.h"
+#include "src/utils/memory.h"
 
-#include "src/protocol.h"
-#include "src/client/data-points-iterator.h"
+sdb_client_session_t *sdb_client_session_create(const char *server, int port) {
+  sdb_socket_t sock = sdb_socket_connect(server, port);
 
-typedef struct sdb_client_session_s {
-  sdb_socket_t _sock;
-} sdb_client_session_t;
+  if (sock == SDB_INVALID_SOCKET) {
+    return NULL;
+  }
 
-sdb_client_session_t *sdb_client_session_create(const char *server, int port);
-void sdb_client_session_destroy(sdb_client_session_t *session);
+  sdb_client_session_t *session = (sdb_client_session_t *)sdb_alloc(sizeof(sdb_client_session_t));
+  session->_sock = sock;
+
+  return session;
+}
+
+void sdb_client_session_destroy(sdb_client_session_t *session) {
+  sdb_socket_close(session->_sock);
+  sdb_free(session);
+}
+
 int sdb_client_session_write_points(sdb_client_session_t *session,
                                     sdb_data_series_id_t series_id,
                                     sdb_data_point_t *points,
-                                    int count);
+                                    int count) {
+  sdb_packet_t *request = sdb_write_request_create(series_id, points, count);
+
+  if (!sdb_packet_send_and_destroy(request, session->_sock)) {
+    return 0;
+  }
+
+  sdb_packet_t *packet = sdb_packet_receive(session->_sock);
+
+  if (packet == NULL) {
+    return 0;
+  }
+
+  if (packet->header.type != SDB_WRITE_RESPONSE) {
+    sdb_packet_destroy(packet);
+    return 0;
+  }
+
+  sdb_write_response_t *response = (sdb_write_response_t *)packet->payload;
+  int result = response->code == SDB_RESPONSE_OK;
+  sdb_packet_destroy(packet);
+
+  return result;
+}
+
 sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t *session,
                                                            sdb_data_series_id_t series_id,
                                                            sdb_timestamp_t begin,
-                                                           sdb_timestamp_t end);
+                                                           sdb_timestamp_t end) {
+  if (!sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), session->_sock)) {
+    return NULL;
+  }
 
-#endif  // SRC_CLIENT_SESSION_H_
+  return sdb_data_points_iterator_create(session->_sock);
+}

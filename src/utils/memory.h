@@ -20,36 +20,28 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 17/01/2017.
+// Created by Pawel Burzynski on 14/04/2017.
 //
 
-#ifndef SRC_STORAGE_DATA_CHUNK_H_
-#define SRC_STORAGE_DATA_CHUNK_H_
 
-#include "src/common.h"
-#include "src/utils/threading.h"
+#ifndef SRC_UTILS_MEMORY_H_
+#define SRC_UTILS_MEMORY_H_
 
-typedef struct sdb_data_chunk_s {
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
-  int number_of_points;
-  int max_points;
+#include <stdio.h>
 
-  char _file_name[SDB_FILE_MAX_LEN];
-  uint64_t _file_offset;
-  sdb_data_point_t *_cached_content;
-  sdb_rwlock_t *_lock;
-} sdb_data_chunk_t;
+void *sdb_alloc(size_t size);
+void *sdb_realloc(void *buffer, size_t size);
+void sdb_free(void *buffer);
 
-typedef struct sdb_data_points_range_s {
-  sdb_data_point_t *points;
-  int number_of_points;
-} sdb_data_points_range_t;
+typedef struct sdb_binary_reader_s {
+  int success;
+  void *_buffer;
+  void *_current;
+  size_t _size;
+} sdb_binary_reader_t;
 
-int sdb_data_chunk_calculate_size(int points_count);
-sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points);
-void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
-void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
+void sdb_binary_reader_init(sdb_binary_reader_t *reader, void *buffer, size_t size);
+void sdb_binary_reader_read(sdb_binary_reader_t *reader, void *buffer, size_t size);
+void sdb_binary_reader_read_pointer(sdb_binary_reader_t *reader, void *buffer, size_t size);
 
-#endif  // SRC_STORAGE_DATA_CHUNK_H_
+#endif  // SRC_UTILS_MEMORY_H_

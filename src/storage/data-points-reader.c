@@ -23,33 +23,39 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SRC_STORAGE_DATA_CHUNK_H_
-#define SRC_STORAGE_DATA_CHUNK_H_
+#include "src/storage/data-points-reader.h"
 
-#include "src/common.h"
-#include "src/utils/threading.h"
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
 
-typedef struct sdb_data_chunk_s {
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
-  int number_of_points;
-  int max_points;
+#include "src/utils/memory.h"
 
-  char _file_name[SDB_FILE_MAX_LEN];
-  uint64_t _file_offset;
-  sdb_data_point_t *_cached_content;
-  sdb_rwlock_t *_lock;
-} sdb_data_chunk_t;
+sdb_data_points_reader_t *sdb_data_points_reader_create(int points_count) {
+  sdb_data_points_reader_t *reader = (sdb_data_points_reader_t *)sdb_alloc(sizeof(sdb_data_points_reader_t));
 
-typedef struct sdb_data_points_range_s {
-  sdb_data_point_t *points;
-  int number_of_points;
-} sdb_data_points_range_t;
+  reader->points_count = points_count;
+  reader->points = points_count == 0
+                   ? NULL
+                   : (sdb_data_point_t *)sdb_alloc(points_count * sizeof(sdb_data_point_t));
+  reader->_write_position = 0;
 
-int sdb_data_chunk_calculate_size(int points_count);
-sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points);
-void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
-void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
+  return reader;
+}
 
-#endif  // SRC_STORAGE_DATA_CHUNK_H_
+int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, sdb_data_point_t *points, int count) {
+  if (count == 0 || reader->points == NULL) {
+    return 0;
+  }
+
+  int to_write = sdb_min(count, reader->points_count - reader->_write_position);
+  memcpy(reader->points + reader->_write_position, points, to_write * sizeof(sdb_data_point_t));
+  reader->_write_position += to_write;
+
+  return reader->_write_position < reader->points_count;
+}
+
+void sdb_data_points_reader_destroy(sdb_data_points_reader_t *reader) {
+  sdb_free(reader->points);
+  sdb_free(reader);
+}
