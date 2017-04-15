@@ -33,11 +33,11 @@
 
 namespace shakadb {
 
-WriteRequest::WriteRequest() : WriteRequest("", nullptr, 0) {
+WriteRequest::WriteRequest() : WriteRequest(SHAKADB_INVALID_SERIES_ID, nullptr, 0) {
 }
 
-WriteRequest::WriteRequest(std::string series_name, data_point_t *points, int points_count) {
-  this->series_name = series_name;
+WriteRequest::WriteRequest(data_series_id_t series_id, data_point_t *points, int points_count) {
+  this->series_id = series_id;
   this->points = points;
   this->points_count = points_count;
 }
@@ -54,8 +54,8 @@ data_point_t *WriteRequest::GetPoints() {
   return this->points;
 }
 
-std::string WriteRequest::GetSeriesName() {
-  return this->series_name;
+data_series_id_t WriteRequest::GetSeriesId() {
+  return this->series_id;
 }
 
 bool WriteRequest::Deserialize(Buffer *payload) {
@@ -66,7 +66,7 @@ bool WriteRequest::Deserialize(Buffer *payload) {
   write_request_t *request = reinterpret_cast<write_request_t *>(payload->GetBuffer());
 
   this->points_count = request->points_count;
-  this->series_name = std::string(request->series_name);
+  this->series_id = request->series_id;
 
   if (payload->GetSize() != sizeof(write_request_t) + this->points_count * sizeof(data_point_t)) {
     return false;
@@ -86,7 +86,7 @@ std::vector<Buffer *> WriteRequest::Serialize() {
   write_request_t *request = reinterpret_cast<write_request_t *>(info_fragment->GetBuffer());
 
   request->points_count = this->points_count;
-  memcpy(request->series_name, this->series_name.c_str(), this->series_name.size());
+  request->series_id = this->series_id;
 
   ShallowBuffer *points_fragment = new ShallowBuffer(
       reinterpret_cast<byte_t *>(this->points),

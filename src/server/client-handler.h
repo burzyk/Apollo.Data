@@ -20,41 +20,31 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 08/03/2017.
+// Created by Pawel Burzynski on 19/02/2017.
 //
 
-#ifndef SRC_PROTOCOL_TRUNCATE_REQUEST_H_
-#define SRC_PROTOCOL_TRUNCATE_REQUEST_H_
+#ifndef SRC_MIDDLEWARE_CLIENT_HANDLER_H_
+#define SRC_MIDDLEWARE_CLIENT_HANDLER_H_
 
-#include <string>
-#include <vector>
-
-#include "src/data-point.h"
-#include "src/protocol/data-packet.h"
+#include <src/server/server.h>
+#include <src/storage/database.h>
 
 namespace shakadb {
 
-class TruncateRequest : public DataPacket {
+class ClientHandler : public Server::ServerListener {
  public:
-  TruncateRequest();
-  explicit TruncateRequest(std::string series_name);
+  ClientHandler(Server *server, Database *db, int points_per_packet);
 
-  PacketType GetType();
-  std::string GetSeriesName();
-
- protected:
-  bool Deserialize(Buffer *payload);
-  std::vector<Buffer *> Serialize();
+  void OnClientConnected(int client_id);
+  void OnClientDisconnected(int client_id);
+  void OnPacketReceived(int client_id, DataPacket *packet);
 
  private:
-  struct truncate_request_t {
-    char series_name[SHAKADB_SERIES_NAME_MAX_LENGTH + 1];
-  };
-
-  std::string series_name;
+  Server *server;
+  Database *db;
+  int points_per_packet;
 };
 
 }  // namespace shakadb
 
-#endif  // SRC_PROTOCOL_TRUNCATE_REQUEST_H_
-
+#endif  // SRC_MIDDLEWARE_CLIENT_HANDLER_H_

@@ -45,9 +45,9 @@ class EndToEnd {
 
  private:
   Bootstrapper *BootstrapInit(TestContext ctx);
-  void ValidateRead(std::string series_name, int expected_points_count);
-  void WriteSequencialPoints(std::string series_name, int batch_size, int count);
-  void WritePoints(std::string series_name, data_point_t *points, int points_count);
+  void ValidateRead(data_series_id_t series_id, int expected_points_count);
+  void WriteSequencialPoints(data_series_id_t series_id, int batch_size, int count);
+  void WritePoints(data_series_id_t series_id, data_point_t *points, int points_count);
 };
 
 }  // namespace test

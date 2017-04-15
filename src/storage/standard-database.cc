@@ -50,33 +50,33 @@ StandardDatabase *StandardDatabase::Init(std::string directory, Log *log, int po
   return new StandardDatabase(directory, log, points_per_chunk);
 }
 
-void StandardDatabase::Write(std::string name, data_point_t *points, int count) {
-  DataSeries *series = this->FindDataSeries(name);
+void StandardDatabase::Write(data_series_id_t series_id, data_point_t *points, int count) {
+  DataSeries *series = this->FindDataSeries(series_id);
   series->Write(points, count);
 }
 
-void StandardDatabase::Truncate(std::string name) {
-  DataSeries *series = this->FindDataSeries(name);
+void StandardDatabase::Truncate(data_series_id_t series_id) {
+  DataSeries *series = this->FindDataSeries(series_id);
   series->Truncate();
 }
 
-DataPointsReader *StandardDatabase::Read(std::string name, timestamp_t begin, timestamp_t end, int max_points) {
-  DataSeries *series = this->FindDataSeries(name);
+DataPointsReader *StandardDatabase::Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points) {
+  DataSeries *series = this->FindDataSeries(series_id);
   return series->Read(begin, end, max_points);
 }
 
-DataSeries *StandardDatabase::FindDataSeries(std::string name) {
+DataSeries *StandardDatabase::FindDataSeries(data_series_id_t series_id) {
   auto scope = this->lock.LockRead();
 
-  if (this->series.find(name) == this->series.end()) {
+  if (this->series.find(series_id) == this->series.end()) {
     scope->UpgradeToWrite();
 
-    if (this->series.find(name) == this->series.end()) {
-      this->series[name] = DataSeries::Init(this->directory + "/" + name, this->points_per_chunk, this->log);
+    if (this->series.find(series_id) == this->series.end()) {
+      this->series[series_id] = DataSeries::Init(this->directory + "/" + std::to_string(series_id), this->points_per_chunk, this->log);
     }
   }
 
-  return this->series[name];
+  return this->series[series_id];
 }
 
 }  // namespace shakadb

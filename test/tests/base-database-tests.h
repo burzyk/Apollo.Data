@@ -46,9 +46,9 @@ class BaseDatabaseTests {
  public:
   virtual ~BaseDatabaseTests() {}
  protected:
-  static void Write(Database *db, std::string series_name, int batches, int count, timestamp_t time = 1);
+  static void Write(Database *db, data_series_id_t series_id, int batches, int count, timestamp_t time = 1);
   static void ValidateRead(Database *db,
-                           std::string series_name,
+                           data_series_id_t series_id,
                            int expected_count,
                            timestamp_t begin,
                            timestamp_t end,

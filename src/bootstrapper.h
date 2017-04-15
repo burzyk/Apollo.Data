@@ -29,14 +29,12 @@
 #include <memory>
 #include <string>
 
-#include "src/middleware/truncate-handler.h"
 #include "src/server/server.h"
-#include "src/middleware/ping-handler.h"
-#include "src/middleware/packet-logger.h"
 #include "src/utils/thread.h"
-#include "src/middleware/write-handler.h"
-#include "src/middleware/read-handler.h"
 #include "src/configuration.h"
+#include "src/utils/monitor.h"
+#include "src/storage/database.h"
+#include "src/server/client-handler.h"
 
 namespace shakadb {
 
@@ -58,11 +56,7 @@ class Bootstrapper {
 
   Log *log;
   Server *server;
-  PingHandler *ping_handler;
-  PacketLogger *packet_logger;
-  WriteHandler *write_handler;
-  TruncateHandler *truncate_handler;
-  ReadHandler *read_handler;
+  ClientHandler *client_handler;
   Database *db;
 };
 

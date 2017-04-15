@@ -31,6 +31,7 @@
 namespace shakadb {
 
 typedef uint64_t timestamp_t;
+typedef uint32_t data_series_id_t;
 
 struct data_point_t {
   static const timestamp_t kMaxTimestamp;

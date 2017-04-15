@@ -33,7 +33,7 @@
 namespace shakadb {
 namespace test {
 
-void BaseDatabaseTests::Write(Database *db, std::string series_name, int batches, int count, timestamp_t time) {
+void BaseDatabaseTests::Write(Database *db, data_series_id_t series_id, int batches, int count, timestamp_t time) {
   if (time == 0) {
     throw FatalException("Time cannot be 0");
   }
@@ -47,19 +47,19 @@ void BaseDatabaseTests::Write(Database *db, std::string series_name, int batches
       time++;
     }
 
-    db->Write(series_name, points, count);
+    db->Write(series_id, points, count);
   }
 
   shakadb::Allocator::Delete(points);
 }
 
 void BaseDatabaseTests::ValidateRead(Database *db,
-                                     std::string series_name,
+                                     data_series_id_t series_id,
                                      int expected_count,
                                      timestamp_t begin,
                                      timestamp_t end,
                                      int max_points) {
-  auto reader = std::unique_ptr<DataPointsReader>(db->Read(series_name, begin, end, max_points));
+  auto reader = std::unique_ptr<DataPointsReader>(db->Read(series_id, begin, end, max_points));
   int total_read = reader->GetDataPointsCount();
   data_point_t *points = reader->GetDataPoints();
 

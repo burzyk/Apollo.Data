@@ -37,7 +37,7 @@
 #include "test/tests/end-to-end.h"
 
 #define RUN_TESTS
-#define RUN_PERF_TESTS
+//#define RUN_PERF_TESTS
 
 #ifdef RUN_TESTS
 #define TEST(clazz, test_case) result |= runner.RunTest(\

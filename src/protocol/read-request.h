@@ -37,10 +37,10 @@ namespace shakadb {
 class ReadRequest : public DataPacket {
  public:
   ReadRequest();
-  ReadRequest(std::string series_name, timestamp_t begin, timestamp_t end);
+  ReadRequest(data_series_id_t series_id, timestamp_t begin, timestamp_t end);
 
   PacketType GetType();
-  std::string GetSeriesName();
+  data_series_id_t GetSeriesId();
   timestamp_t GetBegin();
   timestamp_t GetEnd();
 
@@ -52,10 +52,10 @@ class ReadRequest : public DataPacket {
   struct read_request_t {
     timestamp_t begin;
     timestamp_t end;
-    char series_name[SHAKADB_SERIES_NAME_MAX_LENGTH + 1];
+    data_series_id_t series_id;
   };
 
-  std::string series_name;
+  data_series_id_t series_id;
   timestamp_t begin;
   timestamp_t end;
 };

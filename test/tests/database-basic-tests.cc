@@ -39,107 +39,107 @@ void DatabaseBasicTests::simple_database_initialization_test(TestContext ctx) {
 void DatabaseBasicTests::basic_database_write_and_read_all(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3);
-  ValidateRead(db.get(), "usd_gbp", 15, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 5, 3);
+  ValidateRead(db.get(), 12345, 15, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::write_database_in_one_big_batch(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 1, 32);
-  ValidateRead(db.get(), "usd_gbp", 32, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 1, 32);
+  ValidateRead(db.get(), 12345, 32, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::write_database_in_multiple_small_batches(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 32, 1);
-  ValidateRead(db.get(), "usd_gbp", 32, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 32, 1);
+  ValidateRead(db.get(), 12345, 32, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_multi_write_and_read_all(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 100, 3);
-  Write(db.get(), "usd_gbp", 100, 3);
-  Write(db.get(), "usd_gbp", 100, 3);
-  Write(db.get(), "usd_gbp", 100, 3);
-  ValidateRead(db.get(), "usd_gbp", 300, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 100, 3);
+  Write(db.get(), 12345, 100, 3);
+  Write(db.get(), 12345, 100, 3);
+  Write(db.get(), 12345, 100, 3);
+  ValidateRead(db.get(), 12345, 300, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_write_history(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3, 10000);
-  Write(db.get(), "usd_gbp", 5, 3, 1000);
-  Write(db.get(), "usd_gbp", 5, 3, 100);
-  Write(db.get(), "usd_gbp", 5, 3, 10);
-  ValidateRead(db.get(), "usd_gbp", 60, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 5, 3, 10000);
+  Write(db.get(), 12345, 5, 3, 1000);
+  Write(db.get(), 12345, 5, 3, 100);
+  Write(db.get(), 12345, 5, 3, 10);
+  ValidateRead(db.get(), 12345, 60, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_write_close_and_write_more(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3);
-  ValidateRead(db.get(), "usd_gbp", 15, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 5, 3);
+  ValidateRead(db.get(), 12345, 15, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   db.reset();
   db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3, 100);
-  ValidateRead(db.get(), "usd_gbp", 30, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 5, 3, 100);
+  ValidateRead(db.get(), 12345, 30, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   db.reset();
   db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3, 1000);
-  ValidateRead(db.get(), "usd_gbp", 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 5, 3, 1000);
+  ValidateRead(db.get(), 12345, 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_continuous_write(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3);
-  Write(db.get(), "usd_gbp", 5, 3, 30);
-  Write(db.get(), "usd_gbp", 5, 3, 100);
-  ValidateRead(db.get(), "usd_gbp", 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 5, 3);
+  Write(db.get(), 12345, 5, 3, 30);
+  Write(db.get(), 12345, 5, 3, 100);
+  ValidateRead(db.get(), 12345, 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_continuous_write_with_pickup(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3);
-  Write(db.get(), "usd_gbp", 5, 3, 30);
-  Write(db.get(), "usd_gbp", 5, 3, 100);
-  ValidateRead(db.get(), "usd_gbp", 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 5, 3);
+  Write(db.get(), 12345, 5, 3, 30);
+  Write(db.get(), 12345, 5, 3, 100);
+  ValidateRead(db.get(), 12345, 45, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
   db.reset();
   db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 3, 800);
-  Write(db.get(), "usd_gbp", 5, 3, 10000);
-  Write(db.get(), "usd_gbp", 5, 3, 100000);
-  ValidateRead(db.get(), "usd_gbp", 90, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 5, 3, 800);
+  Write(db.get(), 12345, 5, 3, 10000);
+  Write(db.get(), 12345, 5, 3, 100000);
+  ValidateRead(db.get(), 12345, 90, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_write_batch_size_equal_to_page_capacity(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 10, ctx));
 
-  Write(db.get(), "usd_gbp", 5, 5);
-  Write(db.get(), "usd_gbp", 5, 5);
-  Write(db.get(), "usd_gbp", 5, 5);
-  Write(db.get(), "usd_gbp", 5, 5);
-  Write(db.get(), "usd_gbp", 5, 5);
-  Write(db.get(), "usd_gbp", 5, 5);
-  ValidateRead(db.get(), "usd_gbp", 25, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 5, 5);
+  Write(db.get(), 12345, 5, 5);
+  Write(db.get(), 12345, 5, 5);
+  Write(db.get(), 12345, 5, 5);
+  Write(db.get(), 12345, 5, 5);
+  Write(db.get(), 12345, 5, 5);
+  ValidateRead(db.get(), 12345, 25, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_write_batch_size_greater_than_page_capacity(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(5, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 100, 7);
-  Write(db.get(), "usd_gbp", 100, 7);
-  ValidateRead(db.get(), "usd_gbp", 700, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 100, 7);
+  Write(db.get(), 12345, 100, 7);
+  ValidateRead(db.get(), 12345, 700, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_write_replace(TestContext ctx) {
@@ -149,87 +149,87 @@ void DatabaseBasicTests::database_write_replace(TestContext ctx) {
 void DatabaseBasicTests::database_read_inside_single_chunk(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(10, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 10, 10);
-  ValidateRead(db.get(), "usd_gbp", 3, 2, 5);
+  Write(db.get(), 12345, 10, 10);
+  ValidateRead(db.get(), 12345, 3, 2, 5);
 }
 
 void DatabaseBasicTests::database_read_span_two_chunks(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(10, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 10, 10);
-  ValidateRead(db.get(), "usd_gbp", 4, 8, 12);
+  Write(db.get(), 12345, 10, 10);
+  ValidateRead(db.get(), 12345, 4, 8, 12);
 }
 
 void DatabaseBasicTests::database_read_span_three_chunks(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(10, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 10, 10);
-  ValidateRead(db.get(), "usd_gbp", 14, 8, 22);
+  Write(db.get(), 12345, 10, 10);
+  ValidateRead(db.get(), 12345, 14, 8, 22);
 }
 
 void DatabaseBasicTests::database_read_chunk_edges(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(10, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 10, 10);
-  ValidateRead(db.get(), "usd_gbp", 10, 10, 20);
+  Write(db.get(), 12345, 10, 10);
+  ValidateRead(db.get(), 12345, 10, 10, 20);
 }
 
 void DatabaseBasicTests::database_read_duplicated_values(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 1, 2);
-  Write(db.get(), "usd_gbp", 1, 2);
-  Write(db.get(), "usd_gbp", 1, 2);
-  Write(db.get(), "usd_gbp", 1, 2);
-  Write(db.get(), "usd_gbp", 1, 2);
-  ValidateRead(db.get(), "usd_gbp", 2, 0, 3);
-  ValidateRead(db.get(), "usd_gbp", 1, 2, 3);
+  Write(db.get(), 12345, 1, 2);
+  Write(db.get(), 12345, 1, 2);
+  Write(db.get(), 12345, 1, 2);
+  Write(db.get(), 12345, 1, 2);
+  Write(db.get(), 12345, 1, 2);
+  ValidateRead(db.get(), 12345, 2, 0, 3);
+  ValidateRead(db.get(), 12345, 1, 2, 3);
 }
 
 void DatabaseBasicTests::database_read_with_limit(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 10, 10);
-  ValidateRead(db.get(), "usd_gbp", 2, 0, 10, 2);
-  ValidateRead(db.get(), "usd_gbp", 4, 0, 10, 4);
-  ValidateRead(db.get(), "usd_gbp", 100, 0, 200, 200);
+  Write(db.get(), 12345, 10, 10);
+  ValidateRead(db.get(), 12345, 2, 0, 10, 2);
+  ValidateRead(db.get(), 12345, 4, 0, 10, 4);
+  ValidateRead(db.get(), 12345, 100, 0, 200, 200);
 }
 
 void DatabaseBasicTests::database_truncate(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 1, 100);
-  ValidateRead(db.get(), "usd_gbp", 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 1, 100);
+  ValidateRead(db.get(), 12345, 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
-  db->Truncate("usd_gbp");
+  db->Truncate(12345);
 
-  ValidateRead(db.get(), "usd_gbp", 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_truncate_multiple(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 100, 1);
-  ValidateRead(db.get(), "usd_gbp", 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 100, 1);
+  ValidateRead(db.get(), 12345, 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
-  db->Truncate("usd_gbp");
-  db->Truncate("USD_PLN");
-  db->Truncate("usd_gbp");
+  db->Truncate(12345);
+  db->Truncate(1234555);
+  db->Truncate(12345);
 
-  ValidateRead(db.get(), "usd_gbp", 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 void DatabaseBasicTests::database_truncate_write_again(TestContext ctx) {
   auto db = std::unique_ptr<Database>(this->CreateDatabase(3, 100, ctx));
 
-  Write(db.get(), "usd_gbp", 100, 1);
-  ValidateRead(db.get(), "usd_gbp", 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 100, 1);
+  ValidateRead(db.get(), 12345, 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 
-  db->Truncate("usd_gbp");
+  db->Truncate(12345);
 
-  ValidateRead(db.get(), "usd_gbp", 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
-  Write(db.get(), "usd_gbp", 100, 1);
-  ValidateRead(db.get(), "usd_gbp", 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  ValidateRead(db.get(), 12345, 0, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
+  Write(db.get(), 12345, 100, 1);
+  ValidateRead(db.get(), 12345, 100, data_point_t::kMinTimestamp, data_point_t::kMaxTimestamp);
 }
 
 }  // namespace test

@@ -44,19 +44,19 @@ class StandardDatabase : public Database {
   ~StandardDatabase();
   static StandardDatabase *Init(std::string directory, Log *log, int points_per_chunk);
 
-  DataPointsReader *Read(std::string name, timestamp_t begin, timestamp_t end, int max_points);
-  void Write(std::string name, data_point_t *points, int count);
-  void Truncate(std::string name);
+  DataPointsReader *Read(data_series_id_t series_id, timestamp_t begin, timestamp_t end, int max_points);
+  void Write(data_series_id_t series_id, data_point_t *points, int count);
+  void Truncate(data_series_id_t series_id);
 
  private:
   StandardDatabase(std::string directory, Log *log, int points_per_chunk);
-  DataSeries *FindDataSeries(std::string name);
+  DataSeries *FindDataSeries(data_series_id_t series_id);
 
   std::string directory;
   int points_per_chunk;
   RwLock lock;
   Log *log;
-  std::map<std::string, DataSeries *> series;
+  std::map<data_series_id_t, DataSeries *> series;
 };
 
 }  // namespace shakadb

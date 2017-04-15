@@ -31,12 +31,10 @@
 #include "src/utils/allocator.h"
 #include "src/utils/memory-buffer.h"
 #include "src/utils/shallow-buffer.h"
-#include "src/protocol/ping-packet.h"
 #include "src/protocol/write-request.h"
 #include "src/protocol/read-request.h"
 #include "src/protocol/read-response.h"
-#include "src/protocol/simple-response.h"
-#include "src/protocol/truncate-request.h"
+#include "src/protocol/write-response.h"
 
 namespace shakadb {
 
@@ -73,17 +71,13 @@ DataPacket *DataPacket::Load(Stream *stream) {
   DataPacket *result = nullptr;
 
   switch (header.type) {
-    case kPing: result = new PingPacket();
-      break;
     case kWriteRequest: result = new WriteRequest();
       break;
-    case kSimpleResponse: result = new SimpleResponse();
+    case kWriteResponse: result = new WriteResponse();
       break;
     case kReadRequest: result = new ReadRequest();
       break;
     case kReadResponse: result = new ReadResponse();
-      break;
-    case kTruncateRequest: result = new TruncateRequest();
       break;
     default: result = nullptr;
   }

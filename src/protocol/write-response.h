@@ -20,27 +20,43 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 19/02/2017.
+// Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SRC_MIDDLEWARE_READ_HANDLER_H_
-#define SRC_MIDDLEWARE_READ_HANDLER_H_
+#ifndef SRC_PROTOCOL_WRITE_RESPONSE_H_
+#define SRC_PROTOCOL_WRITE_RESPONSE_H_
 
-#include "src/middleware/base-handler.h"
-#include "src/storage/database.h"
+#include <vector>
+
+#include "src/protocol/data-packet.h"
 
 namespace shakadb {
 
-class ReadHandler : public BaseHandler {
+enum ResponseStatus {
+  kOk = 1,
+  kError = 2
+};
+
+class WriteResponse : public DataPacket {
  public:
-  ReadHandler(Database *db, Server *server, int points_per_packet);
-  void OnPacketReceived(int client_id, DataPacket *packet);
+  WriteResponse();
+  explicit WriteResponse(ResponseStatus status);
+
+  PacketType GetType();
+  ResponseStatus GetStatus();
+
+ protected:
+  bool Deserialize(Buffer *payload);
+  std::vector<Buffer *> Serialize();
 
  private:
-  Database *db;
-  int points_per_packet;
+  struct simple_response_t {
+    ResponseStatus status;
+  };
+
+  ResponseStatus status;
 };
 
 }  // namespace shakadb
 
-#endif  // SRC_MIDDLEWARE_READ_HANDLER_H_
+#endif  // SRC_PROTOCOL_WRITE_RESPONSE_H_

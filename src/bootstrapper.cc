@@ -40,15 +40,11 @@ Bootstrapper::Bootstrapper(Configuration *config) {
       config->GetServerBacklog(),
       config->GetServerBacklog(),
       this->log);
-  this->ping_handler = new PingHandler(this->server);
-  this->packet_logger = new PacketLogger(this->server, this->log);
   this->db = StandardDatabase::Init(
       config->GetDbFolder(),
       this->log,
       config->GetDbPointsPerChunk());
-  this->write_handler = new WriteHandler(this->db, this->server);
-  this->read_handler = new ReadHandler(this->db, this->server, 65536);
-  this->truncate_handler = new TruncateHandler(this->db, this->server);
+  this->client_handler = new ClientHandler(this->server, this->db, 65536);
 
   this->master_thread = new Thread(
       [this](void *) -> void { this->MainRoutine(); },
@@ -62,12 +58,8 @@ Bootstrapper::~Bootstrapper() {
   delete this->server_thread;
   delete this->master_thread;
 
-  delete this->truncate_handler;
-  delete this->read_handler;
-  delete this->write_handler;
+  delete this->client_handler;
   delete this->db;
-  delete this->packet_logger;
-  delete this->ping_handler;
   delete this->server;
   delete this->log;
 }
@@ -106,11 +98,7 @@ void Bootstrapper::Stop() {
 }
 
 void Bootstrapper::ServerRoutine() {
-  // this->server->AddClientConnectedListener(this->packet_logger);
-  this->server->AddServerListener(this->ping_handler);
-  this->server->AddServerListener(this->write_handler);
-  this->server->AddServerListener(this->read_handler);
-  this->server->AddServerListener(this->truncate_handler);
+  this->server->AddServerListener(this->client_handler);
 
   this->server->Listen();
 }
