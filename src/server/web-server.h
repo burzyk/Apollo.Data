@@ -43,33 +43,21 @@ class WebServer : public Server {
   ~WebServer();
 
   void Listen();
-  void Close();
-  bool SendPacket(int client_id, sdb_packet_t *packet);
 
  private:
-  struct client_info_t {
-    sdb_socket_t socket;
-    sdb_mutex_t *lock;
-  };
-
   static void WorkerRoutine(void *data);
-  int AllocateClient(sdb_socket_t socket);
-  void CloseClient(int client_id);
 
-  void HandleRead(int client_id, sdb_packet_t *packet);
-  void HandleWrite(int client_id, sdb_packet_t *packet);
+  void HandleRead(sdb_socket_t client_socket, sdb_packet_t *packet);
+  void HandleWrite(sdb_socket_t client_socket, sdb_packet_t *packet);
 
   int port;
   int backlog;
-  int max_clients;
-  std::list<sdb_thread_t *> thread_pool;
+  sdb_thread_t **thread_pool;
+  int thread_pool_size;
   sdb_database_t *db;
   int points_per_packet;
   int master_socket;
   volatile bool is_running;
-  sdb_mutex_t *server_lock;
-  std::map<int, client_info_t *> clients;
-  int next_client_id;
 };
 
 }  // namespace shakadb

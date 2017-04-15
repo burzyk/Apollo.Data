@@ -37,40 +37,38 @@
 
 namespace shakadb {
 
-WebServer::WebServer(int port, int backlog, int max_clients, int points_per_packet, sdb_database_t *db) {
+WebServer::WebServer(int port, int backlog, int thread_pool_size, int points_per_packet, sdb_database_t *db) {
   this->port = port;
   this->backlog = backlog;
-  this->max_clients = max_clients;
   this->is_running = false;
   this->master_socket = -1;
-  this->next_client_id = 10;
-  this->server_lock = sdb_mutex_create();
   this->db = db;
   this->points_per_packet = points_per_packet;
+  this->thread_pool_size = thread_pool_size;
+  this->thread_pool = NULL;
 }
 
 WebServer::~WebServer() {
-  if (this->is_running) {
-    this->Close();
-  }
+  this->is_running = false;
+  sdb_socket_close(this->master_socket);
 
-  sdb_mutex_destroy(this->server_lock);
+  for (int i = 0; i < this->thread_pool_size; i++) {
+    sdb_thread_join_and_destroy(this->thread_pool[i]);
+  }
 }
 
 void WebServer::Listen() {
-  this->master_socket = sdb_socket_listen(this->port, this->max_clients);
+  this->master_socket = sdb_socket_listen(this->port, this->backlog);
 
   if (this->master_socket == -1) {
     die("Unable to listen");
   }
 
   this->is_running = true;
+  this->thread_pool = (sdb_thread_t **)sdb_alloc(this->thread_pool_size * sizeof(sdb_thread_t *));
 
-  for (int i = 0; i < this->max_clients; i++) {
-    sdb_thread_t *worker = sdb_thread_create();
-    sdb_thread_start(worker, (sdb_thread_routine_t)WorkerRoutine, this);
-    this->thread_pool.push_back(worker);
-
+  for (int i = 0; i < this->thread_pool_size; i++) {
+    sdb_thread_start(this->thread_pool[i], (sdb_thread_routine_t)WorkerRoutine, this);
   }
 }
 
@@ -81,14 +79,13 @@ void WebServer::WorkerRoutine(void *data) {
     int client_socket;
 
     if ((client_socket = sdb_socket_accept(_this->master_socket)) != -1) {
-      int client_id = _this->AllocateClient(client_socket);
       sdb_packet_t *packet = NULL;
 
       while ((packet = sdb_packet_receive(client_socket)) != NULL) {
         switch (packet->header.type) {
-          case SDB_READ_REQUEST:_this->HandleRead(client_id, packet);
+          case SDB_READ_REQUEST:_this->HandleRead(client_socket, packet);
             break;
-          case SDB_WRITE_REQUEST:_this->HandleWrite(client_id, packet);
+          case SDB_WRITE_REQUEST:_this->HandleWrite(client_socket, packet);
             break;
           default: sdb_log_info("Unknown packet type");
         }
@@ -96,80 +93,12 @@ void WebServer::WorkerRoutine(void *data) {
         sdb_packet_destroy(packet);
       }
 
-      _this->CloseClient(client_id);
+      sdb_socket_close(client_socket);
     }
   }
 }
 
-void WebServer::Close() {
-  sdb_mutex_lock(this->server_lock);
-  this->is_running = 0;
-
-  for (auto client : this->clients) {
-    sdb_socket_close(client.second->socket);
-  }
-  sdb_mutex_unlock(this->server_lock);
-
-  shutdown(this->master_socket, SHUT_RDWR);
-  close(this->master_socket);
-
-  for (auto thread : this->thread_pool) {
-    sdb_thread_join_and_destroy(thread);
-  }
-}
-
-// TODO: (pburzynski): refactor to send_and_destroy
-bool WebServer::SendPacket(int client_id, sdb_packet_t *packet) {
-  sdb_mutex_lock(this->server_lock);
-  client_info_t *client = this->clients[client_id];
-
-  if (client == nullptr) {
-    sdb_mutex_unlock(this->server_lock);
-    return false;
-  }
-
-  sdb_mutex_lock(client->lock);
-  sdb_mutex_unlock(this->server_lock);
-  int status = sdb_packet_send(packet, client->socket);
-  sdb_mutex_unlock(client->lock);
-
-  return status == 0;
-}
-
-int WebServer::AllocateClient(sdb_socket_t socket) {
-  sdb_mutex_lock(this->server_lock);
-
-  client_info_t *client = (client_info_t *)sdb_alloc(sizeof(client_info_t));
-  client->socket = socket;
-  client->lock = sdb_mutex_create();
-
-  int client_id = this->next_client_id++;
-  this->clients[client_id] = client;
-
-  sdb_mutex_unlock(this->server_lock);
-  return client_id;
-}
-
-void WebServer::CloseClient(int client_id) {
-  sdb_mutex_lock(this->server_lock);
-  client_info_t *info = this->clients[client_id];
-
-  if (info == nullptr) {
-    sdb_mutex_unlock(this->server_lock);
-    return;
-  }
-
-  sdb_mutex_lock(info->lock);
-  this->clients.erase(client_id);
-
-  sdb_socket_close(info->socket);
-  sdb_mutex_destroy(info->lock);
-
-  sdb_free(info);
-  sdb_mutex_unlock(this->server_lock);
-}
-
-void WebServer::HandleRead(int client_id, sdb_packet_t *packet) {
+void WebServer::HandleRead(sdb_socket_t client_socket, sdb_packet_t *packet) {
   sdb_read_request_t *request = (sdb_read_request_t *)packet->payload;
   sdb_timestamp_t begin = request->begin;
 
@@ -181,9 +110,9 @@ void WebServer::HandleRead(int client_id, sdb_packet_t *packet) {
     int sent_points_count = reader->points_count - skip;
     sdb_data_point_t *points = &reader->points[skip];
 
-    sdb_packet_t *response = sdb_read_response_create(SDB_RESPONSE_OK, points, sent_points_count);
-    int send_status = this->SendPacket(client_id, response);
-    sdb_packet_destroy(response);
+    int send_status = sdb_packet_send_and_destroy(
+        sdb_read_response_create(SDB_RESPONSE_OK, points, sent_points_count),
+        client_socket);
 
     begin = reader->points[reader->points_count - 1].time;
     sdb_data_points_reader_destroy(reader);
@@ -198,14 +127,13 @@ void WebServer::HandleRead(int client_id, sdb_packet_t *packet) {
   }
 }
 
-void WebServer::HandleWrite(int client_id, sdb_packet_t *packet) {
-
+void WebServer::HandleWrite(sdb_socket_t client_socket, sdb_packet_t *packet) {
   sdb_write_request_t *request = (sdb_write_request_t *)packet->payload;
   int status = sdb_database_write(this->db, request->data_series_id, request->points, request->points_count);
 
-  sdb_packet_t *response = sdb_write_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK);
-  this->SendPacket(client_id, response);
-  sdb_packet_destroy(response);
+  sdb_packet_send_and_destroy(
+      sdb_write_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
+      client_socket);
 }
 
 }  // namespace shakadb
