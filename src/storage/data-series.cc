@@ -207,28 +207,16 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk) {
   if (series->_chunks_count + 1 >= series->_max_chunks) {
     series->_max_chunks += SDB_SERIES_GROW_INCREMENT;
-    size_t new_size = series->_max_chunks * sizeof(sdb_data_chunk_t *);
-    series->_chunks = (sdb_data_chunk_t **)sdb_realloc(series->_chunks, new_size);
+    series->_chunks = (sdb_data_chunk_t **)sdb_realloc(
+        series->_chunks,
+        series->_max_chunks * sizeof(sdb_data_chunk_t *));
   }
 
-  sdb_data_chunk_t **chunks_begin = series->_chunks;
-  sdb_data_chunk_t **curr = chunks_begin;
-  sdb_data_chunk_t **chunks_end = chunks_begin + series->_chunks_count;
+  int index = series->_chunks_count;
 
-  // TODO: (pburzynski) can be optimized
-  while (curr != chunks_end && (
-      ((*curr)->begin < chunk->begin) ||
-          ((*curr)->begin == chunk->begin
-              && (*curr)->end < chunk->end))) {
-    curr++;
-  }
-
-  uint64_t index = curr - chunks_begin;
-
-  if (index != series->_chunks_count) {
-    for (int i = series->_chunks_count; i > index; i--) {
-      series->_chunks[i] = series->_chunks[i - 1];
-    }
+  while (index > 0 && series->_chunks[index - 1]->end > chunk->begin) {
+    series->_chunks[index] = series->_chunks[index - 1];
+    index--;
   }
 
   series->_chunks[index] = chunk;
