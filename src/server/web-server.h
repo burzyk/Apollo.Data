@@ -26,40 +26,30 @@
 #ifndef SRC_SERVER_WEB_SERVER_H_
 #define SRC_SERVER_WEB_SERVER_H_
 
-#include <list>
-#include <map>
 #include <src/storage/database.h>
 
 #include "src/utils/threading.h"
 #include "src/utils/threading.h"
-#include "src/server/server.h"
 #include "src/protocol.h"
 
-namespace shakadb {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class WebServer : public Server {
- public:
-  WebServer(int port, int backlog, int max_clients, int points_per_packet, sdb_database_t *db);
-  ~WebServer();
+typedef struct sdb_server_s {
+  sdb_thread_t **_thread_pool;
+  int _thread_pool_size;
+  sdb_database_t *_db;
+  int _points_per_packet;
+  int _master_socket;
+  volatile int _is_running;
+} sdb_server_t;
 
-  void Listen();
+sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, int points_per_packet, sdb_database_t *db);
+void sdb_server_destroy(sdb_server_t *server);
 
- private:
-  static void WorkerRoutine(void *data);
-
-  void HandleRead(sdb_socket_t client_socket, sdb_packet_t *packet);
-  void HandleWrite(sdb_socket_t client_socket, sdb_packet_t *packet);
-
-  int port;
-  int backlog;
-  sdb_thread_t **thread_pool;
-  int thread_pool_size;
-  sdb_database_t *db;
-  int points_per_packet;
-  int master_socket;
-  volatile bool is_running;
-};
-
-}  // namespace shakadb
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SRC_SERVER_WEB_SERVER_H_

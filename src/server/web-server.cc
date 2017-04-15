@@ -25,67 +25,59 @@
 
 #include "src/server/web-server.h"
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <signal.h>
 #include <src/utils/memory.h>
-#include <src/storage/data-points-reader.h>
-#include <src/storage/database.h>
 #include <src/utils/diagnostics.h>
 
-namespace shakadb {
+void *sdb_server_worker_routine(void *data);
+void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
+void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 
-WebServer::WebServer(int port, int backlog, int thread_pool_size, int points_per_packet, sdb_database_t *db) {
-  this->port = port;
-  this->backlog = backlog;
-  this->is_running = false;
-  this->master_socket = -1;
-  this->db = db;
-  this->points_per_packet = points_per_packet;
-  this->thread_pool_size = thread_pool_size;
-  this->thread_pool = NULL;
-}
+sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, int points_per_packet, sdb_database_t *db) {
+  sdb_server_t *server = (sdb_server_t *)sdb_alloc(sizeof(sdb_server_t));
+  server->_db = db;
+  server->_is_running = 1;
+  server->_master_socket = sdb_socket_listen(port, backlog);
+  server->_points_per_packet = points_per_packet;
+  server->_thread_pool_size = max_clients;
+  server->_thread_pool = (sdb_thread_t **)sdb_alloc(sizeof(sdb_thread_t *) * server->_thread_pool_size);
 
-WebServer::~WebServer() {
-  this->is_running = false;
-  sdb_socket_close(this->master_socket);
-
-  for (int i = 0; i < this->thread_pool_size; i++) {
-    sdb_thread_join_and_destroy(this->thread_pool[i]);
-  }
-}
-
-void WebServer::Listen() {
-  this->master_socket = sdb_socket_listen(this->port, this->backlog);
-
-  if (this->master_socket == -1) {
+  if (server->_master_socket == -1) {
     die("Unable to listen");
   }
 
-  this->is_running = true;
-  this->thread_pool = (sdb_thread_t **)sdb_alloc(this->thread_pool_size * sizeof(sdb_thread_t *));
-
-  for (int i = 0; i < this->thread_pool_size; i++) {
-    sdb_thread_start(this->thread_pool[i], (sdb_thread_routine_t)WorkerRoutine, this);
+  for (int i = 0; i < server->_thread_pool_size; i++) {
+    sdb_thread_start(server->_thread_pool[i], sdb_server_worker_routine, server);
   }
+
+  return server;
 }
 
-void WebServer::WorkerRoutine(void *data) {
-  WebServer *_this = (WebServer *)data;
+void sdb_server_destroy(sdb_server_t *server) {
+  server->_is_running = false;
+  sdb_socket_close(server->_master_socket);
 
-  while (_this->is_running) {
+  for (int i = 0; i < server->_thread_pool_size; i++) {
+    sdb_thread_join_and_destroy(server->_thread_pool[i]);
+  }
+
+  sdb_free(server->_thread_pool);
+  sdb_free(server);
+}
+
+void *sdb_server_worker_routine(void *data) {
+  sdb_server_t *server = (sdb_server_t *)data;
+
+  while (server->_is_running) {
     int client_socket;
 
-    if ((client_socket = sdb_socket_accept(_this->master_socket)) != -1) {
+    if ((client_socket = sdb_socket_accept(server->_master_socket)) != -1) {
       sdb_packet_t *packet = NULL;
 
       while ((packet = sdb_packet_receive(client_socket)) != NULL) {
         switch (packet->header.type) {
-          case SDB_READ_REQUEST:_this->HandleRead(client_socket, packet);
+          case SDB_READ_REQUEST: sdb_server_handle_read(server, client_socket, packet);
             break;
-          case SDB_WRITE_REQUEST:_this->HandleWrite(client_socket, packet);
+          case SDB_WRITE_REQUEST:sdb_server_handle_write(server, client_socket, packet);
             break;
           default: sdb_log_info("Unknown packet type");
         }
@@ -96,15 +88,17 @@ void WebServer::WorkerRoutine(void *data) {
       sdb_socket_close(client_socket);
     }
   }
+
+  return NULL;
 }
 
-void WebServer::HandleRead(sdb_socket_t client_socket, sdb_packet_t *packet) {
+void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
   sdb_read_request_t *request = (sdb_read_request_t *)packet->payload;
   sdb_timestamp_t begin = request->begin;
 
   while (true) {
     sdb_data_points_reader_t *reader =
-        sdb_database_read(this->db, request->data_series_id, begin, request->end, this->points_per_packet);
+        sdb_database_read(server->_db, request->data_series_id, begin, request->end, server->_points_per_packet);
 
     int skip = begin == request->begin || reader->points_count == 0 ? 0 : 1;
     int sent_points_count = reader->points_count - skip;
@@ -127,13 +121,11 @@ void WebServer::HandleRead(sdb_socket_t client_socket, sdb_packet_t *packet) {
   }
 }
 
-void WebServer::HandleWrite(sdb_socket_t client_socket, sdb_packet_t *packet) {
+void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
   sdb_write_request_t *request = (sdb_write_request_t *)packet->payload;
-  int status = sdb_database_write(this->db, request->data_series_id, request->points, request->points_count);
+  int status = sdb_database_write(server->_db, request->data_series_id, request->points, request->points_count);
 
   sdb_packet_send_and_destroy(
       sdb_write_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
       client_socket);
 }
-
-}  // namespace shakadb
