@@ -44,7 +44,7 @@ float stopwatch_elapsed(struct timespec start) {
 }
 
 void read_points(shakadb_session_t *session) {
-  shakadb_read_points_iterator_t iterator;
+  shakadb_data_points_iterator_t iterator;
   shakadb_result_t result = shakadb_read_points(
       session,
       12345,
@@ -62,7 +62,7 @@ void read_points(shakadb_session_t *session) {
   uint64_t total_read = 0;
   struct timespec sw = stopwatch_start();
 
-  while (shakadb_read_points_iterator_next(&iterator)) {
+  while (shakadb_data_points_iterator_next(&iterator)) {
     for (int i = 0; i < iterator.points_count; i++) {
       curr = iterator.points[i];
       if (prev.time >= curr.time) {

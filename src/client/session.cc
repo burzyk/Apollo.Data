@@ -30,81 +30,61 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <cstdlib>
+#include <src/utils/memory.h>
 
-namespace shakadb {
+sdb_client_session_t *sdb_client_session_create(const char *server, int port) {
+  sdb_socket_t sock = sdb_socket_connect(server, port);
 
-Session::Session(sdb_socket_t sock)
-    : sock(sock) {
-}
-
-Session *Session::Open(std::string server, int port) {
-  // TODO(burzyk): put this to common init code
-  signal(SIGPIPE, SIG_IGN);
-
-  struct addrinfo hints = {0};
-  struct addrinfo *result;
-  int sock = -1;
-  std::string port_string = std::to_string(port);
-
-  hints.ai_family = AF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = 0;
-  hints.ai_protocol = 0;
-
-  if (getaddrinfo(server.c_str(), port_string.c_str(), &hints, &result) != 0) {
-    return nullptr;
+  if (sock == -1) {
+    return NULL;
   }
 
-  for (addrinfo *rp = result; rp != NULL; rp = rp->ai_next) {
-    if ((sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) == -1) {
-      continue;
-    }
+  sdb_client_session_t *session = (sdb_client_session_t *)sdb_alloc(sizeof(sdb_client_session_t));
+  session->_sock = sock;
 
-    if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
-      break;
-    }
-
-    close(sock);
-    sock = -1;
-  }
-
-  freeaddrinfo(result);
-  return sock != -1 ? new Session(sock) : nullptr;
+  return session;
 }
 
-bool Session::WritePoints(sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
+void sdb_client_session_destroy(sdb_client_session_t *session) {
+  sdb_socket_close(session->_sock);
+  sdb_free(session);
+}
+
+int sdb_client_session_write_points(sdb_client_session_t *session,
+                                    sdb_data_series_id_t series_id,
+                                    sdb_data_point_t *points,
+                                    int count) {
   sdb_packet_t *request = sdb_write_request_create(series_id, points, count);
 
-  if (!sdb_packet_send_and_destroy(request, this->sock)) {
-    return false;
+  if (!sdb_packet_send_and_destroy(request, session->_sock)) {
+    return 0;
   }
 
-  sdb_packet_t *packet = sdb_packet_receive(this->sock);
+  sdb_packet_t *packet = sdb_packet_receive(session->_sock);
 
   if (packet == NULL) {
-    return false;
+    return 0;
   }
 
   if (packet->header.type != SDB_WRITE_RESPONSE) {
     sdb_packet_destroy(packet);
-    return false;
+    return 0;
   }
 
   sdb_write_response_t *response = (sdb_write_response_t *)packet->payload;
-  bool result = response->code == SDB_RESPONSE_OK;
+  int result = response->code == SDB_RESPONSE_OK;
   sdb_packet_destroy(packet);
 
   return result;
 }
 
-sdb_data_points_iterator_t *Session::ReadPoints(sdb_data_series_id_t series_id,
-                                                sdb_timestamp_t begin,
-                                                sdb_timestamp_t end) {
-  if (!sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), this->sock)) {
-    return nullptr;
+sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t *session,
+                                                           sdb_data_series_id_t series_id,
+                                                           sdb_timestamp_t begin,
+                                                           sdb_timestamp_t end) {
+  if (!sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), session->_sock)) {
+    return NULL;
   }
 
-  return sdb_data_points_iterator_create(this->sock);
+  return sdb_data_points_iterator_create(session->_sock);
 }
-
-}  // namespace shakadb

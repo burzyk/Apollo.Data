@@ -33,14 +33,13 @@ extern "C" {
 #endif
 
 typedef uint64_t shakadb_timestamp_t;
-typedef uint32_t shakadb_result_t;
-typedef uint32_t data_series_id_t;
+typedef uint32_t shakadb_data_series_id_t;
 
 #define SHAKADB_MAX_TIMESTAMP UINT64_MAX
 #define SHAKADB_MIN_TIMESTAMP 0
 
-#define SHAKADB_RESULT_OK ((shakadb_result_t)0)
-#define SHAKADB_RESULT_ERROR  ((shakadb_result_t)-1)
+#define SHAKADB_RESULT_OK     0
+#define SHAKADB_RESULT_ERROR  -1
 
 typedef struct __attribute__((packed)) {
   shakadb_timestamp_t time;
@@ -55,20 +54,20 @@ typedef struct {
   shakadb_data_point_t *points;
   int points_count;
   void *_iterator;
-} shakadb_read_points_iterator_t;
+} shakadb_data_points_iterator_t;
 
-shakadb_result_t shakadb_open_session(shakadb_session_t *session, const char *server, int port);
-shakadb_result_t shakadb_destroy_session(shakadb_session_t *session);
-shakadb_result_t shakadb_write_points(shakadb_session_t *session,
-                                      data_series_id_t series_id,
-                                      shakadb_data_point_t *points,
-                                      int points_count);
-shakadb_result_t shakadb_read_points(shakadb_session_t *session,
-                                     data_series_id_t series_id,
-                                     shakadb_timestamp_t begin,
-                                     shakadb_timestamp_t end,
-                                     shakadb_read_points_iterator_t *iterator);
-int shakadb_read_points_iterator_next(shakadb_read_points_iterator_t *iterator);
+int shakadb_session_open(shakadb_session_t *session, const char *server, int port);
+void shakadb_session_close(shakadb_session_t *session);
+int shakadb_write_points(shakadb_session_t *session,
+                         shakadb_data_series_id_t series_id,
+                         shakadb_data_point_t *points,
+                         int points_count);
+int shakadb_read_points(shakadb_session_t *session,
+                        shakadb_data_series_id_t series_id,
+                        shakadb_timestamp_t begin,
+                        shakadb_timestamp_t end,
+                        shakadb_data_points_iterator_t *iterator);
+int shakadb_data_points_iterator_next(shakadb_data_points_iterator_t *iterator);
 
 #ifdef __cplusplus
 }

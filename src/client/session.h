@@ -31,21 +31,27 @@
 #include "src/protocol.h"
 #include "src/client/data-points-iterator.h"
 
-namespace shakadb {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class Session {
- public:
-  static Session *Open(std::string server, int port);
+typedef struct sdb_client_session_s {
+  sdb_socket_t _sock;
+} sdb_client_session_t;
 
-  bool WritePoints(sdb_data_series_id_t series_id, sdb_data_point_t *points, int count);
-  sdb_data_points_iterator_t *ReadPoints(sdb_data_series_id_t series_id, sdb_timestamp_t begin, sdb_timestamp_t end);
+#ifdef __cplusplus
+}
+#endif
 
- private:
-  explicit Session(sdb_socket_t sock);
-
-  sdb_socket_t sock;
-};
-
-}  // namespace shakadb
+sdb_client_session_t *sdb_client_session_create(const char *server, int port);
+void sdb_client_session_destroy(sdb_client_session_t *session);
+int sdb_client_session_write_points(sdb_client_session_t *session,
+                                    sdb_data_series_id_t series_id,
+                                    sdb_data_point_t *points,
+                                    int count);
+sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t *session,
+                                                           sdb_data_series_id_t series_id,
+                                                           sdb_timestamp_t begin,
+                                                           sdb_timestamp_t end);
 
 #endif  // SRC_CLIENT_SESSION_H_
