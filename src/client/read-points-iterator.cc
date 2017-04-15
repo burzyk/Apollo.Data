@@ -23,55 +23,58 @@
 // Created by Pawel Burzynski on 20/02/2017.
 //
 
+#include <src/utils/memory.h>
 #include "src/client/read-points-iterator.h"
 
-namespace shakadb {
+sdb_data_points_iterator_t *sdb_data_points_iterator_create(sdb_socket_t sock) {
+  sdb_data_points_iterator_t *iterator = (sdb_data_points_iterator_t *)sdb_alloc(sizeof(sdb_data_points_iterator_t));
+  iterator->_sock = sock;
+  iterator->_current = NULL;
+  iterator->points = NULL;
+  iterator->points_count = -1;
 
-ReadPointsIterator::ReadPointsIterator(sdb_socket_t sock) {
-  this->sock = sock;
-  this->current = NULL;
+  return iterator;
 }
 
-ReadPointsIterator::~ReadPointsIterator() {
-  if (this->current != NULL) {
-    sdb_packet_destroy(this->current);
-  }
-}
-
-sdb_data_point_t *ReadPointsIterator::CurrentDataPoints() {
-  return this->current == NULL ? NULL : ((sdb_read_response_t *)this->current->payload)->points;
-}
-
-int ReadPointsIterator::CurrentDataPointsCount() {
-  return this->current == NULL ? -1 : ((sdb_read_response_t *)this->current->payload)->points_count;
-}
-
-bool ReadPointsIterator::MoveNext() {
-  if (this->current != NULL) {
-    sdb_packet_destroy(this->current);
-    this->current = NULL;
+void sdb_data_points_iterator_destroy(sdb_data_points_iterator_t *iterator) {
+  if (iterator->_current != NULL) {
+    sdb_packet_destroy(iterator->_current);
   }
 
-  sdb_packet_t *packet = sdb_packet_receive(this->sock);
+  sdb_free(iterator);
+}
+
+int sdb_data_points_iterator_next(sdb_data_points_iterator_t *iterator) {
+  if (iterator->_current != NULL) {
+    sdb_packet_destroy(iterator->_current);
+    iterator->_current = NULL;
+    iterator->points = NULL;
+    iterator->points_count = -1;
+  }
+
+  sdb_packet_t *packet = sdb_packet_receive(iterator->_sock);
 
   if (packet == NULL) {
-    return false;
+    return 0;
   }
 
   if (packet->header.type != SDB_READ_RESPONSE) {
     sdb_packet_destroy(packet);
-    return false;
+    return 0;
   }
 
   sdb_read_response_t *response = (sdb_read_response_t *)packet->payload;
 
   if (response->points_count == 0) {
     sdb_packet_destroy(packet);
-    return false;
+    return 0;
   }
 
-  this->current = packet;
-  return true;
+  iterator->_current = packet;
+  iterator->points = response->points;
+  iterator->points_count = response->points_count;
+
+  return 1;
 }
 
-}  // namespace shakadb
+

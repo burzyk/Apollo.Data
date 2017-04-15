@@ -65,20 +65,20 @@ shakadb_result_t shakadb_read_points(shakadb_session_t *session,
 }
 
 int shakadb_read_points_iterator_next(shakadb_read_points_iterator_t *iterator) {
-  shakadb::ReadPointsIterator *i = (shakadb::ReadPointsIterator *)iterator->_iterator;
+  sdb_data_points_iterator_t *i = (sdb_data_points_iterator_t *)iterator->_iterator;
 
   if (iterator->_iterator == nullptr) {
     return 0;
   }
 
-  if (!i->MoveNext()) {
+  if (sdb_data_points_iterator_next(i)) {
     iterator->_iterator = nullptr;
     iterator->points = nullptr;
     iterator->points_count = -1;
     return 0;
   } else {
-    iterator->points = reinterpret_cast<shakadb_data_point_t *>(i->CurrentDataPoints());
-    iterator->points_count = i->CurrentDataPointsCount();
+    iterator->points = (shakadb_data_point_t *)i->points;
+    iterator->points_count = i->points_count;
     return 1;
   }
 }

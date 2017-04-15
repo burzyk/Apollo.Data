@@ -30,22 +30,23 @@
 #include <src/utils/network.h>
 #include <src/protocol.h>
 
-namespace shakadb {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class ReadPointsIterator {
- public:
-  explicit ReadPointsIterator(sdb_socket_t sock);
-  ~ReadPointsIterator();
+typedef struct sdb_data_points_iterator_s {
+  sdb_data_point_t *points;
+  int points_count;
+  sdb_packet_t *_current;
+  sdb_socket_t _sock;
+} sdb_data_points_iterator_t;
 
-  sdb_data_point_t *CurrentDataPoints();
-  int CurrentDataPointsCount();
-  bool MoveNext();
+sdb_data_points_iterator_t *sdb_data_points_iterator_create(sdb_socket_t sock);
+void sdb_data_points_iterator_destroy(sdb_data_points_iterator_t *iterator);
+int sdb_data_points_iterator_next(sdb_data_points_iterator_t *iterator);
 
- private:
-  sdb_socket_t sock;
-  sdb_packet_t *current;
-};
-
-}  // namespace shakadb
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SRC_CLIENT_READ_POINTS_ITERATOR_H_

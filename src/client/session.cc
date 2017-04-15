@@ -97,12 +97,14 @@ bool Session::WritePoints(sdb_data_series_id_t series_id, sdb_data_point_t *poin
   return result;
 }
 
-ReadPointsIterator *Session::ReadPoints(sdb_data_series_id_t series_id, sdb_timestamp_t begin, sdb_timestamp_t end) {
+sdb_data_points_iterator_t *Session::ReadPoints(sdb_data_series_id_t series_id,
+                                                sdb_timestamp_t begin,
+                                                sdb_timestamp_t end) {
   if (!sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), this->sock)) {
     return nullptr;
   }
 
-  return new ReadPointsIterator(this->sock);
+  return sdb_data_points_iterator_create(this->sock);
 }
 
 }  // namespace shakadb

@@ -38,7 +38,7 @@ class Session {
   static Session *Open(std::string server, int port);
 
   bool WritePoints(sdb_data_series_id_t series_id, sdb_data_point_t *points, int count);
-  ReadPointsIterator *ReadPoints(sdb_data_series_id_t series_id, sdb_timestamp_t begin, sdb_timestamp_t end);
+  sdb_data_points_iterator_t *ReadPoints(sdb_data_series_id_t series_id, sdb_timestamp_t begin, sdb_timestamp_t end);
 
  private:
   explicit Session(sdb_socket_t sock);
