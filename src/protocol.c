@@ -2,9 +2,11 @@
 // Created by Pawel Burzynski on 14/04/2017.
 //
 
+#include "src/protocol.h"
+
 #include <string.h>
-#include <src/utils/memory.h>
-#include "protocol.h"
+
+#include "src/utils/memory.h"
 
 sdb_write_request_t *sdb_write_request_deserialize(void *payload, size_t size);
 sdb_write_response_t *sdb_write_response_deserialize(void *payload, size_t size);

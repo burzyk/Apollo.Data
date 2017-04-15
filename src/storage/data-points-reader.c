@@ -48,7 +48,7 @@ int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, sdb_data_poin
     return 0;
   }
 
-  int to_write = (int)fmin(count, reader->points_count - reader->_write_position);
+  int to_write = sdb_min(count, reader->points_count - reader->_write_position);
   memcpy(reader->points + reader->_write_position, points, to_write * sizeof(sdb_data_point_t));
   reader->_write_position += to_write;
 
