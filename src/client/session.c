@@ -29,7 +29,7 @@
 sdb_client_session_t *sdb_client_session_create(const char *server, int port) {
   sdb_socket_t sock = sdb_socket_connect(server, port);
 
-  if (sock == -1) {
+  if (sock == SDB_INVALID_SOCKET) {
     return NULL;
   }
 

@@ -9,6 +9,8 @@
 
 typedef int sdb_socket_t;
 
+#define SDB_INVALID_SOCKET  ((sdb_socket_t)-1)
+
 sdb_socket_t sdb_socket_listen(int port, int backlog);
 sdb_socket_t sdb_socket_connect(const char *hostname, int port);
 int sdb_socket_receive(sdb_socket_t socket, void *buffer, size_t size);

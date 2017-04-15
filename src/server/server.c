@@ -40,7 +40,7 @@ sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, int poin
   server->_thread_pool_size = max_clients;
   server->_thread_pool = (sdb_thread_t **)sdb_alloc(sizeof(sdb_thread_t *) * server->_thread_pool_size);
 
-  if (server->_master_socket == -1) {
+  if (server->_master_socket == SDB_INVALID_SOCKET) {
     die("Unable to listen");
   }
 
@@ -69,7 +69,7 @@ void *sdb_server_worker_routine(void *data) {
   while (server->_is_running) {
     int client_socket;
 
-    if ((client_socket = sdb_socket_accept(server->_master_socket)) != -1) {
+    if ((client_socket = sdb_socket_accept(server->_master_socket)) != SDB_INVALID_SOCKET) {
       sdb_packet_t *packet = NULL;
 
       while ((packet = sdb_packet_receive(client_socket)) != NULL) {

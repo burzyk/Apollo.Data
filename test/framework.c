@@ -17,7 +17,9 @@ sdb_tests_session_t *sdb_tests_session_create(const char *root_directory) {
   session->_tests_failed = 0;
   session->_tests_success = 0;
 
-  sdb_assert(!sdb_directory_create(session->_directory), "Unable to create directory for tests");
+  if (sdb_directory_create(session->_directory)) {
+    die("Unable to create directory for tests");
+  }
 
   return session;
 }
@@ -32,7 +34,10 @@ int sdb_tests_session_run(sdb_tests_session_t *session, const char *name, sdb_te
   char working_directory[SDB_FILE_MAX_LEN] = {0};
   snprintf(working_directory, SDB_FILE_MAX_LEN, "%s/%s", session->_directory, name);
 
-  sdb_assert(!sdb_directory_create(working_directory), "Unable to create working directory")
+  if (sdb_directory_create(working_directory)) {
+    die("Unable to create working directory");
+  }
+
   sdb_tests_context_t context = {};
   strncpy(context.working_directory, working_directory, SDB_FILE_MAX_LEN);
   context.session = session;
