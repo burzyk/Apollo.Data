@@ -26,7 +26,6 @@
 #ifndef SRC_CLIENT_READ_POINTS_ITERATOR_H_
 #define SRC_CLIENT_READ_POINTS_ITERATOR_H_
 
-#include <functional>
 #include <src/utils/network.h>
 #include <src/protocol.h>
 

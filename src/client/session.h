@@ -29,7 +29,7 @@
 #include <string>
 
 #include "src/protocol.h"
-#include "src/client/read-points-iterator.h"
+#include "src/client/data-points-iterator.h"
 
 namespace shakadb {
 
