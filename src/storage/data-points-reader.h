@@ -23,14 +23,10 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
-#define SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
+#ifndef SRC_STORAGE_DATA_POINTS_READER_H_
+#define SRC_STORAGE_DATA_POINTS_READER_H_
 
 #include "src/common.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef struct sdb_data_points_reader_s {
   sdb_data_point_t *points;
@@ -42,8 +38,4 @@ sdb_data_points_reader_t *sdb_data_points_reader_create(int points_count);
 int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, sdb_data_point_t *points, int count);
 void sdb_data_points_reader_destroy(sdb_data_points_reader_t *reader);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // SRC_STORAGE_STANDARD_DATA_POINTS_READER_H_
+#endif  // SRC_STORAGE_DATA_POINTS_READER_H_

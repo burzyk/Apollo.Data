@@ -25,7 +25,6 @@
 
 #include "src/storage/data-series.h"
 
-#include <math.h>
 #include <string.h>
 
 #include "src/utils/memory.h"

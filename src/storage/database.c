@@ -25,8 +25,9 @@
 
 #include "src/storage/database.h"
 
-#include <src/utils/memory.h>
 #include <memory.h>
+
+#include "src/utils/memory.h"
 
 sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
 sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);

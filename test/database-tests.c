@@ -25,7 +25,7 @@
 
 #include "database-tests.h"
 
-#include <memory>
+#include <memory.h>
 #include <src/utils/memory.h>
 #include <src/common.h>
 #include <src/storage/database.h>

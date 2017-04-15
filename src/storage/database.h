@@ -29,10 +29,6 @@
 #include "src/storage/data-chunk.h"
 #include "src/storage/data-series.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct sdb_database_s {
   char _directory[SDB_FILE_MAX_LEN];
   int _points_per_chunk;
@@ -51,9 +47,5 @@ sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_
                                             sdb_timestamp_t begin,
                                             sdb_timestamp_t end,
                                             int max_points);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // SRC_STORAGE_DATABASE_H_

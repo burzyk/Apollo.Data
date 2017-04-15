@@ -36,14 +36,14 @@ int sdb_data_chunk_calculate_size(int points_count) {
 
 sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points) {
   sdb_data_chunk_t *chunk = (sdb_data_chunk_t *)sdb_alloc(sizeof(sdb_data_chunk_t));
-  strncpy(chunk->file_name, file_name, SDB_FILE_MAX_LEN);
-  chunk->file_offset = file_offset;
+  strncpy(chunk->_file_name, file_name, SDB_FILE_MAX_LEN);
+  chunk->_file_offset = file_offset;
   chunk->max_points = max_points;
-  chunk->cached_content = NULL;
+  chunk->_cached_content = NULL;
   chunk->begin = SDB_TIMESTAMP_MAX;
   chunk->end = SDB_TIMESTAMP_MIN;
   chunk->number_of_points = 0;
-  chunk->lock = sdb_rwlock_create();
+  chunk->_lock = sdb_rwlock_create();
 
   size_t points_size = sizeof(sdb_data_point_t) * max_points;
   sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(points_size);
@@ -69,27 +69,27 @@ sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_off
 }
 
 void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk) {
-  if (chunk->cached_content != NULL) {
-    sdb_free(chunk->cached_content);
+  if (chunk->_cached_content != NULL) {
+    sdb_free(chunk->_cached_content);
   }
 
-  sdb_rwlock_destroy(chunk->lock);
+  sdb_rwlock_destroy(chunk->_lock);
   sdb_free(chunk);
 }
 
 sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end) {
-  sdb_rwlock_rdlock(chunk->lock);
+  sdb_rwlock_rdlock(chunk->_lock);
 
-  if (chunk->cached_content == NULL) {
-    sdb_rwlock_upgrade(chunk->lock);
+  if (chunk->_cached_content == NULL) {
+    sdb_rwlock_upgrade(chunk->_lock);
 
-    if (chunk->cached_content == NULL) {
+    if (chunk->_cached_content == NULL) {
       size_t cached_content_size = sizeof(sdb_data_point_t) * chunk->max_points;
-      chunk->cached_content = (sdb_data_point_t *)sdb_alloc(cached_content_size);
+      chunk->_cached_content = (sdb_data_point_t *)sdb_alloc(cached_content_size);
 
-      sdb_file_t *file = sdb_file_open(chunk->file_name);
-      sdb_file_seek(file, chunk->file_offset, SEEK_SET);
-      sdb_file_read(file, chunk->cached_content, cached_content_size);
+      sdb_file_t *file = sdb_file_open(chunk->_file_name);
+      sdb_file_seek(file, chunk->_file_offset, SEEK_SET);
+      sdb_file_read(file, chunk->_cached_content, cached_content_size);
       sdb_file_close(file);
     }
   }
@@ -98,16 +98,16 @@ sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timesta
 
   // TODO (pburzynski): refactor to binary search and check chunk begin and end
   for (int i = 0; i < chunk->number_of_points; i++) {
-    if (begin <= chunk->cached_content[i].time && chunk->cached_content[i].time < end) {
+    if (begin <= chunk->_cached_content[i].time && chunk->_cached_content[i].time < end) {
       if (range.points == NULL) {
-        range.points = chunk->cached_content + i;
+        range.points = chunk->_cached_content + i;
       }
 
       range.number_of_points++;
     }
   }
 
-  sdb_rwlock_unlock(chunk->lock);
+  sdb_rwlock_unlock(chunk->_lock);
   return range;
 }
 
@@ -116,19 +116,19 @@ void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t 
     return;
   }
 
-  sdb_rwlock_wrlock(chunk->lock);
+  sdb_rwlock_wrlock(chunk->_lock);
 
   if (chunk->max_points < offset + count) {
     die("Trying to write outside data chunk");
   }
 
-  sdb_file_t *file = sdb_file_open(chunk->file_name);
-  sdb_file_seek(file, chunk->file_offset + offset * sizeof(sdb_data_point_t), SEEK_SET);
+  sdb_file_t *file = sdb_file_open(chunk->_file_name);
+  sdb_file_seek(file, chunk->_file_offset + offset * sizeof(sdb_data_point_t), SEEK_SET);
   sdb_file_write(file, points, count * sizeof(sdb_data_point_t));
   sdb_file_close(file);
 
-  if (chunk->cached_content != NULL) {
-    memcpy(chunk->cached_content + offset, points, count * sizeof(sdb_data_point_t));
+  if (chunk->_cached_content != NULL) {
+    memcpy(chunk->_cached_content + offset, points, count * sizeof(sdb_data_point_t));
   }
 
   if (offset == 0) {
@@ -140,5 +140,5 @@ void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t 
     chunk->number_of_points = offset + count;
   }
 
-  sdb_rwlock_unlock(chunk->lock);
+  sdb_rwlock_unlock(chunk->_lock);
 }

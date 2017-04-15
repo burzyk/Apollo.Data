@@ -29,10 +29,6 @@
 #include "src/storage/data-chunk.h"
 #include "data-points-reader.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct sdb_data_series_s {
   sdb_data_series_id_t id;
 
@@ -53,9 +49,5 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                sdb_timestamp_t begin,
                                                sdb_timestamp_t end,
                                                int max_points);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // SRC_STORAGE_DATA_SERIES_H_
