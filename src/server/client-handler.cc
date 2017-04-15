@@ -27,7 +27,7 @@
 
 namespace shakadb {
 
-ClientHandler::ClientHandler(Server *server, Database *db, int points_per_packet) {
+ClientHandler::ClientHandler(Server *server, sdb_database_t *db, int points_per_packet) {
   this->server = server;
   this->db = db;
   this->points_per_packet = points_per_packet;
@@ -41,7 +41,7 @@ void ClientHandler::OnPacketReceived(int client_id, sdb_packet_t *packet) {
 
     while (true) {
       sdb_data_points_reader_t *reader =
-          this->db->Read(request->data_series_id, begin, request->end, this->points_per_packet);
+          sdb_database_read(this->db, request->data_series_id, begin, request->end, this->points_per_packet);
 
       int skip = begin == request->begin || reader->points_count == 0 ? 0 : 1;
       int sent_points_count = reader->points_count - skip;
@@ -67,7 +67,7 @@ void ClientHandler::OnPacketReceived(int client_id, sdb_packet_t *packet) {
   if (packet->header.type == SDB_WRITE_REQUEST) {
 
     sdb_write_request_t *request = (sdb_write_request_t *)packet->payload;
-    int status = this->db->Write(request->data_series_id, request->points, request->points_count);
+    int status = sdb_database_write(this->db, request->data_series_id, request->points, request->points_count);
 
     sdb_packet_t *response = sdb_write_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK);
     this->server->SendPacket(client_id, response);

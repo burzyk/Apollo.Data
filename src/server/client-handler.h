@@ -27,18 +27,18 @@
 #define SRC_MIDDLEWARE_CLIENT_HANDLER_H_
 
 #include <src/server/server.h>
-#include <src/storage/database.h>
+#include <src/storage/standard-database.h>
 
 namespace shakadb {
 
 class ClientHandler : public Server::ServerListener {
  public:
-  ClientHandler(Server *server, Database *db, int points_per_packet);
+  ClientHandler(Server *server, sdb_database_t *db, int points_per_packet);
   void OnPacketReceived(int client_id, sdb_packet_t *packet);
 
  private:
   Server *server;
-  Database *db;
+  sdb_database_t *db;
   int points_per_packet;
 };
 

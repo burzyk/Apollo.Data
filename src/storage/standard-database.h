@@ -32,32 +32,24 @@
 
 #include "src/storage/data-chunk.h"
 #include "src/storage/data-series.h"
-#include "src/storage/database.h"
 
-namespace shakadb {
+typedef struct sdb_database_s {
+  char _directory[SDB_FILE_MAX_LEN];
+  int _points_per_chunk;
+  sdb_rwlock_t *_lock;
 
-class StandardDatabase : public Database {
- public:
-  ~StandardDatabase();
-  static StandardDatabase *Init(std::string directory, int points_per_chunk);
+  sdb_data_series_t **_series;
+  int _series_count;
+  int _max_series_count;
+} sdb_database_t;
 
-  sdb_data_points_reader_t *Read(sdb_data_series_id_t series_id,
-                                 sdb_timestamp_t begin,
-                                 sdb_timestamp_t end,
-                                 int max_points);
-  int Write(sdb_data_series_id_t series_id, sdb_data_point_t *points, int count);
-  void Truncate(sdb_data_series_id_t series_id);
-
- private:
-  StandardDatabase(std::string directory, int points_per_chunk);
-  sdb_data_series_t *FindDataSeries(sdb_data_series_id_t series_id);
-
-  std::string directory;
-  int points_per_chunk;
-  sdb_rwlock_t *lock;
-  std::map<sdb_data_series_id_t, sdb_data_series_t *> series;
-};
-
-}  // namespace shakadb
+sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk);
+void sdb_database_destroy(sdb_database_t *db);
+int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count);
+int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id);
+sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
+                                            sdb_timestamp_t begin,
+                                            sdb_timestamp_t end,
+                                            int max_points);
 
 #endif  // SRC_STORAGE_STANDARD_DATABASE_H_

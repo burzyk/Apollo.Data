@@ -34,6 +34,8 @@ extern "C" {
 #endif
 
 typedef struct sdb_data_series_s {
+  sdb_data_series_id_t id;
+
   char _file_name[SDB_FILE_MAX_LEN];
   int _points_per_chunk;
   sdb_rwlock_t *_series_lock;
@@ -43,10 +45,10 @@ typedef struct sdb_data_series_s {
   int _max_chunks;
 } sdb_data_series_t;
 
-sdb_data_series_t *sdb_data_series_create(const char *file_name, int points_per_chunk);
+sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id, const char *file_name, int points_per_chunk);
 void sdb_data_series_destroy(sdb_data_series_t *series);
 int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count);
-void sdb_data_series_truncate(sdb_data_series_t *series);
+int sdb_data_series_truncate(sdb_data_series_t *series);
 sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                sdb_timestamp_t begin,
                                                sdb_timestamp_t end,

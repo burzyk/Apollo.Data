@@ -44,8 +44,9 @@ void sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
                                   sdb_data_point_t *points,
                                   int count);
 
-sdb_data_series_t *sdb_data_series_create(const char *file_name, int points_per_chunk) {
+sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id, const char *file_name, int points_per_chunk) {
   sdb_data_series_t *series = (sdb_data_series_t *)sdb_alloc(sizeof(sdb_data_series_t));
+  series->id = id;
   strncpy(series->_file_name, file_name, SDB_FILE_MAX_LEN);
   series->_points_per_chunk = points_per_chunk;
   series->_series_lock = sdb_rwlock_create();
@@ -119,13 +120,15 @@ int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, i
   return 0;
 }
 
-void sdb_data_series_truncate(sdb_data_series_t *series) {
+int sdb_data_series_truncate(sdb_data_series_t *series) {
   sdb_rwlock_wrlock(series->_series_lock);
 
   sdb_data_series_delete_chunks(series);
-  sdb_file_truncate(series->_file_name);
+  int result = sdb_file_truncate(series->_file_name);
 
   sdb_rwlock_unlock(series->_series_lock);
+
+  return result;
 }
 
 sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,

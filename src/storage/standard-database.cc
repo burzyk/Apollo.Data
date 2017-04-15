@@ -27,66 +27,95 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <src/utils/memory.h>
 
-namespace shakadb {
+sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
+sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
+sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
 
-StandardDatabase::StandardDatabase(std::string directory, int points_per_chunk) {
-  this->directory = directory;
-  this->points_per_chunk = points_per_chunk;
-  this->lock = sdb_rwlock_create();
+sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk) {
+  sdb_database_t *db = (sdb_database_t *)sdb_alloc(sizeof(sdb_database_t));
+  strncpy(db->_directory, directory, SDB_FILE_MAX_LEN);
+  db->_lock = sdb_rwlock_create();
+  db->_max_series_count = 0;
+  db->_points_per_chunk = points_per_chunk;
+  db->_series = NULL;
+  db->_series_count = 0;
+
+  return db;
 }
 
-StandardDatabase::~StandardDatabase() {
-  for (auto s : this->series) {
-    delete s.second;
+void sdb_database_destroy(sdb_database_t *db) {
+  if (db->_series != NULL) {
+    for (int i = 0; i < db->_series_count; i++) {
+      sdb_data_series_destroy(db->_series[i]);
+    }
+
+    sdb_free(db->_series);
   }
 
-  this->series.clear();
-  sdb_rwlock_destroy(this->lock);
+  sdb_rwlock_destroy(db->_lock);
 }
 
-StandardDatabase *StandardDatabase::Init(std::string directory, int points_per_chunk) {
-  return new StandardDatabase(directory, points_per_chunk);
+int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
+  sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
+  return sdb_data_series_write(series, points, count);
 }
 
-int StandardDatabase::Write(sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
-  sdb_data_series_t *series = this->FindDataSeries(series_id);
-  sdb_data_series_write(series, points, count);
-
-  return 0;
+int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id) {
+  sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
+  return sdb_data_series_truncate(series);
 }
 
-void StandardDatabase::Truncate(sdb_data_series_id_t series_id) {
-  sdb_data_series_t *series = this->FindDataSeries(series_id);
-  sdb_data_series_truncate(series);
-}
-
-sdb_data_points_reader_t *StandardDatabase::Read(sdb_data_series_id_t series_id,
-                                                 sdb_timestamp_t begin,
-                                                 sdb_timestamp_t end,
-                                                 int max_points) {
-  sdb_data_series_t *series = this->FindDataSeries(series_id);
+sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
+                                            sdb_timestamp_t begin,
+                                            sdb_timestamp_t end,
+                                            int max_points) {
+  sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
   return sdb_data_series_read(series, begin, end, max_points);
 }
 
-sdb_data_series_t *StandardDatabase::FindDataSeries(sdb_data_series_id_t series_id) {
-  sdb_rwlock_rdlock(this->lock);
+sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
+  if (db->_series == NULL) {
+    return NULL;
+  }
 
-  if (this->series.find(series_id) == this->series.end()) {
-    sdb_rwlock_upgrade(this->lock);
+  sdb_data_series_t *series = NULL;
 
-    if (this->series.find(series_id) == this->series.end()) {
-      this->series[series_id] =
-          sdb_data_series_create(
-              (this->directory + "/" + std::to_string(series_id)).c_str(),
-              this->points_per_chunk);
+  for (int i = 0; i < db->_series_count && series == NULL; i++) {
+    if (db->_series[i]->id == series_id) {
+      series = db->_series[i];
     }
   }
 
-  sdb_data_series_t *result = this->series[series_id];
-  sdb_rwlock_unlock(this->lock);
-
-  return result;
+  return series;
 }
 
-}  // namespace shakadb
+sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
+  if (db->_series_count + 1 > db->_max_series_count) {
+    db->_max_series_count += SDB_REALLOC_GROW_INCREMENT;
+    db->_series = (sdb_data_series_t **)sdb_realloc(db->_series, sizeof(sdb_data_series_t *) * db->_max_series_count);
+  }
+
+  char file_name[SDB_FILE_MAX_LEN] = {0};
+  snprintf(file_name, SDB_FILE_MAX_LEN, "%s\\%d", db->_directory, series_id);
+
+  return db->_series[db->_series_count++] = sdb_data_series_create(series_id, file_name, db->_points_per_chunk);
+}
+
+sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
+  sdb_rwlock_rdlock(db->_lock);
+  sdb_data_series_t *series = NULL;
+
+  if ((series = sdb_database_get_data_series(db, series_id)) == NULL) {
+    sdb_rwlock_upgrade(db->_lock);
+
+    if ((series = sdb_database_get_data_series(db, series_id)) == NULL) {
+      series = sdb_database_create_data_series(db, series_id);
+    }
+  }
+
+  sdb_rwlock_unlock(db->_lock);
+  return series;
+}
+
