@@ -22,7 +22,7 @@ set(SRC_SHAKADB_CLIENT ${SRC_CLIENT} ${SRC_UTILS} ${SRC_DOMAIN} ${SRC_PROTOCOL})
 add_library(shakadbclientc SHARED ${SRC_SHAKADB_CLIENT})
 add_library(shakadbserverc SHARED ${SRC_SHAKADB})
 add_executable(shakadb.client src/client/main.c)
-add_executable(shakadb.test ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} test/main.cc test/framework.c test/framework.h)
+add_executable(shakadb.test ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} test/main.c test/framework.c test/framework.h)
 
 target_link_libraries(shakadbclientc pthread)
 target_link_libraries(shakadbserverc pthread)
