@@ -27,7 +27,7 @@
 #define SRC_MIDDLEWARE_CLIENT_HANDLER_H_
 
 #include <src/server/server.h>
-#include <src/storage/standard-database.h>
+#include <src/storage/database.h>
 
 namespace shakadb {
 

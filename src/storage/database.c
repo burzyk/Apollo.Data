@@ -23,11 +23,10 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#include "src/storage/standard-database.h"
+#include "src/storage/database.h"
 
-#include <cstdlib>
-#include <cmath>
 #include <src/utils/memory.h>
+#include <memory.h>
 
 sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
 sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);

@@ -28,7 +28,7 @@
 #include <memory>
 #include <src/utils/memory.h>
 #include <src/common.h>
-#include <src/storage/standard-database.h>
+#include <src/storage/database.h>
 
 void sdb_test_database_write_with_time(sdb_database_t *db,
                                        sdb_data_series_id_t series_id,

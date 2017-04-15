@@ -23,15 +23,15 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SRC_STORAGE_STANDARD_DATABASE_H_
-#define SRC_STORAGE_STANDARD_DATABASE_H_
-
-#include <string>
-#include <list>
-#include <map>
+#ifndef SRC_STORAGE_DATABASE_H_
+#define SRC_STORAGE_DATABASE_H_
 
 #include "src/storage/data-chunk.h"
 #include "src/storage/data-series.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct sdb_database_s {
   char _directory[SDB_FILE_MAX_LEN];
@@ -52,4 +52,8 @@ sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_
                                             sdb_timestamp_t end,
                                             int max_points);
 
-#endif  // SRC_STORAGE_STANDARD_DATABASE_H_
+#ifdef __cplusplus
+}
+#endif
+
+#endif  // SRC_STORAGE_DATABASE_H_
