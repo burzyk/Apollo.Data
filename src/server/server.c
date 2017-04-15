@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#include "src/server/web-server.h"
+#include "src/server/server.h"
 
 #include <src/utils/memory.h>
 #include <src/utils/diagnostics.h>
@@ -53,7 +53,7 @@ sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, int poin
 }
 
 void sdb_server_destroy(sdb_server_t *server) {
-  server->_is_running = false;
+  server->_is_running = 0;
   sdb_socket_close(server->_master_socket);
 
   for (int i = 0; i < server->_thread_pool_size; i++) {
@@ -96,7 +96,7 @@ void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sd
   sdb_read_request_t *request = (sdb_read_request_t *)packet->payload;
   sdb_timestamp_t begin = request->begin;
 
-  while (true) {
+  for(;;) {
     sdb_data_points_reader_t *reader =
         sdb_database_read(server->_db, request->data_series_id, begin, request->end, server->_points_per_packet);
 
