@@ -23,6 +23,7 @@
 
 #include "test/framework.h"
 #include "test/database-tests.h"
+#include "test/server-tests.h"
 
 #define TEST(test_case) result |= sdb_tests_session_run(session, #test_case, test_case);
 
@@ -55,6 +56,12 @@ int main() {
   TEST(sdb_test_database_truncate);
   TEST(sdb_test_database_truncate_multiple);
   TEST(sdb_test_database_truncate_write_again);
+
+  TEST(sdb_test_server_simple_initialization_test);
+  TEST(sdb_test_server_connect);
+  TEST(sdb_test_server_connect_invalid_address);
+  TEST(sdb_test_server_connect_invalid_port);
+  TEST(sdb_test_server_write_small);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");

@@ -33,6 +33,11 @@ int shakadb_session_open(shakadb_session_t *session, const char *server, int por
 
 void shakadb_session_close(shakadb_session_t *session) {
   sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
+
+  if (s == NULL) {
+    return;
+  }
+  
   sdb_client_session_destroy(s);
   session->_session = NULL;
 }

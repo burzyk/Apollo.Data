@@ -23,6 +23,7 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
+#include <stdlib.h>
 #include "src/server/server.h"
 #include "src/utils/memory.h"
 #include "src/utils/diagnostics.h"
@@ -122,6 +123,11 @@ void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sd
 
 void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
   sdb_write_request_t *request = (sdb_write_request_t *)packet->payload;
+
+  qsort(request->points,
+        (size_t)request->points_count,
+        sizeof(sdb_data_point_t),
+        (int (*)(const void *, const void *))sdb_data_point_compare);
   int status = sdb_database_write(server->_db, request->data_series_id, request->points, request->points_count);
 
   sdb_packet_send_and_destroy(
