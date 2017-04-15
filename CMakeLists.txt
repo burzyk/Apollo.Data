@@ -9,7 +9,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address  -fno-omit-frame-pointer 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(SRC_DOMAIN src/storage/data-points-reader.h src/common.h src/common.c)
-set(SRC_CLIENT src/client/session.cc src/client/session.h src/client/data-points-iterator.c src/client/data-points-iterator.h src/client/client.h src/client/client.cc)
+set(SRC_CLIENT src/client/session.c src/client/session.h src/client/data-points-iterator.c src/client/data-points-iterator.h src/client/client.h src/client/client.c)
 set(SRC_PROTOCOL src/protocol.h src/protocol.c)
 set(SRC_SERVER src/server/server.c src/server/server.h)
 set(SRC_STORAGE src/storage/data-chunk.c src/storage/data-chunk.h src/storage/data-points-reader.c src/storage/database.c src/storage/database.h src/storage/data-series.c src/storage/data-series.h)
@@ -21,17 +21,14 @@ set(SRC_SHAKADB_CLIENT ${SRC_CLIENT} ${SRC_UTILS} ${SRC_DOMAIN} ${SRC_PROTOCOL})
 
 add_library(shakadbclientc SHARED ${SRC_SHAKADB_CLIENT})
 add_library(shakadbserverc SHARED ${SRC_SHAKADB})
-add_executable(shakadb.client src/client/main.c)
 add_executable(shakadb.test ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} test/main.c test/framework.c test/framework.h)
 
 target_link_libraries(shakadbclientc pthread)
 target_link_libraries(shakadbserverc pthread)
-target_link_libraries(shakadb.client pthread shakadbclientc)
 target_link_libraries(shakadb.test pthread)
 
 set_target_properties(shakadbclientc PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(shakadbserverc PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(shakadb.client PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(shakadb.test PROPERTIES LINKER_LANGUAGE CXX)
 
 install(TARGETS shakadbclientc DESTINATION lib)

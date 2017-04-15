@@ -25,12 +25,7 @@
 
 #include "src/client/session.h"
 
-#include <sys/socket.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <cstdlib>
-#include <src/utils/memory.h>
+#include "src/utils/memory.h"
 
 sdb_client_session_t *sdb_client_session_create(const char *server, int port) {
   sdb_socket_t sock = sdb_socket_connect(server, port);

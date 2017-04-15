@@ -26,8 +26,6 @@
 #ifndef SRC_CLIENT_SESSION_H_
 #define SRC_CLIENT_SESSION_H_
 
-#include <string>
-
 #include "src/protocol.h"
 #include "src/client/data-points-iterator.h"
 
