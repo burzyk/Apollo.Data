@@ -44,6 +44,10 @@ void sdb_thread_join_and_destroy(sdb_thread_t *thread) {
   sdb_free(thread);
 }
 
+int sdb_thread_get_current_id() {
+  return (int)pthread_self();
+}
+
 sdb_rwlock_t *sdb_rwlock_create() {
   sdb_rwlock_t *lock = (sdb_rwlock_t *)sdb_alloc(sizeof(sdb_rwlock_t));
 

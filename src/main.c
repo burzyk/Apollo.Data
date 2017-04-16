@@ -69,6 +69,10 @@ int main(int argc, char *argv[]) {
 
   sdb_log_init(config.log_file);
   sdb_log_info("========== Starting ShakaDB ==========");
+  sdb_log_info("parameters", config.database_directory);
+  sdb_log_info("    directory: %s", config.database_directory);
+  sdb_log_info("    port: %d", config.server_port);
+  sdb_log_info("    log: %s", config.log_file);
 
   sdb_thread_t *master_thread = sdb_thread_start(sdb_master_thread_routine, &config);
   sdb_thread_join_and_destroy(master_thread);
@@ -79,7 +83,11 @@ int main(int argc, char *argv[]) {
 
 void *sdb_master_thread_routine(void *data) {
   sdb_configuration_t *config = (sdb_configuration_t *)data;
+
+  sdb_log_info("initializing database ...");
   sdb_database_t *db = sdb_database_create(config->database_directory, config->database_points_per_chunk);
+
+  sdb_log_info("initializing server ...");
   sdb_server_t *server = sdb_server_create(
       config->server_port,
       config->server_backlog,
@@ -87,11 +95,14 @@ void *sdb_master_thread_routine(void *data) {
       config->server_points_per_packet,
       db);
 
-  sdb_log_info("ShakaDB started");
+  sdb_log_info("initialization complete");
   while (getc(stdin) != 'q') {}
-  sdb_log_info("Stopping ShakaDB ...");
+  sdb_log_info("interrupt received");
 
+  sdb_log_info("closing server ...");
   sdb_server_destroy(server);
+
+  sdb_log_info("closing database ...");
   sdb_database_destroy(db);
 
   return NULL;
@@ -129,7 +140,6 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
         break;
       case 'h':sdb_print_usage();
         exit(0);
-        break;
       default:return -1;
     }
   }

@@ -59,7 +59,7 @@ typedef struct sdb_log_s {
 
 sdb_log_t *g_log = NULL;
 
-void sdb_log_write(const char *level, const char *format, ...);
+void sdb_log_write(const char *level, const char *format, va_list args);
 
 void sdb_log_init(const char *log_file_name) {
   g_log = (sdb_log_t *)sdb_alloc(sizeof(sdb_log_t));
@@ -81,19 +81,28 @@ void sdb_log_close() {
   sdb_free(g_log);
 }
 
-void sdb_log_fatal(const char *format, ...) {
-  sdb_log_write("FATAL", format);
+void sdb_log_error(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  sdb_log_write("ERROR", format, args);
+  va_end(args);
 }
 
 void sdb_log_info(const char *format, ...) {
-  sdb_log_write("INFO", format);
+  va_list args;
+  va_start(args, format);
+  sdb_log_write("INFO", format, args);
+  va_end(args);
 }
 
 void sdb_log_debug(const char *format, ...) {
-  sdb_log_write("DEBUG", format);
+  va_list args;
+  va_start(args, format);
+  sdb_log_write("DEBUG", format, args);
+  va_end(args);
 }
 
-void sdb_log_write(const char *level, const char *format, ...) {
+void sdb_log_write(const char *level, const char *format, va_list args) {
   if (g_log == NULL) {
     return;
   }
@@ -110,11 +119,8 @@ void sdb_log_write(const char *level, const char *format, ...) {
     }
   }
 
-  va_list args;
-  va_start(args, format);
   char line[SDB_LOG_LINE_MAX_LEN] = {0};
   vsnprintf(line, SDB_LOG_LINE_MAX_LEN, format, args);
-  va_end(args);
 
   struct timespec tick;
   clock_gettime(CLOCK_REALTIME, &tick);
@@ -122,7 +128,7 @@ void sdb_log_write(const char *level, const char *format, ...) {
   localtime_r(&tick.tv_sec, &now);
 
   fprintf(g_log->output,
-          "%d/%02d/%02d %02d:%02d:%02d.%03lu [%s]: %s\n",
+          "%d/%02d/%02d %02d:%02d:%02d.%03lu [%08X] [%s]: %s\n",
           now.tm_year + 1900,
           now.tm_mon + 1,
           now.tm_mday,
@@ -130,10 +136,11 @@ void sdb_log_write(const char *level, const char *format, ...) {
           now.tm_min,
           now.tm_sec,
           tick.tv_nsec / 1000000,
+          sdb_thread_get_current_id(),
           level,
           line);
 
-  if (!strcmp(level, "FATAL")) {
+  if (!strcmp(level, "ERROR")) {
     fflush(g_log->output);
   }
 

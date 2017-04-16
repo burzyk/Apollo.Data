@@ -27,6 +27,7 @@
 
 #include <string.h>
 
+#include "src/utils/diagnostics.h"
 #include "src/utils/memory.h"
 #include "src/utils/disk.h"
 
@@ -55,19 +56,16 @@ sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id, const char *f
 
   int chunk_size = sdb_data_chunk_calculate_size(points_per_chunk);
 
-  // sdb_stopwatch_t *sw = sdb_stopwatch_start();
-
   for (int i = 0; i < sdb_file_size(file_name) / chunk_size; i++) {
     sdb_data_chunk_t *chunk = sdb_data_chunk_create(file_name, (uint64_t)i * chunk_size, points_per_chunk);
 
     if (chunk != NULL) {
       sdb_data_series_register_chunk(series, chunk);
     } else {
-      // TODO: (pburzynski): Improve logging : log->Info("Unable to load chunk");
+      sdb_log_error("failed to load chunk at index: %d", i);
     }
   }
 
-  // log->Info("Data series loaded in: " + std::to_string(sdb_stopwatch_stop_and_destroy(sw)) + "[s]");
   return series;
 }
 
@@ -165,7 +163,10 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
 }
 
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk) {
+  sdb_log_debug("registering chunk: [%llu, %llu), %d", chunk->begin, chunk->end, chunk->number_of_points);
+
   if (series->_chunks_count + 1 >= series->_max_chunks) {
+    sdb_log_debug("expanding chunks collection");
     series->_max_chunks += SDB_REALLOC_GROW_INCREMENT;
     series->_chunks = (sdb_data_chunk_t **)sdb_realloc(
         series->_chunks,
@@ -179,6 +180,7 @@ void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t 
     index--;
   }
 
+  sdb_log_debug("chunk inserted at %d", index);
   series->_chunks[index] = chunk;
   series->_chunks_count++;
 }
