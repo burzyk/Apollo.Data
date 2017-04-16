@@ -27,6 +27,7 @@
 
 #include <memory.h>
 
+#include "src/utils/diagnostics.h"
 #include "src/utils/memory.h"
 
 sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
@@ -50,6 +51,7 @@ sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk)
 void sdb_database_destroy(sdb_database_t *db) {
   if (db->_series != NULL) {
     for (int i = 0; i < db->_series_count; i++) {
+      sdb_log_info("closing time series: %d", db->_series[i]->id);
       sdb_data_series_destroy(db->_series[i]);
     }
 
@@ -57,6 +59,7 @@ void sdb_database_destroy(sdb_database_t *db) {
   }
 
   sdb_rwlock_destroy(db->_lock);
+  sdb_free(db);
 }
 
 int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
@@ -102,6 +105,7 @@ sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_
   char file_name[SDB_FILE_MAX_LEN] = {0};
   snprintf(file_name, SDB_FILE_MAX_LEN, "%s\\%d", db->_directory, series_id);
 
+  sdb_log_info("loading time series: %d", series_id);
   return db->_series[db->_series_count++] = sdb_data_series_create(series_id, file_name, db->_points_per_chunk);
 }
 

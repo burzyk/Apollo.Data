@@ -8,10 +8,14 @@ cpplint.py
 
 cmake-build-*
 
+build
+
 ## File-based project format:
 *.iws
 
 ## Plugin-specific files:
+
+default.profraw
 
 # IntelliJ
 /out/

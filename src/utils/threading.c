@@ -44,6 +44,10 @@ void sdb_thread_join_and_destroy(sdb_thread_t *thread) {
   sdb_free(thread);
 }
 
+int sdb_thread_get_current_id() {
+  return (int)pthread_self();
+}
+
 sdb_rwlock_t *sdb_rwlock_create() {
   sdb_rwlock_t *lock = (sdb_rwlock_t *)sdb_alloc(sizeof(sdb_rwlock_t));
 
@@ -78,9 +82,7 @@ void sdb_rwlock_unlock(sdb_rwlock_t *lock) {
 }
 
 void sdb_rwlock_destroy(sdb_rwlock_t *lock) {
-  pthread_rwlock_unlock(&lock->_lock);
   pthread_rwlock_destroy(&lock->_lock);
-
   sdb_free(lock);
 }
 
@@ -107,8 +109,6 @@ void sdb_mutex_unlock(sdb_mutex_t *monitor) {
 }
 
 void sdb_mutex_destroy(sdb_mutex_t *monitor) {
-  pthread_mutex_unlock(&monitor->_mutex);
   pthread_mutex_destroy(&monitor->_mutex);
-
   sdb_free(monitor);
 }

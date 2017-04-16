@@ -63,20 +63,13 @@ int sdb_tests_session_run(sdb_tests_session_t *session, const char *name, sdb_te
   strncpy(context.working_directory, working_directory, SDB_FILE_MAX_LEN);
   context.session = session;
 
-  printf(ANSI_COLOR_RESET);
-  int result = 1;
   test_function(context);
 
-  if (result) {
-    printf(ANSI_COLOR_GREEN " [ OK ]\n");
-    session->_tests_success++;
-  } else {
-    printf(ANSI_COLOR_RED " [ Failed ]\n");
-    session->_tests_failed++;
-  }
+  // TODO (pburzynski): we are not printing failed as the assertion will kill the process anyway
+  printf(ANSI_COLOR_GREEN " [ OK ]\n" ANSI_COLOR_RESET);
+  session->_tests_success++;
 
-  printf(ANSI_COLOR_RESET);
-  return result;
+  return 0;
 }
 
 void sdb_tests_session_print_summary(sdb_tests_session_t *session) {

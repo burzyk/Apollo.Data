@@ -25,15 +25,31 @@
 #include "test/database-tests.h"
 #include "test/server-tests.h"
 
+#ifndef SDB_VERSION
+#define SDB_VERSION "0.0.1"
+#endif
+
+#ifndef SDB_BUILD
+#define SDB_BUILD "<COMMIT_ID>"
+#endif
+
 #define TEST(test_case) result |= sdb_tests_session_run(session, #test_case, test_case);
 
-int main() {
-  const char *root_directory = "/Users/pburzynski/shakadb-test/data/test-stuff";
+int main(int argc, char *argv[]) {
+  const char *root_directory = argc == 1
+                               ? "/Users/pburzynski/shakadb-test/data/test-stuff"
+                               : argv[1];
 
   sdb_tests_session_t *session = sdb_tests_session_create(root_directory);
   int result = 0;
 
   printf("==================== Running tests ====================\n");
+  printf("\n");
+  printf("    Version: %s\n", SDB_VERSION);
+  printf("    Build: %s\n", SDB_BUILD);
+  printf("\n");
+  printf("    Directory: %s\n", root_directory);
+  printf("\n");
 
   TEST(sdb_test_database_simple_initialization_test);
   TEST(sdb_test_database_write_and_read_all);
