@@ -25,6 +25,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <getopt.h>
+#include <memory.h>
 
 #include "src/utils/threading.h"
 #include "src/storage/database.h"
@@ -36,12 +38,16 @@
 #endif
 
 #ifndef SDB_BUILD
-#define SDB_BUILD "babababa"
+#define SDB_BUILD "<COMMIT_ID>"
 #endif
 
+#define SDB_CONFIG_DEFAULT_DIRECTORY  "/usr/local/shakadb/data"
+#define SDB_CONFIG_DEFAULT_PORT 8487
+#define SDB_CONFIG_DEFAULT_LOG  "stdout"
+
 typedef struct sdb_configuration_s {
-  const char *log_file;
-  const char *database_directory;
+  char log_file[SDB_FILE_MAX_LEN];
+  char database_directory[SDB_FILE_MAX_LEN];
   int database_points_per_chunk;
   int server_port;
   int server_backlog;
@@ -92,19 +98,41 @@ void *sdb_master_thread_routine(void *data) {
 }
 
 int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]) {
-  if (argc != 4) {
-    return -1;
-  }
-
-  config->log_file = argv[3];
-  config->server_port = atoi(argv[1]);
+  config->server_port = SDB_CONFIG_DEFAULT_PORT;
+  strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_FILE_MAX_LEN);
+  strncpy(config->log_file, SDB_CONFIG_DEFAULT_LOG, SDB_FILE_MAX_LEN);
   config->server_backlog = 20;
   config->server_max_clients = 10;
   config->server_points_per_packet = 655360;
-  config->database_directory = argv[2];
   config->database_points_per_chunk = 10000;
 
-  return 0;
+  while (1) {
+    int option_index = 0;
+    static struct option long_options[] = {
+        {"port", required_argument, 0, 'p'},
+        {"directory", required_argument, 0, 'd'},
+        {"log", required_argument, 0, 'l'},
+        {"help", no_argument, 0, 'h'}
+    };
+
+    int c = getopt_long(argc, argv, "hp:d:l:", long_options, &option_index);
+    if (c == -1) {
+      return 0;
+    }
+
+    switch (c) {
+      case 'p': config->server_port = atoi(optarg);
+        break;
+      case 'd':strncpy(config->database_directory, optarg, SDB_FILE_MAX_LEN);
+        break;
+      case 'l':strncpy(config->log_file, optarg, SDB_FILE_MAX_LEN);
+        break;
+      case 'h':sdb_print_usage();
+        exit(0);
+        break;
+      default:return -1;
+    }
+  }
 }
 
 void sdb_print_usage() {
@@ -114,7 +142,17 @@ void sdb_print_usage() {
   printf("    Version:\t" SDB_VERSION "\n");
   printf("    Build:\t" SDB_BUILD "\n");
   printf("\n");
-  printf("Usage: shakadb <port> <database_directory> <log_file>\n");
+  printf("Usage: shakadb <options>\n");
+  printf("Options:\n");
+  printf("\n");
+  printf("    --help, -h:       displays this information\n");
+  printf("    --port, -p:       port to listen on\n");
+  printf("                      default value: %d\n", SDB_CONFIG_DEFAULT_PORT);
+  printf("    --directory, -d:  directory where database will be created\n");
+  printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
+  printf("    --log, -l:        log file name. If 'stdout' is specified the application\n");
+  printf("                      will write all logs to standard output\n");
+  printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
   printf("\n");
