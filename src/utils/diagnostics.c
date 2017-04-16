@@ -27,6 +27,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "src/common.h"
 #include "src/utils/memory.h"
@@ -58,7 +59,7 @@ typedef struct sdb_log_s {
 
 sdb_log_t *g_log = NULL;
 
-void sdb_log_write(const char *level, const char *message);
+void sdb_log_write(const char *level, const char *format, ...);
 
 void sdb_log_init(const char *log_file_name) {
   g_log = (sdb_log_t *)sdb_alloc(sizeof(sdb_log_t));
@@ -80,19 +81,19 @@ void sdb_log_close() {
   sdb_free(g_log);
 }
 
-void sdb_log_fatal(const char *message) {
-  sdb_log_write("FATAL", message);
+void sdb_log_fatal(const char *format, ...) {
+  sdb_log_write("FATAL", format);
 }
 
-void sdb_log_info(const char *message) {
-  sdb_log_write("INFO", message);
+void sdb_log_info(const char *format, ...) {
+  sdb_log_write("INFO", format);
 }
 
-void sdb_log_debug(const char *message) {
-  sdb_log_write("DEBUG", message);
+void sdb_log_debug(const char *format, ...) {
+  sdb_log_write("DEBUG", format);
 }
 
-void sdb_log_write(const char *level, const char *message) {
+void sdb_log_write(const char *level, const char *format, ...) {
   if (g_log == NULL) {
     return;
   }
@@ -109,17 +110,28 @@ void sdb_log_write(const char *level, const char *message) {
     }
   }
 
-  time_t t = time(NULL);
+  va_list args;
+  va_start(args, format);
+  char line[SDB_LOG_LINE_MAX_LEN] = {0};
+  vsnprintf(line, SDB_LOG_LINE_MAX_LEN, format, args);
+  va_end(args);
+
+  struct timespec tick;
+  clock_gettime(CLOCK_REALTIME, &tick);
   struct tm now;
-  localtime_r(&t, &now);
+  localtime_r(&tick.tv_sec, &now);
 
   fprintf(g_log->output,
-          "%d/%02d/%02d [%s]: %s\n",
+          "%d/%02d/%02d %02d:%02d:%02d.%03lu [%s]: %s\n",
           now.tm_year + 1900,
           now.tm_mon + 1,
           now.tm_mday,
+          now.tm_hour,
+          now.tm_min,
+          now.tm_sec,
+          tick.tv_nsec / 1000000,
           level,
-          message);
+          line);
 
   if (!strcmp(level, "FATAL")) {
     fflush(g_log->output);
