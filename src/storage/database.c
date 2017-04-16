@@ -59,6 +59,7 @@ void sdb_database_destroy(sdb_database_t *db) {
   }
 
   sdb_rwlock_destroy(db->_lock);
+  sdb_free(db);
 }
 
 int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
