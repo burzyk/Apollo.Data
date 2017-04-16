@@ -13,9 +13,23 @@ script: rake build_packages
 
 env:
   global:
-    - SDB_VERSION_PATCH=$TRAVIS_BUILD_NUMBER
+    - SDB_VERSION_MAJOR=1
+    - SDB_VERSION_MINOR=3
+    - SDB_VERSION_PATCH=6
     - SDB_BUILD=$TRAVIS_COMMIT
   matrix:
     - SDB_CONFIGURATION=debug
     - SDB_CONFIGURATION=release
 
+deploy:
+  provider: releases
+  api_key:
+    secure: "2YocaXpzgKUXfKNu3aildW6ayT+voz8S2kHKgDkqebUVKf+Nh8QGso4yYp14zq9G3DZO1zjPb+7Iiu2kWzss5p7YEAhJ7ZQ8dRHkvCgK60VwxeM8uGV0Fx4b9gQwLcarIAsTmj83w5dW6kRZIrEcyV5ihQvrGSGnZ4WtTrrUiDWCf+YcpmT1IOdD4GZUS2cN8bZJLsm1HhbCOZ7mq1EF/aE/lcWT8odJyGLWc8Xg/36/0cMGbZaTwKHhpU76YnbpQEHEnqRt3Mi/5hL2N57i36vpRLjxL4FEC+eX/AHk0i6sphjwZu3ICrk5C8C34U1Jl2yg079HajgSONTrjKjU0LFE9tp412HXisPfVfZ3pEIlJTrIZbKLQjjuUuEa1jPegwfpZ2gdP+ut77my094yzGd2JZEya9UEROE00YQAnpPisglFKAYAdOPaay7lbtNJjSTb+uQyf3k6Q1g1CuFNSpAvhelvx+Jtlt8hdUoiCOk0hSjWYa9oSPjdc84vqFOS4Zk5PQhkxU7YXaW9C5cXY5/XSvfLGg5PX4iOxc5Iqqsdl5uSwcjU7UgVEWPMle/8eQIzctuZL6qj0BVWuJcHu1BaAr62TiT3ML2AZM9VUeVRbA0VznEiIbn7YoZ6fVaza9HhkK5kalrVA0gyXeW0UKawqqfQ+zCrKUVthVibQ+M="
+  file_glob: true
+  file:
+    - ./build/bin/shakadb-*-Linux.deb
+    - ./build/bin/shakadb-*-Linux.rpm
+    - ./build/bin/shakadb-*-Linux.tar.gz
+  skip_cleanup: true
+  on:
+    tags: true
