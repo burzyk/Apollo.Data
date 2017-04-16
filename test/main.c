@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
   printf("==================== Running tests ====================\n");
   printf("directory: %s\n", root_directory);
-  printf("\n", root_directory);
+  printf("\n");
 
   TEST(sdb_test_database_simple_initialization_test);
   TEST(sdb_test_database_write_and_read_all);

@@ -5,7 +5,7 @@ BUILD_DIR='./build'
 BINARIES_DIR=BUILD_DIR + '/bin'
 TESTS_DIR=BUILD_DIR + '/tests'
 
-task :default => [:build_binaries]
+task :default => [:run_tests]
 
 task :init do
     puts "Initializing build ..."
