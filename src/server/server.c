@@ -24,6 +24,7 @@
 //
 
 #include <stdlib.h>
+#include <inttypes.h>
 #include "src/server/server.h"
 #include "src/utils/memory.h"
 #include "src/utils/diagnostics.h"
@@ -102,7 +103,7 @@ void *sdb_server_worker_routine(void *data) {
 
 void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
   sdb_read_request_t *request = (sdb_read_request_t *)packet->payload;
-  sdb_log_debug("processing read request: { series: %d, begin: %llu, end: %llu  }",
+  sdb_log_debug("processing read request: { series: %d, begin: %" PRIu64 ", end: %" PRIu64 "  }",
                 request->data_series_id,
                 request->begin,
                 request->end);
@@ -121,7 +122,7 @@ void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sd
     begin = reader->points_count == points_to_read ? reader->points[reader->points_count - 1].time : request->end;
 
     int points_to_send = sdb_min(server->_points_per_packet, reader->points_count);
-    sdb_log_debug("sending response: { begin: %llu, end: %llu, points: %d }",
+    sdb_log_debug("sending response: { begin: %" PRIu64 ", end: %" PRIu64 ", points: %d }",
                   points_to_send ? reader->points[0].time : 0,
                   points_to_send ? reader->points[points_to_send - 1].time : 0,
                   points_to_send);

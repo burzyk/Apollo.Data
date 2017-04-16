@@ -26,6 +26,7 @@
 #include "src/storage/data-series.h"
 
 #include <string.h>
+#include <inttypes.h>
 
 #include "src/utils/diagnostics.h"
 #include "src/utils/memory.h"
@@ -163,7 +164,7 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
 }
 
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk) {
-  sdb_log_debug("registering chunk: [%llu, %llu), %d", chunk->begin, chunk->end, chunk->number_of_points);
+  sdb_log_debug("registering chunk: [%" PRIu64 ", %" PRIu64 "), %d", chunk->begin, chunk->end, chunk->number_of_points);
 
   if (series->_chunks_count + 1 >= series->_max_chunks) {
     sdb_log_debug("expanding chunks collection");

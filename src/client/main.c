@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <inttypes.h>
 
 #include "src/client/client.h"
 #include "client.h"
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
         .value=(float)atof(argv[6])
     };
 
-    printf("writing point: %d -> (%llu, %f)\n", series_id, data_point.time, data_point.value);
+    printf("writing point: %d -> (%" PRIu64 ", %f)\n", series_id, data_point.time, data_point.value);
 
     if (shakadb_write_points(&session, series_id, &data_point, 1) == SHAKADB_RESULT_ERROR) {
       fprintf(stderr, "Failed to write the point\n");
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]) {
     shakadb_timestamp_t begin = (shakadb_timestamp_t)atoi(argv[5]);
     shakadb_timestamp_t end = (shakadb_timestamp_t)atoi(argv[6]);
 
-    printf("reading points: %d -> [%llu, %llu)\n", series_id, begin, end);
+    printf("reading points: %d -> [%" PRIu64 ", %" PRIu64 ")\n", series_id, begin, end);
 
     shakadb_data_points_iterator_t it;
     int total_read = 0;
@@ -72,7 +73,7 @@ int main(int argc, char *argv[]) {
       total_read += it.points_count;
 
       for (int i = 0; i < it.points_count; i++) {
-        printf("(%llu, %f)\n", it.points[i].time, it.points[i].value);
+        printf("(%" PRIu64 ", %f)\n", it.points[i].time, it.points[i].value);
       }
     }
 
