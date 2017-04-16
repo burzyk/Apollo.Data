@@ -100,7 +100,7 @@ void sdb_log_write(const char *level, const char *message) {
   sdb_mutex_lock(g_log->lock);
 
   if (g_log->output == NULL) {
-    g_log->output = strcmp(g_log->log_file_name, "") == 0
+    g_log->output = strcmp(g_log->log_file_name, "stdout") == 0
                     ? stdout
                     : fopen(g_log->log_file_name, "a+");
 

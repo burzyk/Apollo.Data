@@ -16,18 +16,18 @@ set(SRC_TEST test/database-tests.h test/database-tests.c test/framework.c test/f
 set(SRC_SHAKADB ${SRC_DOMAIN} ${SRC_SERVER} ${SRC_UTILS} ${SRC_STORAGE})
 set(SRC_SHAKADB_CLIENT ${SRC_CLIENT} ${SRC_UTILS} ${SRC_DOMAIN} ${SRC_PROTOCOL})
 
-add_library(shakadbclientc SHARED ${SRC_SHAKADB_CLIENT})
-add_executable(shakadb.server ${SRC_SHAKADB} src/main.c)
+add_library(shakadbc SHARED ${SRC_SHAKADB_CLIENT})
+add_executable(shakadb ${SRC_SHAKADB} src/main.c)
 add_executable(shakadb.test ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} test/main.c)
 
-target_link_libraries(shakadbclientc pthread)
-target_link_libraries(shakadb.server pthread)
+target_link_libraries(shakadbc pthread)
+target_link_libraries(shakadb pthread)
 target_link_libraries(shakadb.test pthread)
 
-set_target_properties(shakadbclientc PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(shakadb.server PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(shakadbc PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(shakadb PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(shakadb.test PROPERTIES LINKER_LANGUAGE C)
 
-install(TARGETS shakadbclientc DESTINATION lib)
-install(TARGETS shakadb.server DESTINATION bin)
+install(TARGETS shakadbc DESTINATION lib)
+install(TARGETS shakadb DESTINATION bin)
 install(FILES src/client/client.h DESTINATION include/shakadb)
