@@ -5,12 +5,17 @@ dist: trusty
 compiler:
   - clang
 
-script: rake run_tests
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y rpm
+
+script: rake build_packages
 
 env:
   global:
-    - SDB_VERSION=0.1.$TRAVIS_BUILD_NUMBER
+    - SDB_VERSION_PATCH=$TRAVIS_BUILD_NUMBER
     - SDB_BUILD=$TRAVIS_COMMIT
   matrix:
     - SDB_CONFIGURATION=debug
     - SDB_CONFIGURATION=release
+

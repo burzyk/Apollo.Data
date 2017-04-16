@@ -1,23 +1,27 @@
 cmake_minimum_required(VERSION 3.2.2)
 project(shakadb)
 
+set(SDB_VERSION_MAJOR 2)
+set(SDB_VERSION_MINOR 3)
+
 if (NOT DEFINED ENV{SDB_CONFIGURATION})
     set(SDB_CONFIGURATION debug)
-else()
+else ()
     set(SDB_CONFIGURATION $ENV{SDB_CONFIGURATION})
-endif()
+endif ()
 
-if (DEFINED ENV{SDB_VERSION})
-    set(SDB_VERSION $ENV{SDB_VERSION})
+if (DEFINED ENV{SDB_VERSION_PATCH})
+    set(SDB_VERSION_PATCH $ENV{SDB_VERSION_PATCH})
+    set(SDB_VERSION "${SDB_VERSION_MAJOR}.${SDB_VERSION_MINOR}.${SDB_VERSION_PATCH}")
     set(SDB_VERSION \\"${SDB_VERSION}\\")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDB_VERSION=${SDB_VERSION}")
-endif()
+endif ()
 
 if (DEFINED ENV{SDB_BUILD})
     set(SDB_BUILD $ENV{SDB_BUILD})
     set(SDB_BUILD \\"${SDB_BUILD}\\")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDB_BUILD=${SDB_BUILD}")
-endif()
+endif ()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wpointer-arith")
 
@@ -64,3 +68,18 @@ install(TARGETS shakadbc DESTINATION lib)
 install(TARGETS shakadb DESTINATION bin)
 install(TARGETS shakadb.client DESTINATION bin)
 install(FILES src/client/client.h DESTINATION include/shakadb)
+
+# build a CPack driven installer package
+include(InstallRequiredSystemLibraries)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_VERSION_MAJOR "${SDB_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${SDB_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${SDB_VERSION_PATCH}")
+set(CPACK_PACKAGE_VENDOR "burzyk")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Small and fast time series database")
+
+SET(CPACK_GENERATOR "DEB;TGZ;RPM")
+set(CPACK_PACKAGE_CONTACT "p.k.burzynski@gmail.com")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "burzyk")
+
+include(CPack)
