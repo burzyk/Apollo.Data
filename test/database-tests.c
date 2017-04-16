@@ -233,10 +233,6 @@ void sdb_test_database_write_batch_size_greater_than_page_capacity(sdb_tests_con
   sdb_database_destroy(db);
 }
 
-void sdb_test_database_write_replace(sdb_tests_context_t ctx) {
-  // throw ValidationException("Not implemented");
-}
-
 void sdb_test_database_read_inside_single_chunk(sdb_tests_context_t ctx) {
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10);
 

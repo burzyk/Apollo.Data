@@ -39,7 +39,6 @@ void sdb_test_database_continuous_write(sdb_tests_context_t ctx);
 void sdb_test_database_continuous_write_with_pickup(sdb_tests_context_t ctx);
 void sdb_test_database_write_batch_size_equal_to_page_capacity(sdb_tests_context_t ctx);
 void sdb_test_database_write_batch_size_greater_than_page_capacity(sdb_tests_context_t ctx);
-void sdb_test_database_write_replace(sdb_tests_context_t ctx);
 void sdb_test_database_read_inside_single_chunk(sdb_tests_context_t ctx);
 void sdb_test_database_read_span_two_chunks(sdb_tests_context_t ctx);
 void sdb_test_database_read_span_three_chunks(sdb_tests_context_t ctx);

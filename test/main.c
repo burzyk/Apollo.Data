@@ -46,7 +46,6 @@ int main() {
   TEST(sdb_test_database_continuous_write_with_pickup);
   TEST(sdb_test_database_write_batch_size_equal_to_page_capacity);
   TEST(sdb_test_database_write_batch_size_greater_than_page_capacity);
-  TEST(sdb_test_database_write_replace);
   TEST(sdb_test_database_read_inside_single_chunk);
   TEST(sdb_test_database_read_span_two_chunks);
   TEST(sdb_test_database_read_span_three_chunks);
@@ -62,6 +61,13 @@ int main() {
   TEST(sdb_test_server_connect_invalid_address);
   TEST(sdb_test_server_connect_invalid_port);
   TEST(sdb_test_server_write_small);
+  TEST(sdb_test_server_write_unordered);
+  TEST(sdb_test_server_write_two_batches);
+  TEST(sdb_test_server_read_two_batches);
+  TEST(sdb_test_server_read_range);
+  TEST(sdb_test_server_read_range_with_multiple_series);
+  TEST(sdb_test_server_update);
+  TEST(sdb_test_server_update_in_two_sessions);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");
