@@ -1,9 +1,24 @@
 cmake_minimum_required(VERSION 3.2.2)
 project(shakadb)
 
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address  -fno-omit-frame-pointer -Wall -Wpointer-arith")
-#-fprofile-instr-generate -fcoverage-mapping
+if (NOT DEFINED SDB_CONFIGURATION)
+    set(SDB_CONFIGURATION debug)
+endif ()
+
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wpointer-arith")
+
+if ("${SDB_CONFIGURATION}" STREQUAL debug)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+    #-fprofile-instr-generate -fcoverage-mapping
+endif ()
+
+if ("${SDB_CONFIGURATION}" STREQUAL release)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
+endif ()
+
+message("===== building in " ${SDB_CONFIGURATION} " =====")
+message("flags: ${CMAKE_C_FLAGS}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

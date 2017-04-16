@@ -18,7 +18,7 @@ end
 
 task :build_binaries => [:init] do
     puts "building binaries ..."
-    sh('cmake -H. -B' + BINARIES_DIR)
+    sh('cmake -H. -DSDB_CONFIGURATION=release -B' + BINARIES_DIR)
     sh('cmake  --build ' + BINARIES_DIR + ' --target all -- -j 8')
 end
 
