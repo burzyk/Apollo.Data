@@ -8,6 +8,8 @@ cpplint.py
 
 cmake-build-*
 
+build
+
 ## File-based project format:
 *.iws
 
