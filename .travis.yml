@@ -15,7 +15,7 @@ env:
   global:
     - SDB_VERSION_MAJOR=1
     - SDB_VERSION_MINOR=3
-    - SDB_VERSION_PATCH=6
+    - SDB_VERSION_PATCH=7
     - SDB_BUILD=$TRAVIS_COMMIT
   matrix:
     - SDB_CONFIGURATION=debug
@@ -33,3 +33,4 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+    condition: $SDB_CONFIGURATION=release
