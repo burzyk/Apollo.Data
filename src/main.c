@@ -69,10 +69,14 @@ int main(int argc, char *argv[]) {
 
   sdb_log_init(config.log_file);
   sdb_log_info("========== Starting ShakaDB ==========");
-  sdb_log_info("parameters", config.database_directory);
+  sdb_log_info("");
+  sdb_log_info("    Version:   " SDB_VERSION);
+  sdb_log_info("    Build:     " SDB_BUILD);
+  sdb_log_info("");
   sdb_log_info("    directory: %s", config.database_directory);
-  sdb_log_info("    port: %d", config.server_port);
-  sdb_log_info("    log: %s", config.log_file);
+  sdb_log_info("    port:      %d", config.server_port);
+  sdb_log_info("    log:       %s", config.log_file);
+  sdb_log_info("");
 
   sdb_thread_t *master_thread = sdb_thread_start(sdb_master_thread_routine, &config);
   sdb_thread_join_and_destroy(master_thread);

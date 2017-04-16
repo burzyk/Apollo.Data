@@ -1,10 +1,23 @@
 cmake_minimum_required(VERSION 3.2.2)
 project(shakadb)
 
-if (NOT DEFINED SDB_CONFIGURATION)
+if (NOT DEFINED ENV{SDB_CONFIGURATION})
     set(SDB_CONFIGURATION debug)
-endif ()
+else()
+    set(SDB_CONFIGURATION $ENV{SDB_CONFIGURATION})
+endif()
 
+if (DEFINED ENV{SDB_VERSION})
+    set(SDB_VERSION $ENV{SDB_VERSION})
+    set(SDB_VERSION \\"${SDB_VERSION}\\")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDB_VERSION=${SDB_VERSION}")
+endif()
+
+if (DEFINED ENV{SDB_BUILD})
+    set(SDB_BUILD $ENV{SDB_BUILD})
+    set(SDB_BUILD \\"${SDB_BUILD}\\")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDB_BUILD=${SDB_BUILD}")
+endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wpointer-arith")
 
