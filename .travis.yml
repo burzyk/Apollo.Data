@@ -5,4 +5,4 @@ dist: trusty
 compiler:
   - clang
 
-script: rake run_test
+script: rake run_tests
