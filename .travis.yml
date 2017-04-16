@@ -1,7 +1,9 @@
-language: ruby
+language: cpp
 
 sudo: required
 dist: trusty
 
 compiler:
   - clang
+
+script: rake
