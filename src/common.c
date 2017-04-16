@@ -28,6 +28,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs) {
+  return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;
+}
+
 void die(const char *message) {
   fprintf(stderr, "%s\n", message);
   exit(-1);

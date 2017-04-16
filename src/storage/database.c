@@ -34,6 +34,8 @@ sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_
 sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
 
 sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk) {
+  sdb_assert(points_per_chunk > 1, "points_per_chunk must be greater than one")
+
   sdb_database_t *db = (sdb_database_t *)sdb_alloc(sizeof(sdb_database_t));
   strncpy(db->_directory, directory, SDB_FILE_MAX_LEN);
   db->_lock = sdb_rwlock_create();

@@ -23,6 +23,7 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
+#include <stdlib.h>
 #include "src/server/server.h"
 #include "src/utils/memory.h"
 #include "src/utils/diagnostics.h"
@@ -96,32 +97,36 @@ void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sd
   sdb_timestamp_t begin = request->begin;
 
   for (;;) {
+    int points_to_read = server->_points_per_packet + 1;
     sdb_data_points_reader_t *reader =
-        sdb_database_read(server->_db, request->data_series_id, begin, request->end, server->_points_per_packet);
+        sdb_database_read(server->_db, request->data_series_id, begin, request->end, points_to_read);
 
-    int skip = begin == request->begin || reader->points_count == 0 ? 0 : 1;
-    int sent_points_count = reader->points_count - skip;
-    sdb_data_point_t *points = &reader->points[skip];
-
-    int send_status = sdb_packet_send_and_destroy(
-        sdb_read_response_create(SDB_RESPONSE_OK, points, sent_points_count),
-        client_socket);
-
-    begin = reader->points[reader->points_count - 1].time;
-    sdb_data_points_reader_destroy(reader);
-
-    if (!send_status) {
+    if (reader == NULL) {
       return;
     }
 
-    if (sent_points_count == 0) {
-      break;
+    begin = reader->points_count == points_to_read ? reader->points[reader->points_count - 1].time : request->end;
+
+    int points_to_send = sdb_min(server->_points_per_packet, reader->points_count);
+    int send_status = sdb_packet_send_and_destroy(
+        sdb_read_response_create(SDB_RESPONSE_OK, reader->points, points_to_send),
+        client_socket);
+
+    sdb_data_points_reader_destroy(reader);
+
+    if (send_status || points_to_send == 0) {
+      return;
     }
   }
 }
 
 void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
   sdb_write_request_t *request = (sdb_write_request_t *)packet->payload;
+
+  qsort(request->points,
+        (size_t)request->points_count,
+        sizeof(sdb_data_point_t),
+        (int (*)(const void *, const void *))sdb_data_point_compare);
   int status = sdb_database_write(server->_db, request->data_series_id, request->points, request->points_count);
 
   sdb_packet_send_and_destroy(

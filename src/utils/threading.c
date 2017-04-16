@@ -29,7 +29,7 @@
 
 sdb_thread_t *sdb_thread_start(sdb_thread_routine_t routine, void *data) {
   sdb_thread_t *thread = (sdb_thread_t *)sdb_alloc(sizeof(sdb_thread_t));
-  if (!pthread_create(&thread->_thread, NULL, routine, data)) {
+  if (pthread_create(&thread->_thread, NULL, routine, data)) {
     die("Unable to start a thread");
   }
 
@@ -37,7 +37,7 @@ sdb_thread_t *sdb_thread_start(sdb_thread_routine_t routine, void *data) {
 }
 
 void sdb_thread_join_and_destroy(sdb_thread_t *thread) {
-  if (!pthread_join(thread->_thread, NULL)) {
+  if (pthread_join(thread->_thread, NULL)) {
     die("Unable to join a thread");
   }
 
