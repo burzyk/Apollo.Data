@@ -43,6 +43,7 @@ typedef char sdb_response_code_t;
 #define SDB_READ_REQUEST ((sdb_packet_type_t)3)
 #define SDB_READ_RESPONSE  ((sdb_packet_type_t)4)
 #define SDB_SIMPLE_RESPONSE  ((sdb_packet_type_t)2)
+#define SDB_TRUNCATE_REQUEST  ((sdb_packet_type_t)5)
 
 #define SDB_PACKET_MAX_LEN  6553600
 
@@ -75,6 +76,10 @@ typedef struct sdb_read_response_s {
   sdb_data_point_t *points;
 } sdb_read_response_t;
 
+typedef struct sdb_truncate_request_s {
+  sdb_data_series_id_t data_series_id;
+} sdb_truncate_request_t;
+
 typedef struct sdb_simple_response_s {
   sdb_response_code_t code;
 } sdb_simple_response_t;
@@ -83,6 +88,7 @@ sdb_packet_t *sdb_write_request_create(sdb_data_series_id_t data_series_id, sdb_
 sdb_packet_t *sdb_read_request_create(sdb_data_series_id_t data_series_id, sdb_timestamp_t begin, sdb_timestamp_t end);
 sdb_packet_t *sdb_read_response_create(sdb_response_code_t code, sdb_data_point_t *points, int points_count);
 sdb_packet_t *sdb_simple_response_create(sdb_response_code_t code);
+sdb_packet_t *sdb_truncate_request_create(sdb_data_series_id_t data_series_id);
 
 sdb_packet_t *sdb_packet_receive(sdb_socket_t socket);
 int sdb_packet_send(sdb_packet_t *packet, sdb_socket_t socket);
