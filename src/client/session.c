@@ -61,12 +61,12 @@ int sdb_client_session_write_points(sdb_client_session_t *session,
     return -1;
   }
 
-  if (packet->header.type != SDB_WRITE_RESPONSE) {
+  if (packet->header.type != SDB_SIMPLE_RESPONSE) {
     sdb_packet_destroy(packet);
     return -1;
   }
 
-  sdb_write_response_t *response = (sdb_write_response_t *)packet->payload;
+  sdb_simple_response_t *response = (sdb_simple_response_t *)packet->payload;
   int result = response->code != SDB_RESPONSE_OK;
   sdb_packet_destroy(packet);
 

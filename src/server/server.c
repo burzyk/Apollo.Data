@@ -161,7 +161,7 @@ void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, s
   }
 
   if (sdb_packet_send_and_destroy(
-      sdb_write_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
+      sdb_simple_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
       client_socket)) {
     sdb_log_debug("error sending the response");
   }
