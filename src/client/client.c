@@ -33,6 +33,11 @@ int shakadb_session_open(shakadb_session_t *session, const char *server, int por
 
 void shakadb_session_close(shakadb_session_t *session) {
   sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
+
+  if (s == NULL) {
+    return;
+  }
+
   sdb_client_session_destroy(s);
   session->_session = NULL;
 }
@@ -42,7 +47,7 @@ int shakadb_write_points(shakadb_session_t *session,
                          shakadb_data_point_t *points,
                          int points_count) {
   sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
-  return sdb_client_session_write_points(s, series_id, (sdb_data_point_t *)points, points_count)
+  return !sdb_client_session_write_points(s, series_id, (sdb_data_point_t *)points, points_count)
          ? SHAKADB_RESULT_OK
          : SHAKADB_RESULT_ERROR;
 }
@@ -67,14 +72,14 @@ int shakadb_data_points_iterator_next(shakadb_data_points_iterator_t *iterator) 
   }
 
   if (sdb_data_points_iterator_next(i)) {
+    iterator->points = (shakadb_data_point_t *)i->points;
+    iterator->points_count = i->points_count;
+    return 1;
+  } else {
     sdb_data_points_iterator_destroy(i);
     iterator->_iterator = NULL;
     iterator->points = NULL;
     iterator->points_count = -1;
     return 0;
-  } else {
-    iterator->points = (shakadb_data_point_t *)i->points;
-    iterator->points_count = i->points_count;
-    return 1;
   }
 }

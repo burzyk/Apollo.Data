@@ -23,16 +23,33 @@
 
 #include "test/framework.h"
 #include "test/database-tests.h"
+#include "test/server-tests.h"
+
+#ifndef SDB_VERSION
+#define SDB_VERSION "0.0.1"
+#endif
+
+#ifndef SDB_BUILD
+#define SDB_BUILD "<COMMIT_ID>"
+#endif
 
 #define TEST(test_case) result |= sdb_tests_session_run(session, #test_case, test_case);
 
-int main() {
-  const char *root_directory = "/Users/pburzynski/shakadb-test/data/test-stuff";
+int main(int argc, char *argv[]) {
+  const char *root_directory = argc == 1
+                               ? "/Users/pburzynski/shakadb-test/data/test-stuff"
+                               : argv[1];
 
   sdb_tests_session_t *session = sdb_tests_session_create(root_directory);
   int result = 0;
 
   printf("==================== Running tests ====================\n");
+  printf("\n");
+  printf("    Version: %s\n", SDB_VERSION);
+  printf("    Build: %s\n", SDB_BUILD);
+  printf("\n");
+  printf("    Directory: %s\n", root_directory);
+  printf("\n");
 
   TEST(sdb_test_database_simple_initialization_test);
   TEST(sdb_test_database_write_and_read_all);
@@ -45,7 +62,6 @@ int main() {
   TEST(sdb_test_database_continuous_write_with_pickup);
   TEST(sdb_test_database_write_batch_size_equal_to_page_capacity);
   TEST(sdb_test_database_write_batch_size_greater_than_page_capacity);
-  TEST(sdb_test_database_write_replace);
   TEST(sdb_test_database_read_inside_single_chunk);
   TEST(sdb_test_database_read_span_two_chunks);
   TEST(sdb_test_database_read_span_three_chunks);
@@ -55,6 +71,19 @@ int main() {
   TEST(sdb_test_database_truncate);
   TEST(sdb_test_database_truncate_multiple);
   TEST(sdb_test_database_truncate_write_again);
+
+  TEST(sdb_test_server_simple_initialization_test);
+  TEST(sdb_test_server_connect);
+  TEST(sdb_test_server_connect_invalid_address);
+  TEST(sdb_test_server_connect_invalid_port);
+  TEST(sdb_test_server_write_small);
+  TEST(sdb_test_server_write_unordered);
+  TEST(sdb_test_server_write_two_batches);
+  TEST(sdb_test_server_read_two_batches);
+  TEST(sdb_test_server_read_range);
+  TEST(sdb_test_server_read_range_with_multiple_series);
+  TEST(sdb_test_server_update);
+  TEST(sdb_test_server_update_in_two_sessions);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");

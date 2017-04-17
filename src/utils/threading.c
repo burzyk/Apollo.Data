@@ -29,7 +29,7 @@
 
 sdb_thread_t *sdb_thread_start(sdb_thread_routine_t routine, void *data) {
   sdb_thread_t *thread = (sdb_thread_t *)sdb_alloc(sizeof(sdb_thread_t));
-  if (!pthread_create(&thread->_thread, NULL, routine, data)) {
+  if (pthread_create(&thread->_thread, NULL, routine, data)) {
     die("Unable to start a thread");
   }
 
@@ -37,11 +37,15 @@ sdb_thread_t *sdb_thread_start(sdb_thread_routine_t routine, void *data) {
 }
 
 void sdb_thread_join_and_destroy(sdb_thread_t *thread) {
-  if (!pthread_join(thread->_thread, NULL)) {
+  if (pthread_join(thread->_thread, NULL)) {
     die("Unable to join a thread");
   }
 
   sdb_free(thread);
+}
+
+int sdb_thread_get_current_id() {
+  return (int)pthread_self();
 }
 
 sdb_rwlock_t *sdb_rwlock_create() {
@@ -78,9 +82,7 @@ void sdb_rwlock_unlock(sdb_rwlock_t *lock) {
 }
 
 void sdb_rwlock_destroy(sdb_rwlock_t *lock) {
-  pthread_rwlock_unlock(&lock->_lock);
   pthread_rwlock_destroy(&lock->_lock);
-
   sdb_free(lock);
 }
 
@@ -107,8 +109,6 @@ void sdb_mutex_unlock(sdb_mutex_t *monitor) {
 }
 
 void sdb_mutex_destroy(sdb_mutex_t *monitor) {
-  pthread_mutex_unlock(&monitor->_mutex);
   pthread_mutex_destroy(&monitor->_mutex);
-
   sdb_free(monitor);
 }

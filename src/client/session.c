@@ -49,24 +49,25 @@ int sdb_client_session_write_points(sdb_client_session_t *session,
                                     sdb_data_point_t *points,
                                     int count) {
   sdb_packet_t *request = sdb_write_request_create(series_id, points, count);
+  int send_status = sdb_packet_send_and_destroy(request, session->_sock);
 
-  if (!sdb_packet_send_and_destroy(request, session->_sock)) {
-    return 0;
+  if (send_status) {
+    return send_status;
   }
 
   sdb_packet_t *packet = sdb_packet_receive(session->_sock);
 
   if (packet == NULL) {
-    return 0;
+    return -1;
   }
 
   if (packet->header.type != SDB_WRITE_RESPONSE) {
     sdb_packet_destroy(packet);
-    return 0;
+    return -1;
   }
 
   sdb_write_response_t *response = (sdb_write_response_t *)packet->payload;
-  int result = response->code == SDB_RESPONSE_OK;
+  int result = response->code != SDB_RESPONSE_OK;
   sdb_packet_destroy(packet);
 
   return result;
@@ -76,7 +77,7 @@ sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t 
                                                            sdb_data_series_id_t series_id,
                                                            sdb_timestamp_t begin,
                                                            sdb_timestamp_t end) {
-  if (!sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), session->_sock)) {
+  if (sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), session->_sock)) {
     return NULL;
   }
 
