@@ -80,6 +80,19 @@ int main(int argc, char *argv[]) {
     printf("Total read: %d points\n", total_read);
   }
 
+  if (!strcmp("truncate", command)) {
+    shakadb_data_series_id_t series_id = (shakadb_data_series_id_t)atoi(argv[4]);
+
+    printf("truncating data series: %d\n", series_id);
+
+    if (shakadb_truncate_data_series(&session, series_id) == SHAKADB_RESULT_ERROR) {
+      fprintf(stderr, "Failed to read data points\n");
+      return -1;
+    }
+
+    printf("truncate successful\n");
+  }
+
   shakadb_session_close(&session);
   printf("Disconnected\n");
 
@@ -100,6 +113,7 @@ void sdb_print_usage() {
   printf("    command:          Command to be executed\n");
   printf("        write <series_id> <timestamp> <value>\n");
   printf("        read  <series_id> <begin> <end>\n");
+  printf("        truncate <series_id>\n");
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
   printf("\n");
