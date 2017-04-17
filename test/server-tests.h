@@ -19,5 +19,8 @@ void sdb_test_server_read_range(sdb_tests_context_t ctx);
 void sdb_test_server_read_range_with_multiple_series(sdb_tests_context_t ctx);
 void sdb_test_server_update(sdb_tests_context_t ctx);
 void sdb_test_server_update_in_two_sessions(sdb_tests_context_t ctx);
+void sdb_test_server_truncate_not_existing(sdb_tests_context_t ctx);
+void sdb_test_server_truncate_empty(sdb_tests_context_t ctx);
+void sdb_test_server_truncate_and_write(sdb_tests_context_t ctx);
 
 #endif  // TEST_SERVER_TESTS_H_
