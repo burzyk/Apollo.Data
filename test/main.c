@@ -84,6 +84,9 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_server_read_range_with_multiple_series);
   TEST(sdb_test_server_update);
   TEST(sdb_test_server_update_in_two_sessions);
+  TEST(sdb_test_server_truncate_not_existing);
+  TEST(sdb_test_server_truncate_empty);
+  TEST(sdb_test_server_truncate_and_write);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");

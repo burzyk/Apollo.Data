@@ -32,6 +32,7 @@
 void *sdb_server_worker_routine(void *data);
 void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
+void sdb_server_handle_truncate(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 
 sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, int points_per_packet, sdb_database_t *db) {
   sdb_server_t *server = (sdb_server_t *)sdb_alloc(sizeof(sdb_server_t));
@@ -87,7 +88,9 @@ void *sdb_server_worker_routine(void *data) {
             break;
           case SDB_WRITE_REQUEST:sdb_server_handle_write(server, client_socket, packet);
             break;
-          default: sdb_log_info("Unknown packet type");
+          case SDB_TRUNCATE_REQUEST:sdb_server_handle_truncate(server, client_socket, packet);
+            break;
+          default: sdb_log_info("Unknown packet type: %d", packet->header.type);
         }
 
         sdb_packet_destroy(packet);
@@ -161,10 +164,30 @@ void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, s
   }
 
   if (sdb_packet_send_and_destroy(
-      sdb_write_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
+      sdb_simple_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
       client_socket)) {
     sdb_log_debug("error sending the response");
   }
 
   sdb_log_debug("all points written");
 }
+
+void sdb_server_handle_truncate(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
+  sdb_truncate_request_t *request = (sdb_truncate_request_t *)packet->payload;
+  sdb_log_debug("processing truncate request: { series: %d }", request->data_series_id);
+
+  int status = sdb_database_truncate(server->_db, request->data_series_id);
+
+  if (status) {
+    sdb_log_error("failed to truncate data series: %d", request->data_series_id);
+  }
+
+  if (sdb_packet_send_and_destroy(
+      sdb_simple_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
+      client_socket)) {
+    sdb_log_debug("error sending the response");
+  }
+
+  sdb_log_debug("data series truncated");
+}
+

@@ -62,6 +62,7 @@ int shakadb_write_points(shakadb_session_t *session,
                          shakadb_data_series_id_t series_id,
                          shakadb_data_point_t *points,
                          int points_count);
+int shakadb_truncate_data_series(shakadb_session_t *session, shakadb_data_series_id_t series_id);
 int shakadb_read_points(shakadb_session_t *session,
                         shakadb_data_series_id_t series_id,
                         shakadb_timestamp_t begin,

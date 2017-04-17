@@ -483,5 +483,112 @@ void sdb_test_server_update_in_two_sessions(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
+void sdb_test_server_truncate_not_existing(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  status = shakadb_truncate_data_series(&session, SDB_EUR_USD_ID);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Error when truncating");
+
+  shakadb_data_points_iterator_t it = {};
+  status = shakadb_read_points(&session, SDB_EUR_USD_ID, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, &it);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
+
+  status = shakadb_data_points_iterator_next(&it);
+  sdb_assert(status == 0, "Data found in iterator")
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
+
+void sdb_test_server_truncate_empty(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_points_iterator_t it_1 = {};
+  status = shakadb_read_points(&session, SDB_EUR_USD_ID, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, &it_1);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
+
+  status = shakadb_data_points_iterator_next(&it_1);
+  sdb_assert(status == 0, "Data found in iterator")
+
+  status = shakadb_truncate_data_series(&session, SDB_EUR_USD_ID);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Error when truncating");
+
+  shakadb_data_points_iterator_t it_2 = {};
+  status = shakadb_read_points(&session, SDB_EUR_USD_ID, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, &it_2);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
+
+  status = shakadb_data_points_iterator_next(&it_2);
+  sdb_assert(status == 0, "Data found in iterator")
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
+
+void sdb_test_server_truncate_and_write(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  for (int i = 0; i < 3; i++) {
+    shakadb_data_point_t points[] = {
+        {.time=1 + i, .value = 1 + i},
+        {.time=2 + i, .value = 2 + i},
+        {.time=3 + i, .value = 3 + i},
+        {.time=4 + i, .value = 4 + i}
+    };
+
+    status = shakadb_write_points(&session, SDB_EUR_USD_ID, points, 4);
+    sdb_assert(status == SHAKADB_RESULT_OK, "Error when sending");
+
+    shakadb_data_points_iterator_t it = {};
+    status = shakadb_read_points(&session, SDB_EUR_USD_ID, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, &it);
+    sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
+
+    status = shakadb_data_points_iterator_next(&it);
+    sdb_assert(status != 0, "No data found in iterator")
+
+    sdb_assert(it.points_count == 4, "Invalid number of points");
+    sdb_assert(it.points[0].time == 1 + i, "Invalid time value");
+    sdb_assert(it.points[1].time == 2 + i, "Invalid time value");
+    sdb_assert(it.points[2].time == 3 + i, "Invalid time value");
+    sdb_assert(it.points[3].time == 4 + i, "Invalid time value");
+    sdb_assert(it.points[0].value == 1 + i, "Invalid value");
+    sdb_assert(it.points[1].value == 2 + i, "Invalid value");
+    sdb_assert(it.points[2].value == 3 + i, "Invalid value");
+    sdb_assert(it.points[3].value == 4 + i, "Invalid value");
+
+    status = shakadb_data_points_iterator_next(&it);
+    sdb_assert(status == 0, "Data found in iterator")
+
+    status = shakadb_truncate_data_series(&session, SDB_EUR_USD_ID);
+    sdb_assert(status == SHAKADB_RESULT_OK, "Error when truncating");
+  }
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
+
 
 // Write with invalid order

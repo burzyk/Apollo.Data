@@ -52,6 +52,13 @@ int shakadb_write_points(shakadb_session_t *session,
          : SHAKADB_RESULT_ERROR;
 }
 
+int shakadb_truncate_data_series(shakadb_session_t *session, shakadb_data_series_id_t series_id) {
+  sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
+  return !sdb_client_session_truncate_data_series(s, series_id)
+         ? SHAKADB_RESULT_OK
+         : SHAKADB_RESULT_ERROR;
+}
+
 int shakadb_read_points(shakadb_session_t *session,
                         shakadb_data_series_id_t series_id,
                         shakadb_timestamp_t begin,
