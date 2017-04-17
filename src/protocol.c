@@ -263,12 +263,14 @@ sdb_packet_t *sdb_packet_receive(sdb_socket_t socket) {
     case SDB_WRITE_REQUEST:packet->payload = sdb_write_request_deserialize(packet->_raw_payload, header.payload_size);
       break;
     case SDB_SIMPLE_RESPONSE:
-      packet->payload =
-          sdb_simple_response_deserialize(packet->_raw_payload, header.payload_size);
+      packet->payload = sdb_simple_response_deserialize(packet->_raw_payload, header.payload_size);
       break;
     case SDB_READ_REQUEST:packet->payload = sdb_read_request_deserialize(packet->_raw_payload, header.payload_size);
       break;
     case SDB_READ_RESPONSE:packet->payload = sdb_read_response_deserialize(packet->_raw_payload, header.payload_size);
+      break;
+    case SDB_TRUNCATE_REQUEST:
+      packet->payload = sdb_truncate_request_deserialize(packet->_raw_payload, header.payload_size);
       break;
     default: packet->payload = NULL;
   }
@@ -292,6 +294,8 @@ int sdb_packet_send(sdb_packet_t *packet, sdb_socket_t socket) {
     case SDB_READ_REQUEST:sdb_read_request_serialize((sdb_read_request_t *)packet->payload, socket);
       break;
     case SDB_READ_RESPONSE:sdb_read_response_serialize((sdb_read_response_t *)packet->payload, socket);
+      break;
+    case SDB_TRUNCATE_REQUEST:sdb_truncate_request_serialize((sdb_truncate_request_t *)packet->payload, socket);
       break;
     default: break;
   }
