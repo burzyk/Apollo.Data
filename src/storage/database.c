@@ -103,7 +103,7 @@ sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_
   }
 
   char file_name[SDB_FILE_MAX_LEN] = {0};
-  snprintf(file_name, SDB_FILE_MAX_LEN, "%s\\%d", db->_directory, series_id);
+  snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->_directory, series_id);
 
   sdb_log_info("loading time series: %d", series_id);
   return db->_series[db->_series_count++] = sdb_data_series_create(series_id, file_name, db->_points_per_chunk);
