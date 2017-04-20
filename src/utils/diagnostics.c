@@ -55,17 +55,19 @@ typedef struct sdb_log_s {
   sdb_mutex_t *lock;
   char log_file_name[SDB_FILE_MAX_LEN];
   FILE *output;
+  int verbose;
 } sdb_log_t;
 
 sdb_log_t *g_log = NULL;
 
 void sdb_log_write(const char *level, const char *format, va_list args);
 
-void sdb_log_init(const char *log_file_name) {
+void sdb_log_init(const char *log_file_name, int verbose) {
   g_log = (sdb_log_t *)sdb_alloc(sizeof(sdb_log_t));
   strncpy(g_log->log_file_name, log_file_name, SDB_FILE_MAX_LEN);
   g_log->lock = sdb_mutex_create();
   g_log->output = NULL;
+  g_log->verbose = verbose;
 }
 
 void sdb_log_close() {
@@ -96,6 +98,10 @@ void sdb_log_info(const char *format, ...) {
 }
 
 void sdb_log_debug(const char *format, ...) {
+  if (!g_log->verbose) {
+    return;
+  }
+
   va_list args;
   va_start(args, format);
   sdb_log_write("DEBUG", format, args);
