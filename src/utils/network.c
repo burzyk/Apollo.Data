@@ -31,13 +31,17 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <signal.h>
 
 #include "src/common.h"
+
+sdb_socket_t sdb_socket_create(int family, int type, int protocol);
+void sdb_socket_init(sdb_socket_t sock);
 
 sdb_socket_t sdb_socket_listen(int port, int backlog) {
   sdb_socket_t sock;
 
-  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+  if ((sock = sdb_socket_create(AF_INET, SOCK_STREAM, 0)) == -1) {
     return -1;
   }
 
@@ -72,7 +76,7 @@ sdb_socket_t sdb_socket_connect(const char *hostname, int port) {
   }
 
   for (struct addrinfo *rp = result; rp != NULL; rp = rp->ai_next) {
-    if ((sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) == -1) {
+    if ((sock = sdb_socket_create(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) == -1) {
       continue;
     }
 
@@ -122,5 +126,27 @@ void sdb_socket_close(sdb_socket_t socket) {
 }
 
 sdb_socket_t sdb_socket_accept(sdb_socket_t socket) {
-  return accept(socket, NULL, NULL);
+  sdb_socket_t sock = accept(socket, NULL, NULL);
+  sdb_socket_init(sock);
+
+  return sock;
+}
+
+sdb_socket_t sdb_socket_create(int family, int type, int protocol) {
+  signal(SIGPIPE, SIG_IGN);
+  sdb_socket_t sock = socket(family, type, protocol);
+  sdb_socket_init(sock);
+
+  return sock;
+}
+
+void sdb_socket_init(sdb_socket_t sock) {
+  if (sock == SDB_INVALID_SOCKET) {
+    return;
+  }
+
+  int option_value = 1;
+  if (setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, &option_value, sizeof(option_value)) < 0) {
+    die("unable to set SO_NOSIGPIPE on a socket");
+  }
 }

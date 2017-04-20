@@ -98,7 +98,7 @@ void sdb_log_info(const char *format, ...) {
 }
 
 void sdb_log_debug(const char *format, ...) {
-  if (!g_log->verbose) {
+  if (g_log == NULL || !g_log->verbose) {
     return;
   }
 

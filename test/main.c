@@ -87,6 +87,7 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_server_truncate_not_existing);
   TEST(sdb_test_server_truncate_empty);
   TEST(sdb_test_server_truncate_and_write);
+  TEST(sdb_test_server_no_sig_pipe_on_too_large_packet);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");
