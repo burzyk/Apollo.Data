@@ -607,6 +607,7 @@ void sdb_test_server_no_sig_pipe_on_too_large_packet(sdb_tests_context_t ctx) {
 
   shakadb_session_close(&session);
 
+  sdb_free(points);
   sdb_server_destroy(server);
   sdb_database_destroy(db);
 }
