@@ -35,6 +35,12 @@ int sdb_data_chunk_calculate_size(int points_count) {
 }
 
 sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points) {
+  sdb_file_t *file = sdb_file_open(file_name);
+
+  if (file == NULL) {
+    return NULL;
+  }
+
   sdb_data_chunk_t *chunk = (sdb_data_chunk_t *)sdb_alloc(sizeof(sdb_data_chunk_t));
   strncpy(chunk->_file_name, file_name, SDB_FILE_MAX_LEN);
   chunk->_file_offset = file_offset;
@@ -47,12 +53,6 @@ sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_off
 
   size_t points_size = sizeof(sdb_data_point_t) * max_points;
   sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(points_size);
-
-  sdb_file_t *file = sdb_file_open(file_name);
-
-  if (file == NULL) {
-    return NULL;
-  }
 
   sdb_file_seek(file, file_offset, SEEK_SET);
   sdb_file_read(file, points, points_size);
@@ -111,9 +111,9 @@ sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timesta
   return range;
 }
 
-void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count) {
+int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count) {
   if (count == 0) {
-    return;
+    return 0;
   }
 
   sdb_rwlock_wrlock(chunk->_lock);
@@ -124,8 +124,13 @@ void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t 
 
   sdb_file_t *file = sdb_file_open(chunk->_file_name);
   sdb_file_seek(file, chunk->_file_offset + offset * sizeof(sdb_data_point_t), SEEK_SET);
-  sdb_file_write(file, points, count * sizeof(sdb_data_point_t));
+  size_t write_status = sdb_file_write(file, points, count * sizeof(sdb_data_point_t));
   sdb_file_close(file);
+
+  if (!write_status) {
+    sdb_rwlock_unlock(chunk->_lock);
+    return -1;
+  }
 
   if (chunk->_cached_content != NULL) {
     memcpy(chunk->_cached_content + offset, points, count * sizeof(sdb_data_point_t));
@@ -141,4 +146,5 @@ void sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t 
   }
 
   sdb_rwlock_unlock(chunk->_lock);
+  return 0;
 }

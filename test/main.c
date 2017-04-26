@@ -71,6 +71,7 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_database_truncate);
   TEST(sdb_test_database_truncate_multiple);
   TEST(sdb_test_database_truncate_write_again);
+  TEST(sdb_test_database_failed_write);
 
   TEST(sdb_test_server_simple_initialization_test);
   TEST(sdb_test_server_connect);
@@ -88,6 +89,7 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_server_truncate_empty);
   TEST(sdb_test_server_truncate_and_write);
   TEST(sdb_test_server_no_sig_pipe_on_too_large_packet);
+  TEST(sdb_test_server_failed_write);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");

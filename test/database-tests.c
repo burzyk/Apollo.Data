@@ -337,3 +337,13 @@ void sdb_test_database_truncate_write_again(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
+void sdb_test_database_failed_write(sdb_tests_context_t ctx) {
+  sdb_database_t *db = sdb_database_create("/blah/blah", 3);
+  sdb_data_point_t points[] = {{.time = 1, .value = 13}};
+
+  int result = sdb_database_write(db, 12345, points, 1);
+  sdb_assert(result != 0, "write operation should fail");
+
+  sdb_database_destroy(db);
+}
+

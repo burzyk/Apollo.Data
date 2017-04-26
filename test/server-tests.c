@@ -611,5 +611,30 @@ void sdb_test_server_no_sig_pipe_on_too_large_packet(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
+void sdb_test_server_failed_write(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create("/blah/blah", 10);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_point_t points[] = {
+      {.time=1, .value = 1},
+      {.time=2, .value = 2},
+      {.time=3, .value = 3},
+      {.time=4, .value = 4}
+  };
+
+  status = shakadb_write_points(&session, SDB_EUR_GBP_ID, points, 4);
+  sdb_assert(status == SHAKADB_RESULT_ERROR, "Write should fail");
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
+
 
 // Write with invalid order

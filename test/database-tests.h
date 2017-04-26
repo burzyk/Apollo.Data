@@ -48,5 +48,7 @@ void sdb_test_database_read_with_limit(sdb_tests_context_t ctx);
 void sdb_test_database_truncate(sdb_tests_context_t ctx);
 void sdb_test_database_truncate_multiple(sdb_tests_context_t ctx);
 void sdb_test_database_truncate_write_again(sdb_tests_context_t ctx);
+void sdb_test_database_failed_write(sdb_tests_context_t ctx);
+
 
 #endif  // TEST_DATABASE_TESTS_H_

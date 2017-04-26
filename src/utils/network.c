@@ -145,8 +145,10 @@ void sdb_socket_init(sdb_socket_t sock) {
     return;
   }
 
+#ifdef __APPLE__
   int option_value = 1;
   if (setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, &option_value, sizeof(option_value)) < 0) {
     die("unable to set SO_NOSIGPIPE on a socket");
   }
+#endif
 }
