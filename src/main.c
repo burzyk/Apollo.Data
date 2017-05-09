@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <memory.h>
+#include <signal.h>
 
 #include "src/utils/threading.h"
 #include "src/storage/database.h"
