@@ -9,7 +9,7 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y rpm
 
-script: rake build_packages
+script: rake default
 
 env:
   global:
