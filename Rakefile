@@ -27,7 +27,7 @@ def run_python_tests()
     sh('PYTHONPATH=`pwd`/' + PYTHON_WRAPPER_DIR + ' pytest ' + PYTHON_WRAPPER_DIR + '/tests/*')
 end
 
-task :default => [:build_packages]
+task :default => [:build_packages, :run_integration_tests]
 
 task :init do
     puts "Initializing build ..."
