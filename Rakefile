@@ -14,7 +14,7 @@ def start_test_instance()
     FileUtils.rm_rf(INTEGRATION_TESTS_DATA_DIR) if Dir.exists?(INTEGRATION_TESTS_DATA_DIR)
     Dir.mkdir(INTEGRATION_TESTS_DATA_DIR)
 
-    sh(BINARIES_DIR + '/shakadb -d `pwd`/' + INTEGRATION_TESTS_DATA_DIR + ' &> /dev/null & echo $! > ' + PID_FILE)
+    sh('shakadb -d `pwd`/' + INTEGRATION_TESTS_DATA_DIR + ' &> /dev/null & echo $! > ' + PID_FILE)
 end
 
 def stop_test_instance()
@@ -61,6 +61,8 @@ task :stop_test_instance do
 end
 
 task :run_integration_tests do
+    sh('sudo cmake  --build ' + BINARIES_DIR + ' --target install')
+
     start_test_instance()
     sleep 1
 
