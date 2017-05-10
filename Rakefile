@@ -60,7 +60,7 @@ task :build_shakadb_package => [:build_binaries] do
 end
 
 task :build_pyshaka_package do
-    sh('sudo -H python3 -m pip install setuptools --upgrade')
+    sh('python3 -m pip install wheel')
     sh('cd ' + BINARIES_DIR + ' && python3 ' + PYTHON_WRAPPER_DIR + '/setup.py bdist_wheel --universal')
 end
 
