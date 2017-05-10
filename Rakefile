@@ -5,7 +5,6 @@ BUILD_DIR='./build'
 BINARIES_DIR=BUILD_DIR + '/bin'
 TESTS_DIR=BUILD_DIR + '/tests'
 INTEGRATION_TESTS_DATA_DIR=BUILD_DIR + '/integration-tests'
-PID_FILE=BUILD_DIR + '/pid'
 PYTHON_WRAPPER_DIR='./wrappers/python'
 
 def start_test_instance()
@@ -14,12 +13,12 @@ def start_test_instance()
     FileUtils.rm_rf(INTEGRATION_TESTS_DATA_DIR) if Dir.exists?(INTEGRATION_TESTS_DATA_DIR)
     Dir.mkdir(INTEGRATION_TESTS_DATA_DIR)
 
-    sh('shakadb -d $PWD/' + INTEGRATION_TESTS_DATA_DIR + ' &> /dev/null & echo $! > ' + PID_FILE)
+    sh('shakadb -d $PWD/' + INTEGRATION_TESTS_DATA_DIR + ' &> /dev/null &')
 end
 
 def stop_test_instance()
     puts "Stopping test instance ..."
-    sh('kill -s USR1 `cat ./build/pid`')
+    sh('killall shakadb -s USR1')
 end
 
 def run_python_tests()
