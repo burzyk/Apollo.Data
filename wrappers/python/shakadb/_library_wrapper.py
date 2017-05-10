@@ -37,7 +37,7 @@ def _get_lib():
 
     if _shakadb_lib is None:
         lib_name = 'libshakadbc.dylib' if sys.platform == 'darwin' else 'libshakadbc.so'
-        _shakadb_lib = cdll.LoadLibrary(lib_name)
+        _shakadb_lib = cdll.LoadLibrary('/usr/local/lib/' + lib_name)
 
     return _shakadb_lib
 

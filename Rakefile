@@ -14,7 +14,7 @@ def start_test_instance()
     FileUtils.rm_rf(INTEGRATION_TESTS_DATA_DIR) if Dir.exists?(INTEGRATION_TESTS_DATA_DIR)
     Dir.mkdir(INTEGRATION_TESTS_DATA_DIR)
 
-    sh('shakadb -d `pwd`/' + INTEGRATION_TESTS_DATA_DIR + ' &> /dev/null & echo $! > ' + PID_FILE)
+    sh('shakadb -d $PWD/' + INTEGRATION_TESTS_DATA_DIR + ' &> /dev/null & echo $! > ' + PID_FILE)
 end
 
 def stop_test_instance()
@@ -24,7 +24,7 @@ end
 
 def run_python_tests()
     sh('python3 -m pip install pytest')
-    sh('PYTHONPATH=`pwd`/' + PYTHON_WRAPPER_DIR + ' pytest ' + PYTHON_WRAPPER_DIR + '/tests/*.py')
+    sh('PYTHONPATH=$PWD/' + PYTHON_WRAPPER_DIR + ' pytest ' + PYTHON_WRAPPER_DIR + '/tests/*.py')
 end
 
 task :default => [:build_binaries, :run_tests]
