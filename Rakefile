@@ -23,11 +23,14 @@ def stop_test_instance()
 end
 
 def run_python_tests()
-    sh('pip install pytest')
-    sh('PYTHONPATH=`pwd`/' + PYTHON_WRAPPER_DIR + ' pytest ' + PYTHON_WRAPPER_DIR + '/tests/*')
+    sh('python3 -m pip install pytest')
+    sh('PYTHONPATH=`pwd`/' + PYTHON_WRAPPER_DIR + ' pytest ' + PYTHON_WRAPPER_DIR + '/tests/*.py')
 end
 
-task :default => [:build_packages, :run_integration_tests]
+task :default => [:build_binaries, :run_tests]
+
+task :build_debug => [:default]
+task :build_release => [:default, :run_integration_tests]
 
 task :init do
     puts "Initializing build ..."

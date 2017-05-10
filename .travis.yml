@@ -9,8 +9,9 @@ compiler:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y rpm
+  - sudo apt-get install -y python3-pip
 
-script: rake default
+script: rake build_$SDB_CONFIGURATION
 
 env:
   global:
