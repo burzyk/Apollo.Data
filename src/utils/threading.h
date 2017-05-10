@@ -45,6 +45,7 @@ typedef struct sdb_mutex_s {
 sdb_thread_t *sdb_thread_start(sdb_thread_routine_t routine, void *data);
 void sdb_thread_join_and_destroy(sdb_thread_t *thread);
 int sdb_thread_get_current_id();
+void sdb_thread_sleep(int milliseconds);
 
 sdb_rwlock_t *sdb_rwlock_create();
 void sdb_rwlock_rdlock(sdb_rwlock_t *lock);

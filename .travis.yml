@@ -1,6 +1,7 @@
 language: cpp
 
 dist: trusty
+sudo: required
 
 compiler:
   - clang
@@ -8,14 +9,16 @@ compiler:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y rpm
+  - sudo apt-get install -y python3-pip
+  - sudo apt-get install -y python-pip
 
-script: rake build_packages
+script: rake build_$SDB_CONFIGURATION
 
 env:
   global:
     - SDB_VERSION_MAJOR=0
-    - SDB_VERSION_MINOR=9
-    - SDB_VERSION_PATCH=4
+    - SDB_VERSION_MINOR=10
+    - SDB_VERSION_PATCH=1
     - SDB_BUILD=$TRAVIS_COMMIT
   matrix:
     - SDB_CONFIGURATION=debug
@@ -30,6 +33,7 @@ deploy:
     - ./build/bin/shakadb-*-Linux.deb
     - ./build/bin/shakadb-*-Linux.rpm
     - ./build/bin/shakadb-*-Linux.tar.gz
+    - ./build/bin/dist/pyshaka-*-py2.py3-none-any.whl
   skip_cleanup: true
   on:
     tags: true

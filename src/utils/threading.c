@@ -24,6 +24,9 @@
 //
 
 #include "src/utils/threading.h"
+
+#include <unistd.h>
+
 #include "src/utils/memory.h"
 #include "src/common.h"
 
@@ -46,6 +49,10 @@ void sdb_thread_join_and_destroy(sdb_thread_t *thread) {
 
 int sdb_thread_get_current_id() {
   return (int)pthread_self();
+}
+
+void sdb_thread_sleep(int milliseconds) {
+  usleep((useconds_t)milliseconds * 1000);
 }
 
 sdb_rwlock_t *sdb_rwlock_create() {

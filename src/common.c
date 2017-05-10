@@ -34,5 +34,6 @@ int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs) {
 
 void die(const char *message) {
   fprintf(stderr, "%s\n", message);
+  fflush(stderr);
   exit(-1);
 }

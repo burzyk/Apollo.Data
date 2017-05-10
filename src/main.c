@@ -27,11 +27,13 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <memory.h>
+#include <signal.h>
 
 #include "src/utils/threading.h"
 #include "src/storage/database.h"
 #include "src/server/server.h"
 #include "src/utils/diagnostics.h"
+#include "src/utils/memory.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -45,8 +47,19 @@
 #define SDB_CONFIG_DEFAULT_PORT 8487
 #define SDB_CONFIG_DEFAULT_LOG  "stdout"
 
+typedef struct sdb_control_info_s {
+  sdb_rwlock_t *_lock;
+  volatile int _is_running;
+} sdb_control_info_t;
+
+sdb_control_info_t *sdb_control_info_create();
+void sdb_control_info_destroy(sdb_control_info_t *info);
+int sdb_control_info_check_running(sdb_control_info_t *info);
+void sdb_control_info_signal_stop(sdb_control_info_t *info);
+
 typedef struct sdb_configuration_s {
   char log_file[SDB_FILE_MAX_LEN];
+  int log_verbose;
   char database_directory[SDB_FILE_MAX_LEN];
   int database_points_per_chunk;
   int server_port;
@@ -58,6 +71,9 @@ typedef struct sdb_configuration_s {
 void *sdb_master_thread_routine(void *data);
 void sdb_print_usage();
 int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]);
+void sdb_control_signal_handler(int sig);
+
+sdb_control_info_t *g_control = NULL;
 
 int main(int argc, char *argv[]) {
   sdb_configuration_t config = {};
@@ -67,7 +83,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  sdb_log_init(config.log_file);
+  sdb_log_init(config.log_file, config.log_verbose);
   sdb_log_info("========== Starting ShakaDB ==========");
   sdb_log_info("");
   sdb_log_info("    Version:   " SDB_VERSION);
@@ -78,11 +94,22 @@ int main(int argc, char *argv[]) {
   sdb_log_info("    log:       %s", config.log_file);
   sdb_log_info("");
 
+  g_control = sdb_control_info_create();
+  signal(SIGUSR1, sdb_control_signal_handler);
+
   sdb_thread_t *master_thread = sdb_thread_start(sdb_master_thread_routine, &config);
   sdb_thread_join_and_destroy(master_thread);
 
+  sdb_control_info_destroy(g_control);
+
   sdb_log_info("========== ShakaDB Stopped  ==========");
   return 0;
+}
+
+void sdb_control_signal_handler(int sig) {
+  if (sig == SIGUSR1) {
+    sdb_control_info_signal_stop(g_control);
+  }
 }
 
 void *sdb_master_thread_routine(void *data) {
@@ -100,7 +127,11 @@ void *sdb_master_thread_routine(void *data) {
       db);
 
   sdb_log_info("initialization complete");
-  while (getc(stdin) != 'q') {}
+
+  while (sdb_control_info_check_running(g_control)) {
+    sdb_thread_sleep(200);
+  }
+
   sdb_log_info("interrupt received");
 
   sdb_log_info("closing server ...");
@@ -116,6 +147,7 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
   config->server_port = SDB_CONFIG_DEFAULT_PORT;
   strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_FILE_MAX_LEN);
   strncpy(config->log_file, SDB_CONFIG_DEFAULT_LOG, SDB_FILE_MAX_LEN);
+  config->log_verbose = 0;
   config->server_backlog = 20;
   config->server_max_clients = 10;
   config->server_points_per_packet = 655360;
@@ -127,10 +159,11 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
         {"port", required_argument, 0, 'p'},
         {"directory", required_argument, 0, 'd'},
         {"log", required_argument, 0, 'l'},
-        {"help", no_argument, 0, 'h'}
+        {"help", no_argument, 0, 'h'},
+        {"verbose", no_argument, 0, 'v'}
     };
 
-    int c = getopt_long(argc, argv, "hp:d:l:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "vhp:d:l:", long_options, &option_index);
     if (c == -1) {
       return 0;
     }
@@ -144,6 +177,8 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
         break;
       case 'h':sdb_print_usage();
         exit(0);
+      case 'v':config->log_verbose = 1;
+        break;
       default:return -1;
     }
   }
@@ -167,7 +202,35 @@ void sdb_print_usage() {
   printf("    --log, -l:        log file name. If 'stdout' is specified the application\n");
   printf("                      will write all logs to standard output\n");
   printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
+  printf("    --verbose, -v:    logs debug information\n");
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
   printf("\n");
+}
+
+sdb_control_info_t *sdb_control_info_create() {
+  sdb_control_info_t *info = (sdb_control_info_t *)sdb_alloc(sizeof(sdb_control_info_t));
+  info->_is_running = 1;
+  info->_lock = sdb_rwlock_create();
+
+  return info;
+}
+
+void sdb_control_info_destroy(sdb_control_info_t *info) {
+  sdb_rwlock_destroy(info->_lock);
+  sdb_free(info);
+}
+
+int sdb_control_info_check_running(sdb_control_info_t *info) {
+  sdb_rwlock_rdlock(info->_lock);
+  int status = info->_is_running;
+  sdb_rwlock_unlock(info->_lock);
+
+  return status;
+}
+
+void sdb_control_info_signal_stop(sdb_control_info_t *info) {
+  sdb_rwlock_wrlock(info->_lock);
+  info->_is_running = 0;
+  sdb_rwlock_unlock(info->_lock);
 }

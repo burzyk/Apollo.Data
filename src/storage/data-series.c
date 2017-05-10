@@ -35,15 +35,16 @@
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk);
 void sdb_data_series_delete_chunks(sdb_data_series_t *series);
 sdb_data_chunk_t *sdb_data_series_create_empty_chunk(sdb_data_series_t *series);
-void sdb_data_series_write_chunk(sdb_data_series_t *series,
+int sdb_data_series_write_chunk(sdb_data_series_t *series,
+                                sdb_data_chunk_t *chunk,
+                                sdb_data_point_t *points,
+                                int count);
+int sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
                                  sdb_data_chunk_t *chunk,
+                                 int position,
                                  sdb_data_point_t *points,
                                  int count);
-void sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
-                                  sdb_data_chunk_t *chunk,
-                                  int position,
-                                  sdb_data_point_t *points,
-                                  int count);
+int sdb_data_series_write_internal(sdb_data_series_t *series, sdb_data_point_t *points, int count);
 
 sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id, const char *file_name, int points_per_chunk) {
   sdb_data_series_t *series = (sdb_data_series_t *)sdb_alloc(sizeof(sdb_data_series_t));
@@ -77,11 +78,15 @@ void sdb_data_series_destroy(sdb_data_series_t *series) {
   sdb_free(series);
 }
 
-int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count) {
-  sdb_rwlock_wrlock(series->_series_lock);
-
+int sdb_data_series_write_internal(sdb_data_series_t *series, sdb_data_point_t *points, int count) {
   if (series->_chunks_count == 0) {
     sdb_data_chunk_t *chunk = sdb_data_series_create_empty_chunk(series);
+
+    if (chunk == NULL) {
+      sdb_log_error("failed to create initial data chunk");
+      return -1;
+    }
+
     sdb_data_series_register_chunk(series, chunk);
   }
 
@@ -92,7 +97,10 @@ int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, i
     first_current++;
   }
 
-  sdb_data_series_write_chunk(series, last_chunk, points + first_current, count - first_current);
+  if (sdb_data_series_write_chunk(series, last_chunk, points + first_current, count - first_current)) {
+    sdb_log_error("failed to append to last chunk");
+    return -1;
+  }
 
   if (first_current != 0) {
     int start = 0;
@@ -106,16 +114,25 @@ int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, i
       }
 
       if (stop != start) {
-        sdb_data_series_write_chunk(series, chunk, points + start, stop - start);
+        if (sdb_data_series_write_chunk(series, chunk, points + start, stop - start)) {
+          sdb_log_error("failed to write to chunk: [%" PRIu64 ", %" PRIu64 ")", chunk->begin, chunk->end);
+          return -1;
+        }
       }
 
       start = stop;
     }
   }
 
+  return 0;
+}
+
+int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count) {
+  sdb_rwlock_wrlock(series->_series_lock);
+  int result = sdb_data_series_write_internal(series, points, count);
   sdb_rwlock_unlock(series->_series_lock);
 
-  return 0;
+  return result;
 }
 
 int sdb_data_series_truncate(sdb_data_series_t *series) {
@@ -186,16 +203,18 @@ void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t 
   series->_chunks_count++;
 }
 
-void sdb_data_series_write_chunk(sdb_data_series_t *series,
-                                 sdb_data_chunk_t *chunk,
-                                 sdb_data_point_t *points,
-                                 int count) {
+int sdb_data_series_write_chunk(sdb_data_series_t *series,
+                                sdb_data_chunk_t *chunk,
+                                sdb_data_point_t *points,
+                                int count) {
   if (count == 0) {
-    return;
+    return 0;
   }
 
+  int write_result = -1;
+
   if (chunk->end < points[0].time) {
-    sdb_data_series_chunk_memcpy(series, chunk, chunk->number_of_points, points, count);
+    write_result = sdb_data_series_chunk_memcpy(series, chunk, chunk->number_of_points, points, count);
   } else {
     int buffer_count = count + chunk->number_of_points;
     sdb_data_points_range_t range = sdb_data_chunk_read(chunk, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
@@ -221,38 +240,61 @@ void sdb_data_series_write_chunk(sdb_data_series_t *series,
       }
     }
 
-    sdb_data_series_chunk_memcpy(series, chunk, 0, buffer + duplicated_count, buffer_count - duplicated_count);
+    write_result =
+        sdb_data_series_chunk_memcpy(series, chunk, 0, buffer + duplicated_count, buffer_count - duplicated_count);
     sdb_free(buffer);
   }
+
+  return write_result;
 }
 
-void sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
-                                  sdb_data_chunk_t *chunk,
-                                  int position,
-                                  sdb_data_point_t *points,
-                                  int count) {
+int sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
+                                 sdb_data_chunk_t *chunk,
+                                 int position,
+                                 sdb_data_point_t *points,
+                                 int count) {
   int to_write = sdb_min(count, chunk->max_points - position);
-  sdb_data_chunk_write(chunk, position, points, to_write);
+
+  if (sdb_data_chunk_write(chunk, position, points, to_write)) {
+    return -1;
+  }
+
   count -= to_write;
   points += to_write;
 
   while (count != 0) {
-    chunk = sdb_data_series_create_empty_chunk(series);
+    if ((chunk = sdb_data_series_create_empty_chunk(series)) == NULL) {
+      return -1;
+    }
+
     to_write = sdb_min(count, chunk->max_points);
-    sdb_data_chunk_write(chunk, 0, points, to_write);
+
+    if (sdb_data_chunk_write(chunk, 0, points, to_write)) {
+      sdb_data_chunk_destroy(chunk);
+      return -1;
+    }
+
     sdb_data_series_register_chunk(series, chunk);
     count -= to_write;
     points += to_write;
   }
+
+  return 0;
 }
 
 sdb_data_chunk_t *sdb_data_series_create_empty_chunk(sdb_data_series_t *series) {
+  sdb_file_t *file = sdb_file_open(series->_file_name);
+
+  if (file == NULL) {
+    sdb_log_error("unable to open chunk file: %s", series->_file_name);
+    return NULL;
+  }
+
+  sdb_file_seek(file, 0, SEEK_END);
+
   int buffer_size = series->_points_per_chunk / 2;
   void *buffer = sdb_alloc(buffer_size);
   int to_allocate = sdb_data_chunk_calculate_size(series->_points_per_chunk);
-
-  sdb_file_t *file = sdb_file_open(series->_file_name);
-  sdb_file_seek(file, 0, SEEK_END);
 
   while (to_allocate > 0) {
     int to_write = sdb_min(to_allocate, buffer_size);

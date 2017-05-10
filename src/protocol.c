@@ -26,6 +26,7 @@
 #include "src/protocol.h"
 
 #include <string.h>
+#include <src/utils/diagnostics.h>
 
 #include "src/utils/memory.h"
 
@@ -247,6 +248,7 @@ sdb_packet_t *sdb_packet_receive(sdb_socket_t socket) {
   }
 
   if (header.payload_size > SDB_PACKET_MAX_LEN) {
+    sdb_log_info("received to large packet: %d, limit: %d", header.payload_size, SDB_PACKET_MAX_LEN);
     return NULL;
   }
 
@@ -254,7 +256,10 @@ sdb_packet_t *sdb_packet_receive(sdb_socket_t socket) {
   packet->header = header;
   packet->_raw_payload = sdb_alloc(header.payload_size);
 
-  if (sdb_socket_receive(socket, packet->_raw_payload, header.payload_size) != header.payload_size) {
+  int payload_read = sdb_socket_receive(socket, packet->_raw_payload, header.payload_size);
+
+  if (payload_read != header.payload_size) {
+    sdb_log_info("unable to read the payload, expected: %d, actual: %d", header.payload_size, payload_read);
     sdb_packet_destroy(packet);
     return NULL;
   }
@@ -276,6 +281,7 @@ sdb_packet_t *sdb_packet_receive(sdb_socket_t socket) {
   }
 
   if (packet->payload == NULL) {
+    sdb_log_info("unrecognized packet type: %d", header.type);
     sdb_packet_destroy(packet);
     return NULL;
   }

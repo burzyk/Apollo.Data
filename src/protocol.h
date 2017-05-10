@@ -45,7 +45,7 @@ typedef char sdb_response_code_t;
 #define SDB_SIMPLE_RESPONSE  ((sdb_packet_type_t)2)
 #define SDB_TRUNCATE_REQUEST  ((sdb_packet_type_t)5)
 
-#define SDB_PACKET_MAX_LEN  6553600
+#define SDB_PACKET_MAX_LEN  65536000
 
 typedef struct sdb_packet_header_s {
   sdb_packet_type_t type;
