@@ -59,7 +59,7 @@ task :build_shakadb_package => [:build_binaries] do
     sh('cd ' + BINARIES_DIR + ' && cpack')
 end
 
-task :build_pyshaka_package do
+task :build_pyshaka_package => [:init] do
     sh('python3 -m pip install wheel')
     sh('cd ' + PYTHON_WRAPPER_DIR + ' && python3 setup.py bdist_wheel')
     sh('cp ' + PYTHON_WRAPPER_DIR + '/dist/pyshaka-*-py2.py3-none-any.whl ' + BINARIES_DIR)
