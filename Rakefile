@@ -1,11 +1,12 @@
 require 'rake'
 require 'fileutils'
 
-BUILD_DIR='./build'
+THIS_DIR=File.dirname(__FILE__)
+BUILD_DIR=THIS_DIR + '/build'
 BINARIES_DIR=BUILD_DIR + '/bin'
 TESTS_DIR=BUILD_DIR + '/tests'
 INTEGRATION_TESTS_DATA_DIR=BUILD_DIR + '/integration-tests'
-PYTHON_WRAPPER_DIR='./wrappers/python'
+PYTHON_WRAPPER_DIR=THIS_DIR + '/wrappers/python'
 
 def start_test_instance()
     puts "Starting test instance ..."
@@ -13,7 +14,7 @@ def start_test_instance()
     FileUtils.rm_rf(INTEGRATION_TESTS_DATA_DIR) if Dir.exists?(INTEGRATION_TESTS_DATA_DIR)
     Dir.mkdir(INTEGRATION_TESTS_DATA_DIR)
 
-    sh('shakadb -d $PWD/' + INTEGRATION_TESTS_DATA_DIR + ' &> /dev/null &')
+    sh('shakadb -d ' + INTEGRATION_TESTS_DATA_DIR + ' &> /dev/null &')
 end
 
 def stop_test_instance()
@@ -22,14 +23,18 @@ def stop_test_instance()
 end
 
 def run_python_tests()
+    sh('python -m pip install pytest')
     sh('python3 -m pip install pytest')
-    sh('PYTHONPATH=$PWD/' + PYTHON_WRAPPER_DIR + ' pytest ' + PYTHON_WRAPPER_DIR + '/tests/*.py')
+
+    sh('PYTHONPATH=' + PYTHON_WRAPPER_DIR + ' python -m pytest ' + PYTHON_WRAPPER_DIR + '/tests/*.py')
+    sh('PYTHONPATH=' + PYTHON_WRAPPER_DIR + ' python3 -m pytest ' + PYTHON_WRAPPER_DIR + '/tests/*.py')
 end
 
 task :default => [:build_binaries, :run_tests]
 
-task :build_debug => [:default]
-task :build_release => [:default, :run_integration_tests]
+task :build_common => [:default, :build_packages]
+task :build_debug => [:build_common]
+task :build_release => [:build_common, :run_integration_tests]
 
 task :init do
     puts "Initializing build ..."
@@ -50,9 +55,15 @@ task :run_tests => [:build_binaries] do
     sh(BINARIES_DIR + '/shakadb.test ' + TESTS_DIR)
 end
 
-task :build_packages => [:run_tests] do
-    sh('cd ' + BINARIES_DIR + ' && cpack && cd ../..')
+task :build_shakadb_package => [:build_binaries] do
+    sh('cd ' + BINARIES_DIR + ' && cpack')
 end
+
+task :build_pyshaka_package do
+    sh('cd ' + BINARIES_DIR + ' && python ' + PYTHON_WRAPPER_DIR + '/setup.py bdist_wheel --universal')
+end
+
+task :build_packages => [:build_shakadb_package, :build_pyshaka_package]
 
 task :start_test_instance do
     start_test_instance()
@@ -62,7 +73,7 @@ task :stop_test_instance do
     stop_test_instance()
 end
 
-task :run_integration_tests do
+task :run_integration_tests => [:build_binaries] do
     sh('sudo cmake  --build ' + BINARIES_DIR + ' --target install')
 
     start_test_instance()

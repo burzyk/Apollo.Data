@@ -1,6 +1,6 @@
 from pytest import raises
 
-import shakadb
+import pyshaka
 
 
 class TestConstants:
@@ -8,22 +8,22 @@ class TestConstants:
 
 
 def test_server_running():
-    with shakadb.Session('localhost', 8487) as session:
+    with pyshaka.Session('localhost', 8487) as session:
         session.truncate(TestConstants.USD_AUD)
 
 
 def test_invalid_server():
-    with raises(shakadb.ShakaDbError):
-        shakadb.Session('blah.blah', 8487)
+    with raises(pyshaka.ShakaDbError):
+        pyshaka.Session('blah.blah', 8487)
 
 
 def test_server_read_and_write_with_iterator():
-    with shakadb.Session('localhost', 8487) as session:
+    with pyshaka.Session('localhost', 8487) as session:
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         it = session.read(
             TestConstants.USD_AUD,
-            shakadb.Constants.SHAKADB_MIN_TIMESTAMP,
-            shakadb.Constants.SHAKADB_MAX_TIMESTAMP)
+            pyshaka.Constants.SHAKADB_MIN_TIMESTAMP,
+            pyshaka.Constants.SHAKADB_MAX_TIMESTAMP)
         points = []
 
         while it.next() != 0:
@@ -37,7 +37,7 @@ def test_server_read_and_write_with_iterator():
 
 
 def test_server_read_and_write_with_iterator_and_limit():
-    with shakadb.Session('localhost', 8487) as session:
+    with pyshaka.Session('localhost', 8487) as session:
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         it = session.read(TestConstants.USD_AUD, 0, 2)
         points = []
@@ -51,12 +51,12 @@ def test_server_read_and_write_with_iterator_and_limit():
 
 
 def test_server_read_and_write():
-    with shakadb.Session('localhost', 8487) as session:
+    with pyshaka.Session('localhost', 8487) as session:
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         points = session.read_all(
             TestConstants.USD_AUD,
-            shakadb.Constants.SHAKADB_MIN_TIMESTAMP,
-            shakadb.Constants.SHAKADB_MAX_TIMESTAMP)
+            pyshaka.Constants.SHAKADB_MIN_TIMESTAMP,
+            pyshaka.Constants.SHAKADB_MAX_TIMESTAMP)
 
         assert len(points) == 2
         assert points[0][0] == 1
@@ -66,7 +66,7 @@ def test_server_read_and_write():
 
 
 def test_server_read_and_write_and_limit():
-    with shakadb.Session('localhost', 8487) as session:
+    with pyshaka.Session('localhost', 8487) as session:
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         points = session.read_all(TestConstants.USD_AUD, 0, 2)
 
@@ -76,7 +76,7 @@ def test_server_read_and_write_and_limit():
 
 
 def test_server_truncate_test():
-    with shakadb.Session('localhost', 8487) as session:
+    with pyshaka.Session('localhost', 8487) as session:
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         points = session.read_all(TestConstants.USD_AUD, 0, 2)
 

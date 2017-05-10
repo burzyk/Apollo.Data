@@ -10,6 +10,7 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y rpm
   - sudo apt-get install -y python3-pip
+  - sudo apt-get install -y python-pip
 
 script: rake build_$SDB_CONFIGURATION
 
@@ -32,6 +33,7 @@ deploy:
     - ./build/bin/shakadb-*-Linux.deb
     - ./build/bin/shakadb-*-Linux.rpm
     - ./build/bin/shakadb-*-Linux.tar.gz
+    - ./build/bin/dist/pyshaka-*-py2.py3-none-any.whl
   skip_cleanup: true
   on:
     tags: true

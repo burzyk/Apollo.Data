@@ -1,4 +1,4 @@
-from .shakadb import Session, DataPointsIterator
+from .pyshaka import Session, DataPointsIterator
 from .common import ShakaDbError, Constants
 
 __title__ = 'shakadb'
