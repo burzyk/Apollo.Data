@@ -63,21 +63,21 @@ def shakadb_session_close(session):
     _get_lib().shakadb_session_close(session)
 
 
-@SafeInvoke
+@SafeInvoke()
 def shakadb_write_points(session, series_id, points, points_count):
     return _get_lib().shakadb_write_points(session, series_id, points, points_count)
 
 
-@SafeInvoke
+@SafeInvoke()
 def shakadb_truncate_data_series(session, series_id):
     return _get_lib().shakadb_truncate_data_series(session, series_id)
 
 
-@SafeInvoke
+@SafeInvoke()
 def shakadb_read_points(session, series_id, begin, end, iterator):
     return _get_lib().shakadb_read_points(session, series_id, begin, end, iterator)
 
 
-@SafeInvoke
+@SafeInvoke()
 def shakadb_data_points_iterator_next(iterator):
     return _get_lib().shakadb_data_points_iterator_next(iterator)
