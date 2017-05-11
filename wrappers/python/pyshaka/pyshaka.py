@@ -1,7 +1,7 @@
 from ctypes import byref
 
 from .common import SessionClosedError
-from ._library_wrapper import (
+from .library_wrapper import (
     shakadb_data_points_iterator_next,
     shakadb_session_open,
     shakadb_session_close,
