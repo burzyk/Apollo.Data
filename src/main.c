@@ -103,6 +103,8 @@ int main(int argc, char *argv[]) {
   sdb_control_info_destroy(g_control);
 
   sdb_log_info("========== ShakaDB Stopped  ==========");
+  sdb_log_close();
+
   return 0;
 }
 

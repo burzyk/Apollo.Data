@@ -146,9 +146,7 @@ void sdb_log_write(const char *level, const char *format, va_list args) {
           level,
           line);
 
-  if (!strcmp(level, "ERROR")) {
-    fflush(g_log->output);
-  }
+  fflush(g_log->output);
 
   sdb_mutex_unlock(g_log->lock);
 }

@@ -19,7 +19,7 @@ end
 
 def stop_test_instance()
     puts "Stopping test instance ..."
-    sh('killall shakadb -s USR1')
+    sh('killall shakadb -USR1')
 end
 
 def run_python_tests()
