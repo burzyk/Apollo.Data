@@ -1,5 +1,6 @@
 from ctypes import byref
 
+from .common import SessionClosedError
 from ._library_wrapper import (
     shakadb_data_points_iterator_next,
     shakadb_session_open,
@@ -10,6 +11,16 @@ from ._library_wrapper import (
     SdbDataPointsIterator,
     shakadb_read_points,
     SdbSession)
+
+
+def ensure_session_open(func):
+    def do_ensure_session_open(self, *args, **kwargs):
+        if not self.is_open():
+            raise SessionClosedError
+
+        return func(self, *args, **kwargs)
+
+    return do_ensure_session_open
 
 
 class DataPointsIterator:
@@ -37,9 +48,12 @@ class Session:
         self._session = SdbSession()
         shakadb_session_open(byref(self._session), hostname.encode('ASCII'), port)
 
+    @ensure_session_open
     def close(self):
         shakadb_session_close(byref(self._session))
+        self._session = None
 
+    @ensure_session_open
     def write(self, series_id, points):
         points_count = len(points)
         points_raw = (SdbDataPoint * points_count)()
@@ -49,14 +63,17 @@ class Session:
 
         shakadb_write_points(byref(self._session), series_id, points_raw, points_count)
 
+    @ensure_session_open
     def truncate(self, series_id):
         shakadb_truncate_data_series(byref(self._session), series_id)
 
+    @ensure_session_open
     def read(self, series_id, begin, end):
         it = SdbDataPointsIterator()
         shakadb_read_points(byref(self._session), series_id, begin, end, byref(it))
         return DataPointsIterator(it)
 
+    @ensure_session_open
     def read_all(self, series_id, begin, end):
         result = []
         it = self.read(series_id, begin, end)
@@ -70,3 +87,6 @@ class Session:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
+
+    def is_open(self):
+        return self._session is not None

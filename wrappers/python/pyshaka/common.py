@@ -8,3 +8,8 @@ class Constants:
 class ShakaDbError(Exception):
     def __init__(self, message):
         self.message = message
+
+
+class SessionClosedError(ShakaDbError):
+    def __init__(self):
+        self.message = 'The session has been closed'

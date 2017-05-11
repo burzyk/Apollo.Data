@@ -75,6 +75,10 @@ task :stop_test_instance do
     stop_test_instance()
 end
 
+task :run_python_tests do
+    run_python_tests()
+end
+
 task :run_integration_tests => [:build_binaries] do
     sh('sudo cmake  --build ' + BINARIES_DIR + ' --target install')
 
