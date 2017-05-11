@@ -1,5 +1,5 @@
 from .pyshaka import Session, DataPointsIterator
-from .common import ShakaDbError, Constants
+from .common import ShakaDbError, Constants, SessionClosedError
 
 __title__ = 'shakadb'
 __version__ = '0.0.1'

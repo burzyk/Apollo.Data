@@ -19,7 +19,7 @@ end
 
 def stop_test_instance()
     puts "Stopping test instance ..."
-    sh('killall shakadb -s USR1')
+    sh('killall shakadb -USR1')
 end
 
 def run_python_tests()
@@ -73,6 +73,10 @@ end
 
 task :stop_test_instance do
     stop_test_instance()
+end
+
+task :run_python_tests do
+    run_python_tests()
 end
 
 task :run_integration_tests => [:build_binaries] do

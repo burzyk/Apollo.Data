@@ -17,6 +17,13 @@ def test_invalid_server():
         pyshaka.Session('blah.blah', 8487)
 
 
+def test_reuse_closed_session():
+    with raises(pyshaka.SessionClosedError):
+        s = pyshaka.Session('localhost', 8487)
+        s.close()
+        s.read_all(0, 0, 100)
+
+
 def test_server_read_and_write_with_iterator():
     with pyshaka.Session('localhost', 8487) as session:
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
@@ -91,4 +98,6 @@ def test_server_truncate_test():
 
 
 if __name__ == '__main__':
-    test_server_read_and_write_with_iterator()
+    s = pyshaka.Session('localhost', 8487)
+    s.close()
+    s.close()
