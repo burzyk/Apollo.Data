@@ -49,7 +49,7 @@ def _get_lib():
         try:
             _shakadb_lib = cdll.LoadLibrary(lib_name)
         except OSError:
-            _shakadb_lib = cdll.LoadLibrary('/usr/local/lib' + lib_name)
+            _shakadb_lib = cdll.LoadLibrary('/usr/local/lib/' + lib_name)
 
     return _shakadb_lib
 
