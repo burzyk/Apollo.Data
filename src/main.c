@@ -203,7 +203,7 @@ void sdb_print_usage() {
   printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
   printf("    --log, -l:        log file name. If 'stdout' is specified the application\n");
   printf("                      will write all logs to standard output\n");
-  printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
+  printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_LOG);
   printf("    --verbose, -v:    logs debug information\n");
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
