@@ -1,0 +1,15 @@
+namespace ShakaDB.Client.Wrapper
+{
+    using System;
+    using System.Runtime.InteropServices;
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct SdbDataPointsIterator
+    {
+        public IntPtr RawPoints;
+
+        public int PointsCount;
+
+        public IntPtr Iterator;
+    }
+}
