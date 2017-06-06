@@ -7,23 +7,23 @@
         private const string ShakaLib = "libshakadbc";
 
         [DllImport(ShakaLib, EntryPoint = "shakadb_session_open")]
-        public extern int ShakaDbSessionOpen(ref SdbSession session, string hostname, int port);
+        public static extern int ShakaDbSessionOpen(ref SdbSession session, string hostname, int port);
 
         [DllImport(ShakaLib, EntryPoint = "shakadb_session_close")]
-        public extern void ShakaDbSessionClose(ref SdbSession session);
+        public static extern void ShakaDbSessionClose(ref SdbSession session);
 
         [DllImport(ShakaLib, EntryPoint = "shakadb_write_points")]
-        public extern int ShakaDbWritePoints(
+        public static extern int ShakaDbWritePoints(
             ref SdbSession session,
             uint seriesId,
             SdbDataPoint[] points,
             int pointCount);
 
         [DllImport(ShakaLib, EntryPoint = "shakadb_truncate_data_series")]
-        public extern int ShakaDbTruncateDataSeries(ref SdbSession session, uint seriesId);
+        public static extern int ShakaDbTruncateDataSeries(ref SdbSession session, uint seriesId);
 
         [DllImport(ShakaLib, EntryPoint = "shakadb_read_points")]
-        public extern int ShakaDbReadPoints(
+        public static extern int ShakaDbReadPoints(
             ref SdbSession session,
             uint seriesId,
             ulong begin,
@@ -31,6 +31,6 @@
             ref SdbDataPointsIterator iterator);
 
         [DllImport(ShakaLib, EntryPoint = "shakadb_data_points_iterator_next")]
-        public extern int ShakaDbDataPointsIteratorNext(ref SdbDataPointsIterator iterator);
+        public static extern int ShakaDbDataPointsIteratorNext(ref SdbDataPointsIterator iterator);
     }
 }

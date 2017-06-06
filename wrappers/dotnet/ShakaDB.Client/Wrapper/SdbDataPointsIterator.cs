@@ -11,5 +11,15 @@ namespace ShakaDB.Client.Wrapper
         public int PointsCount;
 
         public IntPtr Iterator;
+
+        public SdbDataPoint ReadAt(int offset)
+        {
+            if (offset >= PointsCount)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            }
+
+            return Marshal.PtrToStructure<SdbDataPoint>(RawPoints + Marshal.SizeOf<SdbDataPoint>() * offset);
+        }
     }
 }
