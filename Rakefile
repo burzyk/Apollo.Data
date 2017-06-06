@@ -74,6 +74,8 @@ task :build_dotnet_package => [:init] do
     puts "building dotnet package ..."
 
     version = "#{ENV['SDB_VERSION_MAJOR']}.#{ENV['SDB_VERSION_MINOR']}.#{ENV['SDB_VERSION_PATCH']}"
+    sh("dotnet restore #{DOTNET_WRAPPER_DIR}/ShakaDB.Client")
+    sh("dotnet restore #{DOTNET_WRAPPER_DIR}/ShakaDB.Client.Tests")
     sh("dotnet pack -o #{BINARIES_DIR} /p:PackageVersion=#{version} #{DOTNET_WRAPPER_DIR}/ShakaDB.Client")
 end
 
