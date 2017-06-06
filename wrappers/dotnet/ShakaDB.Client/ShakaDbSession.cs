@@ -6,33 +6,6 @@ namespace ShakaDB.Client
     using System.Linq;
     using Wrapper;
 
-
-//    class Session:
-//        def __init__(self, hostname, port):
-//        self.hostname = hostname
-//        self.port = port
-//        self._session = SdbSession()
-//        shakadb_session_open(byref(self._session), hostname.encode('ASCII'), port)
-//
-//
-//
-//    @ensure_session_open
-//    def read(self, series_id, begin, end):
-//    it = SdbDataPointsIterator()
-//    shakadb_read_points(byref(self._session), series_id, begin, end, byref(it))
-//    return DataPointsIterator(it)
-//
-//    @ensure_session_open
-//    def read_all(self, series_id, begin, end):
-//    result = []
-//    it = self.read(series_id, begin, end)
-//
-//    while it.next() != 0:
-//    result += it.points()
-//    return result
-//
-
-
     public class ShakaDbSession : IDisposable
     {
         private SdbSession _session;
@@ -54,7 +27,7 @@ namespace ShakaDB.Client
 
         public bool IsDisposed { get; private set; }
 
-        public ShakaDbSession Open(string hostname, int port)
+        public static ShakaDbSession Open(string hostname, int port)
         {
             var session = new ShakaDbSession(hostname, port);
             CallWrapper(() => SdbWrapper.ShakaDbSessionOpen(ref session._session, hostname, port), "Failed to connect");
@@ -73,6 +46,8 @@ namespace ShakaDB.Client
 
         public void Write(uint seriesId, IEnumerable<ShakaDbDataPoint> dataPoints)
         {
+            EnsureNotDisposed();
+
             var content = dataPoints
                 .Select(x => new SdbDataPoint {Time = x.Timestamp, Value = x.Value})
                 .ToArray();
@@ -82,17 +57,23 @@ namespace ShakaDB.Client
                 $"Failed to write data to {seriesId}");
         }
 
-        public IEnumerable<ShakaDbDataPoint> Read(uint seriesId, ulong begin, ulong end)
+        public IEnumerable<ShakaDbDataPoint> Read(uint seriesId, ulong? begin = null, ulong? end = null)
         {
+            EnsureNotDisposed();
+
+            begin = begin ?? Constants.ShakadbMinTimestamp;
+            end = end ?? Constants.ShakadbMaxTimestamp;
+
             var iterator = new SdbDataPointsIterator();
             CallWrapper(
-                () => SdbWrapper.ShakaDbReadPoints(ref _session, seriesId, begin, end, ref iterator),
+                () => SdbWrapper.ShakaDbReadPoints(ref _session, seriesId, begin.Value, end.Value, ref iterator),
                 $"Failed to read data: {seriesId}");
             return new PointsEnumerable(iterator);
         }
 
         public void Truncate(uint seriesId)
         {
+            EnsureNotDisposed();
             CallWrapper(
                 () => SdbWrapper.ShakaDbTruncateDataSeries(ref _session, seriesId),
                 $"Failed to truncate the series: {seriesId}");
@@ -165,7 +146,7 @@ namespace ShakaDB.Client
                 }
 
                 var point = _iterator.ReadAt(_offset++);
-                Current = new ShakaDbDataPoint {Timestamp = point.Time, Value = point.Value};
+                Current = new ShakaDbDataPoint(point.Time, point.Value);
                 return true;
             }
 
