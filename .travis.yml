@@ -11,6 +11,10 @@ before_install:
   - sudo apt-get install -y rpm
   - sudo apt-get install -y python3-pip
   - sudo apt-get install -y python-pip
+  - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
+  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
+  - sudo apt-get update
+  - sudo apt-get install dotnet-dev-1.0.4
 
 script: rake build_$SDB_CONFIGURATION
 
@@ -20,6 +24,7 @@ env:
     - SDB_VERSION_MINOR=10
     - SDB_VERSION_PATCH=4
     - SDB_BUILD=$TRAVIS_COMMIT
+    - LD_LIBRARY_PATH=/usr/local/lib/
   matrix:
     - SDB_CONFIGURATION=debug
     - SDB_CONFIGURATION=release
@@ -34,6 +39,7 @@ deploy:
     - ./build/bin/shakadb-*-Linux.rpm
     - ./build/bin/shakadb-*-Linux.tar.gz
     - ./build/bin/pyshaka-*-py2.py3-none-any.whl
+    - ./build/bin/ShakaDB.Client.*.nupkg
   skip_cleanup: true
   on:
     tags: true

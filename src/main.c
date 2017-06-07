@@ -96,6 +96,8 @@ int main(int argc, char *argv[]) {
 
   g_control = sdb_control_info_create();
   signal(SIGUSR1, sdb_control_signal_handler);
+  signal(SIGTERM, sdb_control_signal_handler);
+  signal(SIGINT, sdb_control_signal_handler);
 
   sdb_thread_t *master_thread = sdb_thread_start(sdb_master_thread_routine, &config);
   sdb_thread_join_and_destroy(master_thread);
@@ -109,9 +111,7 @@ int main(int argc, char *argv[]) {
 }
 
 void sdb_control_signal_handler(int sig) {
-  if (sig == SIGUSR1) {
-    sdb_control_info_signal_stop(g_control);
-  }
+  sdb_control_info_signal_stop(g_control);
 }
 
 void *sdb_master_thread_routine(void *data) {
@@ -203,7 +203,7 @@ void sdb_print_usage() {
   printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
   printf("    --log, -l:        log file name. If 'stdout' is specified the application\n");
   printf("                      will write all logs to standard output\n");
-  printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
+  printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_LOG);
   printf("    --verbose, -v:    logs debug information\n");
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");

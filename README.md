@@ -1,4 +1,4 @@
-ShakaDB ![build-badge](https://travis-ci.org/burzyk/ShakaDB.svg?branch=master)
+ShakaDB ![build-badge](https://travis-ci.org/burzyk/shakadb.svg?branch=master)
 ============================
 
 ShakaDB is a simple, fast and lightweight time series database. It has been developed to hold financial data, but can be used to store any time series data.
