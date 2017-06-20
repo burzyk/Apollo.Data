@@ -24,5 +24,8 @@ void sdb_test_server_truncate_empty(sdb_tests_context_t ctx);
 void sdb_test_server_truncate_and_write(sdb_tests_context_t ctx);
 void sdb_test_server_no_sig_pipe_on_too_large_packet(sdb_tests_context_t ctx);
 void sdb_test_server_failed_write(sdb_tests_context_t ctx);
+void sdb_test_server_write_series_out_of_range(sdb_tests_context_t ctx);
+void sdb_test_server_read_series_out_of_range(sdb_tests_context_t ctx);
+void sdb_test_server_truncate_series_out_of_range(sdb_tests_context_t ctx);
 
 #endif  // TEST_SERVER_TESTS_H_

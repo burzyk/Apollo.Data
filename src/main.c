@@ -115,7 +115,10 @@ void *sdb_master_thread_routine(void *data) {
   sdb_configuration_t *config = (sdb_configuration_t *)data;
 
   sdb_log_info("initializing database ...");
-  sdb_database_t *db = sdb_database_create(config->database_directory, config->database_points_per_chunk);
+  sdb_database_t *db = sdb_database_create(
+      config->database_directory,
+      config->database_points_per_chunk,
+      SDB_DATA_SERIES_MAX);
 
   sdb_log_info("initializing server ...");
   sdb_server_t *server = sdb_server_create(

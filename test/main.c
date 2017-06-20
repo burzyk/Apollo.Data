@@ -90,6 +90,9 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_server_truncate_and_write);
   TEST(sdb_test_server_no_sig_pipe_on_too_large_packet);
   TEST(sdb_test_server_failed_write);
+  TEST(sdb_test_server_write_series_out_of_range);
+  TEST(sdb_test_server_read_series_out_of_range);
+  TEST(sdb_test_server_truncate_series_out_of_range);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");

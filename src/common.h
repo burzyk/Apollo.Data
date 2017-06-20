@@ -34,9 +34,17 @@ typedef uint32_t sdb_data_series_id_t;
 #define SDB_TIMESTAMP_MIN ((sdb_timestamp_t)0)
 #define SDB_TIMESTAMP_MAX ((sdb_timestamp_t)UINT64_MAX)
 
+#ifndef SDB_FILE_MAX_LEN
 #define SDB_FILE_MAX_LEN  1024
+#endif
 
-#define SDB_REALLOC_GROW_INCREMENT 65536
+#ifndef SDB_DATA_SERIES_MAX
+#define SDB_DATA_SERIES_MAX  (1<<20)
+#endif
+
+#ifndef SDB_REALLOC_GROW_INCREMENT
+#define SDB_REALLOC_GROW_INCREMENT  65536
+#endif
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"

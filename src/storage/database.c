@@ -34,29 +34,30 @@ sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_ser
 sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
 sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
 
-sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk) {
+sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk, int max_series) {
   sdb_assert(points_per_chunk > 1, "points_per_chunk must be greater than one")
 
   sdb_database_t *db = (sdb_database_t *)sdb_alloc(sizeof(sdb_database_t));
   strncpy(db->_directory, directory, SDB_FILE_MAX_LEN);
   db->_lock = sdb_rwlock_create();
-  db->_max_series_count = 0;
+  db->_max_series_count = max_series;
+  db->_series = (sdb_data_series_t **)sdb_alloc(sizeof(sdb_data_series_t *) * db->_max_series_count);
   db->_points_per_chunk = points_per_chunk;
-  db->_series = NULL;
-  db->_series_count = 0;
 
   return db;
 }
 
 void sdb_database_destroy(sdb_database_t *db) {
-  if (db->_series != NULL) {
-    for (int i = 0; i < db->_series_count; i++) {
-      sdb_log_info("closing time series: %d", db->_series[i]->id);
-      sdb_data_series_destroy(db->_series[i]);
+  for (int i = 0; i < db->_max_series_count; i++) {
+    if (db->_series[i] == NULL) {
+      continue;
     }
 
-    sdb_free(db->_series);
+    sdb_log_info("closing time series: %d", db->_series[i]->id);
+    sdb_data_series_destroy(db->_series[i]);
   }
+
+  sdb_free(db->_series);
 
   sdb_rwlock_destroy(db->_lock);
   sdb_free(db);
@@ -64,12 +65,12 @@ void sdb_database_destroy(sdb_database_t *db) {
 
 int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
   sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
-  return sdb_data_series_write(series, points, count);
+  return series == NULL ? -1 : sdb_data_series_write(series, points, count);
 }
 
 int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id) {
   sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
-  return sdb_data_series_truncate(series);
+  return series == NULL ? -1 : sdb_data_series_truncate(series);
 }
 
 sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
@@ -77,36 +78,29 @@ sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_
                                             sdb_timestamp_t end,
                                             int max_points) {
   sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
-  return sdb_data_series_read(series, begin, end, max_points);
+  return series == NULL
+         ? sdb_data_points_reader_create(0)
+         : sdb_data_series_read(series, begin, end, max_points);
 }
 
 sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
-  if (db->_series == NULL) {
+  if (db->_series == NULL || series_id >= db->_max_series_count) {
     return NULL;
   }
 
-  sdb_data_series_t *series = NULL;
-
-  for (int i = 0; i < db->_series_count && series == NULL; i++) {
-    if (db->_series[i]->id == series_id) {
-      series = db->_series[i];
-    }
-  }
-
-  return series;
+  return db->_series[series_id];
 }
 
 sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
-  if (db->_series_count + 1 > db->_max_series_count) {
-    db->_max_series_count += SDB_REALLOC_GROW_INCREMENT;
-    db->_series = (sdb_data_series_t **)sdb_realloc(db->_series, sizeof(sdb_data_series_t *) * db->_max_series_count);
+  if (series_id >= db->_max_series_count) {
+    return NULL;
   }
 
   char file_name[SDB_FILE_MAX_LEN] = {0};
   snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->_directory, series_id);
 
   sdb_log_info("loading time series: %d", series_id);
-  return db->_series[db->_series_count++] = sdb_data_series_create(series_id, file_name, db->_points_per_chunk);
+  return db->_series[series_id] = sdb_data_series_create(series_id, file_name, db->_points_per_chunk);
 }
 
 sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
