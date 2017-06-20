@@ -55,6 +55,8 @@ typedef struct sdb_test_configuration_s {
 int sdb_run_unit_tests(const char *root_directory);
 void sdb_test_configuration_parse(sdb_test_configuration_t *configuration, int argc, char *argv[]);
 int sdb_run_stress_tests(const char *hostname, int port);
+void sdb_stress_test_read_write(const char *hostname, int port);
+void sdb_stress_test_random_read(const char *hostname, int port);
 
 int main(int argc, char *argv[]) {
   sdb_test_configuration_t config;
@@ -117,6 +119,73 @@ int sdb_run_stress_tests(const char *hostname, int port) {
   srand(time(NULL));
   sdb_log_init(0);
 
+  // sdb_stress_test_read_write(hostname, port);
+  sdb_stress_test_random_read(hostname, port);
+
+  printf("==================== Tests finished ===================\n");
+
+  return 0;
+}
+
+void sdb_stress_test_random_read(const char *hostname, int port) {
+  int max_tests = 1000;
+  int max_reads = 100;
+  int points_batch_size = 1000000;
+  int points_batch_count = 10;
+  int read_count = 100000;
+  int total_points = points_batch_count * points_batch_size;
+  shakadb_data_point_t *points = (shakadb_data_point_t *)sdb_alloc(sizeof(shakadb_data_point_t) * points_batch_size);
+  sdb_stopwatch_t *sw;
+
+  while (max_tests--) {
+    sdb_log_info("Connecting to server ...");
+    shakadb_session_t session;
+    sdb_assert(shakadb_session_open(&session, hostname, port) == SHAKADB_RESULT_OK, "Failed to connect")
+
+    int series = rand() % 1000000;
+    sdb_log_info("Testing series: %d", series);
+
+    sdb_assert(shakadb_truncate_data_series(&session, series) == SHAKADB_RESULT_OK, "Failed to truncate data")
+
+    sdb_log_info("Seeding database ...");
+
+    for (int i = 0; i < points_batch_count; i++) {
+      for (shakadb_timestamp_t j = 0; j < points_batch_size; j++) {
+        points[i].time = i * points_batch_size + j;
+        points[i].value = j;
+      }
+
+      sdb_assert(
+          shakadb_write_points(&session, series, points, points_batch_size) == SHAKADB_RESULT_OK,
+          "Failed to write data");
+    }
+
+    for (int i = 0; i < max_reads; i++) {
+      int begin = rand() % total_points - read_count;
+      begin = sdb_max(begin, 1);
+      int end = begin + read_count;
+
+      sdb_log_info("> Reading: [%d, %d)", begin, end);
+
+      sw = sdb_stopwatch_start();
+      shakadb_data_points_iterator_t it;
+
+      sdb_assert(shakadb_read_points(&session, series, begin, end, &it) == SHAKADB_RESULT_OK, "Failed to read data");
+
+      while (shakadb_data_points_iterator_next(&it)) {
+      }
+
+      sdb_log_info("> Read: [%d, %d) in: %fs", begin, end, sdb_stopwatch_stop_and_destroy(sw));
+    }
+
+    sdb_log_info("Closing session ...");
+    shakadb_session_close(&session);
+  }
+
+  sdb_free(points);
+}
+
+void sdb_stress_test_read_write(const char *hostname, int port) {
   int max_tests = 1000;
   int max_reads = 10;
   int points_count = 10000;
@@ -186,10 +255,6 @@ int sdb_run_stress_tests(const char *hostname, int port) {
     points_count = 10000;
     shakadb_session_close(&session);
   }
-
-  printf("==================== Tests finished ===================\n");
-
-  return 0;
 }
 
 int sdb_run_unit_tests(const char *root_directory) {
