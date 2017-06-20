@@ -52,9 +52,6 @@ float sdb_stopwatch_stop_and_destroy(sdb_stopwatch_t *stopwatch) {
 }
 
 typedef struct sdb_log_s {
-  sdb_mutex_t *lock;
-  char log_file_name[SDB_FILE_MAX_LEN];
-  FILE *output;
   int verbose;
 } sdb_log_t;
 
@@ -62,11 +59,8 @@ sdb_log_t *g_log = NULL;
 
 void sdb_log_write(const char *level, const char *format, va_list args);
 
-void sdb_log_init(const char *log_file_name, int verbose) {
+void sdb_log_init(int verbose) {
   g_log = (sdb_log_t *)sdb_alloc(sizeof(sdb_log_t));
-  strncpy(g_log->log_file_name, log_file_name, SDB_FILE_MAX_LEN);
-  g_log->lock = sdb_mutex_create();
-  g_log->output = NULL;
   g_log->verbose = verbose;
 }
 
@@ -75,11 +69,6 @@ void sdb_log_close() {
     return;
   }
 
-  if (g_log->output != stdout) {
-    fclose(g_log->output);
-  }
-
-  sdb_mutex_destroy(g_log->lock);
   sdb_free(g_log);
 }
 
@@ -113,18 +102,6 @@ void sdb_log_write(const char *level, const char *format, va_list args) {
     return;
   }
 
-  sdb_mutex_lock(g_log->lock);
-
-  if (g_log->output == NULL) {
-    g_log->output = strcmp(g_log->log_file_name, "stdout") == 0
-                    ? stdout
-                    : fopen(g_log->log_file_name, "a+");
-
-    if (g_log->output == NULL) {
-      die("Unable to open log file");
-    }
-  }
-
   char line[SDB_LOG_LINE_MAX_LEN] = {0};
   vsnprintf(line, SDB_LOG_LINE_MAX_LEN, format, args);
 
@@ -133,7 +110,7 @@ void sdb_log_write(const char *level, const char *format, va_list args) {
   struct tm now;
   localtime_r(&tick.tv_sec, &now);
 
-  fprintf(g_log->output,
+  fprintf(stderr,
           "%d/%02d/%02d %02d:%02d:%02d.%03lu [%08X] [%s]: %s\n",
           now.tm_year + 1900,
           now.tm_mon + 1,
@@ -146,7 +123,5 @@ void sdb_log_write(const char *level, const char *format, va_list args) {
           level,
           line);
 
-  fflush(g_log->output);
-
-  sdb_mutex_unlock(g_log->lock);
+  fflush(stderr);
 }

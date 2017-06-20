@@ -38,7 +38,7 @@ typedef struct sdb_stopwatch_s {
 sdb_stopwatch_t *sdb_stopwatch_start();
 float sdb_stopwatch_stop_and_destroy(sdb_stopwatch_t *stopwatch);
 
-void sdb_log_init(const char *log_file_name, int verbose);
+void sdb_log_init(int verbose);
 void sdb_log_close();
 void sdb_log_error(const char *format, ...);
 void sdb_log_info(const char *format, ...);
