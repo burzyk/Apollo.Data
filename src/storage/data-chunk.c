@@ -95,23 +95,17 @@ sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timesta
   }
 
   sdb_data_points_range_t range = {.points = NULL, .number_of_points = 0};
+  sdb_data_point_t begin_element = {.time=begin};
+  sdb_data_point_t end_element = {.time=end};
+  int count = chunk->number_of_points;
+  int elem_size = sizeof(sdb_data_point_t);
+  sdb_find_predicate cmp = (sdb_find_predicate)sdb_data_point_compare;
 
-  if (begin <= chunk->begin && chunk->end < end) {
-    range.points = chunk->_cached_content;
-    range.number_of_points = chunk->number_of_points;
-  } else {
-    sdb_data_point_t begin_element = {.time=begin};
-    sdb_data_point_t end_element = {.time=end};
-    int count = chunk->number_of_points;
-    int elem_size = sizeof(sdb_data_point_t);
-    sdb_find_predicate cmp = (sdb_find_predicate)sdb_data_point_compare;
+  int begin_index = sdb_find(chunk->_cached_content, elem_size, count, &begin_element, cmp);
+  int end_index = sdb_find(chunk->_cached_content, elem_size, count, &end_element, cmp);
 
-    int begin_index = sdb_find(chunk->_cached_content, elem_size, count, &begin_element, cmp);
-    int end_index = sdb_find(chunk->_cached_content, elem_size, count, &end_element, cmp);
-
-    range.number_of_points = end_index - begin_index;
-    range.points = range.number_of_points == 0 ? NULL : chunk->_cached_content + begin_index;
-  }
+  range.number_of_points = end_index - begin_index;
+  range.points = range.number_of_points == 0 ? NULL : chunk->_cached_content + begin_index;
 
   sdb_rwlock_unlock(chunk->_lock);
   return range;

@@ -45,6 +45,8 @@ int sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
                                  sdb_data_point_t *points,
                                  int count);
 int sdb_data_series_write_internal(sdb_data_series_t *series, sdb_data_point_t *points, int count);
+int sdb_data_series_chunk_compare_begin(sdb_timestamp_t *begin, sdb_data_chunk_t **chunk);
+int sdb_data_series_chunk_compare_end(sdb_timestamp_t *end, sdb_data_chunk_t **chunk);
 
 sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id, const char *file_name, int points_per_chunk) {
   sdb_data_series_t *series = (sdb_data_series_t *)sdb_alloc(sizeof(sdb_data_series_t));
@@ -146,6 +148,14 @@ int sdb_data_series_truncate(sdb_data_series_t *series) {
   return result;
 }
 
+int sdb_data_series_chunk_compare_begin(sdb_timestamp_t *begin, sdb_data_chunk_t **chunk) {
+  return *begin == (*chunk)->end ? 0 : *begin < (*chunk)->end ? -1 : 1;
+}
+
+int sdb_data_series_chunk_compare_end(sdb_timestamp_t *end, sdb_data_chunk_t **chunk) {
+  return *end == (*chunk)->begin ? 0 : *end < (*chunk)->begin ? -1 : 1;
+}
+
 sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                sdb_timestamp_t begin,
                                                sdb_timestamp_t end,
@@ -157,8 +167,14 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
   int ranges_count = 0;
   int total_points = 0;
 
-  // TODO (pburzynski): refactor to binary search
-  for (int i = 0; i < series->_chunks_count && total_points < max_points; i++) {
+  int element_size = sizeof(sdb_data_chunk_t *);
+  sdb_find_predicate begin_predicate = (sdb_find_predicate)sdb_data_series_chunk_compare_begin;
+  sdb_find_predicate end_predicate = (sdb_find_predicate)sdb_data_series_chunk_compare_end;
+
+  int begin_index = sdb_find(series->_chunks, element_size, series->_chunks_count, &begin, begin_predicate);
+  int end_index = sdb_find(series->_chunks, element_size, series->_chunks_count, &end, end_predicate);
+
+  for (int i = begin_index; i < end_index && total_points < max_points; i++) {
     sdb_data_chunk_t *chunk = series->_chunks[i];
     sdb_data_points_range_t range = sdb_data_chunk_read(chunk, begin, end);
 

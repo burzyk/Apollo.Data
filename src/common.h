@@ -59,7 +59,7 @@ typedef int (*sdb_find_predicate)(void *, void *);
 
 int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs);
 
-int sdb_find(void *elements, int element_size, int elements_count, void *elem, sdb_find_predicate predicate);
+int sdb_find(void *elements, int element_size, int elements_count, void *data, sdb_find_predicate predicate);
 
 void die(const char *message);
 

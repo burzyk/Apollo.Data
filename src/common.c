@@ -32,8 +32,8 @@ int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs) {
   return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;
 }
 
-int sdb_find(void *elements, int element_size, int elements_count, void *elem, sdb_find_predicate predicate) {
-  if (elements == NULL || element_size == 0 || elements_count == 0 || elem == NULL) {
+int sdb_find(void *elements, int element_size, int elements_count, void *data, sdb_find_predicate predicate) {
+  if (elements == NULL || element_size == 0 || elements_count == 0 || data == NULL) {
     return -1;
   }
 
@@ -41,9 +41,17 @@ int sdb_find(void *elements, int element_size, int elements_count, void *elem, s
   int left = 0;
   int right = elements_count;
 
+  if (predicate(data, ptr) < 0) {
+    return 0;
+  }
+
+  if (predicate(data, ptr + (elements_count - 1) * element_size) > 0) {
+    return elements_count;
+  }
+
   while (left < right) {
     int mid = (right + left) / 2;
-    int cmp = predicate(elem, ptr + mid * element_size);
+    int cmp = predicate(data, ptr + mid * element_size);
 
     if (cmp < 0) {
       right = mid;
