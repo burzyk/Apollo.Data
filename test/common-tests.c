@@ -46,7 +46,7 @@ void sdb_test_search_left_out(sdb_tests_context_t ctx) {
 void sdb_test_search_right_out(sdb_tests_context_t ctx) {
   int array[] = {4, 5, 6, 7, 8, 111};
   int elem = 200;
-  sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 5, "Expected 5");
+  sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 6, "Expected 6");
 }
 
 void sdb_test_search_left_approx(sdb_tests_context_t ctx) {
@@ -77,4 +77,10 @@ void sdb_test_search_odd(sdb_tests_context_t ctx) {
   int array[] = {4, 50, 60, 70, 80, 111, 1000};
   int elem = 111;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 5, "Expected 5");
+}
+
+void sdb_test_search_duplicates(sdb_tests_context_t ctx) {
+  int array[] = {1, 1, 1, 4, 4, 4, 4, 4};
+  int elem = 3;
+  sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 3, "Expected 3");
 }

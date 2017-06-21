@@ -39,7 +39,7 @@ int sdb_find(void *elements, int element_size, int elements_count, void *elem, s
 
   char *ptr = elements;
   int left = 0;
-  int right = elements_count - 1;
+  int right = elements_count;
 
   while (left < right) {
     int mid = (right + left) / 2;

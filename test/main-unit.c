@@ -90,6 +90,7 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_search_exactly);
   TEST(sdb_test_search_even);
   TEST(sdb_test_search_odd);
+  TEST(sdb_test_search_duplicates);
 
   TEST(sdb_test_database_simple_initialization_test);
   TEST(sdb_test_database_write_and_read_all);
