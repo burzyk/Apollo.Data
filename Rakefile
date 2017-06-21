@@ -57,7 +57,7 @@ end
 
 task :run_tests => [:build_binaries] do
     puts "running tests ..."
-    sh(BINARIES_DIR + '/shakadb.test ' + TESTS_DIR)
+    sh(BINARIES_DIR + '/shakadb.test --directory ' + TESTS_DIR)
 end
 
 task :build_shakadb_package => [:build_binaries] do
