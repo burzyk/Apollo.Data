@@ -20,45 +20,21 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 14/04/2017.
+// Created by Pawel Burzynski on 19/01/2017.
 //
 
-#include "src/common.h"
+#ifndef TEST_COMMON_TESTS_H_
+#define TEST_COMMON_TESTS_H_
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "test/framework.h"
 
-int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs) {
-  return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;
-}
+void sdb_test_search_empty(sdb_tests_context_t ctx);
+void sdb_test_search_left_out(sdb_tests_context_t ctx);
+void sdb_test_search_right_out(sdb_tests_context_t ctx);
+void sdb_test_search_left_approx(sdb_tests_context_t ctx);
+void sdb_test_search_right_approx(sdb_tests_context_t ctx);
+void sdb_test_search_exactly(sdb_tests_context_t ctx);
+void sdb_test_search_even(sdb_tests_context_t ctx);
+void sdb_test_search_odd(sdb_tests_context_t ctx);
 
-int sdb_find(void *elements, int element_size, int elements_count, void *elem, sdb_find_predicate predicate) {
-  if (elements == NULL || element_size == 0 || elements_count == 0 || elem == NULL) {
-    return -1;
-  }
-
-  char *ptr = elements;
-  int left = 0;
-  int right = elements_count - 1;
-
-  while (left < right) {
-    int mid = (right + left) / 2;
-    int cmp = predicate(elem, ptr + mid * element_size);
-
-    if (cmp < 0) {
-      right = mid;
-    } else if (cmp > 0) {
-      left = mid + 1;
-    } else {
-      return mid;
-    }
-  }
-
-  return left;
-}
-
-void die(const char *message) {
-  fprintf(stderr, "%s\n", message);
-  fflush(stderr);
-  exit(-1);
-}
+#endif  // TEST_COMMON_TESTS_H_

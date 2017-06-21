@@ -31,6 +31,7 @@
 #include "test/framework.h"
 #include "test/database-tests.h"
 #include "test/server-tests.h"
+#include "test/common-tests.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -40,8 +41,8 @@
 #define SDB_BUILD "<COMMIT_ID>"
 #endif
 
-#define SDB_TEST_MODE_UNIT "unit_tests"
-#define SDB_TEST_MODE_STRESS "stress_tests"
+#define SDB_TEST_MODE_UNIT "unit"
+#define SDB_TEST_MODE_STRESS "stress"
 
 #define TEST(test_case) result |= sdb_tests_session_run(session, #test_case, test_case);
 
@@ -61,7 +62,7 @@ void sdb_stress_test_random_read(const char *hostname, int port);
 int main(int argc, char *argv[]) {
   sdb_test_configuration_t config;
 
-  strcpy(config.mode, SDB_TEST_MODE_STRESS);
+  strcpy(config.mode, SDB_TEST_MODE_UNIT);
   strcpy(config.directory, "/Users/pburzynski/shakadb-test/data/test-stuff");
   config.port = 8487;
   strcpy(config.hostname, "localhost");
@@ -81,10 +82,10 @@ void sdb_test_configuration_parse(sdb_test_configuration_t *config, int argc, ch
   while (1) {
     int option_index = 0;
     static struct option long_options[] = {
-        {"mode", optional_argument, 0, 'm'},
-        {"directory", optional_argument, 0, 'd'},
-        {"port", optional_argument, 0, 'p'},
-        {"hostname", optional_argument, 0, 'h'}
+        {"mode", required_argument, 0, 'm'},
+        {"directory", required_argument, 0, 'd'},
+        {"port", required_argument, 0, 'p'},
+        {"hostname", required_argument, 0, 'h'}
     };
 
     int c = getopt_long(argc, argv, "m:d:p:h:", long_options, &option_index);
@@ -119,7 +120,7 @@ int sdb_run_stress_tests(const char *hostname, int port) {
   srand(time(NULL));
   sdb_log_init(0);
 
-  // sdb_stress_test_read_write(hostname, port);
+  //sdb_stress_test_read_write(hostname, port);
   sdb_stress_test_random_read(hostname, port);
 
   printf("==================== Tests finished ===================\n");
@@ -131,7 +132,7 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
   int max_tests = 1000;
   int max_reads = 100;
   int points_batch_size = 1000000;
-  int points_batch_count = 10;
+  int points_batch_count = 100;
   int read_count = 100000;
   int total_points = points_batch_count * points_batch_size;
   shakadb_data_point_t *points = (shakadb_data_point_t *)sdb_alloc(sizeof(shakadb_data_point_t) * points_batch_size);
@@ -147,18 +148,21 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
 
     sdb_assert(shakadb_truncate_data_series(&session, series) == SHAKADB_RESULT_OK, "Failed to truncate data")
 
+    sw = sdb_stopwatch_start();
     sdb_log_info("Seeding database ...");
 
     for (int i = 0; i < points_batch_count; i++) {
       for (shakadb_timestamp_t j = 0; j < points_batch_size; j++) {
-        points[i].time = i * points_batch_size + j;
-        points[i].value = j;
+        points[j].time = i * points_batch_size + j + 100;
+        points[j].value = j + 100;
       }
 
       sdb_assert(
           shakadb_write_points(&session, series, points, points_batch_size) == SHAKADB_RESULT_OK,
           "Failed to write data");
     }
+
+    sdb_log_info("> Seeded with: %d in: %fs", total_points, sdb_stopwatch_stop_and_destroy(sw));
 
     for (int i = 0; i < max_reads; i++) {
       int begin = rand() % total_points - read_count;
@@ -268,6 +272,15 @@ int sdb_run_unit_tests(const char *root_directory) {
   printf("\n");
   printf("    Directory: %s\n", root_directory);
   printf("\n");
+
+  TEST(sdb_test_search_empty);
+  TEST(sdb_test_search_left_out);
+  TEST(sdb_test_search_right_out);
+  TEST(sdb_test_search_left_approx);
+  TEST(sdb_test_search_right_approx);
+  TEST(sdb_test_search_exactly);
+  TEST(sdb_test_search_even);
+  TEST(sdb_test_search_odd);
 
   TEST(sdb_test_database_simple_initialization_test);
   TEST(sdb_test_database_write_and_read_all);
