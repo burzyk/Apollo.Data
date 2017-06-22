@@ -56,8 +56,7 @@ sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name,
   chunk->number_of_points = 0;
   chunk->_lock = sdb_rwlock_create();
   chunk->_cache = cache;
-  chunk->_cache_consumer.consumer = NULL;
-  chunk->_cache_consumer.info = NULL;
+  chunk->_cache_entry = NULL;
 
   size_t points_size = sizeof(sdb_data_point_t) * max_points;
   sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(points_size);
@@ -102,8 +101,8 @@ sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_times
       chunk->_cached_content = (sdb_data_point_t *)sdb_alloc(cached_content_size);
       allocated = cached_content_size;
 
-      if (chunk->_cache_consumer.consumer == NULL) {
-        chunk->_cache_consumer = sdb_cache_manager_register_consumer(chunk->_cache, chunk);
+      if (chunk->_cache_entry == NULL) {
+        chunk->_cache_entry = sdb_cache_manager_register_consumer(chunk->_cache, chunk);
       }
 
       sdb_file_t *file = sdb_file_open(chunk->_file_name);
@@ -130,11 +129,11 @@ sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_times
 
   sdb_rwlock_unlock(chunk->_lock);
 
-  sdb_cache_manager_update(chunk->_cache, chunk->_cache_consumer);
-
   if (allocated != 0) {
-    sdb_cache_manager_allocate(chunk->_cache, chunk->_cache_consumer, allocated);
+    sdb_cache_manager_allocate(chunk->_cache, chunk->_cache_entry, allocated);
   }
+
+  sdb_cache_manager_update(chunk->_cache, chunk->_cache_entry);
 
   return reader;
 }
@@ -183,6 +182,7 @@ void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk) {
   if (chunk->_cached_content != NULL) {
     sdb_free(chunk->_cached_content);
     chunk->_cached_content = NULL;
+    chunk->_cache_entry = NULL;
 
     sdb_log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> cache cleared",
                   chunk->_file_name,
@@ -191,6 +191,4 @@ void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk) {
   }
 
   sdb_rwlock_unlock(chunk->_lock);
-
-  sdb_cache_manager_allocate(chunk->_cache, chunk->_cache_consumer, -(int)sizeof(sdb_data_point_t) * chunk->max_points);
 }

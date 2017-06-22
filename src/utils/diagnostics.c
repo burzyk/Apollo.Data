@@ -33,19 +33,24 @@
 #include "src/utils/memory.h"
 #include "src/utils/threading.h"
 
+uint64_t sdb_now() {
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+
+  return (uint64_t)ts.tv_sec * 1000000000 + ts.tv_nsec;
+}
+
 sdb_stopwatch_t *sdb_stopwatch_start() {
   sdb_stopwatch_t *stopwatch = (sdb_stopwatch_t *)sdb_alloc(sizeof(sdb_stopwatch_t));
-  clock_gettime(CLOCK_REALTIME, &stopwatch->_start);
+  stopwatch->_start = sdb_now();
 
   return stopwatch;
 }
 
 float sdb_stopwatch_stop_and_destroy(sdb_stopwatch_t *stopwatch) {
-  clock_gettime(CLOCK_REALTIME, &stopwatch->_stop);
+  stopwatch->_stop = sdb_now();
 
-  time_t sec = stopwatch->_stop.tv_sec - stopwatch->_start.tv_sec;
-  time_t nsec = stopwatch->_stop.tv_nsec - stopwatch->_start.tv_nsec;
-  float elapsed = (1000000000 * sec + nsec) / 1000000000.0f;
+  float elapsed = (stopwatch->_stop - stopwatch->_start) / 1000000000.0f;
 
   sdb_free(stopwatch);
   return elapsed;

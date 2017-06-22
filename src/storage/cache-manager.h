@@ -30,26 +30,27 @@
 
 #include "src/utils/threading.h"
 
-typedef struct sdb_cache_consumer_info_s {
-} sdb_cache_consumer_info_t;
-
-typedef struct sdb_cache_consumer_s {
+typedef struct sdb_cache_entry_s {
+  uint64_t allocated;
   void *consumer;
-  sdb_cache_consumer_info_t *info;
-} sdb_cache_consumer_t;
+  struct sdb_cache_entry_s *prev;
+  struct sdb_cache_entry_s *next;
+} sdb_cache_entry_t;
 
 typedef struct sdb_cache_manager_s {
-  uint64_t _soft_limit;
-  uint64_t _hard_limit;
+  uint64_t soft_limit;
+  uint64_t hard_limit;
   uint64_t _allocated;
+  int _consumers_count;
 
   sdb_mutex_t *_lock;
+  sdb_cache_entry_t _guard;
 } sdb_cache_manager_t;
 
 sdb_cache_manager_t *sdb_cache_manager_create(uint64_t soft_limit, uint64_t hard_limit);
 void sdb_cache_manager_destroy(sdb_cache_manager_t *cache);
-sdb_cache_consumer_t sdb_cache_manager_register_consumer(sdb_cache_manager_t *cache, void *consumer);
-void sdb_cache_manager_allocate(sdb_cache_manager_t *cache, sdb_cache_consumer_t consumer, int memory_delta);
-void sdb_cache_manager_update(sdb_cache_manager_t *cache, sdb_cache_consumer_t consumer);
+sdb_cache_entry_t *sdb_cache_manager_register_consumer(sdb_cache_manager_t *cache, void *consumer);
+void sdb_cache_manager_allocate(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry, uint64_t memory_delta);
+void sdb_cache_manager_update(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry);
 
 #endif  // SRC_STORAGE_CACHE_MANAGER_H_

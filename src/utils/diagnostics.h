@@ -27,13 +27,16 @@
 #define SRC_UTILS_DIAGNOSTICS_H_
 
 #include <time.h>
+#include <stdint.h>
 
 #define SDB_LOG_LINE_MAX_LEN  1024
 
 typedef struct sdb_stopwatch_s {
-  struct timespec _start;
-  struct timespec _stop;
+  uint64_t _start;
+  uint64_t _stop;
 } sdb_stopwatch_t;
+
+uint64_t sdb_now();
 
 sdb_stopwatch_t *sdb_stopwatch_start();
 float sdb_stopwatch_stop_and_destroy(sdb_stopwatch_t *stopwatch);

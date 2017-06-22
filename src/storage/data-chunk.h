@@ -43,7 +43,7 @@ typedef struct sdb_data_chunk_s {
   sdb_rwlock_t *_lock;
 
   sdb_cache_manager_t *_cache;
-  sdb_cache_consumer_t _cache_consumer;
+  sdb_cache_entry_t *_cache_entry;
 } sdb_data_chunk_t;
 
 int sdb_data_chunk_calculate_size(int points_count);
