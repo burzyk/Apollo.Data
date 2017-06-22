@@ -47,5 +47,6 @@ sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_off
 void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
 sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
 int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
+void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk);
 
 #endif  // SRC_STORAGE_DATA_CHUNK_H_

@@ -150,3 +150,14 @@ int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *
   sdb_rwlock_unlock(chunk->_lock);
   return 0;
 }
+
+void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk) {
+  sdb_rwlock_wrlock(chunk->_lock);
+
+  if (chunk->_cached_content != NULL) {
+    sdb_free(chunk->_cached_content);
+    chunk->_cached_content = NULL;
+  }
+
+  sdb_rwlock_unlock(chunk->_lock);
+}
