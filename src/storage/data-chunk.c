@@ -26,6 +26,8 @@
 #include "src/storage/data-chunk.h"
 
 #include <string.h>
+#include <src/utils/diagnostics.h>
+#include <inttypes.h>
 
 #include "src/utils/memory.h"
 #include "src/utils/disk.h"
@@ -84,6 +86,11 @@ sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_times
     sdb_rwlock_upgrade(chunk->_lock);
 
     if (chunk->_cached_content == NULL) {
+      sdb_log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> loading cache",
+                    chunk->_file_name,
+                    chunk->begin,
+                    chunk->end);
+
       size_t cached_content_size = sizeof(sdb_data_point_t) * chunk->max_points;
       chunk->_cached_content = (sdb_data_point_t *)sdb_alloc(cached_content_size);
 
@@ -157,6 +164,11 @@ void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk) {
   if (chunk->_cached_content != NULL) {
     sdb_free(chunk->_cached_content);
     chunk->_cached_content = NULL;
+
+    sdb_log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> cache cleared",
+                  chunk->_file_name,
+                  chunk->begin,
+                  chunk->end);
   }
 
   sdb_rwlock_unlock(chunk->_lock);

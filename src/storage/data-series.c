@@ -198,8 +198,6 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
 }
 
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk) {
-  sdb_log_debug("registering chunk: [%" PRIu64 ", %" PRIu64 "), %d", chunk->begin, chunk->end, chunk->number_of_points);
-
   if (series->_chunks_count + 1 >= series->_max_chunks) {
     sdb_log_debug("expanding chunks collection");
     series->_max_chunks += SDB_REALLOC_GROW_INCREMENT;
@@ -215,7 +213,6 @@ void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t 
     index--;
   }
 
-  sdb_log_debug("chunk inserted at %d", index);
   series->_chunks[index] = chunk;
   series->_chunks_count++;
 }

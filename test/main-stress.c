@@ -107,6 +107,7 @@ int main(int argc, char *argv[]) {
 void sdb_stress_test_random_read(const char *hostname, int port) {
   int max_tests = 1000;
   int max_reads = 100;
+  int max_reads_repeat = 10;
   int points_batch_size = 1000000;
   int points_batch_count = 100;
   int read_count = 100000;
@@ -145,17 +146,20 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
       begin = sdb_max(begin, 1);
       int end = begin + read_count;
 
-      sdb_log_info("> Reading: [%d, %d)", begin, end);
+      for (int j = 0; j < max_reads_repeat; j++) {
 
-      sw = sdb_stopwatch_start();
-      shakadb_data_points_iterator_t it;
+        sdb_log_info("> Reading: [%d, %d)", begin, end);
 
-      sdb_assert(shakadb_read_points(&session, series, begin, end, &it) == SHAKADB_RESULT_OK, "Failed to read data");
+        sw = sdb_stopwatch_start();
+        shakadb_data_points_iterator_t it;
 
-      while (shakadb_data_points_iterator_next(&it)) {
+        sdb_assert(shakadb_read_points(&session, series, begin, end, &it) == SHAKADB_RESULT_OK, "Failed to read data");
+
+        while (shakadb_data_points_iterator_next(&it)) {
+        }
+
+        sdb_log_info("> Read: [%d, %d) in: %fs", begin, end, sdb_stopwatch_stop_and_destroy(sw));
       }
-
-      sdb_log_info("> Read: [%d, %d) in: %fs", begin, end, sdb_stopwatch_stop_and_destroy(sw));
     }
 
     sdb_log_info("Closing session ...");
