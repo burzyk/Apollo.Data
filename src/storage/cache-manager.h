@@ -1,16 +1,16 @@
 /*
  * Copyright (c) 2016 Pawel Burzynski. All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,38 +23,33 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SRC_STORAGE_DATA_CHUNK_H_
-#define SRC_STORAGE_DATA_CHUNK_H_
+#ifndef SRC_STORAGE_CACHE_MANAGER_H_
+#define SRC_STORAGE_CACHE_MANAGER_H_
 
-#include "src/common.h"
+#include <stdint.h>
+
 #include "src/utils/threading.h"
-#include "src/storage/data-points-reader.h"
-#include "src/storage/cache-manager.h"
 
-typedef struct sdb_data_chunk_s {
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
-  int number_of_points;
-  int max_points;
+typedef struct sdb_cache_consumer_info_s {
+} sdb_cache_consumer_info_t;
 
-  char _file_name[SDB_FILE_MAX_LEN];
-  uint64_t _file_offset;
-  sdb_data_point_t *_cached_content;
-  sdb_rwlock_t *_lock;
+typedef struct sdb_cache_consumer_s {
+  void *consumer;
+  sdb_cache_consumer_info_t *info;
+} sdb_cache_consumer_t;
 
-  sdb_cache_manager_t *_cache;
-  sdb_cache_consumer_t _cache_consumer;
-} sdb_data_chunk_t;
+typedef struct sdb_cache_manager_s {
+  uint64_t _soft_limit;
+  uint64_t _hard_limit;
+  uint64_t _allocated;
 
-int sdb_data_chunk_calculate_size(int points_count);
+  sdb_mutex_t *_lock;
+} sdb_cache_manager_t;
 
-sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name,
-                                        uint64_t file_offset,
-                                        int max_points,
-                                        sdb_cache_manager_t *cache);
-void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
-int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
-void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk);
+sdb_cache_manager_t *sdb_cache_manager_create(uint64_t soft_limit, uint64_t hard_limit);
+void sdb_cache_manager_destroy(sdb_cache_manager_t *cache);
+sdb_cache_consumer_t sdb_cache_manager_register_consumer(sdb_cache_manager_t *cache, void *consumer);
+void sdb_cache_manager_allocate(sdb_cache_manager_t *cache, sdb_cache_consumer_t consumer, int memory_delta);
+void sdb_cache_manager_update(sdb_cache_manager_t *cache, sdb_cache_consumer_t consumer);
 
-#endif  // SRC_STORAGE_DATA_CHUNK_H_
+#endif  // SRC_STORAGE_CACHE_MANAGER_H_

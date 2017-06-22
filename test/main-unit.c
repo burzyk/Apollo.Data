@@ -113,6 +113,7 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_database_truncate_multiple);
   TEST(sdb_test_database_truncate_write_again);
   TEST(sdb_test_database_failed_write);
+  TEST(sdb_test_database_cache_cleanup);
 
   TEST(sdb_test_server_simple_initialization_test);
   TEST(sdb_test_server_connect);

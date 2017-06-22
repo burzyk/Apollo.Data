@@ -36,7 +36,10 @@ int sdb_data_chunk_calculate_size(int points_count) {
   return points_count * sizeof(sdb_data_point_t);
 }
 
-sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_offset, int max_points) {
+sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name,
+                                        uint64_t file_offset,
+                                        int max_points,
+                                        sdb_cache_manager_t *cache) {
   sdb_file_t *file = sdb_file_open(file_name);
 
   if (file == NULL) {
@@ -52,6 +55,9 @@ sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name, uint64_t file_off
   chunk->end = SDB_TIMESTAMP_MIN;
   chunk->number_of_points = 0;
   chunk->_lock = sdb_rwlock_create();
+  chunk->_cache = cache;
+  chunk->_cache_consumer.consumer = NULL;
+  chunk->_cache_consumer.info = NULL;
 
   size_t points_size = sizeof(sdb_data_point_t) * max_points;
   sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(points_size);
@@ -81,6 +87,7 @@ void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk) {
 
 sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end) {
   sdb_rwlock_rdlock(chunk->_lock);
+  size_t allocated = 0;
 
   if (chunk->_cached_content == NULL) {
     sdb_rwlock_upgrade(chunk->_lock);
@@ -93,6 +100,11 @@ sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_times
 
       size_t cached_content_size = sizeof(sdb_data_point_t) * chunk->max_points;
       chunk->_cached_content = (sdb_data_point_t *)sdb_alloc(cached_content_size);
+      allocated = cached_content_size;
+
+      if (chunk->_cache_consumer.consumer == NULL) {
+        chunk->_cache_consumer = sdb_cache_manager_register_consumer(chunk->_cache, chunk);
+      }
 
       sdb_file_t *file = sdb_file_open(chunk->_file_name);
       sdb_file_seek(file, chunk->_file_offset, SEEK_SET);
@@ -117,6 +129,13 @@ sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_times
   sdb_data_points_reader_write(reader, points, number_of_points);
 
   sdb_rwlock_unlock(chunk->_lock);
+
+  sdb_cache_manager_update(chunk->_cache, chunk->_cache_consumer);
+
+  if (allocated != 0) {
+    sdb_cache_manager_allocate(chunk->_cache, chunk->_cache_consumer, allocated);
+  }
+
   return reader;
 }
 
@@ -172,4 +191,6 @@ void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk) {
   }
 
   sdb_rwlock_unlock(chunk->_lock);
+
+  sdb_cache_manager_allocate(chunk->_cache, chunk->_cache_consumer, -(int)sizeof(sdb_data_point_t) * chunk->max_points);
 }

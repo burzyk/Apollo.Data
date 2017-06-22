@@ -48,7 +48,10 @@ int sdb_data_series_write_internal(sdb_data_series_t *series, sdb_data_point_t *
 int sdb_data_series_chunk_compare_begin(sdb_timestamp_t *begin, sdb_data_chunk_t **chunk);
 int sdb_data_series_chunk_compare_end(sdb_timestamp_t *end, sdb_data_chunk_t **chunk);
 
-sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id, const char *file_name, int points_per_chunk) {
+sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
+                                          const char *file_name,
+                                          int points_per_chunk,
+                                          sdb_cache_manager_t *cache) {
   sdb_data_series_t *series = (sdb_data_series_t *)sdb_alloc(sizeof(sdb_data_series_t));
   series->id = id;
   strncpy(series->_file_name, file_name, SDB_FILE_MAX_LEN);
@@ -57,11 +60,12 @@ sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id, const char *f
   series->_chunks = NULL;
   series->_max_chunks = 0;
   series->_chunks_count = 0;
+  series->_cache = cache;
 
   int chunk_size = sdb_data_chunk_calculate_size(points_per_chunk);
 
   for (int i = 0; i < sdb_file_size(file_name) / chunk_size; i++) {
-    sdb_data_chunk_t *chunk = sdb_data_chunk_create(file_name, (uint64_t)i * chunk_size, points_per_chunk);
+    sdb_data_chunk_t *chunk = sdb_data_chunk_create(file_name, (uint64_t)i * chunk_size, points_per_chunk, cache);
 
     if (chunk != NULL) {
       sdb_data_series_register_chunk(series, chunk);
@@ -324,7 +328,8 @@ sdb_data_chunk_t *sdb_data_series_create_empty_chunk(sdb_data_series_t *series) 
   return sdb_data_chunk_create(
       series->_file_name,
       sdb_data_chunk_calculate_size(series->_points_per_chunk) * (uint64_t)series->_chunks_count,
-      series->_points_per_chunk);
+      series->_points_per_chunk,
+      series->_cache);
 }
 
 void sdb_data_series_delete_chunks(sdb_data_series_t *series) {

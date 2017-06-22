@@ -34,7 +34,11 @@ sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_ser
 sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
 sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
 
-sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk, int max_series) {
+sdb_database_t *sdb_database_create(const char *directory,
+                                    int points_per_chunk,
+                                    int max_series,
+                                    uint64_t soft_limit,
+                                    uint64_t hard_limit) {
   sdb_assert(points_per_chunk > 1, "points_per_chunk must be greater than one")
 
   sdb_database_t *db = (sdb_database_t *)sdb_alloc(sizeof(sdb_database_t));
@@ -43,6 +47,7 @@ sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk,
   db->_max_series_count = max_series;
   db->_series = (sdb_data_series_t **)sdb_alloc(sizeof(sdb_data_series_t *) * db->_max_series_count);
   db->_points_per_chunk = points_per_chunk;
+  db->_cache = sdb_cache_manager_create(soft_limit, hard_limit);
 
   return db;
 }
@@ -59,6 +64,7 @@ void sdb_database_destroy(sdb_database_t *db) {
 
   sdb_free(db->_series);
 
+  sdb_cache_manager_destroy(db->_cache);
   sdb_rwlock_destroy(db->_lock);
   sdb_free(db);
 }
@@ -94,7 +100,10 @@ sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_
                                      ? sdb_data_points_reader_create(0)
                                      : sdb_data_series_read(series, begin, end, max_points);
 
-  sdb_log_debug("Read series: %d, points: %d in: %fs", series_id, result->points_count, sdb_stopwatch_stop_and_destroy(sw));
+  sdb_log_debug("Read series: %d, points: %d in: %fs",
+                series_id,
+                result->points_count,
+                sdb_stopwatch_stop_and_destroy(sw));
 
   return result;
 }
@@ -116,7 +125,7 @@ sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_
   snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->_directory, series_id);
 
   sdb_log_info("loading time series: %d", series_id);
-  return db->_series[series_id] = sdb_data_series_create(series_id, file_name, db->_points_per_chunk);
+  return db->_series[series_id] = sdb_data_series_create(series_id, file_name, db->_points_per_chunk, db->_cache);
 }
 
 sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {

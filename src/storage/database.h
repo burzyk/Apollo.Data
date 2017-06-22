@@ -36,9 +36,14 @@ typedef struct sdb_database_s {
 
   sdb_data_series_t **_series;
   int _max_series_count;
+  sdb_cache_manager_t *_cache;
 } sdb_database_t;
 
-sdb_database_t *sdb_database_create(const char *directory, int points_per_chunk, int max_series);
+sdb_database_t *sdb_database_create(const char *directory,
+                                    int points_per_chunk,
+                                    int max_series,
+                                    uint64_t soft_limit,
+                                    uint64_t hard_limit);
 void sdb_database_destroy(sdb_database_t *db);
 int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count);
 int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id);
