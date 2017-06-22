@@ -162,8 +162,8 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                int max_points) {
   sdb_rwlock_rdlock(series->_series_lock);
 
-  sdb_data_points_range_t *ranges = (sdb_data_points_range_t *)sdb_alloc(
-      series->_chunks_count * sizeof(sdb_data_points_range_t));
+  sdb_data_points_reader_t **readers = (sdb_data_points_reader_t **)sdb_alloc(
+      series->_chunks_count * sizeof(sdb_data_points_reader_t));
   int ranges_count = 0;
   int total_points = 0;
 
@@ -176,22 +176,23 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
 
   for (int i = begin_index; i < end_index && total_points < max_points; i++) {
     sdb_data_chunk_t *chunk = series->_chunks[i];
-    sdb_data_points_range_t range = sdb_data_chunk_read(chunk, begin, end);
+    sdb_data_points_reader_t *r = sdb_data_chunk_read(chunk, begin, end);
 
-    if (range.number_of_points > 0) {
-      ranges[ranges_count++] = range;
-      total_points += range.number_of_points;
+    if (r->points_count > 0) {
+      readers[ranges_count++] = r;
+      total_points += r->points_count;
     }
   }
 
   sdb_data_points_reader_t *reader = sdb_data_points_reader_create(sdb_min(max_points, total_points));
 
   for (int i = 0; i < ranges_count; i++) {
-    sdb_data_points_reader_write(reader, ranges[i].points, ranges[i].number_of_points);
+    sdb_data_points_reader_write(reader, readers[i]->points, readers[i]->points_count);
+    sdb_data_points_reader_destroy(readers[i]);
   }
 
   sdb_rwlock_unlock(series->_series_lock);
-  sdb_free(ranges);
+  sdb_free(readers);
 
   return reader;
 }
@@ -233,11 +234,11 @@ int sdb_data_series_write_chunk(sdb_data_series_t *series,
     write_result = sdb_data_series_chunk_memcpy(series, chunk, chunk->number_of_points, points, count);
   } else {
     int buffer_count = count + chunk->number_of_points;
-    sdb_data_points_range_t range = sdb_data_chunk_read(chunk, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+    sdb_data_points_reader_t *reader = sdb_data_chunk_read(chunk, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
     sdb_data_point_t *buffer = (sdb_data_point_t *)sdb_alloc(buffer_count * sizeof(sdb_data_point_t));
-    sdb_data_point_t *content = range.points;
+    sdb_data_point_t *content = reader->points;
     int points_pos = count - 1;
-    int content_pos = range.number_of_points - 1;
+    int content_pos = reader->points_count - 1;
     int duplicated_count = 0;
 
     for (int i = buffer_count - 1; i >= duplicated_count; i--) {
@@ -258,7 +259,9 @@ int sdb_data_series_write_chunk(sdb_data_series_t *series,
 
     write_result =
         sdb_data_series_chunk_memcpy(series, chunk, 0, buffer + duplicated_count, buffer_count - duplicated_count);
+
     sdb_free(buffer);
+    sdb_data_points_reader_destroy(reader);
   }
 
   return write_result;

@@ -77,7 +77,7 @@ void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk) {
   sdb_free(chunk);
 }
 
-sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end) {
+sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end) {
   sdb_rwlock_rdlock(chunk->_lock);
 
   if (chunk->_cached_content == NULL) {
@@ -94,7 +94,6 @@ sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timesta
     }
   }
 
-  sdb_data_points_range_t range = {.points = NULL, .number_of_points = 0};
   sdb_data_point_t begin_element = {.time=begin};
   sdb_data_point_t end_element = {.time=end};
   int count = chunk->number_of_points;
@@ -104,11 +103,14 @@ sdb_data_points_range_t sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timesta
   int begin_index = sdb_find(chunk->_cached_content, elem_size, count, &begin_element, cmp);
   int end_index = sdb_find(chunk->_cached_content, elem_size, count, &end_element, cmp);
 
-  range.number_of_points = end_index - begin_index;
-  range.points = range.number_of_points == 0 ? NULL : chunk->_cached_content + begin_index;
+  int number_of_points = end_index - begin_index;
+  sdb_data_point_t *points = number_of_points == 0 ? NULL : chunk->_cached_content + begin_index;
+
+  sdb_data_points_reader_t *reader = sdb_data_points_reader_create(number_of_points);
+  sdb_data_points_reader_write(reader, points, number_of_points);
 
   sdb_rwlock_unlock(chunk->_lock);
-  return range;
+  return reader;
 }
 
 int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count) {
