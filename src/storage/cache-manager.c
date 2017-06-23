@@ -127,7 +127,10 @@ void sdb_cache_manager_cleanup(sdb_cache_manager_t *cache) {
   while (cache->_allocated > cache->soft_limit && cache->_consumers_count != 0) {
     sdb_cache_manager_cut_entry(cache, curr);
     sdb_data_chunk_clean_cache((sdb_data_chunk_t *)curr->consumer);
+
+    sdb_cache_entry_t *next = curr->prev;
     sdb_free(curr);
+    curr = next;
   }
 
   sdb_log_info("Cache cleaned up in %fs", sdb_stopwatch_stop_and_destroy(sw));

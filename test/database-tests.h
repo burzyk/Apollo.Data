@@ -50,5 +50,6 @@ void sdb_test_database_truncate_multiple(sdb_tests_context_t ctx);
 void sdb_test_database_truncate_write_again(sdb_tests_context_t ctx);
 void sdb_test_database_failed_write(sdb_tests_context_t ctx);
 void sdb_test_database_cache_cleanup(sdb_tests_context_t ctx);
+void sdb_test_database_cache_cleanup_old(sdb_tests_context_t ctx);
 
 #endif  // TEST_DATABASE_TESTS_H_
