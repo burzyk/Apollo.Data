@@ -744,5 +744,49 @@ void sdb_test_server_write_filter_duplicates(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
+void sdb_test_server_write_filter_zeros(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, 10, db);
 
-// Write with invalid order
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_point_t points[] = {
+      {.time=1, .value = 1},
+      {.time=1, .value = 2},
+      {.time=2, .value = 3},
+      {.time=0, .value = 10},
+      {.time=3, .value = 4},
+      {.time=4, .value = 5},
+      {.time=4, .value = 6},
+      {.time=0, .value = 11},
+      {.time=4, .value = 7},
+      {.time=4, .value = 8},
+  };
+
+  status = shakadb_write_points(&session, SDB_EUR_GBP_ID, points, 10);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Write should fail");
+
+  shakadb_data_points_iterator_t it = {};
+  status = shakadb_read_points(&session, SDB_EUR_GBP_ID, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, &it);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
+
+  status = shakadb_data_points_iterator_next(&it);
+  sdb_assert(status != 0, "No data found in iterator");
+
+  sdb_assert(it.points_count == 4, "Invalid number of points");
+  sdb_assert(it.points[0].time == 1, "Invalid time value");
+  sdb_assert(it.points[1].time == 2, "Invalid time value");
+  sdb_assert(it.points[2].time == 3, "Invalid time value");
+  sdb_assert(it.points[3].time == 4, "Invalid time value");
+
+  status = shakadb_data_points_iterator_next(&it);
+  sdb_assert(status == 0, "Data found in iterator");
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}

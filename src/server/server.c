@@ -161,6 +161,10 @@ void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, s
   int tail = -1;
 
   for (int i = 0; i < request->points_count; i++) {
+    if (request->points[i].time == 0) {
+      continue;
+    }
+
     if (tail < 0 || request->points[tail].time < request->points[i].time) {
       tail++;
     }
