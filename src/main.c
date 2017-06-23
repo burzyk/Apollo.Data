@@ -28,6 +28,7 @@
 #include <getopt.h>
 #include <memory.h>
 #include <signal.h>
+#include <inttypes.h>
 
 #include "src/utils/threading.h"
 #include "src/storage/database.h"
@@ -45,7 +46,8 @@
 
 #define SDB_CONFIG_DEFAULT_DIRECTORY  "/usr/local/shakadb/data"
 #define SDB_CONFIG_DEFAULT_PORT 8487
-#define SDB_CONFIG_DEFAULT_LOG  "stdout"
+#define SDB_CONFIG_DEFAULT_SOFT_LIMIT 1500000000
+#define SDB_CONFIG_DEFAULT_HARD_LIMIT 2000000000
 
 typedef struct sdb_control_info_s {
   sdb_rwlock_t *_lock;
@@ -58,7 +60,6 @@ int sdb_control_info_check_running(sdb_control_info_t *info);
 void sdb_control_info_signal_stop(sdb_control_info_t *info);
 
 typedef struct sdb_configuration_s {
-  char log_file[SDB_FILE_MAX_LEN];
   int log_verbose;
   char database_directory[SDB_FILE_MAX_LEN];
   int database_points_per_chunk;
@@ -66,6 +67,8 @@ typedef struct sdb_configuration_s {
   int server_backlog;
   int server_max_clients;
   int server_points_per_packet;
+  uint64_t cache_soft_limit;
+  uint64_t cache_hard_limit;
 } sdb_configuration_t;
 
 void *sdb_master_thread_routine(void *data);
@@ -83,15 +86,16 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  sdb_log_init(config.log_file, config.log_verbose);
+  sdb_log_init(config.log_verbose);
   sdb_log_info("========== Starting ShakaDB ==========");
   sdb_log_info("");
   sdb_log_info("    Version:   " SDB_VERSION);
   sdb_log_info("    Build:     " SDB_BUILD);
   sdb_log_info("");
-  sdb_log_info("    directory: %s", config.database_directory);
-  sdb_log_info("    port:      %d", config.server_port);
-  sdb_log_info("    log:       %s", config.log_file);
+  sdb_log_info("    directory:   %s", config.database_directory);
+  sdb_log_info("    port:        %d", config.server_port);
+  sdb_log_info("    soft limit:  %" PRIu64 " bytes", config.cache_soft_limit);
+  sdb_log_info("    hard limit:  %" PRIu64 " bytes", config.cache_hard_limit);
   sdb_log_info("");
 
   g_control = sdb_control_info_create();
@@ -118,7 +122,12 @@ void *sdb_master_thread_routine(void *data) {
   sdb_configuration_t *config = (sdb_configuration_t *)data;
 
   sdb_log_info("initializing database ...");
-  sdb_database_t *db = sdb_database_create(config->database_directory, config->database_points_per_chunk);
+  sdb_database_t *db = sdb_database_create(
+      config->database_directory,
+      config->database_points_per_chunk,
+      SDB_DATA_SERIES_MAX,
+      config->cache_soft_limit,
+      config->cache_hard_limit);
 
   sdb_log_info("initializing server ...");
   sdb_server_t *server = sdb_server_create(
@@ -148,25 +157,28 @@ void *sdb_master_thread_routine(void *data) {
 int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]) {
   config->server_port = SDB_CONFIG_DEFAULT_PORT;
   strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_FILE_MAX_LEN);
-  strncpy(config->log_file, SDB_CONFIG_DEFAULT_LOG, SDB_FILE_MAX_LEN);
   config->log_verbose = 0;
   config->server_backlog = 20;
   config->server_max_clients = 10;
   config->server_points_per_packet = 655360;
   config->database_points_per_chunk = 10000;
+  config->cache_soft_limit = SDB_CONFIG_DEFAULT_SOFT_LIMIT;
+  config->cache_hard_limit = SDB_CONFIG_DEFAULT_HARD_LIMIT;
 
   while (1) {
     int option_index = 0;
     static struct option long_options[] = {
         {"port", required_argument, 0, 'p'},
         {"directory", required_argument, 0, 'd'},
-        {"log", required_argument, 0, 'l'},
+        {"soft-limit", required_argument, 0, 's'},
+        {"hard-limit", required_argument, 0, 'x'},
         {"help", no_argument, 0, 'h'},
         {"verbose", no_argument, 0, 'v'}
     };
 
-    int c = getopt_long(argc, argv, "vhp:d:l:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "vhp:d:x:s:", long_options, &option_index);
     if (c == -1) {
+      config->cache_soft_limit = sdb_minl(config->cache_soft_limit, config->cache_hard_limit);
       return 0;
     }
 
@@ -175,11 +187,13 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
         break;
       case 'd':strncpy(config->database_directory, optarg, SDB_FILE_MAX_LEN);
         break;
-      case 'l':strncpy(config->log_file, optarg, SDB_FILE_MAX_LEN);
-        break;
       case 'h':sdb_print_usage();
         exit(0);
       case 'v':config->log_verbose = 1;
+        break;
+      case 's':sscanf(optarg, "%" PRIu64, &config->cache_soft_limit);
+        break;
+      case 'x':sscanf(optarg, "%" PRIu64, &config->cache_hard_limit);
         break;
       default:return -1;
     }
@@ -201,10 +215,11 @@ void sdb_print_usage() {
   printf("                      default value: %d\n", SDB_CONFIG_DEFAULT_PORT);
   printf("    --directory, -d:  directory where database will be created\n");
   printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
-  printf("    --log, -l:        log file name. If 'stdout' is specified the application\n");
-  printf("                      will write all logs to standard output\n");
-  printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_LOG);
   printf("    --verbose, -v:    logs debug information\n");
+  printf("    --soft-limit, -s: specifies the soft cache memory usage limit, in bytes\n");
+  printf("                      default value: %d\n", SDB_CONFIG_DEFAULT_SOFT_LIMIT);
+  printf("    --hard-limit, -x: specifies the hard cache memory usage limit, in bytes\n");
+  printf("                      default value: %d\n", SDB_CONFIG_DEFAULT_HARD_LIMIT);
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
   printf("\n");

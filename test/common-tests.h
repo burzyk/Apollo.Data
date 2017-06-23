@@ -20,31 +20,22 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 14/04/2017.
+// Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef SRC_UTILS_DIAGNOSTICS_H_
-#define SRC_UTILS_DIAGNOSTICS_H_
+#ifndef TEST_COMMON_TESTS_H_
+#define TEST_COMMON_TESTS_H_
 
-#include <time.h>
-#include <stdint.h>
+#include "test/framework.h"
 
-#define SDB_LOG_LINE_MAX_LEN  1024
+void sdb_test_search_empty(sdb_tests_context_t ctx);
+void sdb_test_search_left_out(sdb_tests_context_t ctx);
+void sdb_test_search_right_out(sdb_tests_context_t ctx);
+void sdb_test_search_left_approx(sdb_tests_context_t ctx);
+void sdb_test_search_right_approx(sdb_tests_context_t ctx);
+void sdb_test_search_exactly(sdb_tests_context_t ctx);
+void sdb_test_search_even(sdb_tests_context_t ctx);
+void sdb_test_search_odd(sdb_tests_context_t ctx);
+void sdb_test_search_duplicates(sdb_tests_context_t ctx);
 
-typedef struct sdb_stopwatch_s {
-  uint64_t _start;
-  uint64_t _stop;
-} sdb_stopwatch_t;
-
-uint64_t sdb_now();
-
-sdb_stopwatch_t *sdb_stopwatch_start();
-float sdb_stopwatch_stop_and_destroy(sdb_stopwatch_t *stopwatch);
-
-void sdb_log_init(int verbose);
-void sdb_log_close();
-void sdb_log_error(const char *format, ...);
-void sdb_log_info(const char *format, ...);
-void sdb_log_debug(const char *format, ...);
-
-#endif  // SRC_UTILS_DIAGNOSTICS_H_
+#endif  // TEST_COMMON_TESTS_H_

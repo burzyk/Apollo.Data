@@ -20,10 +20,18 @@
  * SOFTWARE.
  */
 #include <stdio.h>
+#include <getopt.h>
+#include <stdlib.h>
+#include <memory.h>
+#include <time.h>
+#include <src/client/client.h>
+#include <src/utils/memory.h>
+#include <src/utils/diagnostics.h>
 
 #include "test/framework.h"
 #include "test/database-tests.h"
 #include "test/server-tests.h"
+#include "test/common-tests.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -36,20 +44,53 @@
 #define TEST(test_case) result |= sdb_tests_session_run(session, #test_case, test_case);
 
 int main(int argc, char *argv[]) {
-  const char *root_directory = argc == 1
-                               ? "/Users/pburzynski/shakadb-test/data/test-stuff"
-                               : argv[1];
+  int configuration_parsed = 0;
+  char directory[SDB_FILE_MAX_LEN] = {0};
+  strcpy(directory, "/Users/pburzynski/shakadb-test/data/test-stuff");
 
-  sdb_tests_session_t *session = sdb_tests_session_create(root_directory);
+  while (!configuration_parsed) {
+    int option_index = 0;
+    static struct option long_options[] = {
+        {"directory", required_argument, 0, 'd'}
+    };
+
+    int c = getopt_long(argc, argv, "d:", long_options, &option_index);
+
+    if (c == -1) {
+      configuration_parsed = 1;
+    } else {
+      switch (c) {
+        case 'd':strncpy(directory, optarg, SDB_FILE_MAX_LEN);
+          break;
+        default: configuration_parsed = -1;
+      }
+    }
+  }
+
+  if (configuration_parsed == -1) {
+    die("invalid arguments");
+  }
+
+  sdb_tests_session_t *session = sdb_tests_session_create(directory);
   int result = 0;
 
-  printf("==================== Running tests ====================\n");
+  printf("==================== Running unit tests ====================\n");
   printf("\n");
   printf("    Version: %s\n", SDB_VERSION);
   printf("    Build: %s\n", SDB_BUILD);
   printf("\n");
-  printf("    Directory: %s\n", root_directory);
+  printf("    Directory: %s\n", directory);
   printf("\n");
+
+  TEST(sdb_test_search_empty);
+  TEST(sdb_test_search_left_out);
+  TEST(sdb_test_search_right_out);
+  TEST(sdb_test_search_left_approx);
+  TEST(sdb_test_search_right_approx);
+  TEST(sdb_test_search_exactly);
+  TEST(sdb_test_search_even);
+  TEST(sdb_test_search_odd);
+  TEST(sdb_test_search_duplicates);
 
   TEST(sdb_test_database_simple_initialization_test);
   TEST(sdb_test_database_write_and_read_all);
@@ -72,6 +113,9 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_database_truncate_multiple);
   TEST(sdb_test_database_truncate_write_again);
   TEST(sdb_test_database_failed_write);
+  TEST(sdb_test_database_cache_cleanup);
+  TEST(sdb_test_database_cache_cleanup_old);
+  TEST(sdb_test_database_cache_smaller_than_chunk);
 
   TEST(sdb_test_server_simple_initialization_test);
   TEST(sdb_test_server_connect);
@@ -90,6 +134,11 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_server_truncate_and_write);
   TEST(sdb_test_server_no_sig_pipe_on_too_large_packet);
   TEST(sdb_test_server_failed_write);
+  TEST(sdb_test_server_write_series_out_of_range);
+  TEST(sdb_test_server_read_series_out_of_range);
+  TEST(sdb_test_server_truncate_series_out_of_range);
+  TEST(sdb_test_server_write_filter_duplicates);
+  TEST(sdb_test_server_write_filter_zeros);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");

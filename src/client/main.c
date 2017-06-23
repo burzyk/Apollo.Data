@@ -56,8 +56,11 @@ int main(int argc, char *argv[]) {
 
   if (!strcmp("read", command)) {
     shakadb_data_series_id_t series_id = (shakadb_data_series_id_t)atoi(argv[4]);
-    shakadb_timestamp_t begin = (shakadb_timestamp_t)atoi(argv[5]);
-    shakadb_timestamp_t end = (shakadb_timestamp_t)atoi(argv[6]);
+    shakadb_timestamp_t begin;
+    shakadb_timestamp_t end;
+
+    sscanf(argv[5], "%" PRIu64, &begin);
+    sscanf(argv[6], "%" PRIu64, &end);
 
     printf("reading points: %d -> [%" PRIu64 ", %" PRIu64 ")\n", series_id, begin, end);
 

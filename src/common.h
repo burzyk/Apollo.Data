@@ -34,9 +34,17 @@ typedef uint32_t sdb_data_series_id_t;
 #define SDB_TIMESTAMP_MIN ((sdb_timestamp_t)0)
 #define SDB_TIMESTAMP_MAX ((sdb_timestamp_t)UINT64_MAX)
 
+#ifndef SDB_FILE_MAX_LEN
 #define SDB_FILE_MAX_LEN  1024
+#endif
 
-#define SDB_REALLOC_GROW_INCREMENT 65536
+#ifndef SDB_DATA_SERIES_MAX
+#define SDB_DATA_SERIES_MAX  (1<<20)
+#endif
+
+#ifndef SDB_REALLOC_GROW_INCREMENT
+#define SDB_REALLOC_GROW_INCREMENT  65536
+#endif
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -47,13 +55,20 @@ typedef struct sdb_data_point_s {
   float value;
 } __attribute__((packed)) sdb_data_point_t;
 
+typedef int (*sdb_find_predicate)(void *, void *);
+
 int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs);
 
+int sdb_find(void *elements, int element_size, int elements_count, void *data, sdb_find_predicate predicate);
+
 void die(const char *message);
+void sdb_assert_impl(int status, const char *message, const char *file, int line_number);
 
-#define sdb_min(a, b) ((a) < (b) ? (a) : (b))
-#define sdb_max(a, b) ((a) < (b) ? (b) : (a))
+uint64_t sdb_minl(uint64_t a, uint64_t b);
+int sdb_min(int a, int b);
+uint64_t sdb_maxl(uint64_t a, uint64_t b);
+int sdb_max(int a, int b);
 
-#define sdb_assert(status, message) if (!(status)) { die(message); }
+#define sdb_assert(status, message) sdb_assert_impl(status, message, __FILE__, __LINE__)
 
 #endif  // SRC_COMMON_H_
