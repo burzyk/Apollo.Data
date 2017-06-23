@@ -178,7 +178,7 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
 
     int c = getopt_long(argc, argv, "vhp:d:x:s:", long_options, &option_index);
     if (c == -1) {
-      config->cache_soft_limit = sdb_min(config->cache_soft_limit, config->cache_hard_limit);
+      config->cache_soft_limit = sdb_minl(config->cache_soft_limit, config->cache_hard_limit);
       return 0;
     }
 

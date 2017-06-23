@@ -65,7 +65,7 @@ void sdb_test_database_write_with_time(sdb_database_t *db,
                                        int batches,
                                        int count,
                                        sdb_timestamp_t time) {
-  sdb_assert(time != 0, "Time cannot be 0")
+  sdb_assert(time != 0, "Time cannot be 0");
 
   sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(sizeof(sdb_data_point_t) * count);
 
@@ -93,12 +93,12 @@ void sdb_test_database_validate_read_with_max(sdb_database_t *db,
   sdb_data_point_t *points = reader->points;
 
   for (int i = 1; i < total_read; i++) {
-    sdb_assert(points[i - 1].time <= points[i].time, "Invalid order of elements")
-    sdb_assert(points[i].time != 0, "Time cannot be zero")
+    sdb_assert(points[i - 1].time <= points[i].time, "Invalid order of elements");
+    sdb_assert(points[i].time != 0, "Time cannot be zero");
   }
 
   if (expected_count > 0) {
-    sdb_assert(expected_count == total_read, "Unexpected number of elements")
+    sdb_assert(expected_count == total_read, "Unexpected number of elements");
   }
 
   sdb_data_points_reader_destroy(reader);
@@ -353,7 +353,7 @@ void sdb_test_database_cache_cleanup(sdb_tests_context_t ctx) {
   sdb_test_database_write(db, 12345, 10, 6);
   sdb_test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_assert(db->_cache->_allocated == 144, "Memory has not been cleaned up")
+  sdb_assert(db->_cache->_allocated == 144, "Memory has not been cleaned up");
 
   sdb_database_destroy(db);
 }

@@ -39,7 +39,7 @@ sdb_database_t *sdb_database_create(const char *directory,
                                     int max_series,
                                     uint64_t soft_limit,
                                     uint64_t hard_limit) {
-  sdb_assert(points_per_chunk > 1, "points_per_chunk must be greater than one")
+  sdb_assert(points_per_chunk > 1, "points_per_chunk must be greater than one");
 
   sdb_database_t *db = (sdb_database_t *)sdb_alloc(sizeof(sdb_database_t));
   strncpy(db->_directory, directory, SDB_FILE_MAX_LEN);

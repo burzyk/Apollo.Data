@@ -32,6 +32,21 @@ int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs) {
   return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;
 }
 
+inline uint64_t sdb_minl(uint64_t a, uint64_t b) {
+  return a < b ? a : b;
+}
+
+inline int sdb_min(int a, int b) {
+  return a < b ? a : b;
+}
+inline uint64_t sdb_maxl(uint64_t a, uint64_t b) {
+  return a < b ? b : a;
+}
+
+inline int sdb_max(int a, int b) {
+  return a < b ? b : a;
+}
+
 int sdb_find(void *elements, int element_size, int elements_count, void *data, sdb_find_predicate predicate) {
   if (elements == NULL || element_size == 0 || elements_count == 0 || data == NULL) {
     return -1;
@@ -69,4 +84,12 @@ void die(const char *message) {
   fprintf(stderr, "%s\n", message);
   fflush(stderr);
   exit(-1);
+}
+
+void sdb_assert_impl(int status, const char *message, const char *file, int line_number) {
+  if (!status) {
+    char line[SDB_FILE_MAX_LEN] = {0};
+    sprintf(line, "ASSERT: %s:%d -> %s", file, line_number, message);
+    die(line);
+  }
 }

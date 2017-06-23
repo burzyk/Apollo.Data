@@ -66,8 +66,8 @@ sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name,
   sdb_file_close(file);
 
   for (int i = 0; i < max_points && points[i].time != 0; i++) {
-    chunk->begin = sdb_min(chunk->begin, points[i].time);
-    chunk->end = sdb_max(chunk->end, points[i].time);
+    chunk->begin = sdb_minl(chunk->begin, points[i].time);
+    chunk->end = sdb_maxl(chunk->end, points[i].time);
     chunk->number_of_points++;
   }
 

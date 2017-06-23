@@ -62,10 +62,13 @@ int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs);
 int sdb_find(void *elements, int element_size, int elements_count, void *data, sdb_find_predicate predicate);
 
 void die(const char *message);
+void sdb_assert_impl(int status, const char *message, const char *file, int line_number);
 
-#define sdb_min(a, b) ((a) < (b) ? (a) : (b))
-#define sdb_max(a, b) ((a) < (b) ? (b) : (a))
+uint64_t sdb_minl(uint64_t a, uint64_t b);
+int sdb_min(int a, int b);
+uint64_t sdb_maxl(uint64_t a, uint64_t b);
+int sdb_max(int a, int b);
 
-#define sdb_assert(status, message) if (!(status)) { die(message); }
+#define sdb_assert(status, message) sdb_assert_impl(status, message, __FILE__, __LINE__)
 
 #endif  // SRC_COMMON_H_

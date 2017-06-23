@@ -80,7 +80,7 @@ void sdb_test_server_write_small(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it.points_count == 3, "Invalid number of points");
   sdb_assert(it.points[0].time == 3, "Time should be 3");
@@ -91,7 +91,7 @@ void sdb_test_server_write_small(sdb_tests_context_t ctx) {
   sdb_assert(it.points[2].value == 44, "Value should be 44.3");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_session_close(&session);
 
@@ -123,7 +123,7 @@ void sdb_test_server_write_unordered(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it.points_count == 4, "Invalid number of points");
   sdb_assert(it.points[0].time == 1, "Time should be 1");
@@ -136,7 +136,7 @@ void sdb_test_server_write_unordered(sdb_tests_context_t ctx) {
   sdb_assert(it.points[3].value == 44, "Value should be 44");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_session_close(&session);
 
@@ -174,7 +174,7 @@ void sdb_test_server_write_two_batches(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it.points_count == 4, "Invalid number of points");
   sdb_assert(it.points[0].time == 1, "Time should be 1");
@@ -187,7 +187,7 @@ void sdb_test_server_write_two_batches(sdb_tests_context_t ctx) {
   sdb_assert(it.points[3].value == 4, "Value should be 4");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_session_close(&session);
 
@@ -219,7 +219,7 @@ void sdb_test_server_read_two_batches(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it.points_count == 2, "Invalid number of points");
   sdb_assert(it.points[0].time == 1, "Time should be 1");
@@ -228,7 +228,7 @@ void sdb_test_server_read_two_batches(sdb_tests_context_t ctx) {
   sdb_assert(it.points[1].value == 2, "Value should be 2");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it.points_count == 2, "Invalid number of points");
   sdb_assert(it.points[0].time == 3, "Time should be 3");
@@ -237,7 +237,7 @@ void sdb_test_server_read_two_batches(sdb_tests_context_t ctx) {
   sdb_assert(it.points[1].value == 4, "Value should be 4");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_session_close(&session);
 
@@ -270,7 +270,7 @@ void sdb_test_server_read_range(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it.points_count == 2, "Invalid number of points");
   sdb_assert(it.points[0].time == 2, "Time should be 2");
@@ -279,7 +279,7 @@ void sdb_test_server_read_range(sdb_tests_context_t ctx) {
   sdb_assert(it.points[1].value == 3, "Value should be 3");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_session_close(&session);
 
@@ -323,7 +323,7 @@ void sdb_test_server_read_range_with_multiple_series(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it.points_count == 2, "Invalid number of points");
   sdb_assert(it.points[0].time == 2, "Time should be 2");
@@ -332,7 +332,7 @@ void sdb_test_server_read_range_with_multiple_series(sdb_tests_context_t ctx) {
   sdb_assert(it.points[1].value == 3, "Value should be 3");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_session_close(&session);
 
@@ -365,7 +365,7 @@ void sdb_test_server_update(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it_1);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it_1.points_count == 2, "Invalid number of points");
   sdb_assert(it_1.points[0].time == 2, "Time should be 2");
@@ -374,7 +374,7 @@ void sdb_test_server_update(sdb_tests_context_t ctx) {
   sdb_assert(it_1.points[1].value == 3, "Value should be 3");
 
   status = shakadb_data_points_iterator_next(&it_1);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_data_point_t points_2[] = {
       {.time=1, .value = 10},
@@ -392,7 +392,7 @@ void sdb_test_server_update(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it_2);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it_2.points_count == 2, "Invalid number of points");
   sdb_assert(it_2.points[0].time == 2, "Time should be 2");
@@ -401,7 +401,7 @@ void sdb_test_server_update(sdb_tests_context_t ctx) {
   sdb_assert(it_2.points[1].value == 30, "Value should be 30");
 
   status = shakadb_data_points_iterator_next(&it_2);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_session_close(&session);
 
@@ -435,7 +435,7 @@ void sdb_test_server_update_in_two_sessions(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it_1);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it_1.points_count == 2, "Invalid number of points");
   sdb_assert(it_1.points[0].time == 2, "Time should be 2");
@@ -444,7 +444,7 @@ void sdb_test_server_update_in_two_sessions(sdb_tests_context_t ctx) {
   sdb_assert(it_1.points[1].value == 3, "Value should be 3");
 
   status = shakadb_data_points_iterator_next(&it_1);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_session_close(&session_1);
 
@@ -467,7 +467,7 @@ void sdb_test_server_update_in_two_sessions(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it_2);
-  sdb_assert(status != 0, "No data found in iterator")
+  sdb_assert(status != 0, "No data found in iterator");
 
   sdb_assert(it_2.points_count == 2, "Invalid number of points");
   sdb_assert(it_2.points[0].time == 2, "Time should be 2");
@@ -476,7 +476,7 @@ void sdb_test_server_update_in_two_sessions(sdb_tests_context_t ctx) {
   sdb_assert(it_2.points[1].value == 30, "Value should be 30");
 
   status = shakadb_data_points_iterator_next(&it_2);
-  sdb_assert(status == 0, "Data left in iterator")
+  sdb_assert(status == 0, "Data left in iterator");
 
   shakadb_session_close(&session_2);
 
@@ -501,7 +501,7 @@ void sdb_test_server_truncate_not_existing(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status == 0, "Data found in iterator")
+  sdb_assert(status == 0, "Data found in iterator");
 
   shakadb_session_close(&session);
 
@@ -523,7 +523,7 @@ void sdb_test_server_truncate_empty(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it_1);
-  sdb_assert(status == 0, "Data found in iterator")
+  sdb_assert(status == 0, "Data found in iterator");
 
   status = shakadb_truncate_data_series(&session, SDB_EUR_USD_ID);
   sdb_assert(status == SHAKADB_RESULT_OK, "Error when truncating");
@@ -533,7 +533,7 @@ void sdb_test_server_truncate_empty(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
   status = shakadb_data_points_iterator_next(&it_2);
-  sdb_assert(status == 0, "Data found in iterator")
+  sdb_assert(status == 0, "Data found in iterator");
 
   shakadb_session_close(&session);
 
@@ -566,7 +566,7 @@ void sdb_test_server_truncate_and_write(sdb_tests_context_t ctx) {
     sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
 
     status = shakadb_data_points_iterator_next(&it);
-    sdb_assert(status != 0, "No data found in iterator")
+    sdb_assert(status != 0, "No data found in iterator");
 
     sdb_assert(it.points_count == 4, "Invalid number of points");
     sdb_assert(it.points[0].time == 1 + i, "Invalid time value");
@@ -579,7 +579,7 @@ void sdb_test_server_truncate_and_write(sdb_tests_context_t ctx) {
     sdb_assert(it.points[3].value == 4 + i, "Invalid value");
 
     status = shakadb_data_points_iterator_next(&it);
-    sdb_assert(status == 0, "Data found in iterator")
+    sdb_assert(status == 0, "Data found in iterator");
 
     status = shakadb_truncate_data_series(&session, SDB_EUR_USD_ID);
     sdb_assert(status == SHAKADB_RESULT_OK, "Error when truncating");
@@ -673,7 +673,7 @@ void sdb_test_server_read_series_out_of_range(sdb_tests_context_t ctx) {
   sdb_assert(status == SHAKADB_RESULT_OK, "Error when reading");
 
   status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status == 0, "Data found in iterator")
+  sdb_assert(status == 0, "Data found in iterator");
 
   shakadb_session_close(&session);
 
