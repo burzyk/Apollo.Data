@@ -31,7 +31,7 @@
 #include "src/utils/memory.h"
 #include "src/storage/data-chunk.h"
 
-void sdb_cache_manager_cleanup(sdb_cache_manager_t *cache);
+void sdb_cache_manager_cleanup(sdb_cache_manager_t *cache, sdb_cache_entry_t *reason);
 void sdb_cache_manager_insert_entry(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry);
 void sdb_cache_manager_cut_entry(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry);
 
@@ -41,11 +41,14 @@ sdb_cache_manager_t *sdb_cache_manager_create(uint64_t soft_limit, uint64_t hard
   cache->soft_limit = soft_limit;
   cache->hard_limit = hard_limit;
   cache->_lock = sdb_mutex_create();
-  cache->_consumers_count = 0;
   cache->_guard.consumer = NULL;
   cache->_guard.allocated = 0;
   cache->_guard.prev = &cache->_guard;
   cache->_guard.next = &cache->_guard;
+
+  if (soft_limit > hard_limit) {
+    die("soft limit cannot be greater than hard limit");
+  }
 
   return cache;
 }
@@ -63,22 +66,16 @@ void sdb_cache_manager_destroy(sdb_cache_manager_t *cache) {
   sdb_free(cache);
 }
 
-sdb_cache_entry_t *sdb_cache_manager_register_consumer(sdb_cache_manager_t *cache, void *consumer) {
+sdb_cache_entry_t *sdb_cache_manager_register_consumer(sdb_cache_manager_t *cache, void *consumer, uint64_t memory) {
   sdb_cache_entry_t *entry = (sdb_cache_entry_t *)sdb_alloc(sizeof(sdb_cache_entry_t));
   entry->allocated = 0;
   entry->consumer = consumer;
 
   sdb_mutex_lock(cache->_lock);
   sdb_cache_manager_insert_entry(cache, entry);
-  sdb_mutex_unlock(cache->_lock);
 
-  return entry;
-}
-
-void sdb_cache_manager_allocate(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry, uint64_t memory_delta) {
-  sdb_mutex_lock(cache->_lock);
-  cache->_allocated += memory_delta;
-  entry->allocated += memory_delta;
+  cache->_allocated += memory;
+  entry->allocated += memory;
 
   if (cache->soft_limit < cache->_allocated && cache->_allocated < cache->hard_limit) {
     sdb_log_debug("Soft cache limit reached with %" PRIu64 " bytes allocated", cache->_allocated);
@@ -86,13 +83,19 @@ void sdb_cache_manager_allocate(sdb_cache_manager_t *cache, sdb_cache_entry_t *e
 
   if (cache->hard_limit < cache->_allocated) {
     sdb_log_info("Hard cache limit reached with %" PRIu64 " bytes allocated", cache->_allocated);
-    sdb_cache_manager_cleanup(cache);
+    sdb_cache_manager_cleanup(cache, entry);
   }
 
   sdb_mutex_unlock(cache->_lock);
+
+  return entry;
 }
 
 void sdb_cache_manager_update(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry) {
+  if (entry == NULL) {
+    return;
+  }
+
   sdb_mutex_lock(cache->_lock);
 
   sdb_cache_manager_cut_entry(cache, entry);
@@ -107,7 +110,6 @@ void sdb_cache_manager_insert_entry(sdb_cache_manager_t *cache, sdb_cache_entry_
   cache->_guard.next->prev = entry;
   cache->_guard.next = entry;
 
-  cache->_consumers_count++;
   cache->_allocated += entry->allocated;
 }
 
@@ -115,23 +117,28 @@ void sdb_cache_manager_cut_entry(sdb_cache_manager_t *cache, sdb_cache_entry_t *
   entry->next->prev = entry->prev;
   entry->prev->next = entry->next;
 
-  cache->_consumers_count--;
   cache->_allocated -= entry->allocated;
 }
 
-void sdb_cache_manager_cleanup(sdb_cache_manager_t *cache) {
+void sdb_cache_manager_cleanup(sdb_cache_manager_t *cache, sdb_cache_entry_t *reason) {
   sdb_stopwatch_t *sw = sdb_stopwatch_start();
   sdb_log_info("Starting cache cleanup ...");
   sdb_cache_entry_t *curr = cache->_guard.prev;
+  int purged = 0;
 
-  while (cache->_allocated > cache->soft_limit && cache->_consumers_count != 0) {
-    sdb_cache_manager_cut_entry(cache, curr);
-    sdb_data_chunk_clean_cache((sdb_data_chunk_t *)curr->consumer);
+  while (cache->_allocated > cache->soft_limit && curr != &cache->_guard) {
+    if (curr != reason) {
+      sdb_cache_manager_cut_entry(cache, curr);
+      sdb_data_chunk_clean_cache((sdb_data_chunk_t *)curr->consumer);
 
-    sdb_cache_entry_t *next = curr->prev;
-    sdb_free(curr);
-    curr = next;
+      sdb_cache_entry_t *next = curr->prev;
+      sdb_free(curr);
+      purged++;
+      curr = next;
+    } else {
+      curr = curr->next;
+    }
   }
 
-  sdb_log_info("Cache cleaned up in %fs", sdb_stopwatch_stop_and_destroy(sw));
+  sdb_log_info("Cache cleaned up in %fs, removed: %d entries", sdb_stopwatch_stop_and_destroy(sw), purged);
 }

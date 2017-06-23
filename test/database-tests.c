@@ -379,3 +379,12 @@ void sdb_test_database_cache_cleanup_old(sdb_tests_context_t ctx) {
 
   sdb_database_destroy(db);
 }
+
+void sdb_test_database_cache_smaller_than_chunk(sdb_tests_context_t ctx) {
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, 1, 1);
+
+  sdb_test_database_write(db, 12345, 10, 6);
+  sdb_test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+
+  sdb_database_destroy(db);
+}

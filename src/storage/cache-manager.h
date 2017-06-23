@@ -41,7 +41,6 @@ typedef struct sdb_cache_manager_s {
   uint64_t soft_limit;
   uint64_t hard_limit;
   uint64_t _allocated;
-  int _consumers_count;
 
   sdb_mutex_t *_lock;
   sdb_cache_entry_t _guard;
@@ -49,8 +48,7 @@ typedef struct sdb_cache_manager_s {
 
 sdb_cache_manager_t *sdb_cache_manager_create(uint64_t soft_limit, uint64_t hard_limit);
 void sdb_cache_manager_destroy(sdb_cache_manager_t *cache);
-sdb_cache_entry_t *sdb_cache_manager_register_consumer(sdb_cache_manager_t *cache, void *consumer);
-void sdb_cache_manager_allocate(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry, uint64_t memory_delta);
+sdb_cache_entry_t *sdb_cache_manager_register_consumer(sdb_cache_manager_t *cache, void *consumer, uint64_t memory);
 void sdb_cache_manager_update(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry);
 
 #endif  // SRC_STORAGE_CACHE_MANAGER_H_
