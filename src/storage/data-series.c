@@ -185,6 +185,8 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
     if (r->points_count > 0) {
       readers[ranges_count++] = r;
       total_points += r->points_count;
+    } else {
+      sdb_data_points_reader_destroy(r);
     }
   }
 
