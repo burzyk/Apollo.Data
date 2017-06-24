@@ -30,7 +30,9 @@ namespace ShakaDB.Client
         public static ShakaDbSession Open(string hostname, int port)
         {
             var session = new ShakaDbSession(hostname, port);
-            CallWrapper(() => SdbWrapper.ShakaDbSessionOpen(ref session._session, hostname, port), "Failed to connect");
+            CallWrapper(
+                () => SdbWrapper.ShakaDbSessionOpen(ref session._session, hostname, port),
+                $"{hostname}:{port}");
             return session;
         }
 
@@ -88,7 +90,14 @@ namespace ShakaDB.Client
 
         private static void CallWrapper(Func<int> action, string message)
         {
-            if (action() != Constants.ShakadbResultOk)
+            var result = action();
+
+            if (result == Constants.ShakadbResultConnectError)
+            {
+                throw new ShakaDbException($"Failed to connect: {message}");
+            }
+
+            if (result != Constants.ShakadbResultOk)
             {
                 throw new ShakaDbException($"Call failed: {message}");
             }

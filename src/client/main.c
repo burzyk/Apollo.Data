@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
   shakadb_session_t session = {};
 
-  if (shakadb_session_open(&session, hostname, port) == SHAKADB_RESULT_ERROR) {
+  if (shakadb_session_open(&session, hostname, port) != SHAKADB_RESULT_OK) {
     fprintf(stderr, "Failed to connect to: %s:%d\n", hostname, port);
     return -1;
   }
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 
     printf("writing point: %d -> (%" PRIu64 ", %f)\n", series_id, data_point.time, data_point.value);
 
-    if (shakadb_write_points(&session, series_id, &data_point, 1) == SHAKADB_RESULT_ERROR) {
+    if (shakadb_write_points(&session, series_id, &data_point, 1) != SHAKADB_RESULT_OK) {
       fprintf(stderr, "Failed to write the point\n");
       return -1;
     }
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
     shakadb_data_points_iterator_t it;
     int total_read = 0;
 
-    if (shakadb_read_points(&session, series_id, begin, end, &it) == SHAKADB_RESULT_ERROR) {
+    if (shakadb_read_points(&session, series_id, begin, end, &it) != SHAKADB_RESULT_OK) {
       fprintf(stderr, "Failed to read data points\n");
       return -1;
     }
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
 
     printf("truncating data series: %d\n", series_id);
 
-    if (shakadb_truncate_data_series(&session, series_id) == SHAKADB_RESULT_ERROR) {
+    if (shakadb_truncate_data_series(&session, series_id) != SHAKADB_RESULT_OK) {
       fprintf(stderr, "Failed to read data points\n");
       return -1;
     }

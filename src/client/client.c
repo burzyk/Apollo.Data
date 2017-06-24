@@ -28,7 +28,7 @@
 
 int shakadb_session_open(shakadb_session_t *session, const char *server, int port) {
   session->_session = sdb_client_session_create(server, port);
-  return session->_session == NULL ? SHAKADB_RESULT_ERROR : SHAKADB_RESULT_OK;
+  return session->_session == NULL ? SHAKADB_RESULT_CONNECT_ERROR : SHAKADB_RESULT_OK;
 }
 
 void shakadb_session_close(shakadb_session_t *session) {
@@ -49,14 +49,14 @@ int shakadb_write_points(shakadb_session_t *session,
   sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
   return !sdb_client_session_write_points(s, series_id, (sdb_data_point_t *)points, points_count)
          ? SHAKADB_RESULT_OK
-         : SHAKADB_RESULT_ERROR;
+         : SHAKADB_RESULT_GENERIC_ERROR;
 }
 
 int shakadb_truncate_data_series(shakadb_session_t *session, shakadb_data_series_id_t series_id) {
   sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
   return !sdb_client_session_truncate_data_series(s, series_id)
          ? SHAKADB_RESULT_OK
-         : SHAKADB_RESULT_ERROR;
+         : SHAKADB_RESULT_GENERIC_ERROR;
 }
 
 int shakadb_read_points(shakadb_session_t *session,
@@ -68,7 +68,7 @@ int shakadb_read_points(shakadb_session_t *session,
   iterator->_iterator = sdb_client_session_read_points(s, series_id, begin, end);
   iterator->points = NULL;
   iterator->points_count = -1;
-  return iterator->_iterator == NULL ? SHAKADB_RESULT_ERROR : SHAKADB_RESULT_OK;
+  return iterator->_iterator == NULL ? SHAKADB_RESULT_GENERIC_ERROR : SHAKADB_RESULT_OK;
 }
 
 int shakadb_data_points_iterator_next(shakadb_data_points_iterator_t *iterator) {

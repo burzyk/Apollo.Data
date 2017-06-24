@@ -38,8 +38,9 @@ typedef uint32_t shakadb_data_series_id_t;
 #define SHAKADB_MAX_TIMESTAMP UINT64_MAX
 #define SHAKADB_MIN_TIMESTAMP 0
 
-#define SHAKADB_RESULT_OK     0
-#define SHAKADB_RESULT_ERROR  -1
+#define SHAKADB_RESULT_OK                     0
+#define SHAKADB_RESULT_GENERIC_ERROR          -1
+#define SHAKADB_RESULT_CONNECT_ERROR          -2
 
 typedef struct __attribute__((packed)) {
   shakadb_timestamp_t time;

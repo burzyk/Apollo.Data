@@ -23,15 +23,16 @@ class SdbDataPointsIterator(Structure):
 
 
 class SafeInvoke(object):
-    def __init__(self, error=None):
-        self._error = error
-
     def __call__(self, func):
         @functools.wraps(func)
         def do_call(*args, **kwargs):
             result = func(*args, **kwargs)
-            if result == Constants.SHAKADB_RESULT_ERROR:
-                raise ShakaDbError('ShakaDB method call failed') if self._error is None else self._error
+            if result == Constants.SHAKADB_RESULT_CONNECT_ERROR:
+                raise ShakaDbError('Unable to connect to the server')
+
+            if result != Constants.SHAKADB_RESULT_OK:
+                raise ShakaDbError('ShakaDB method call failed')
+
             return result
 
         return do_call
@@ -54,7 +55,7 @@ def _get_lib():
     return _shakadb_lib
 
 
-@SafeInvoke(ShakaDbError('Unable to open session'))
+@SafeInvoke()
 def shakadb_session_open(session, server, port):
     return _get_lib().shakadb_session_open(session, server, port)
 
@@ -78,6 +79,5 @@ def shakadb_read_points(session, series_id, begin, end, iterator):
     return _get_lib().shakadb_read_points(session, series_id, begin, end, iterator)
 
 
-@SafeInvoke()
 def shakadb_data_points_iterator_next(iterator):
     return _get_lib().shakadb_data_points_iterator_next(iterator)

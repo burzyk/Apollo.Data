@@ -37,7 +37,7 @@ void sdb_test_server_connect_invalid_address(sdb_tests_context_t ctx) {
   sdb_server_t *server = sdb_server_create(8081, 10, 10, 100, db);
 
   int status = shakadb_session_open(&session, "sadasasdasdasd.asdas", 8081);
-  sdb_assert(status == SHAKADB_RESULT_ERROR, "Should not connect");
+  sdb_assert(status == SHAKADB_RESULT_CONNECT_ERROR, "Should not connect");
   shakadb_session_close(&session);
 
   sdb_server_destroy(server);
@@ -50,7 +50,7 @@ void sdb_test_server_connect_invalid_port(sdb_tests_context_t ctx) {
   sdb_server_t *server = sdb_server_create(8081, 10, 10, 100, db);
 
   int status = shakadb_session_open(&session, "localhost", 25876);
-  sdb_assert(status == SHAKADB_RESULT_ERROR, "Should not connect");
+  sdb_assert(status == SHAKADB_RESULT_CONNECT_ERROR, "Should not connect");
   shakadb_session_close(&session);
 
   sdb_server_destroy(server);
@@ -603,7 +603,7 @@ void sdb_test_server_no_sig_pipe_on_too_large_packet(sdb_tests_context_t ctx) {
   shakadb_data_point_t *points = (shakadb_data_point_t *)sdb_alloc(SDB_PACKET_MAX_LEN * sizeof(shakadb_data_point_t));
 
   status = shakadb_write_points(&session, SDB_EUR_GBP_ID, points, SDB_PACKET_MAX_LEN);
-  sdb_assert(status == SHAKADB_RESULT_ERROR, "Packet should not be processed");
+  sdb_assert(status != SHAKADB_RESULT_OK, "Packet should not be processed");
 
   shakadb_session_close(&session);
 
@@ -629,7 +629,7 @@ void sdb_test_server_failed_write(sdb_tests_context_t ctx) {
   };
 
   status = shakadb_write_points(&session, SDB_EUR_GBP_ID, points, 4);
-  sdb_assert(status == SHAKADB_RESULT_ERROR, "Write should fail");
+  sdb_assert(status != SHAKADB_RESULT_OK, "Write should fail");
 
   shakadb_session_close(&session);
 

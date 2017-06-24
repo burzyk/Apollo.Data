@@ -98,6 +98,4 @@ def test_server_truncate_test():
 
 
 if __name__ == '__main__':
-    s = pyshaka.Session('localhost', 8487)
-    s.close()
-    s.close()
+    test_server_read_and_write_with_iterator()
