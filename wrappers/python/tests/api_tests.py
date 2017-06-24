@@ -17,6 +17,13 @@ def test_invalid_server():
         pyshaka.Session('blah.blah', 8487)
 
 
+def test_multiple_open_iterators():
+    with raises(pyshaka.ShakaDbError):
+        s = pyshaka.Session('localhost', 8487)
+        s.read(0, 100, 1000)
+        s.read(0, 100, 1000)
+
+
 def test_reuse_closed_session():
     with raises(pyshaka.SessionClosedError):
         s = pyshaka.Session('localhost', 8487)

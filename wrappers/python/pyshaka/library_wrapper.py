@@ -13,13 +13,15 @@ class SdbDataPoint(Structure):
 
 
 class SdbSession(Structure):
-    _fields_ = [("_session", c_void_p)]
+    _fields_ = [("_session", c_void_p),
+                ("_read_opened", c_int)]
 
 
 class SdbDataPointsIterator(Structure):
     _fields_ = [("points", POINTER(SdbDataPoint)),
                 ("points_count", c_int),
-                ("_iterator", c_void_p)]
+                ("_iterator", c_void_p),
+                ("_session", c_void_p)]
 
 
 class SafeInvoke(object):
@@ -29,6 +31,10 @@ class SafeInvoke(object):
             result = func(*args, **kwargs)
             if result == Constants.SHAKADB_RESULT_CONNECT_ERROR:
                 raise ShakaDbError('Unable to connect to the server')
+
+            if result == Constants.SHAKADB_RESULT_MULTIPLE_READS_ERROR:
+                raise ShakaDbError(
+                    'There is an outstanding iterator. Only one read connection is allowed at a given time')
 
             if result != Constants.SHAKADB_RESULT_OK:
                 raise ShakaDbError('ShakaDB method call failed')

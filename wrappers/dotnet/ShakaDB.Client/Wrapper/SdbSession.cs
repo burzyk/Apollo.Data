@@ -7,5 +7,7 @@ namespace ShakaDB.Client.Wrapper
     internal struct SdbSession
     {
         public IntPtr Session;
+
+        public int ReadOpen;
     }
 }

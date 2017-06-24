@@ -790,3 +790,58 @@ void sdb_test_server_write_filter_zeros(sdb_tests_context_t ctx) {
   sdb_server_destroy(server);
   sdb_database_destroy(db);
 }
+
+void sdb_test_server_read_multiple_active(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_point_t points[] = {
+      {.time=1, .value = 1},
+  };
+
+  status = shakadb_write_points(&session, SDB_EUR_GBP_ID, points, 1);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Write should fail");
+
+  // read first time
+  shakadb_data_points_iterator_t it1 = {};
+  status = shakadb_read_points(&session, SDB_EUR_GBP_ID, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, &it1);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
+
+  // read second time
+  shakadb_data_points_iterator_t it2 = {};
+  status = shakadb_read_points(&session, SDB_EUR_GBP_ID, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, &it2);
+  sdb_assert(status == SHAKADB_RESULT_MULTIPLE_READS_ERROR, "There are multiple reads open");
+
+  // second iterator empty
+  status = shakadb_data_points_iterator_next(&it2);
+  sdb_assert(status == 0, "Data found in iterator");
+
+  // first iterator returns data
+  status = shakadb_data_points_iterator_next(&it1);
+  sdb_assert(status != 0, "No data found in iterator");
+
+  status = shakadb_data_points_iterator_next(&it1);
+  sdb_assert(status == 0, "Data found in iterator");
+
+  // third read
+  shakadb_data_points_iterator_t it3 = {};
+  status = shakadb_read_points(&session, SDB_EUR_GBP_ID, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, &it3);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
+
+  // third iterator returns data
+  status = shakadb_data_points_iterator_next(&it3);
+  sdb_assert(status != 0, "No data found in iterator");
+
+  status = shakadb_data_points_iterator_next(&it3);
+  sdb_assert(status == 0, "Data found in iterator");
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}

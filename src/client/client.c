@@ -25,9 +25,11 @@
 
 #include "src/client/client.h"
 #include "src/client/session.h"
+#include "client.h"
 
 int shakadb_session_open(shakadb_session_t *session, const char *server, int port) {
   session->_session = sdb_client_session_create(server, port);
+  session->_read_opened = 0;
   return session->_session == NULL ? SHAKADB_RESULT_CONNECT_ERROR : SHAKADB_RESULT_OK;
 }
 
@@ -64,11 +66,27 @@ int shakadb_read_points(shakadb_session_t *session,
                         shakadb_timestamp_t begin,
                         shakadb_timestamp_t end,
                         shakadb_data_points_iterator_t *iterator) {
+  iterator->_iterator = NULL;
+  iterator->_session = NULL;
+  iterator->points = NULL;
+  iterator->points_count = 0;
+
+  if (session->_read_opened) {
+    return SHAKADB_RESULT_MULTIPLE_READS_ERROR;
+  }
+
   sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
   iterator->_iterator = sdb_client_session_read_points(s, series_id, begin, end);
   iterator->points = NULL;
   iterator->points_count = -1;
-  return iterator->_iterator == NULL ? SHAKADB_RESULT_GENERIC_ERROR : SHAKADB_RESULT_OK;
+  iterator->_session = session;
+  int result = iterator->_iterator == NULL ? SHAKADB_RESULT_GENERIC_ERROR : SHAKADB_RESULT_OK;
+
+  if (result == SHAKADB_RESULT_OK) {
+    session->_read_opened = 1;
+  }
+
+  return result;
 }
 
 int shakadb_data_points_iterator_next(shakadb_data_points_iterator_t *iterator) {
@@ -87,6 +105,7 @@ int shakadb_data_points_iterator_next(shakadb_data_points_iterator_t *iterator) 
     iterator->_iterator = NULL;
     iterator->points = NULL;
     iterator->points_count = -1;
+    iterator->_session->_read_opened = 0;
     return 0;
   }
 }

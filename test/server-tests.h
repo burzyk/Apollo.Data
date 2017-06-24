@@ -29,5 +29,6 @@ void sdb_test_server_read_series_out_of_range(sdb_tests_context_t ctx);
 void sdb_test_server_truncate_series_out_of_range(sdb_tests_context_t ctx);
 void sdb_test_server_write_filter_duplicates(sdb_tests_context_t ctx);
 void sdb_test_server_write_filter_zeros(sdb_tests_context_t ctx);
+void sdb_test_server_read_multiple_active(sdb_tests_context_t ctx);
 
 #endif  // TEST_SERVER_TESTS_H_

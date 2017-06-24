@@ -97,6 +97,11 @@ namespace ShakaDB.Client
                 throw new ShakaDbException($"Failed to connect: {message}");
             }
 
+            if (result == Constants.ShakadbResultMultipleReadsError)
+            {
+                throw new ShakaDbException($"Multiple results active: {message}");
+            }
+
             if (result != Constants.ShakadbResultOk)
             {
                 throw new ShakaDbException($"Call failed: {message}");

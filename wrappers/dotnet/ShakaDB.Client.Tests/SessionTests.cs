@@ -96,5 +96,22 @@ namespace ShakaDB.Client.Tests
                 Assert.Equal(0, result.Count);
             }
         }
+
+        [Fact]
+        public void MultipleOpenedReadsTest()
+        {
+            using (var session = ShakaDbSession.Open("localhost", 8487))
+            {
+                session.Truncate(TestConstants.UsdAud);
+                session.Write(TestConstants.UsdAud, new[]
+                {
+                    new ShakaDbDataPoint(1, 12),
+                    new ShakaDbDataPoint(2, 13)
+                });
+
+                session.Read(TestConstants.UsdAud);
+                Assert.Throws<ShakaDbException>(() => session.Read(TestConstants.UsdAud));
+            }
+        }
     }
 }

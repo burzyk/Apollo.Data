@@ -4,6 +4,7 @@ class Constants:
     SHAKADB_RESULT_OK = 0
     SHAKADB_RESULT_GENERIC_ERROR = -1
     SHAKADB_RESULT_CONNECT_ERROR = -2
+    SHAKADB_RESULT_MULTIPLE_READS_ERROR = -3
 
 
 class ShakaDbError(Exception):
