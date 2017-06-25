@@ -21,7 +21,7 @@ script: rake build_$SDB_CONFIGURATION
 env:
   global:
     - SDB_VERSION_MAJOR=0
-    - SDB_VERSION_MINOR=11
+    - SDB_VERSION_MINOR=12
     - SDB_VERSION_PATCH=1
     - SDB_BUILD=$TRAVIS_COMMIT
     - LD_LIBRARY_PATH=/usr/local/lib/
