@@ -38,8 +38,10 @@ typedef uint32_t shakadb_data_series_id_t;
 #define SHAKADB_MAX_TIMESTAMP UINT64_MAX
 #define SHAKADB_MIN_TIMESTAMP 0
 
-#define SHAKADB_RESULT_OK     0
-#define SHAKADB_RESULT_ERROR  -1
+#define SHAKADB_RESULT_OK                     0
+#define SHAKADB_RESULT_GENERIC_ERROR          -1
+#define SHAKADB_RESULT_CONNECT_ERROR          -2
+#define SHAKADB_RESULT_MULTIPLE_READS_ERROR   -3
 
 typedef struct __attribute__((packed)) {
   shakadb_timestamp_t time;
@@ -48,12 +50,14 @@ typedef struct __attribute__((packed)) {
 
 typedef struct {
   void *_session;
+  int _read_opened;
 } shakadb_session_t;
 
 typedef struct {
   shakadb_data_point_t *points;
   int points_count;
   void *_iterator;
+  shakadb_session_t *_session;
 } shakadb_data_points_iterator_t;
 
 int shakadb_session_open(shakadb_session_t *session, const char *server, int port);
@@ -67,7 +71,11 @@ int shakadb_read_points(shakadb_session_t *session,
                         shakadb_data_series_id_t series_id,
                         shakadb_timestamp_t begin,
                         shakadb_timestamp_t end,
+                        int points_per_packet,
                         shakadb_data_points_iterator_t *iterator);
+int shakadb_read_latest_point(shakadb_session_t *session,
+                              shakadb_data_series_id_t series_id,
+                              shakadb_data_point_t *latest);
 int shakadb_data_points_iterator_next(shakadb_data_points_iterator_t *iterator);
 
 #ifdef __cplusplus

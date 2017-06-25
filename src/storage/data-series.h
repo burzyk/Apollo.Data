@@ -53,5 +53,6 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                sdb_timestamp_t begin,
                                                sdb_timestamp_t end,
                                                int max_points);
+sdb_data_point_t sdb_data_series_read_latest(sdb_data_series_t *series);
 
 #endif  // SRC_STORAGE_DATA_SERIES_H_

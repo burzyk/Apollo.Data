@@ -8,6 +8,10 @@ namespace ShakaDB.Client
 
         public const int ShakadbResultOk = 0;
 
-        public const int ShakadbResultError = -1;
+        public const int ShakadbResultGenericError = -1;
+
+        public const int ShakadbResultConnectError = -2;
+
+        public const int ShakadbResultMultipleReadsError = -3;
     }
 }

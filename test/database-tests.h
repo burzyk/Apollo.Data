@@ -52,5 +52,8 @@ void sdb_test_database_failed_write(sdb_tests_context_t ctx);
 void sdb_test_database_cache_cleanup(sdb_tests_context_t ctx);
 void sdb_test_database_cache_cleanup_old(sdb_tests_context_t ctx);
 void sdb_test_database_cache_smaller_than_chunk(sdb_tests_context_t ctx);
+void sdb_test_database_read_latest_no_data(sdb_tests_context_t ctx);
+void sdb_test_database_read_latest_data_in_first_chunk(sdb_tests_context_t ctx);
+void sdb_test_database_read_latest_data_in_second_chunk(sdb_tests_context_t ctx);
 
 #endif  // TEST_DATABASE_TESTS_H_

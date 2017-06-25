@@ -62,12 +62,36 @@ int sdb_client_session_truncate_data_series(sdb_client_session_t *session, sdb_d
 sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t *session,
                                                            sdb_data_series_id_t series_id,
                                                            sdb_timestamp_t begin,
-                                                           sdb_timestamp_t end) {
-  if (sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), session->_sock)) {
+                                                           sdb_timestamp_t end,
+                                                           int points_per_packet) {
+  if (sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end, points_per_packet), session->_sock)) {
     return NULL;
   }
 
   return sdb_data_points_iterator_create(session->_sock);
+}
+
+int sdb_client_session_read_latest_point(sdb_client_session_t *session,
+                                         sdb_data_series_id_t series_id,
+                                         sdb_data_point_t *latest) {
+  if (sdb_packet_send_and_destroy(sdb_read_latest_request_create(series_id), session->_sock)) {
+    return -1;
+  }
+
+  sdb_data_point_t result = {.value=0, .time=0};
+  sdb_data_points_iterator_t *it = sdb_data_points_iterator_create(session->_sock);
+
+  while (sdb_data_points_iterator_next(it)) {
+    if (it->points_count > 0) {
+      result = it->points[it->points_count - 1];
+    }
+  }
+
+  latest->time = result.time;
+  latest->value = result.value;
+  
+  sdb_data_points_iterator_destroy(it);
+  return 0;
 }
 
 int sdb_client_session_send_with_simple_response(sdb_client_session_t *session, sdb_packet_t *request) {

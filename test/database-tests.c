@@ -388,3 +388,38 @@ void sdb_test_database_cache_smaller_than_chunk(sdb_tests_context_t ctx) {
 
   sdb_database_destroy(db);
 }
+
+void sdb_test_database_read_latest_no_data(sdb_tests_context_t ctx) {
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
+
+  sdb_data_point_t latest = sdb_database_read_latest(db, 12345);
+
+  sdb_assert(latest.value == 0, "Value is non-zero");
+  sdb_assert(latest.time == 0, "Time is non-zero");
+
+  sdb_database_destroy(db);
+}
+
+void sdb_test_database_read_latest_data_in_first_chunk(sdb_tests_context_t ctx) {
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
+
+  sdb_test_database_write(db, 12345, 1, 10);
+  sdb_data_point_t latest = sdb_database_read_latest(db, 12345);
+
+  sdb_assert(latest.value == 1000, "Incorrect value");
+  sdb_assert(latest.time == 10, "Incorrect time");
+
+  sdb_database_destroy(db);
+}
+
+void sdb_test_database_read_latest_data_in_second_chunk(sdb_tests_context_t ctx) {
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
+
+  sdb_test_database_write(db, 12345, 2, 10);
+  sdb_data_point_t latest = sdb_database_read_latest(db, 12345);
+
+  sdb_assert(latest.value == 2000, "Incorrect value");
+  sdb_assert(latest.time == 20, "Incorrect time");
+
+  sdb_database_destroy(db);
+}

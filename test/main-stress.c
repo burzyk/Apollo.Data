@@ -152,7 +152,9 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
         sw = sdb_stopwatch_start();
         shakadb_data_points_iterator_t it;
 
-        sdb_assert(shakadb_read_points(&session, series, begin, end, &it) == SHAKADB_RESULT_OK, "Failed to read data");
+        sdb_assert(
+            shakadb_read_points(&session, series, begin, end, SDB_POINTS_PER_PACKET_MAX, &it) == SHAKADB_RESULT_OK,
+            "Failed to read data");
 
         while (shakadb_data_points_iterator_next(&it)) {
         }
@@ -174,6 +176,7 @@ void sdb_stress_test_read_write(const char *hostname, int port) {
   int points_count = 10000;
   int step = 2;
   int max_count = 5000000;
+  int status = 0;
   sdb_stopwatch_t *sw;
 
   while (max_tests--) {
@@ -206,10 +209,13 @@ void sdb_stress_test_read_write(const char *hostname, int port) {
         sw = sdb_stopwatch_start();
         shakadb_data_points_iterator_t it;
 
-        sdb_assert(
-            shakadb_read_points(&session, series, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, &it)
-                == SHAKADB_RESULT_OK,
-            "Failed to read data");
+        status = shakadb_read_points(&session,
+                                     series,
+                                     SHAKADB_MIN_TIMESTAMP,
+                                     SHAKADB_MAX_TIMESTAMP,
+                                     SDB_POINTS_PER_PACKET_MAX,
+                                     &it);
+        sdb_assert(status == SHAKADB_RESULT_OK, "Failed to read data");
 
         int expected_pos = 0;
         int actual_pos = 0;

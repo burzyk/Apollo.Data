@@ -13,25 +13,32 @@ class SdbDataPoint(Structure):
 
 
 class SdbSession(Structure):
-    _fields_ = [("_session", c_void_p)]
+    _fields_ = [("_session", c_void_p),
+                ("_read_opened", c_int)]
 
 
 class SdbDataPointsIterator(Structure):
     _fields_ = [("points", POINTER(SdbDataPoint)),
                 ("points_count", c_int),
-                ("_iterator", c_void_p)]
+                ("_iterator", c_void_p),
+                ("_session", c_void_p)]
 
 
 class SafeInvoke(object):
-    def __init__(self, error=None):
-        self._error = error
-
     def __call__(self, func):
         @functools.wraps(func)
         def do_call(*args, **kwargs):
             result = func(*args, **kwargs)
-            if result == Constants.SHAKADB_RESULT_ERROR:
-                raise ShakaDbError('ShakaDB method call failed') if self._error is None else self._error
+            if result == Constants.SHAKADB_RESULT_CONNECT_ERROR:
+                raise ShakaDbError('Unable to connect to the server')
+
+            if result == Constants.SHAKADB_RESULT_MULTIPLE_READS_ERROR:
+                raise ShakaDbError(
+                    'There is an outstanding iterator. Only one read connection is allowed at a given time')
+
+            if result != Constants.SHAKADB_RESULT_OK:
+                raise ShakaDbError('ShakaDB method call failed')
+
             return result
 
         return do_call
@@ -54,7 +61,7 @@ def _get_lib():
     return _shakadb_lib
 
 
-@SafeInvoke(ShakaDbError('Unable to open session'))
+@SafeInvoke()
 def shakadb_session_open(session, server, port):
     return _get_lib().shakadb_session_open(session, server, port)
 
@@ -74,10 +81,14 @@ def shakadb_truncate_data_series(session, series_id):
 
 
 @SafeInvoke()
-def shakadb_read_points(session, series_id, begin, end, iterator):
-    return _get_lib().shakadb_read_points(session, series_id, begin, end, iterator)
+def shakadb_read_points(session, series_id, begin, end, points_per_packet, iterator):
+    return _get_lib().shakadb_read_points(session, series_id, begin, end, points_per_packet, iterator)
 
 
 @SafeInvoke()
+def shakadb_read_latest_point(session, series_id, latest):
+    return _get_lib().shakadb_read_latest_point(session, series_id, latest)
+
+
 def shakadb_data_points_iterator_next(iterator):
     return _get_lib().shakadb_data_points_iterator_next(iterator)

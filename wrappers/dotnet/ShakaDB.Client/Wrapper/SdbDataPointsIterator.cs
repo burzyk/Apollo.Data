@@ -11,6 +11,8 @@ namespace ShakaDB.Client.Wrapper
         public int PointsCount;
 
         public IntPtr Iterator;
+        
+        public IntPtr Session;
 
         public SdbDataPoint ReadAt(int offset)
         {

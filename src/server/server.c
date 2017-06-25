@@ -33,13 +33,13 @@ void *sdb_server_worker_routine(void *data);
 void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 void sdb_server_handle_truncate(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
+void sdb_server_handle_read_latest(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 
-sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, int points_per_packet, sdb_database_t *db) {
+sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, sdb_database_t *db) {
   sdb_server_t *server = (sdb_server_t *)sdb_alloc(sizeof(sdb_server_t));
   server->_db = db;
   server->_is_running = 1;
   server->_master_socket = sdb_socket_listen(port, backlog);
-  server->_points_per_packet = points_per_packet;
   server->_thread_pool_size = max_clients;
   server->_thread_pool = (sdb_thread_t **)sdb_alloc(sizeof(sdb_thread_t *) * server->_thread_pool_size);
 
@@ -78,10 +78,16 @@ void *sdb_server_worker_routine(void *data) {
 
     if ((client_socket = sdb_socket_accept(server->_master_socket)) != SDB_INVALID_SOCKET) {
       sdb_log_debug("client connected: %d", client_socket);
-      sdb_packet_t *packet = NULL;
 
-      while ((packet = sdb_packet_receive(client_socket)) != NULL) {
+      while (sdb_socket_wait_for_data(client_socket)) {
+        sdb_packet_t *packet = sdb_packet_receive(client_socket);
+
+        if (packet == NULL) {
+          break;
+        }
+
         sdb_log_debug("packet received: { type: %d, length: %d }", packet->header.type, packet->header.payload_size);
+        sdb_stopwatch_t *sw = sdb_stopwatch_start();
 
         switch (packet->header.type) {
           case SDB_READ_REQUEST: sdb_server_handle_read(server, client_socket, packet);
@@ -90,9 +96,12 @@ void *sdb_server_worker_routine(void *data) {
             break;
           case SDB_TRUNCATE_REQUEST:sdb_server_handle_truncate(server, client_socket, packet);
             break;
+          case SDB_READ_LATEST_REQUEST:sdb_server_handle_read_latest(server, client_socket, packet);
+            break;
           default: sdb_log_info("Unknown packet type: %d", packet->header.type);
         }
 
+        sdb_log_debug("packet handled in: %fs", sdb_stopwatch_stop_and_destroy(sw));
         sdb_packet_destroy(packet);
       }
 
@@ -112,9 +121,10 @@ void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sd
                 request->end);
 
   sdb_timestamp_t begin = request->begin;
+  int points_per_packet = sdb_max(1, sdb_min(SDB_POINTS_PER_PACKET_MAX, request->points_per_packet));
 
   for (;;) {
-    int points_to_read = server->_points_per_packet + 1;
+    int points_to_read = points_per_packet + 1;
     sdb_data_points_reader_t *reader =
         sdb_database_read(server->_db, request->data_series_id, begin, request->end, points_to_read);
 
@@ -124,7 +134,7 @@ void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sd
 
     begin = reader->points_count == points_to_read ? reader->points[reader->points_count - 1].time : request->end;
 
-    int points_to_send = sdb_min(server->_points_per_packet, reader->points_count);
+    int points_to_send = sdb_min(points_per_packet, reader->points_count);
     sdb_log_debug("sending response: { begin: %" PRIu64 ", end: %" PRIu64 ", points: %d }",
                   points_to_send ? reader->points[0].time : 0,
                   points_to_send ? reader->points[points_to_send - 1].time : 0,
@@ -212,5 +222,25 @@ void sdb_server_handle_truncate(sdb_server_t *server, sdb_socket_t client_socket
   }
 
   sdb_log_debug("data series truncated");
+}
+
+void sdb_server_handle_read_latest(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
+  int send_status = 0;
+  sdb_read_latest_request_t *request = (sdb_read_latest_request_t *)packet->payload;
+  sdb_log_debug("processing read latest request: { series: %d }", request->data_series_id);
+
+  sdb_data_point_t latest = sdb_database_read_latest(server->_db, request->data_series_id);
+  sdb_log_debug("latest point: { time: %" PRIu64, ", value: %f }", latest.time, latest.value);
+
+  if (latest.time != 0) {
+    send_status |= sdb_packet_send_and_destroy(sdb_read_response_create(SDB_RESPONSE_OK, &latest, 1), client_socket);
+  }
+
+  send_status |= sdb_packet_send_and_destroy(sdb_read_response_create(SDB_RESPONSE_OK, NULL, 0), client_socket);
+
+  if (send_status != 0) {
+    sdb_log_debug("error sending response");
+    return;
+  }
 }
 

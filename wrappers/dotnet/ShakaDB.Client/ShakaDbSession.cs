@@ -1,3 +1,5 @@
+using Microsoft.Win32.SafeHandles;
+
 namespace ShakaDB.Client
 {
     using System;
@@ -30,7 +32,9 @@ namespace ShakaDB.Client
         public static ShakaDbSession Open(string hostname, int port)
         {
             var session = new ShakaDbSession(hostname, port);
-            CallWrapper(() => SdbWrapper.ShakaDbSessionOpen(ref session._session, hostname, port), "Failed to connect");
+            CallWrapper(
+                () => SdbWrapper.ShakaDbSessionOpen(ref session._session, hostname, port),
+                $"{hostname}:{port}");
             return session;
         }
 
@@ -57,7 +61,23 @@ namespace ShakaDB.Client
                 $"Failed to write data to {seriesId}");
         }
 
-        public IEnumerable<ShakaDbDataPoint> Read(uint seriesId, ulong? begin = null, ulong? end = null)
+        public ShakaDbDataPoint GetLatest(uint seriesId)
+        {
+            EnsureNotDisposed();
+            var result = new SdbDataPoint();
+
+            CallWrapper(
+                () => SdbWrapper.ShakaDbReadLatestPoint(ref _session, seriesId, ref result),
+                $"Failed to read latest from {seriesId}");
+
+            return result.Time == 0 ? null : new ShakaDbDataPoint(result.Time, result.Value);
+        }
+
+        public IEnumerable<ShakaDbDataPoint> Read(
+            uint seriesId,
+            ulong? begin = null,
+            ulong? end = null,
+            int pointsPerPacket = 655360)
         {
             EnsureNotDisposed();
 
@@ -66,7 +86,13 @@ namespace ShakaDB.Client
 
             var iterator = new SdbDataPointsIterator();
             CallWrapper(
-                () => SdbWrapper.ShakaDbReadPoints(ref _session, seriesId, begin.Value, end.Value, ref iterator),
+                () => SdbWrapper.ShakaDbReadPoints(
+                    ref _session,
+                    seriesId,
+                    begin.Value,
+                    end.Value,
+                    pointsPerPacket,
+                    ref iterator),
                 $"Failed to read data: {seriesId}");
             return new PointsEnumerable(iterator);
         }
@@ -88,7 +114,19 @@ namespace ShakaDB.Client
 
         private static void CallWrapper(Func<int> action, string message)
         {
-            if (action() != Constants.ShakadbResultOk)
+            var result = action();
+
+            if (result == Constants.ShakadbResultConnectError)
+            {
+                throw new ShakaDbException($"Failed to connect: {message}");
+            }
+
+            if (result == Constants.ShakadbResultMultipleReadsError)
+            {
+                throw new ShakaDbException($"Multiple results active: {message}");
+            }
+
+            if (result != Constants.ShakadbResultOk)
             {
                 throw new ShakaDbException($"Call failed: {message}");
             }

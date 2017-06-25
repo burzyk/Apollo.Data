@@ -116,6 +116,10 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_database_cache_cleanup);
   TEST(sdb_test_database_cache_cleanup_old);
   TEST(sdb_test_database_cache_smaller_than_chunk);
+  TEST(sdb_test_database_read_latest_no_data);
+  TEST(sdb_test_database_read_latest_data_in_first_chunk);
+  TEST(sdb_test_database_read_latest_data_in_second_chunk);
+
 
   TEST(sdb_test_server_simple_initialization_test);
   TEST(sdb_test_server_connect);
@@ -139,6 +143,13 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_server_truncate_series_out_of_range);
   TEST(sdb_test_server_write_filter_duplicates);
   TEST(sdb_test_server_write_filter_zeros);
+  TEST(sdb_test_server_read_multiple_active);
+  TEST(sdb_test_server_read_latest_series_out_of_range);
+  TEST(sdb_test_server_read_latest_when_empty);
+  TEST(sdb_test_server_read_latest);
+  TEST(sdb_test_server_write_when_read_opened);
+  TEST(sdb_test_server_truncate_when_read_opened);
+  TEST(sdb_test_server_read_latest_when_read_opened);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");
