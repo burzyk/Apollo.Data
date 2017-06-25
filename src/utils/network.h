@@ -38,5 +38,6 @@ int sdb_socket_receive(sdb_socket_t socket, void *buffer, size_t size);
 int sdb_socket_send(sdb_socket_t socket, void *buffer, size_t size);
 void sdb_socket_close(sdb_socket_t socket);
 sdb_socket_t sdb_socket_accept(sdb_socket_t socket);
+int sdb_socket_wait_for_data(sdb_socket_t socket);
 
 #endif  // SRC_UTILS_NETWORK_H_

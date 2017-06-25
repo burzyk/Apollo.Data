@@ -32,11 +32,14 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <signal.h>
+#include <errno.h>
 
 #include "src/common.h"
 
 sdb_socket_t sdb_socket_create(int family, int type, int protocol);
 void sdb_socket_init(sdb_socket_t sock);
+void sdb_socket_set_timeout(sdb_socket_t socket, int timeout_seconds);
+int sdb_socket_get_timeout(sdb_socket_t socket);
 
 sdb_socket_t sdb_socket_listen(int port, int backlog) {
   sdb_socket_t sock;
@@ -136,6 +139,19 @@ sdb_socket_t sdb_socket_accept(sdb_socket_t socket) {
   return sock;
 }
 
+int sdb_socket_wait_for_data(sdb_socket_t socket) {
+  int buff = 0;
+  ssize_t read = -1;
+  int error_code = EAGAIN;
+
+  while (read == -1 && (error_code == EAGAIN || error_code == EWOULDBLOCK)) {
+    read = recv(socket, &buff, sizeof(buff), MSG_PEEK);
+    error_code = errno;
+  }
+
+  return (int)read;
+}
+
 sdb_socket_t sdb_socket_create(int family, int type, int protocol) {
   signal(SIGPIPE, SIG_IGN);
   sdb_socket_t sock = socket(family, type, protocol);
@@ -149,10 +165,37 @@ void sdb_socket_init(sdb_socket_t sock) {
     return;
   }
 
+  sdb_socket_set_timeout(sock, SDB_SOCKET_TIMEOUT);
+
 #ifdef __APPLE__
   int option_value = 1;
   if (setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, &option_value, sizeof(option_value)) < 0) {
     die("unable to set SO_NOSIGPIPE on a socket");
   }
 #endif
+}
+
+void sdb_socket_set_timeout(sdb_socket_t socket, int timeout_seconds) {
+  struct timeval timeout;
+  timeout.tv_sec = timeout_seconds;
+  timeout.tv_usec = 0;
+
+  if (setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    die("Unable to specify receive timeout");
+  }
+
+  if (setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+    die("Unable to specify send timeout");
+  }
+}
+
+int sdb_socket_get_timeout(sdb_socket_t socket) {
+  struct timeval timeout = {0};
+  socklen_t len = sizeof(timeout);
+
+  if (getsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, &len) < 0) {
+    die("Unable to get receive timeout");
+  }
+
+  return (int)timeout.tv_sec;
 }

@@ -33,7 +33,14 @@ typedef uint32_t sdb_data_series_id_t;
 
 #define SDB_TIMESTAMP_MIN ((sdb_timestamp_t)0)
 #define SDB_TIMESTAMP_MAX ((sdb_timestamp_t)UINT64_MAX)
+
+#ifndef SDB_POINTS_PER_PACKET_MAX
 #define SDB_POINTS_PER_PACKET_MAX  655360
+#endif
+
+#ifndef SDB_SOCKET_TIMEOUT
+#define SDB_SOCKET_TIMEOUT  10
+#endif
 
 #ifndef SDB_FILE_MAX_LEN
 #define SDB_FILE_MAX_LEN  1024

@@ -78,9 +78,14 @@ void *sdb_server_worker_routine(void *data) {
 
     if ((client_socket = sdb_socket_accept(server->_master_socket)) != SDB_INVALID_SOCKET) {
       sdb_log_debug("client connected: %d", client_socket);
-      sdb_packet_t *packet = NULL;
 
-      while ((packet = sdb_packet_receive(client_socket)) != NULL) {
+      while (sdb_socket_wait_for_data(client_socket)) {
+        sdb_packet_t *packet = sdb_packet_receive(client_socket);
+
+        if (packet == NULL) {
+          break;
+        }
+
         sdb_log_debug("packet received: { type: %d, length: %d }", packet->header.type, packet->header.payload_size);
         sdb_stopwatch_t *sw = sdb_stopwatch_start();
 
