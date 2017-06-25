@@ -30,6 +30,7 @@ class DataPointsIterator:
 
     def next(self):
         result = shakadb_data_points_iterator_next(byref(self._iterator))
+        self._points = []
 
         if result != 0:
             for i in range(0, self._iterator.points_count):
@@ -68,15 +69,15 @@ class Session:
         shakadb_truncate_data_series(byref(self._session), series_id)
 
     @ensure_session_open
-    def read(self, series_id, begin, end):
+    def read(self, series_id, begin, end, points_per_packet=655360):
         it = SdbDataPointsIterator()
-        shakadb_read_points(byref(self._session), series_id, begin, end, byref(it))
+        shakadb_read_points(byref(self._session), series_id, begin, end, points_per_packet, byref(it))
         return DataPointsIterator(it)
 
     @ensure_session_open
     def read_all(self, series_id, begin, end):
         result = []
-        it = self.read(series_id, begin, end)
+        it = self.read(series_id, begin, end, 655360)
 
         while it.next() != 0:
             result += it.points()

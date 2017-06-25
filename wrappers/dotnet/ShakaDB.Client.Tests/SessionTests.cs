@@ -38,6 +38,7 @@ namespace ShakaDB.Client.Tests
         {
             using (var session = ShakaDbSession.Open("localhost", 8487))
             {
+                session.Truncate(TestConstants.UsdAud);
                 session.Write(TestConstants.UsdAud, new[]
                 {
                     new ShakaDbDataPoint(1, 12),
@@ -59,6 +60,7 @@ namespace ShakaDB.Client.Tests
         {
             using (var session = ShakaDbSession.Open("localhost", 8487))
             {
+                session.Truncate(TestConstants.UsdAud);
                 session.Write(TestConstants.UsdAud, new[]
                 {
                     new ShakaDbDataPoint(1, 12),
@@ -74,10 +76,30 @@ namespace ShakaDB.Client.Tests
         }
 
         [Fact]
+        public void ServerReadAndWriteWithIteatorAndPointsPerPacketLimitTest()
+        {
+            using (var session = ShakaDbSession.Open("localhost", 8487))
+            {
+                session.Truncate(TestConstants.UsdAud);
+                session.Write(TestConstants.UsdAud, new[]
+                {
+                    new ShakaDbDataPoint(1, 12),
+                    new ShakaDbDataPoint(2, 13),
+                    new ShakaDbDataPoint(3, 15)
+                });
+
+                var result = session.Read(TestConstants.UsdAud, pointsPerPacket: 2).ToList();
+
+                Assert.Equal(3, result.Count);
+            }
+        }
+
+        [Fact]
         public void ServerTruncateTest()
         {
             using (var session = ShakaDbSession.Open("localhost", 8487))
             {
+                session.Truncate(TestConstants.UsdAud);
                 session.Write(TestConstants.UsdAud, new[]
                 {
                     new ShakaDbDataPoint(1, 12),

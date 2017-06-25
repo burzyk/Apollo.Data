@@ -8,7 +8,7 @@
 #include <inttypes.h>
 
 #include "src/client/client.h"
-#include "client.h"
+#include "src/common.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
     shakadb_data_points_iterator_t it;
     int total_read = 0;
 
-    if (shakadb_read_points(&session, series_id, begin, end, &it) != SHAKADB_RESULT_OK) {
+    if (shakadb_read_points(&session, series_id, begin, end, SDB_POINTS_PER_PACKET_MAX, &it) != SHAKADB_RESULT_OK) {
       fprintf(stderr, "Failed to read data points\n");
       return -1;
     }

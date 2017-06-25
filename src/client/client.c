@@ -65,6 +65,7 @@ int shakadb_read_points(shakadb_session_t *session,
                         shakadb_data_series_id_t series_id,
                         shakadb_timestamp_t begin,
                         shakadb_timestamp_t end,
+                        int points_per_packet,
                         shakadb_data_points_iterator_t *iterator) {
   iterator->_iterator = NULL;
   iterator->_session = NULL;
@@ -76,7 +77,7 @@ int shakadb_read_points(shakadb_session_t *session,
   }
 
   sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
-  iterator->_iterator = sdb_client_session_read_points(s, series_id, begin, end);
+  iterator->_iterator = sdb_client_session_read_points(s, series_id, begin, end, points_per_packet);
   iterator->points = NULL;
   iterator->points_count = -1;
   iterator->_session = session;

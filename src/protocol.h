@@ -68,6 +68,7 @@ typedef struct sdb_read_request_s {
   sdb_data_series_id_t data_series_id;
   sdb_timestamp_t begin;
   sdb_timestamp_t end;
+  int points_per_packet;
 } sdb_read_request_t;
 
 typedef struct sdb_read_response_s {
@@ -85,7 +86,10 @@ typedef struct sdb_simple_response_s {
 } sdb_simple_response_t;
 
 sdb_packet_t *sdb_write_request_create(sdb_data_series_id_t data_series_id, sdb_data_point_t *points, int points_count);
-sdb_packet_t *sdb_read_request_create(sdb_data_series_id_t data_series_id, sdb_timestamp_t begin, sdb_timestamp_t end);
+sdb_packet_t *sdb_read_request_create(sdb_data_series_id_t data_series_id,
+                                      sdb_timestamp_t begin,
+                                      sdb_timestamp_t end,
+                                      int points_per_packet);
 sdb_packet_t *sdb_read_response_create(sdb_response_code_t code, sdb_data_point_t *points, int points_count);
 sdb_packet_t *sdb_simple_response_create(sdb_response_code_t code);
 sdb_packet_t *sdb_truncate_request_create(sdb_data_series_id_t data_series_id);

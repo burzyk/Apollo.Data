@@ -62,8 +62,9 @@ int sdb_client_session_truncate_data_series(sdb_client_session_t *session, sdb_d
 sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t *session,
                                                            sdb_data_series_id_t series_id,
                                                            sdb_timestamp_t begin,
-                                                           sdb_timestamp_t end) {
-  if (sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end), session->_sock)) {
+                                                           sdb_timestamp_t end,
+                                                           int points_per_packet) {
+  if (sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end, points_per_packet), session->_sock)) {
     return NULL;
   }
 

@@ -59,7 +59,11 @@ namespace ShakaDB.Client
                 $"Failed to write data to {seriesId}");
         }
 
-        public IEnumerable<ShakaDbDataPoint> Read(uint seriesId, ulong? begin = null, ulong? end = null)
+        public IEnumerable<ShakaDbDataPoint> Read(
+            uint seriesId,
+            ulong? begin = null,
+            ulong? end = null,
+            int pointsPerPacket = 655360)
         {
             EnsureNotDisposed();
 
@@ -68,7 +72,13 @@ namespace ShakaDB.Client
 
             var iterator = new SdbDataPointsIterator();
             CallWrapper(
-                () => SdbWrapper.ShakaDbReadPoints(ref _session, seriesId, begin.Value, end.Value, ref iterator),
+                () => SdbWrapper.ShakaDbReadPoints(
+                    ref _session,
+                    seriesId,
+                    begin.Value,
+                    end.Value,
+                    pointsPerPacket,
+                    ref iterator),
                 $"Failed to read data: {seriesId}");
             return new PointsEnumerable(iterator);
         }

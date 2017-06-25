@@ -71,6 +71,7 @@ int shakadb_read_points(shakadb_session_t *session,
                         shakadb_data_series_id_t series_id,
                         shakadb_timestamp_t begin,
                         shakadb_timestamp_t end,
+                        int points_per_packet,
                         shakadb_data_points_iterator_t *iterator);
 int shakadb_data_points_iterator_next(shakadb_data_points_iterator_t *iterator);
 

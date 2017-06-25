@@ -122,17 +122,22 @@ void sdb_simple_response_serialize(sdb_simple_response_t *response, sdb_socket_t
 
 /* ========== read request ========== */
 
-sdb_packet_t *sdb_read_request_create(sdb_data_series_id_t data_series_id, sdb_timestamp_t begin, sdb_timestamp_t end) {
+sdb_packet_t *sdb_read_request_create(sdb_data_series_id_t data_series_id,
+                                      sdb_timestamp_t begin,
+                                      sdb_timestamp_t end,
+                                      int points_per_packet) {
   sdb_packet_t *packet = (sdb_packet_t *)sdb_alloc(sizeof(sdb_packet_t));
   packet->header.type = SDB_READ_REQUEST;
   packet->header.payload_size = sizeof(data_series_id) +
       sizeof(begin) +
-      sizeof(end);
+      sizeof(end) +
+      sizeof(points_per_packet);
 
   sdb_read_request_t *request = (sdb_read_request_t *)sdb_alloc(sizeof(sdb_read_request_t));
   request->data_series_id = data_series_id;
   request->begin = begin;
   request->end = end;
+  request->points_per_packet = points_per_packet;
 
   packet->payload = request;
   return packet;
@@ -147,6 +152,7 @@ sdb_read_request_t *sdb_read_request_deserialize(void *payload, size_t size) {
   sdb_binary_reader_read(&reader, &request->data_series_id, sizeof(request->data_series_id));
   sdb_binary_reader_read(&reader, &request->begin, sizeof(request->begin));
   sdb_binary_reader_read(&reader, &request->end, sizeof(request->end));
+  sdb_binary_reader_read(&reader, &request->points_per_packet, sizeof(request->points_per_packet));
 
   if (!reader.success) {
     sdb_free(request);
@@ -160,6 +166,7 @@ void sdb_read_request_serialize(sdb_read_request_t *request, sdb_socket_t socket
   sdb_socket_send(socket, &request->data_series_id, sizeof(request->data_series_id));
   sdb_socket_send(socket, &request->begin, sizeof(request->begin));
   sdb_socket_send(socket, &request->end, sizeof(request->end));
+  sdb_socket_send(socket, &request->points_per_packet, sizeof(request->points_per_packet));
 }
 
 /* ========== read response ========== */

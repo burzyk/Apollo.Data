@@ -81,8 +81,8 @@ def shakadb_truncate_data_series(session, series_id):
 
 
 @SafeInvoke()
-def shakadb_read_points(session, series_id, begin, end, iterator):
-    return _get_lib().shakadb_read_points(session, series_id, begin, end, iterator)
+def shakadb_read_points(session, series_id, begin, end, points_per_packet, iterator):
+    return _get_lib().shakadb_read_points(session, series_id, begin, end, points_per_packet, iterator)
 
 
 def shakadb_data_points_iterator_next(iterator):

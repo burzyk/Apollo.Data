@@ -33,6 +33,7 @@ def test_reuse_closed_session():
 
 def test_server_read_and_write_with_iterator():
     with pyshaka.Session('localhost', 8487) as session:
+        session.truncate(TestConstants.USD_AUD)
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         it = session.read(
             TestConstants.USD_AUD,
@@ -50,8 +51,26 @@ def test_server_read_and_write_with_iterator():
         assert points[1][1] == 13
 
 
+def test_server_read_and_write_with_iterator_and_points_per_packet_limit():
+    with pyshaka.Session('localhost', 8487) as session:
+        session.truncate(TestConstants.USD_AUD)
+        session.write(TestConstants.USD_AUD, [(1, 12), (2, 13), (3, 14)])
+        it = session.read(
+            TestConstants.USD_AUD,
+            pyshaka.Constants.SHAKADB_MIN_TIMESTAMP,
+            pyshaka.Constants.SHAKADB_MAX_TIMESTAMP,
+            2)
+
+        assert it.next() != 0
+        assert len(it.points()) == 2
+        assert it.next() != 0
+        assert len(it.points()) == 1
+        assert it.next() == 0
+
+
 def test_server_read_and_write_with_iterator_and_limit():
     with pyshaka.Session('localhost', 8487) as session:
+        session.truncate(TestConstants.USD_AUD)
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         it = session.read(TestConstants.USD_AUD, 0, 2)
         points = []
@@ -66,6 +85,7 @@ def test_server_read_and_write_with_iterator_and_limit():
 
 def test_server_read_and_write():
     with pyshaka.Session('localhost', 8487) as session:
+        session.truncate(TestConstants.USD_AUD)
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         points = session.read_all(
             TestConstants.USD_AUD,
@@ -81,6 +101,7 @@ def test_server_read_and_write():
 
 def test_server_read_and_write_and_limit():
     with pyshaka.Session('localhost', 8487) as session:
+        session.truncate(TestConstants.USD_AUD)
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         points = session.read_all(TestConstants.USD_AUD, 0, 2)
 
@@ -91,6 +112,7 @@ def test_server_read_and_write_and_limit():
 
 def test_server_truncate_test():
     with pyshaka.Session('localhost', 8487) as session:
+        session.truncate(TestConstants.USD_AUD)
         session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
         points = session.read_all(TestConstants.USD_AUD, 0, 2)
 
@@ -105,4 +127,4 @@ def test_server_truncate_test():
 
 
 if __name__ == '__main__':
-    test_server_read_and_write_with_iterator()
+    test_server_read_and_write_with_iterator_and_points_per_packet_limit()

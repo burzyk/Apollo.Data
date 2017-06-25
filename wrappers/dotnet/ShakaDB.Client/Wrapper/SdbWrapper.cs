@@ -28,6 +28,7 @@
             uint seriesId,
             ulong begin,
             ulong end,
+            int pointsPerPacket,
             ref SdbDataPointsIterator iterator);
 
         [DllImport(ShakaLib, EntryPoint = "shakadb_data_points_iterator_next")]
