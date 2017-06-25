@@ -25,7 +25,6 @@
 
 #include "src/client/client.h"
 #include "src/client/session.h"
-#include "client.h"
 
 int shakadb_session_open(shakadb_session_t *session, const char *server, int port) {
   session->_session = sdb_client_session_create(server, port);
@@ -48,6 +47,10 @@ int shakadb_write_points(shakadb_session_t *session,
                          shakadb_data_series_id_t series_id,
                          shakadb_data_point_t *points,
                          int points_count) {
+  if (session->_read_opened) {
+    return SHAKADB_RESULT_MULTIPLE_READS_ERROR;
+  }
+
   sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
   return !sdb_client_session_write_points(s, series_id, (sdb_data_point_t *)points, points_count)
          ? SHAKADB_RESULT_OK
@@ -55,6 +58,10 @@ int shakadb_write_points(shakadb_session_t *session,
 }
 
 int shakadb_truncate_data_series(shakadb_session_t *session, shakadb_data_series_id_t series_id) {
+  if (session->_read_opened) {
+    return SHAKADB_RESULT_MULTIPLE_READS_ERROR;
+  }
+
   sdb_client_session_t *s = (sdb_client_session_t *)session->_session;
   return !sdb_client_session_truncate_data_series(s, series_id)
          ? SHAKADB_RESULT_OK

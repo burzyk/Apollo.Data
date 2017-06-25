@@ -925,3 +925,87 @@ void sdb_test_server_read_latest(sdb_tests_context_t ctx) {
   sdb_server_destroy(server);
   sdb_database_destroy(db);
 }
+
+void sdb_test_server_write_when_read_opened(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_points_iterator_t it;
+  status = shakadb_read_points(&session, SDB_EUR_GBP_ID, 0, 100, 100, &it);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Read latest failed");
+
+  shakadb_data_point_t points[] = {
+      {.time=1, .value = 10},
+      {.time=2, .value = 20},
+      {.time=3, .value = 30},
+      {.time=4, .value = 40},
+      {.time=5, .value = 50},
+  };
+
+  status = shakadb_write_points(&session, SDB_EUR_GBP_ID, points, 5);
+  sdb_assert(status == SHAKADB_RESULT_MULTIPLE_READS_ERROR, "Write should fail");
+
+  while (shakadb_data_points_iterator_next(&it)) {
+  }
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
+
+void sdb_test_server_truncate_when_read_opened(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_points_iterator_t it;
+  status = shakadb_read_points(&session, SDB_EUR_GBP_ID, 0, 100, 100, &it);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Read latest failed");
+
+  status = shakadb_truncate_data_series(&session, SDB_EUR_GBP_ID);
+  sdb_assert(status == SHAKADB_RESULT_MULTIPLE_READS_ERROR, "Truncate should fail");
+
+  while (shakadb_data_points_iterator_next(&it)) {
+  }
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
+
+void sdb_test_server_read_latest_when_read_opened(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_points_iterator_t it;
+  status = shakadb_read_points(&session, SDB_EUR_GBP_ID, 0, 100, 100, &it);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Read latest failed");
+
+  shakadb_data_point_t latest = {0};
+  status = shakadb_read_latest_point(&session, SDB_EUR_GBP_ID, &latest);
+  sdb_assert(status == SHAKADB_RESULT_MULTIPLE_READS_ERROR, "Read latest should fail");
+
+  while (shakadb_data_points_iterator_next(&it)) {
+  }
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
