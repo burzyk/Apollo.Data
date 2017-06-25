@@ -80,13 +80,13 @@ int sdb_find(void *elements, int element_size, int elements_count, void *data, s
   return left;
 }
 
-void die(const char *message) {
-  fprintf(stderr, "%s\n", message);
+void die_internal(const char *message, const char *file, int line_number) {
+  fprintf(stderr, "PANIC: %s:%d -> %s\n", file, line_number, message);
   fflush(stderr);
   exit(-1);
 }
 
-void sdb_assert_impl(int status, const char *message, const char *file, int line_number) {
+void sdb_assert_internal(int status, const char *message, const char *file, int line_number) {
   if (!status) {
     char line[SDB_FILE_MAX_LEN] = {0};
     sprintf(line, "ASSERT: %s:%d -> %s", file, line_number, message);
