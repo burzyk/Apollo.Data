@@ -805,7 +805,7 @@ void sdb_test_server_read_multiple_active(sdb_tests_context_t ctx) {
   };
 
   status = shakadb_write_points(&session, SDB_EUR_GBP_ID, points, 1);
-  sdb_assert(status == SHAKADB_RESULT_OK, "Write should fail");
+  sdb_assert(status == SHAKADB_RESULT_OK, "Write failed");
 
   // read first time
   shakadb_data_points_iterator_t it1 = {};
@@ -839,6 +839,86 @@ void sdb_test_server_read_multiple_active(sdb_tests_context_t ctx) {
 
   status = shakadb_data_points_iterator_next(&it3);
   sdb_assert(status == 0, "Data found in iterator");
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
+
+void sdb_test_server_read_latest_series_out_of_range(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 100, UINT64_MAX, UINT64_MAX);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_point_t result = {0};
+
+  status = shakadb_read_latest_point(&session, SDB_EUR_GBP_ID, &result);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Read failed");
+
+  sdb_assert(result.time == 0, "Time should be zero");
+  sdb_assert(result.value == 0, "Time should be zero");
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
+
+void sdb_test_server_read_latest_when_empty(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_point_t result = {0};
+
+  status = shakadb_read_latest_point(&session, SDB_EUR_GBP_ID, &result);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Read failed");
+
+  sdb_assert(result.time == 0, "Time should be zero");
+  sdb_assert(result.value == 0, "Time should be zero");
+
+  shakadb_session_close(&session);
+
+  sdb_server_destroy(server);
+  sdb_database_destroy(db);
+}
+
+void sdb_test_server_read_latest(sdb_tests_context_t ctx) {
+  shakadb_session_t session;
+  int status = 0;
+  sdb_database_t *db = sdb_database_create(ctx.working_directory, 2, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+
+  status = shakadb_session_open(&session, "localhost", 8081);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+
+  shakadb_data_point_t points[] = {
+      {.time=1, .value = 10},
+      {.time=2, .value = 20},
+      {.time=3, .value = 30},
+      {.time=4, .value = 40},
+      {.time=5, .value = 50},
+  };
+
+  status = shakadb_write_points(&session, SDB_EUR_GBP_ID, points, 5);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Write failed");
+
+  shakadb_data_point_t latest = {0};
+
+  status = shakadb_read_latest_point(&session, SDB_EUR_GBP_ID, &latest);
+  sdb_assert(status == SHAKADB_RESULT_OK, "Read latest failed");
+
+  sdb_assert(latest.time == 5, "Invalid time");
+  sdb_assert(latest.value == 50, "Invalid value");
 
   shakadb_session_close(&session);
 

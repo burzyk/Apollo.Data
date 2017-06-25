@@ -33,12 +33,14 @@
 sdb_write_request_t *sdb_write_request_deserialize(void *payload, size_t size);
 sdb_simple_response_t *sdb_simple_response_deserialize(void *payload, size_t size);
 sdb_read_request_t *sdb_read_request_deserialize(void *payload, size_t size);
+sdb_read_latest_request_t *sdb_read_latest_request_deserialize(void *payload, size_t size);
 sdb_read_response_t *sdb_read_response_deserialize(void *payload, size_t size);
 sdb_truncate_request_t *sdb_truncate_request_deserialize(void *payload, size_t size);
 
 void sdb_write_request_serialize(sdb_write_request_t *request, sdb_socket_t socket);
 void sdb_simple_response_serialize(sdb_simple_response_t *response, sdb_socket_t socket);
 void sdb_read_request_serialize(sdb_read_request_t *request, sdb_socket_t socket);
+void sdb_read_latest_request_serialize(sdb_read_latest_request_t *request, sdb_socket_t socket);
 void sdb_read_response_serialize(sdb_read_response_t *response, sdb_socket_t socket);
 void sdb_truncate_request_serialize(sdb_truncate_request_t *request, sdb_socket_t socket);
 
@@ -169,6 +171,40 @@ void sdb_read_request_serialize(sdb_read_request_t *request, sdb_socket_t socket
   sdb_socket_send(socket, &request->points_per_packet, sizeof(request->points_per_packet));
 }
 
+/* ========== read latest request ========== */
+
+sdb_packet_t *sdb_read_latest_request_create(sdb_data_series_id_t data_series_id) {
+  sdb_packet_t *packet = (sdb_packet_t *)sdb_alloc(sizeof(sdb_packet_t));
+  packet->header.type = SDB_READ_LATEST_REQUEST;
+  packet->header.payload_size = sizeof(data_series_id);
+
+  sdb_read_latest_request_t *request = (sdb_read_latest_request_t *)sdb_alloc(sizeof(sdb_read_latest_request_t));
+  request->data_series_id = data_series_id;
+
+  packet->payload = request;
+  return packet;
+}
+
+sdb_read_latest_request_t *sdb_read_latest_request_deserialize(void *payload, size_t size) {
+  sdb_read_latest_request_t *request = (sdb_read_latest_request_t *)sdb_alloc(sizeof(sdb_read_latest_request_t));
+
+  sdb_binary_reader_t reader = {0};
+  sdb_binary_reader_init(&reader, payload, size);
+
+  sdb_binary_reader_read(&reader, &request->data_series_id, sizeof(request->data_series_id));
+
+  if (!reader.success) {
+    sdb_free(request);
+    return NULL;
+  }
+
+  return request;
+}
+
+void sdb_read_latest_request_serialize(sdb_read_latest_request_t *request, sdb_socket_t socket) {
+  sdb_socket_send(socket, &request->data_series_id, sizeof(request->data_series_id));
+}
+
 /* ========== read response ========== */
 
 sdb_packet_t *sdb_read_response_create(sdb_response_code_t code, sdb_data_point_t *points, int points_count) {
@@ -284,6 +320,9 @@ sdb_packet_t *sdb_packet_receive(sdb_socket_t socket) {
     case SDB_TRUNCATE_REQUEST:
       packet->payload = sdb_truncate_request_deserialize(packet->_raw_payload, header.payload_size);
       break;
+    case SDB_READ_LATEST_REQUEST:
+      packet->payload = sdb_read_latest_request_deserialize(packet->_raw_payload, header.payload_size);
+      break;
     default: packet->payload = NULL;
   }
 
@@ -309,6 +348,9 @@ int sdb_packet_send(sdb_packet_t *packet, sdb_socket_t socket) {
     case SDB_READ_RESPONSE:sdb_read_response_serialize((sdb_read_response_t *)packet->payload, socket);
       break;
     case SDB_TRUNCATE_REQUEST:sdb_truncate_request_serialize((sdb_truncate_request_t *)packet->payload, socket);
+      break;
+    case SDB_READ_LATEST_REQUEST:
+      sdb_read_latest_request_serialize((sdb_read_latest_request_t *)packet->payload, socket);
       break;
     default: break;
   }

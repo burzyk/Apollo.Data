@@ -45,5 +45,8 @@ sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t 
                                                            sdb_timestamp_t begin,
                                                            sdb_timestamp_t end,
                                                            int points_per_packet);
+int sdb_client_session_read_latest_point(sdb_client_session_t *session,
+                                         sdb_data_series_id_t series_id,
+                                         sdb_data_point_t *latest);
 
 #endif  // SRC_CLIENT_SESSION_H_

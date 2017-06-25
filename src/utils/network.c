@@ -107,6 +107,10 @@ int sdb_socket_receive(sdb_socket_t socket, void *buffer, size_t size) {
 }
 
 int sdb_socket_send(sdb_socket_t socket, void *buffer, size_t size) {
+  if (buffer == NULL) {
+    return 0;
+  }
+
   ssize_t sent = 0;
   int total_send = 0;
   char *ptr = (char *)buffer;

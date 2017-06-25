@@ -144,6 +144,9 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_server_write_filter_duplicates);
   TEST(sdb_test_server_write_filter_zeros);
   TEST(sdb_test_server_read_multiple_active);
+  TEST(sdb_test_server_read_latest_series_out_of_range);
+  TEST(sdb_test_server_read_latest_when_empty);
+  TEST(sdb_test_server_read_latest);
 
   sdb_tests_session_print_summary(session);
   printf("==================== Tests finished ===================\n");

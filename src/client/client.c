@@ -90,6 +90,25 @@ int shakadb_read_points(shakadb_session_t *session,
   return result;
 }
 
+int shakadb_read_latest_point(shakadb_session_t *session,
+                              shakadb_data_series_id_t series_id,
+                              shakadb_data_point_t *latest) {
+  if (session->_read_opened) {
+    return SHAKADB_RESULT_MULTIPLE_READS_ERROR;
+  }
+
+  sdb_data_point_t result = {.value=0, .time=0};
+
+  if (sdb_client_session_read_latest_point(session->_session, series_id, &result)) {
+    return SHAKADB_RESULT_GENERIC_ERROR;
+  }
+
+  latest->time = result.time;
+  latest->value = result.value;
+
+  return SHAKADB_RESULT_OK;
+}
+
 int shakadb_data_points_iterator_next(shakadb_data_points_iterator_t *iterator) {
   sdb_data_points_iterator_t *i = (sdb_data_points_iterator_t *)iterator->_iterator;
 
