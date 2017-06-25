@@ -37,12 +37,13 @@ sdb_read_latest_request_t *sdb_read_latest_request_deserialize(void *payload, si
 sdb_read_response_t *sdb_read_response_deserialize(void *payload, size_t size);
 sdb_truncate_request_t *sdb_truncate_request_deserialize(void *payload, size_t size);
 
-void sdb_write_request_serialize(sdb_write_request_t *request, sdb_socket_t socket);
-void sdb_simple_response_serialize(sdb_simple_response_t *response, sdb_socket_t socket);
-void sdb_read_request_serialize(sdb_read_request_t *request, sdb_socket_t socket);
-void sdb_read_latest_request_serialize(sdb_read_latest_request_t *request, sdb_socket_t socket);
-void sdb_read_response_serialize(sdb_read_response_t *response, sdb_socket_t socket);
-void sdb_truncate_request_serialize(sdb_truncate_request_t *request, sdb_socket_t socket);
+int sdb_write_request_serialize(sdb_write_request_t *request, sdb_socket_t socket);
+int sdb_simple_response_serialize(sdb_simple_response_t *response, sdb_socket_t socket);
+int sdb_read_request_serialize(sdb_read_request_t *request, sdb_socket_t socket);
+int sdb_read_latest_request_serialize(sdb_read_latest_request_t *request, sdb_socket_t socket);
+int sdb_read_response_serialize(sdb_read_response_t *response, sdb_socket_t socket);
+int sdb_truncate_request_serialize(sdb_truncate_request_t *request, sdb_socket_t socket);
+int sdb_send_and_validate(sdb_socket_t socket, void *data, size_t size);
 
 /* ========== write request ========== */
 
@@ -82,10 +83,14 @@ sdb_write_request_t *sdb_write_request_deserialize(void *payload, size_t size) {
   return request;
 }
 
-void sdb_write_request_serialize(sdb_write_request_t *request, sdb_socket_t socket) {
-  sdb_socket_send(socket, &request->data_series_id, sizeof(request->data_series_id));
-  sdb_socket_send(socket, &request->points_count, sizeof(request->points_count));
-  sdb_socket_send(socket, request->points, sizeof(sdb_data_point_t) * request->points_count);
+int sdb_write_request_serialize(sdb_write_request_t *request, sdb_socket_t socket) {
+  int result = 0;
+
+  result |= sdb_send_and_validate(socket, &request->data_series_id, sizeof(request->data_series_id));
+  result |= sdb_send_and_validate(socket, &request->points_count, sizeof(request->points_count));
+  result |= sdb_send_and_validate(socket, request->points, sizeof(sdb_data_point_t) * request->points_count);
+
+  return result;
 }
 
 /* ========== simple response ========== */
@@ -118,8 +123,8 @@ sdb_simple_response_t *sdb_simple_response_deserialize(void *payload, size_t siz
   return response;
 }
 
-void sdb_simple_response_serialize(sdb_simple_response_t *response, sdb_socket_t socket) {
-  sdb_socket_send(socket, &response->code, sizeof(response->code));
+int sdb_simple_response_serialize(sdb_simple_response_t *response, sdb_socket_t socket) {
+  return sdb_send_and_validate(socket, &response->code, sizeof(response->code));
 }
 
 /* ========== read request ========== */
@@ -164,11 +169,15 @@ sdb_read_request_t *sdb_read_request_deserialize(void *payload, size_t size) {
   return request;
 }
 
-void sdb_read_request_serialize(sdb_read_request_t *request, sdb_socket_t socket) {
-  sdb_socket_send(socket, &request->data_series_id, sizeof(request->data_series_id));
-  sdb_socket_send(socket, &request->begin, sizeof(request->begin));
-  sdb_socket_send(socket, &request->end, sizeof(request->end));
-  sdb_socket_send(socket, &request->points_per_packet, sizeof(request->points_per_packet));
+int sdb_read_request_serialize(sdb_read_request_t *request, sdb_socket_t socket) {
+  int result = 0;
+
+  result |= sdb_send_and_validate(socket, &request->data_series_id, sizeof(request->data_series_id));
+  result |= sdb_send_and_validate(socket, &request->begin, sizeof(request->begin));
+  result |= sdb_send_and_validate(socket, &request->end, sizeof(request->end));
+  result |= sdb_send_and_validate(socket, &request->points_per_packet, sizeof(request->points_per_packet));
+
+  return result;
 }
 
 /* ========== read latest request ========== */
@@ -201,8 +210,8 @@ sdb_read_latest_request_t *sdb_read_latest_request_deserialize(void *payload, si
   return request;
 }
 
-void sdb_read_latest_request_serialize(sdb_read_latest_request_t *request, sdb_socket_t socket) {
-  sdb_socket_send(socket, &request->data_series_id, sizeof(request->data_series_id));
+int sdb_read_latest_request_serialize(sdb_read_latest_request_t *request, sdb_socket_t socket) {
+  return sdb_send_and_validate(socket, &request->data_series_id, sizeof(request->data_series_id));
 }
 
 /* ========== read response ========== */
@@ -241,10 +250,14 @@ sdb_read_response_t *sdb_read_response_deserialize(void *payload, size_t size) {
   return response;
 }
 
-void sdb_read_response_serialize(sdb_read_response_t *response, sdb_socket_t socket) {
-  sdb_socket_send(socket, &response->code, sizeof(response->code));
-  sdb_socket_send(socket, &response->points_count, sizeof(response->points_count));
-  sdb_socket_send(socket, response->points, sizeof(sdb_data_point_t) * response->points_count);
+int sdb_read_response_serialize(sdb_read_response_t *response, sdb_socket_t socket) {
+  int result = 0;
+
+  result |= sdb_send_and_validate(socket, &response->code, sizeof(response->code));
+  result |= sdb_send_and_validate(socket, &response->points_count, sizeof(response->points_count));
+  result |= sdb_send_and_validate(socket, response->points, sizeof(sdb_data_point_t) * response->points_count);
+
+  return result;
 }
 
 /* ========== truncate request ========== */
@@ -277,8 +290,8 @@ sdb_truncate_request_t *sdb_truncate_request_deserialize(void *payload, size_t s
   return request;
 }
 
-void sdb_truncate_request_serialize(sdb_truncate_request_t *request, sdb_socket_t socket) {
-  sdb_socket_send(socket, &request->data_series_id, sizeof(request->data_series_id));
+int sdb_truncate_request_serialize(sdb_truncate_request_t *request, sdb_socket_t socket) {
+  return sdb_send_and_validate(socket, &request->data_series_id, sizeof(request->data_series_id));
 }
 
 /* ========== generic methods ========== */
@@ -337,26 +350,28 @@ sdb_packet_t *sdb_packet_receive(sdb_socket_t socket) {
 
 int sdb_packet_send(sdb_packet_t *packet, sdb_socket_t socket) {
   sdb_socket_send(socket, &packet->header, sizeof(packet->header));
+  int status = 0;
 
   switch (packet->header.type) {
-    case SDB_WRITE_REQUEST:sdb_write_request_serialize((sdb_write_request_t *)packet->payload, socket);
+    case SDB_WRITE_REQUEST:status |= sdb_write_request_serialize((sdb_write_request_t *)packet->payload, socket);
       break;
-    case SDB_SIMPLE_RESPONSE:sdb_simple_response_serialize((sdb_simple_response_t *)packet->payload, socket);
+    case SDB_SIMPLE_RESPONSE:status |= sdb_simple_response_serialize((sdb_simple_response_t *)packet->payload, socket);
       break;
-    case SDB_READ_REQUEST:sdb_read_request_serialize((sdb_read_request_t *)packet->payload, socket);
+    case SDB_READ_REQUEST:status |= sdb_read_request_serialize((sdb_read_request_t *)packet->payload, socket);
       break;
-    case SDB_READ_RESPONSE:sdb_read_response_serialize((sdb_read_response_t *)packet->payload, socket);
+    case SDB_READ_RESPONSE:status |= sdb_read_response_serialize((sdb_read_response_t *)packet->payload, socket);
       break;
-    case SDB_TRUNCATE_REQUEST:sdb_truncate_request_serialize((sdb_truncate_request_t *)packet->payload, socket);
+    case SDB_TRUNCATE_REQUEST:
+      status |= sdb_truncate_request_serialize((sdb_truncate_request_t *)packet->payload, socket);
       break;
     case SDB_READ_LATEST_REQUEST:
-      sdb_read_latest_request_serialize((sdb_read_latest_request_t *)packet->payload, socket);
+      status |= sdb_read_latest_request_serialize((sdb_read_latest_request_t *)packet->payload,
+                                                  socket);
       break;
-    default: break;
+    default:die("Unknown packet type");
   }
 
-  // TODO: (pburzynski) return a value
-  return 0;
+  return status;
 }
 
 int sdb_packet_send_and_destroy(sdb_packet_t *packet, sdb_socket_t socket) {
@@ -376,4 +391,8 @@ void sdb_packet_destroy(sdb_packet_t *packet) {
   }
 
   sdb_free(packet);
+}
+
+int sdb_send_and_validate(sdb_socket_t socket, void *data, size_t size) {
+  return sdb_socket_send(socket, data, size) != size;
 }
