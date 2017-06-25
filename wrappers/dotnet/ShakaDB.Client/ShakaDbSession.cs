@@ -1,3 +1,5 @@
+using Microsoft.Win32.SafeHandles;
+
 namespace ShakaDB.Client
 {
     using System;
@@ -57,6 +59,18 @@ namespace ShakaDB.Client
             CallWrapper(
                 () => SdbWrapper.ShakaDbWritePoints(ref _session, seriesId, content, content.Length),
                 $"Failed to write data to {seriesId}");
+        }
+
+        public ShakaDbDataPoint GetLatest(uint seriesId)
+        {
+            EnsureNotDisposed();
+            var result = new SdbDataPoint();
+
+            CallWrapper(
+                () => SdbWrapper.ShakaDbReadLatestPoint(ref _session, seriesId, ref result),
+                $"Failed to read latest from {seriesId}");
+
+            return result.Time == 0 ? null : new ShakaDbDataPoint(result.Time, result.Value);
         }
 
         public IEnumerable<ShakaDbDataPoint> Read(

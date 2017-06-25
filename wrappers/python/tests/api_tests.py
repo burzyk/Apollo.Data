@@ -99,6 +99,23 @@ def test_server_read_and_write():
         assert points[1][1] == 13
 
 
+def test_read_latest_no_data():
+    with pyshaka.Session('localhost', 8487) as session:
+        session.truncate(TestConstants.USD_AUD)
+        assert session.latest(TestConstants.USD_AUD) is None
+
+
+def test_read_latest():
+    with pyshaka.Session('localhost', 8487) as session:
+        session.truncate(TestConstants.USD_AUD)
+        session.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
+
+        latest = session.latest(TestConstants.USD_AUD)
+
+        assert latest[0] == 2
+        assert latest[1] == 13
+
+
 def test_server_read_and_write_and_limit():
     with pyshaka.Session('localhost', 8487) as session:
         session.truncate(TestConstants.USD_AUD)

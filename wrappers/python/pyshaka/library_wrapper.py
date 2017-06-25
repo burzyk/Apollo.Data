@@ -85,5 +85,10 @@ def shakadb_read_points(session, series_id, begin, end, points_per_packet, itera
     return _get_lib().shakadb_read_points(session, series_id, begin, end, points_per_packet, iterator)
 
 
+@SafeInvoke()
+def shakadb_read_latest_point(session, series_id, latest):
+    return _get_lib().shakadb_read_latest_point(session, series_id, latest)
+
+
 def shakadb_data_points_iterator_next(iterator):
     return _get_lib().shakadb_data_points_iterator_next(iterator)

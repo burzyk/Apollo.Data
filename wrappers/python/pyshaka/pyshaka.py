@@ -10,6 +10,7 @@ from .library_wrapper import (
     shakadb_truncate_data_series,
     SdbDataPointsIterator,
     shakadb_read_points,
+    shakadb_read_latest_point,
     SdbSession)
 
 
@@ -73,6 +74,12 @@ class Session:
         it = SdbDataPointsIterator()
         shakadb_read_points(byref(self._session), series_id, begin, end, points_per_packet, byref(it))
         return DataPointsIterator(it)
+
+    @ensure_session_open
+    def latest(self, series_id):
+        latest = SdbDataPoint()
+        shakadb_read_latest_point(byref(self._session), series_id, byref(latest))
+        return (latest.time, latest.value) if latest.time != 0 else None
 
     @ensure_session_open
     def read_all(self, series_id, begin, end):
