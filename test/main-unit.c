@@ -116,6 +116,10 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_database_cache_cleanup);
   TEST(sdb_test_database_cache_cleanup_old);
   TEST(sdb_test_database_cache_smaller_than_chunk);
+  TEST(sdb_test_database_read_latest_no_data);
+  TEST(sdb_test_database_read_latest_data_in_first_chunk);
+  TEST(sdb_test_database_read_latest_data_in_second_chunk);
+
 
   TEST(sdb_test_server_simple_initialization_test);
   TEST(sdb_test_server_connect);

@@ -32,6 +32,8 @@
 #include "src/utils/memory.h"
 #include "src/utils/disk.h"
 
+void sdb_data_chunk_ensure_content_loaded(sdb_data_chunk_t *chunk);
+
 int sdb_data_chunk_calculate_size(int points_count) {
   return points_count * sizeof(sdb_data_point_t);
 }
@@ -87,28 +89,7 @@ void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk) {
 sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end) {
   sdb_rwlock_rdlock(chunk->_lock);
 
-  if (chunk->_cached_content == NULL) {
-    sdb_rwlock_upgrade(chunk->_lock);
-
-    if (chunk->_cached_content == NULL) {
-      sdb_log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> loading cache",
-                    chunk->_file_name,
-                    chunk->begin,
-                    chunk->end);
-
-      size_t cached_content_size = sizeof(sdb_data_point_t) * chunk->max_points;
-      chunk->_cached_content = (sdb_data_point_t *)sdb_alloc(cached_content_size);
-
-      if (chunk->_cache_entry == NULL) {
-        chunk->_cache_entry = sdb_cache_manager_register_consumer(chunk->_cache, chunk, cached_content_size);
-      }
-
-      sdb_file_t *file = sdb_file_open(chunk->_file_name);
-      sdb_file_seek(file, chunk->_file_offset, SEEK_SET);
-      sdb_file_read(file, chunk->_cached_content, cached_content_size);
-      sdb_file_close(file);
-    }
-  }
+  sdb_data_chunk_ensure_content_loaded(chunk);
 
   sdb_data_point_t begin_element = {.time=begin};
   sdb_data_point_t end_element = {.time=end};
@@ -130,6 +111,24 @@ sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_times
   sdb_rwlock_unlock(chunk->_lock);
 
   return reader;
+}
+
+sdb_data_point_t sdb_data_chunk_read_latest(sdb_data_chunk_t *chunk) {
+  sdb_rwlock_rdlock(chunk->_lock);
+
+  sdb_data_chunk_ensure_content_loaded(chunk);
+
+  sdb_data_point_t result = {.time=0, .value=0};
+
+  if (chunk->number_of_points > 0) {
+    result = chunk->_cached_content[chunk->number_of_points - 1];
+  }
+
+  sdb_cache_manager_update(chunk->_cache, chunk->_cache_entry);
+
+  sdb_rwlock_unlock(chunk->_lock);
+
+  return result;
 }
 
 int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count) {
@@ -186,3 +185,33 @@ void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk) {
 
   sdb_rwlock_unlock(chunk->_lock);
 }
+
+void sdb_data_chunk_ensure_content_loaded(sdb_data_chunk_t *chunk) {
+  if (chunk->_cached_content != NULL) {
+    return;
+  }
+
+  sdb_rwlock_upgrade(chunk->_lock);
+
+  if (chunk->_cached_content != NULL) {
+    return;
+  }
+
+  sdb_log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> loading cache",
+                chunk->_file_name,
+                chunk->begin,
+                chunk->end);
+
+  size_t cached_content_size = sizeof(sdb_data_point_t) * chunk->max_points;
+  chunk->_cached_content = (sdb_data_point_t *)sdb_alloc(cached_content_size);
+
+  if (chunk->_cache_entry == NULL) {
+    chunk->_cache_entry = sdb_cache_manager_register_consumer(chunk->_cache, chunk, cached_content_size);
+  }
+
+  sdb_file_t *file = sdb_file_open(chunk->_file_name);
+  sdb_file_seek(file, chunk->_file_offset, SEEK_SET);
+  sdb_file_read(file, chunk->_cached_content, cached_content_size);
+  sdb_file_close(file);
+}
+

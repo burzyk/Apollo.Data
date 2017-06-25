@@ -203,6 +203,21 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
   return reader;
 }
 
+sdb_data_point_t sdb_data_series_read_latest(sdb_data_series_t *series) {
+  sdb_rwlock_rdlock(series->_series_lock);
+
+  sdb_data_point_t result = {.value=0, .time=0};
+
+  if (series->_chunks_count > 0) {
+    sdb_data_chunk_t *last_chunk = series->_chunks[series->_chunks_count - 1];
+    result = sdb_data_chunk_read_latest(last_chunk);
+  }
+
+  sdb_rwlock_unlock(series->_series_lock);
+
+  return result;
+}
+
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk) {
   if (series->_chunks_count + 1 >= series->_max_chunks) {
     sdb_log_debug("expanding chunks collection");

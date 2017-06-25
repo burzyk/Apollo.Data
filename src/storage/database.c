@@ -89,6 +89,17 @@ int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id) {
   return result;
 }
 
+sdb_data_point_t sdb_database_read_latest(sdb_database_t *db, sdb_data_series_id_t series_id) {
+  sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
+  sdb_data_point_t result = {.time = 0, .value = 0};
+
+  if (series != NULL) {
+    result = sdb_data_series_read_latest(series);
+  }
+
+  return result;
+}
+
 sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
                                             sdb_timestamp_t begin,
                                             sdb_timestamp_t end,
