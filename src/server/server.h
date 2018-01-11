@@ -31,11 +31,11 @@
 
 typedef struct sdb_server_s {
   sdb_database_t *_db;
-  int _master_socket;
-  volatile int _is_running;
+  int _port;
+  volatile int _stop;
 } sdb_server_t;
 
-sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, sdb_database_t *db);
+sdb_server_t *sdb_server_create(int port, sdb_database_t *db);
 void sdb_server_run(sdb_server_t *server);
 void sdb_server_stop(sdb_server_t *server);
 void sdb_server_destroy(sdb_server_t *server);

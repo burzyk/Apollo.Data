@@ -25,87 +25,83 @@
 
 #include <stdlib.h>
 #include <inttypes.h>
+#include <libdill.h>
+
 #include "src/server/server.h"
 #include "src/utils/memory.h"
 #include "src/utils/diagnostics.h"
 
-void *sdb_server_worker_routine(void *data);
+void sdb_server_worker_routine(sdb_server_t *server, sdb_socket_t client_socket);
 void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 void sdb_server_handle_truncate(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 void sdb_server_handle_read_latest(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
 
-sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, sdb_database_t *db) {
+sdb_server_t *sdb_server_create(int port, sdb_database_t *db) {
   sdb_server_t *server = (sdb_server_t *)sdb_alloc(sizeof(sdb_server_t));
   server->_db = db;
-  server->_is_running = 1;
-  server->_master_socket = sdb_socket_listen(port, backlog);
-
-  if (server->_master_socket == SDB_INVALID_SOCKET) {
-    die("Unable to listen");
-  }
-
-  sdb_server_worker_routine(server);
+  server->_port = port;
+  server->_stop = 0;
 
   return server;
 }
 
 void sdb_server_run(sdb_server_t *server) {
+  sdb_socket_t master_socket;
 
+  if ((master_socket = sdb_socket_listen(server->_port, 10)) == SDB_INVALID_SOCKET) {
+    die("Unable to listen");
+  }
+
+  while (!server->_stop) {
+    sdb_socket_t client = sdb_socket_accept(master_socket);
+
+    if (client == SDB_INVALID_SOCKET) {
+      yield();
+      continue;
+    }
+
+    // TODO: Cleanup?
+    go(sdb_server_worker_routine(server, client));
+  }
+
+  sdb_socket_close(master_socket);
 }
-void sdb_server_stop(sdb_server_t *server) {
 
+void sdb_server_stop(sdb_server_t *server) {
+  server->_stop = 1;
 }
 
 void sdb_server_destroy(sdb_server_t *server) {
-  server->_is_running = 0;
-  sdb_log_info("closing master socket");
-  sdb_socket_close(server->_master_socket);
-
   sdb_free(server);
 }
 
-void *sdb_server_worker_routine(void *data) {
-  sdb_server_t *server = (sdb_server_t *)data;
+void sdb_server_worker_routine(sdb_server_t *server, sdb_socket_t client_socket) {
+  sdb_log_debug("client connected: %d", client_socket);
+  sdb_packet_t *packet = NULL;
 
-  while (server->_is_running) {
-    int client_socket;
+  while ((packet = sdb_packet_receive(client_socket)) != NULL) {
+    sdb_log_debug("packet received: { type: %d, length: %d }", packet->header.type, packet->header.payload_size);
+    sdb_stopwatch_t *sw = sdb_stopwatch_start();
 
-    if ((client_socket = sdb_socket_accept(server->_master_socket)) != SDB_INVALID_SOCKET) {
-      sdb_log_debug("client connected: %d", client_socket);
-
-      while (sdb_socket_wait_for_data(client_socket)) {
-        sdb_packet_t *packet = sdb_packet_receive(client_socket);
-
-        if (packet == NULL) {
-          break;
-        }
-
-        sdb_log_debug("packet received: { type: %d, length: %d }", packet->header.type, packet->header.payload_size);
-        sdb_stopwatch_t *sw = sdb_stopwatch_start();
-
-        switch (packet->header.type) {
-          case SDB_READ_REQUEST: sdb_server_handle_read(server, client_socket, packet);
-            break;
-          case SDB_WRITE_REQUEST:sdb_server_handle_write(server, client_socket, packet);
-            break;
-          case SDB_TRUNCATE_REQUEST:sdb_server_handle_truncate(server, client_socket, packet);
-            break;
-          case SDB_READ_LATEST_REQUEST:sdb_server_handle_read_latest(server, client_socket, packet);
-            break;
-          default: sdb_log_info("Unknown packet type: %d", packet->header.type);
-        }
-
-        sdb_log_debug("packet handled in: %fs", sdb_stopwatch_stop_and_destroy(sw));
-        sdb_packet_destroy(packet);
-      }
-
-      sdb_log_debug("client disconnected: %d", client_socket);
-      sdb_socket_close(client_socket);
+    switch (packet->header.type) {
+      case SDB_READ_REQUEST: sdb_server_handle_read(server, client_socket, packet);
+        break;
+      case SDB_WRITE_REQUEST:sdb_server_handle_write(server, client_socket, packet);
+        break;
+      case SDB_TRUNCATE_REQUEST:sdb_server_handle_truncate(server, client_socket, packet);
+        break;
+      case SDB_READ_LATEST_REQUEST:sdb_server_handle_read_latest(server, client_socket, packet);
+        break;
+      default: sdb_log_info("Unknown packet type: %d", packet->header.type);
     }
+
+    sdb_log_debug("packet handled in: %fs", sdb_stopwatch_stop_and_destroy(sw));
+    sdb_packet_destroy(packet);
   }
 
-  return NULL;
+  sdb_log_debug("client disconnected: %d", client_socket);
+  sdb_socket_close(client_socket);
 }
 
 void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {

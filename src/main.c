@@ -54,8 +54,6 @@ typedef struct sdb_configuration_s {
   char database_directory[SDB_FILE_MAX_LEN];
   int database_points_per_chunk;
   int server_port;
-  int server_backlog;
-  int server_max_clients;
   uint64_t cache_soft_limit;
   uint64_t cache_hard_limit;
 } sdb_configuration_t;
@@ -110,11 +108,7 @@ void sdb_master_routine(sdb_configuration_t *config) {
       config->cache_hard_limit);
 
   sdb_log_info("initializing server ...");
-  g_server = sdb_server_create(
-      config->server_port,
-      config->server_backlog,
-      config->server_max_clients,
-      db);
+  g_server = sdb_server_create(config->server_port, db);
 
   sdb_log_info("initialization complete");
 
@@ -133,8 +127,6 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
   config->server_port = SDB_CONFIG_DEFAULT_PORT;
   strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_FILE_MAX_LEN);
   config->log_verbose = 0;
-  config->server_backlog = 20;
-  config->server_max_clients = 10;
   config->database_points_per_chunk = 10000;
   config->cache_soft_limit = SDB_CONFIG_DEFAULT_SOFT_LIMIT;
   config->cache_hard_limit = SDB_CONFIG_DEFAULT_HARD_LIMIT;
