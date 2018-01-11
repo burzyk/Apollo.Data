@@ -50,6 +50,13 @@ sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, sdb_data
   return server;
 }
 
+void sdb_server_run(sdb_server_t *server) {
+
+}
+void sdb_server_stop(sdb_server_t *server) {
+
+}
+
 void sdb_server_destroy(sdb_server_t *server) {
   server->_is_running = 0;
   sdb_log_info("closing master socket");

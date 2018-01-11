@@ -32,10 +32,10 @@ if (DEFINED ENV{SDB_BUILD})
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDB_BUILD=${SDB_BUILD}")
 endif ()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ldill -Wall -Wpointer-arith")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wpointer-arith")
 
 if ("${SDB_CONFIGURATION}" STREQUAL debug)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+    #    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
     #-fprofile-instr-generate -fcoverage-mapping
 endif ()
 
@@ -68,7 +68,7 @@ add_executable(shakadb.test ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} tes
 add_executable(shakadb.stress ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} test/main-stress.c)
 
 target_link_libraries(shakadbc pthread)
-target_link_libraries(shakadb pthread)
+target_link_libraries(shakadb pthread dill)
 target_link_libraries(shakadb.client pthread shakadbc)
 target_link_libraries(shakadb.test pthread)
 target_link_libraries(shakadb.stress pthread)
