@@ -33,8 +33,6 @@
 #include "src/protocol.h"
 
 typedef struct sdb_server_s {
-  sdb_thread_t **_thread_pool;
-  int _thread_pool_size;
   sdb_database_t *_db;
   int _master_socket;
   volatile int _is_running;

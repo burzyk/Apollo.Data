@@ -40,18 +40,12 @@ sdb_server_t *sdb_server_create(int port, int backlog, int max_clients, sdb_data
   server->_db = db;
   server->_is_running = 1;
   server->_master_socket = sdb_socket_listen(port, backlog);
-  server->_thread_pool_size = max_clients;
-  server->_thread_pool = (sdb_thread_t **)sdb_alloc(sizeof(sdb_thread_t *) * server->_thread_pool_size);
 
   if (server->_master_socket == SDB_INVALID_SOCKET) {
     die("Unable to listen");
   }
 
-  sdb_log_info("creating thread pool of %d threads", max_clients);
-
-  for (int i = 0; i < server->_thread_pool_size; i++) {
-    server->_thread_pool[i] = sdb_thread_start(sdb_server_worker_routine, server);
-  }
+  sdb_server_worker_routine(server);
 
   return server;
 }
@@ -61,12 +55,6 @@ void sdb_server_destroy(sdb_server_t *server) {
   sdb_log_info("closing master socket");
   sdb_socket_close(server->_master_socket);
 
-  for (int i = 0; i < server->_thread_pool_size; i++) {
-    sdb_log_info("waiting for thread to exit: %d", i);
-    sdb_thread_join_and_destroy(server->_thread_pool[i]);
-  }
-
-  sdb_free(server->_thread_pool);
   sdb_free(server);
 }
 
