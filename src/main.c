@@ -31,7 +31,6 @@
 #include <inttypes.h>
 #include <libdill.h>
 
-#include "src/utils/threading.h"
 #include "src/storage/database.h"
 #include "src/server/server.h"
 #include "src/utils/diagnostics.h"

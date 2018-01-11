@@ -31,7 +31,6 @@
 
 #include "src/common.h"
 #include "src/utils/memory.h"
-#include "src/utils/threading.h"
 
 uint64_t sdb_now() {
   struct timespec ts;
@@ -116,7 +115,7 @@ void sdb_log_write(const char *level, const char *format, va_list args) {
   localtime_r(&tick.tv_sec, &now);
 
   fprintf(stderr,
-          "%d/%02d/%02d %02d:%02d:%02d.%03lu [%08X] [%s]: %s\n",
+          "%d/%02d/%02d %02d:%02d:%02d.%03lu [%s]: %s\n",
           now.tm_year + 1900,
           now.tm_mon + 1,
           now.tm_mday,
@@ -124,7 +123,6 @@ void sdb_log_write(const char *level, const char *format, va_list args) {
           now.tm_min,
           now.tm_sec,
           tick.tv_nsec / 1000000,
-          sdb_thread_get_current_id(),
           level,
           line);
 

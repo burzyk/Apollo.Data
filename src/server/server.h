@@ -27,9 +27,6 @@
 #define SRC_SERVER_SERVER_H_
 
 #include "src/storage/database.h"
-
-#include "src/utils/threading.h"
-#include "src/utils/threading.h"
 #include "src/protocol.h"
 
 typedef struct sdb_server_s {
