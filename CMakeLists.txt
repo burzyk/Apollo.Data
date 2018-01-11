@@ -32,7 +32,7 @@ if (DEFINED ENV{SDB_BUILD})
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDB_BUILD=${SDB_BUILD}")
 endif ()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wpointer-arith")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ldill -Wall -Wpointer-arith")
 
 if ("${SDB_CONFIGURATION}" STREQUAL debug)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
@@ -47,6 +47,9 @@ message("===== building in " ${SDB_CONFIGURATION} " =====")
 message("flags: ${CMAKE_C_FLAGS}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(/usr/local/include)
+
+link_directories(/usr/local/lib)
 
 set(SRC_DOMAIN src/protocol.h src/protocol.c src/common.h src/common.c)
 set(SRC_CLIENT src/client/session.c src/client/session.h src/client/data-points-iterator.c src/client/data-points-iterator.h src/client/client.h src/client/client.c)

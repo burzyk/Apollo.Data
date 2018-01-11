@@ -29,6 +29,7 @@
 #include <memory.h>
 #include <signal.h>
 #include <inttypes.h>
+#include <libdill.h>
 
 #include "src/utils/threading.h"
 #include "src/storage/database.h"
@@ -78,6 +79,17 @@ void sdb_control_signal_handler(int sig);
 sdb_control_info_t *g_control = NULL;
 
 int main(int argc, char *argv[]) {
+
+
+
+
+
+
+
+
+
+
+
   sdb_configuration_t config = {};
 
   if (sdb_configuration_parse(&config, argc, argv)) {
