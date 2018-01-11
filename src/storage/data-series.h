@@ -27,14 +27,13 @@
 #define SRC_STORAGE_DATA_SERIES_H_
 
 #include "src/storage/data-chunk.h"
-#include "data-points-reader.h"
+#include "src/storage/data-points-reader.h"
 
 typedef struct sdb_data_series_s {
   sdb_data_series_id_t id;
 
   char _file_name[SDB_FILE_MAX_LEN];
   int _points_per_chunk;
-  sdb_rwlock_t *_series_lock;
 
   sdb_data_chunk_t **_chunks;
   int _chunks_count;

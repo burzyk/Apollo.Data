@@ -43,7 +43,6 @@ sdb_database_t *sdb_database_create(const char *directory,
 
   sdb_database_t *db = (sdb_database_t *)sdb_alloc(sizeof(sdb_database_t));
   strncpy(db->_directory, directory, SDB_FILE_MAX_LEN);
-  db->_lock = sdb_rwlock_create();
   db->_max_series_count = max_series;
   db->_series = (sdb_data_series_t **)sdb_alloc(sizeof(sdb_data_series_t *) * db->_max_series_count);
   db->_points_per_chunk = points_per_chunk;
@@ -65,7 +64,6 @@ void sdb_database_destroy(sdb_database_t *db) {
   sdb_free(db->_series);
 
   sdb_cache_manager_destroy(db->_cache);
-  sdb_rwlock_destroy(db->_lock);
   sdb_free(db);
 }
 
@@ -140,18 +138,12 @@ sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_
 }
 
 sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
-  sdb_rwlock_rdlock(db->_lock);
   sdb_data_series_t *series = NULL;
 
   if ((series = sdb_database_get_data_series(db, series_id)) == NULL) {
-    sdb_rwlock_upgrade(db->_lock);
-
-    if ((series = sdb_database_get_data_series(db, series_id)) == NULL) {
       series = sdb_database_create_data_series(db, series_id);
-    }
   }
 
-  sdb_rwlock_unlock(db->_lock);
   return series;
 }
 

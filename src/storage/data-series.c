@@ -44,7 +44,6 @@ int sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
                                  int position,
                                  sdb_data_point_t *points,
                                  int count);
-int sdb_data_series_write_internal(sdb_data_series_t *series, sdb_data_point_t *points, int count);
 int sdb_data_series_chunk_compare_begin(sdb_timestamp_t *begin, sdb_data_chunk_t **chunk);
 int sdb_data_series_chunk_compare_end(sdb_timestamp_t *end, sdb_data_chunk_t **chunk);
 
@@ -56,7 +55,6 @@ sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
   series->id = id;
   strncpy(series->_file_name, file_name, SDB_FILE_MAX_LEN);
   series->_points_per_chunk = points_per_chunk;
-  series->_series_lock = sdb_rwlock_create();
   series->_chunks = NULL;
   series->_max_chunks = 0;
   series->_chunks_count = 0;
@@ -79,12 +77,10 @@ sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
 
 void sdb_data_series_destroy(sdb_data_series_t *series) {
   sdb_data_series_delete_chunks(series);
-
-  sdb_rwlock_destroy(series->_series_lock);
   sdb_free(series);
 }
 
-int sdb_data_series_write_internal(sdb_data_series_t *series, sdb_data_point_t *points, int count) {
+int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count) {
   if (series->_chunks_count == 0) {
     sdb_data_chunk_t *chunk = sdb_data_series_create_empty_chunk(series);
 
@@ -133,23 +129,9 @@ int sdb_data_series_write_internal(sdb_data_series_t *series, sdb_data_point_t *
   return 0;
 }
 
-int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count) {
-  sdb_rwlock_wrlock(series->_series_lock);
-  int result = sdb_data_series_write_internal(series, points, count);
-  sdb_rwlock_unlock(series->_series_lock);
-
-  return result;
-}
-
 int sdb_data_series_truncate(sdb_data_series_t *series) {
-  sdb_rwlock_wrlock(series->_series_lock);
-
   sdb_data_series_delete_chunks(series);
-  int result = sdb_file_truncate(series->_file_name);
-
-  sdb_rwlock_unlock(series->_series_lock);
-
-  return result;
+  return sdb_file_truncate(series->_file_name);
 }
 
 int sdb_data_series_chunk_compare_begin(sdb_timestamp_t *begin, sdb_data_chunk_t **chunk) {
@@ -164,8 +146,6 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                sdb_timestamp_t begin,
                                                sdb_timestamp_t end,
                                                int max_points) {
-  sdb_rwlock_rdlock(series->_series_lock);
-
   sdb_data_points_reader_t **readers = (sdb_data_points_reader_t **)sdb_alloc(
       series->_chunks_count * sizeof(sdb_data_points_reader_t));
   int ranges_count = 0;
@@ -197,23 +177,18 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
     sdb_data_points_reader_destroy(readers[i]);
   }
 
-  sdb_rwlock_unlock(series->_series_lock);
   sdb_free(readers);
 
   return reader;
 }
 
 sdb_data_point_t sdb_data_series_read_latest(sdb_data_series_t *series) {
-  sdb_rwlock_rdlock(series->_series_lock);
-
   sdb_data_point_t result = {.value=0, .time=0};
 
   if (series->_chunks_count > 0) {
     sdb_data_chunk_t *last_chunk = series->_chunks[series->_chunks_count - 1];
     result = sdb_data_chunk_read_latest(last_chunk);
   }
-
-  sdb_rwlock_unlock(series->_series_lock);
 
   return result;
 }

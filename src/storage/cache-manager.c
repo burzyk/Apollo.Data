@@ -40,7 +40,6 @@ sdb_cache_manager_t *sdb_cache_manager_create(uint64_t soft_limit, uint64_t hard
   cache->_allocated = 0;
   cache->soft_limit = soft_limit;
   cache->hard_limit = hard_limit;
-  cache->_lock = sdb_mutex_create();
   cache->_guard.consumer = NULL;
   cache->_guard.allocated = 0;
   cache->_guard.prev = &cache->_guard;
@@ -62,7 +61,6 @@ void sdb_cache_manager_destroy(sdb_cache_manager_t *cache) {
     curr = next;
   }
 
-  sdb_mutex_destroy(cache->_lock);
   sdb_free(cache);
 }
 
@@ -71,7 +69,6 @@ sdb_cache_entry_t *sdb_cache_manager_register_consumer(sdb_cache_manager_t *cach
   entry->allocated = 0;
   entry->consumer = consumer;
 
-  sdb_mutex_lock(cache->_lock);
   sdb_cache_manager_insert_entry(cache, entry);
 
   cache->_allocated += memory;
@@ -86,8 +83,6 @@ sdb_cache_entry_t *sdb_cache_manager_register_consumer(sdb_cache_manager_t *cach
     sdb_cache_manager_cleanup(cache, entry);
   }
 
-  sdb_mutex_unlock(cache->_lock);
-
   return entry;
 }
 
@@ -96,12 +91,8 @@ void sdb_cache_manager_update(sdb_cache_manager_t *cache, sdb_cache_entry_t *ent
     return;
   }
 
-  sdb_mutex_lock(cache->_lock);
-
   sdb_cache_manager_cut_entry(cache, entry);
   sdb_cache_manager_insert_entry(cache, entry);
-
-  sdb_mutex_unlock(cache->_lock);
 }
 
 void sdb_cache_manager_insert_entry(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry) {

@@ -32,7 +32,6 @@
 typedef struct sdb_database_s {
   char _directory[SDB_FILE_MAX_LEN];
   int _points_per_chunk;
-  sdb_rwlock_t *_lock;
 
   sdb_data_series_t **_series;
   int _max_series_count;

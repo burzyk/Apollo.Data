@@ -56,7 +56,6 @@ sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name,
   chunk->begin = SDB_TIMESTAMP_MAX;
   chunk->end = SDB_TIMESTAMP_MIN;
   chunk->number_of_points = 0;
-  chunk->_lock = sdb_rwlock_create();
   chunk->_cache = cache;
   chunk->_cache_entry = NULL;
 
@@ -82,12 +81,10 @@ void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk) {
     sdb_free(chunk->_cached_content);
   }
 
-  sdb_rwlock_destroy(chunk->_lock);
   sdb_free(chunk);
 }
 
 sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end) {
-  sdb_rwlock_rdlock(chunk->_lock);
 
   sdb_data_chunk_ensure_content_loaded(chunk);
 
@@ -108,13 +105,10 @@ sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_times
 
   sdb_cache_manager_update(chunk->_cache, chunk->_cache_entry);
 
-  sdb_rwlock_unlock(chunk->_lock);
-
   return reader;
 }
 
 sdb_data_point_t sdb_data_chunk_read_latest(sdb_data_chunk_t *chunk) {
-  sdb_rwlock_rdlock(chunk->_lock);
 
   sdb_data_chunk_ensure_content_loaded(chunk);
 
@@ -126,8 +120,6 @@ sdb_data_point_t sdb_data_chunk_read_latest(sdb_data_chunk_t *chunk) {
 
   sdb_cache_manager_update(chunk->_cache, chunk->_cache_entry);
 
-  sdb_rwlock_unlock(chunk->_lock);
-
   return result;
 }
 
@@ -135,8 +127,6 @@ int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *
   if (count == 0) {
     return 0;
   }
-
-  sdb_rwlock_wrlock(chunk->_lock);
 
   if (chunk->max_points < offset + count) {
     die("Trying to write outside data chunk");
@@ -148,7 +138,6 @@ int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *
   sdb_file_close(file);
 
   if (!write_status) {
-    sdb_rwlock_unlock(chunk->_lock);
     return -1;
   }
 
@@ -165,12 +154,10 @@ int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *
     chunk->number_of_points = offset + count;
   }
 
-  sdb_rwlock_unlock(chunk->_lock);
   return 0;
 }
 
 void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk) {
-  sdb_rwlock_wrlock(chunk->_lock);
 
   if (chunk->_cached_content != NULL) {
     sdb_free(chunk->_cached_content);
@@ -182,17 +169,9 @@ void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk) {
                   chunk->begin,
                   chunk->end);
   }
-
-  sdb_rwlock_unlock(chunk->_lock);
 }
 
 void sdb_data_chunk_ensure_content_loaded(sdb_data_chunk_t *chunk) {
-  if (chunk->_cached_content != NULL) {
-    return;
-  }
-
-  sdb_rwlock_upgrade(chunk->_lock);
-
   if (chunk->_cached_content != NULL) {
     return;
   }

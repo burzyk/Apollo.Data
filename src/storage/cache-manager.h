@@ -28,8 +28,6 @@
 
 #include <stdint.h>
 
-#include "src/utils/threading.h"
-
 typedef struct sdb_cache_entry_s {
   uint64_t allocated;
   void *consumer;
@@ -42,7 +40,6 @@ typedef struct sdb_cache_manager_s {
   uint64_t hard_limit;
   uint64_t _allocated;
 
-  sdb_mutex_t *_lock;
   sdb_cache_entry_t _guard;
 } sdb_cache_manager_t;
 

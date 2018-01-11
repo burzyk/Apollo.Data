@@ -27,7 +27,6 @@
 #define SRC_STORAGE_DATA_CHUNK_H_
 
 #include "src/common.h"
-#include "src/utils/threading.h"
 #include "src/storage/data-points-reader.h"
 #include "src/storage/cache-manager.h"
 
@@ -40,7 +39,6 @@ typedef struct sdb_data_chunk_s {
   char _file_name[SDB_FILE_MAX_LEN];
   uint64_t _file_offset;
   sdb_data_point_t *_cached_content;
-  sdb_rwlock_t *_lock;
 
   sdb_cache_manager_t *_cache;
   sdb_cache_entry_t *_cache_entry;
