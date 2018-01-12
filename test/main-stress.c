@@ -70,6 +70,8 @@ int main(int argc, char *argv[]) {
           break;
         case 'p':port = atoi(optarg);
           break;
+        case 't':strncpy(test, optarg, SDB_FILE_MAX_LEN);
+          break;
         default: configuration_parsed = -1;
       }
     }
