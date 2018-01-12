@@ -67,7 +67,7 @@ add_executable(shakadb.client src/client/main.c)
 add_executable(shakadb.test ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} test/main-unit.c)
 add_executable(shakadb.stress ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} test/main-stress.c)
 
-target_link_libraries(shakadbc)
+target_link_libraries(shakadbc dill)
 target_link_libraries(shakadb dill)
 target_link_libraries(shakadb.client shakadbc)
 target_link_libraries(shakadb.test dill)
