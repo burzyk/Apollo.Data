@@ -13,7 +13,7 @@
 
 void sdb_test_server_simple_initialization_test(sdb_tests_context_t ctx) {
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   sdb_server_destroy(server);
   sdb_database_destroy(db);
@@ -22,7 +22,7 @@ void sdb_test_server_simple_initialization_test(sdb_tests_context_t ctx) {
 void sdb_test_server_connect(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   sdb_assert(shakadb_session_open(&session, "localhost", 8081) == SHAKADB_RESULT_OK, "Unable to connect");
   shakadb_session_close(&session);
@@ -34,7 +34,7 @@ void sdb_test_server_connect(sdb_tests_context_t ctx) {
 void sdb_test_server_connect_invalid_address(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   int status = shakadb_session_open(&session, "sadasasdasdasd.asdas", 8081);
   sdb_assert(status == SHAKADB_RESULT_CONNECT_ERROR, "Should not connect");
@@ -47,7 +47,7 @@ void sdb_test_server_connect_invalid_address(sdb_tests_context_t ctx) {
 void sdb_test_server_connect_invalid_port(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   int status = shakadb_session_open(&session, "localhost", 25876);
   sdb_assert(status == SHAKADB_RESULT_CONNECT_ERROR, "Should not connect");
@@ -61,7 +61,7 @@ void sdb_test_server_write_small(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -103,7 +103,7 @@ void sdb_test_server_write_unordered(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -148,7 +148,7 @@ void sdb_test_server_write_two_batches(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -199,7 +199,7 @@ void sdb_test_server_read_two_batches(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 2, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -249,7 +249,7 @@ void sdb_test_server_read_range(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -291,7 +291,7 @@ void sdb_test_server_read_range_with_multiple_series(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -344,7 +344,7 @@ void sdb_test_server_update(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -414,7 +414,7 @@ void sdb_test_server_update_in_two_sessions(sdb_tests_context_t ctx) {
   shakadb_session_t session_2;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session_1, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -488,7 +488,7 @@ void sdb_test_server_truncate_not_existing(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -513,7 +513,7 @@ void sdb_test_server_truncate_empty(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -545,7 +545,7 @@ void sdb_test_server_truncate_and_write(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -595,7 +595,7 @@ void sdb_test_server_no_sig_pipe_on_too_large_packet(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -616,7 +616,7 @@ void sdb_test_server_failed_write(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create("/blah/blah", 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -641,7 +641,7 @@ void sdb_test_server_write_series_out_of_range(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -663,7 +663,7 @@ void sdb_test_server_read_series_out_of_range(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -685,7 +685,7 @@ void sdb_test_server_truncate_series_out_of_range(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -703,7 +703,7 @@ void sdb_test_server_write_filter_duplicates(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -748,7 +748,7 @@ void sdb_test_server_write_filter_zeros(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -795,7 +795,7 @@ void sdb_test_server_read_multiple_active(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -850,7 +850,7 @@ void sdb_test_server_read_latest_series_out_of_range(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 100, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -873,7 +873,7 @@ void sdb_test_server_read_latest_when_empty(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -896,7 +896,7 @@ void sdb_test_server_read_latest(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 2, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -930,7 +930,7 @@ void sdb_test_server_write_when_read_opened(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -963,7 +963,7 @@ void sdb_test_server_truncate_when_read_opened(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
@@ -988,7 +988,7 @@ void sdb_test_server_read_latest_when_read_opened(sdb_tests_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, 10, 10, db);
+  sdb_server_t *server = sdb_server_create(8081, db);
 
   status = shakadb_session_open(&session, "localhost", 8081);
   sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
