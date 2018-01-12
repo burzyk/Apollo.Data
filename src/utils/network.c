@@ -70,5 +70,5 @@ void sdb_socket_close(sdb_socket_t socket) {
 }
 
 sdb_socket_t sdb_socket_accept(sdb_socket_t socket) {
-  return tcp_accept(socket, NULL, now() + 1000);
+  return tcp_accept(socket, NULL, now() + 10);
 }

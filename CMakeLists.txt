@@ -70,7 +70,7 @@ add_executable(shakadb.stress ${SRC_SHAKADB} ${SRC_SHAKADB_CLIENT} ${SRC_TEST} t
 target_link_libraries(shakadbc dill)
 target_link_libraries(shakadb dill)
 target_link_libraries(shakadb.client shakadbc)
-target_link_libraries(shakadb.test dill)
+target_link_libraries(shakadb.test dill pthread)
 target_link_libraries(shakadb.stress dill)
 
 set_target_properties(shakadbc PROPERTIES LINKER_LANGUAGE C)
