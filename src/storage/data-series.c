@@ -27,6 +27,7 @@
 
 #include <string.h>
 #include <inttypes.h>
+#include <stdlib.h>
 
 #include "src/utils/diagnostics.h"
 #include "src/utils/memory.h"
@@ -81,6 +82,33 @@ void sdb_data_series_destroy(sdb_data_series_t *series) {
 }
 
 int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count) {
+  qsort(points,
+        (size_t)count,
+        sizeof(sdb_data_point_t),
+        (int (*)(const void *, const void *))sdb_data_point_compare);
+
+  int tail = -1;
+
+  for (int i = 0; i < count; i++) {
+    if (points[i].time == 0) {
+      continue;
+    }
+
+    if (tail < 0 || points[tail].time < points[i].time) {
+      tail++;
+    }
+
+    points[tail] = points[i];
+  }
+
+  tail++;
+
+  if (tail != count) {
+    sdb_log_info("duplicated or zero timestamp points detected in request: %d -> %d", count, tail);
+  }
+
+  count = tail;
+
   if (series->_chunks_count == 0) {
     sdb_data_chunk_t *chunk = sdb_data_series_create_empty_chunk(series);
 

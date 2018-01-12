@@ -154,34 +154,7 @@ void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, s
                 request->data_series_id,
                 request->points_count);
 
-  qsort(request->points,
-        (size_t)request->points_count,
-        sizeof(sdb_data_point_t),
-        (int (*)(const void *, const void *))sdb_data_point_compare);
-
-  int tail = -1;
-
-  for (int i = 0; i < request->points_count; i++) {
-    if (request->points[i].time == 0) {
-      continue;
-    }
-
-    if (tail < 0 || request->points[tail].time < request->points[i].time) {
-      tail++;
-    }
-
-    request->points[tail] = request->points[i];
-  }
-
-  tail++;
-
-  if (tail != request->points_count) {
-    sdb_log_info("duplicated or zero timestamp points detected in request: %d -> %d",
-                 request->points_count,
-                 tail);
-  }
-
-  int status = sdb_database_write(server->_db, request->data_series_id, request->points, tail);
+  int status = sdb_database_write(server->_db, request->data_series_id, request->points, request->points_count);
 
   if (status) {
     sdb_log_error("failed to save data points");
