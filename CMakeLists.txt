@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2.2)
-project(shakadb)
+project(shakadb C)
 
 if (NOT DEFINED ENV{SDB_VERSION_MAJOR})
     set(SDB_VERSION_MAJOR 0)
@@ -71,12 +71,7 @@ target_link_libraries(shakadbc dill)
 target_link_libraries(shakadb dill)
 target_link_libraries(shakadb.client shakadbc)
 target_link_libraries(shakadb.test dill pthread)
-target_link_libraries(shakadb.stress dill)
-
-set_target_properties(shakadbc PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(shakadb PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(shakadb.client PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(shakadb.test PROPERTIES LINKER_LANGUAGE C)
+target_link_libraries(shakadb.stress dill pthread)
 
 install(TARGETS shakadbc DESTINATION lib)
 install(TARGETS shakadb DESTINATION bin)
