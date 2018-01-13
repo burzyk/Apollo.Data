@@ -297,9 +297,9 @@ int sdb_truncate_request_serialize(sdb_truncate_request_t *request, sdb_socket_t
 /* ========== generic methods ========== */
 
 sdb_packet_t *sdb_packet_receive(sdb_socket_t socket) {
-  sdb_packet_header_t header = {0};
+  packet_header_t header = {0};
 
-  if (sdb_socket_receive(socket, &header, sizeof(sdb_packet_header_t)) < sizeof(sdb_packet_header_t)) {
+  if (sdb_socket_receive(socket, &header, sizeof(packet_header_t)) < sizeof(packet_header_t)) {
     return NULL;
   }
 

@@ -48,47 +48,48 @@ typedef char sdb_response_code_t;
 
 #define SDB_PACKET_MAX_LEN  65536000
 
-typedef struct sdb_packet_header_s {
+typedef struct packet_header_s {
   sdb_packet_type_t type;
-  size_t payload_size;
-} sdb_packet_header_t;
+} packet_header_t;
 
-typedef struct sdb_packet_s {
-  sdb_packet_header_t header;
-  void *payload;
-  void *_raw_payload;
-} sdb_packet_t;
-
-typedef struct sdb_write_request_s {
+typedef struct write_request_s {
+  packet_header_t header;
   sdb_data_series_id_t data_series_id;
   int points_count;
   sdb_data_point_t *points;
-} sdb_write_request_t;
+} write_request_t;
 
-typedef struct sdb_read_request_s {
+typedef struct read_request_s {
+  packet_header_t header;
   sdb_data_series_id_t data_series_id;
   sdb_timestamp_t begin;
   sdb_timestamp_t end;
   int points_per_packet;
-} sdb_read_request_t;
+} read_request_t;
 
-typedef struct sdb_read_latest_request_s {
+typedef struct read_latest_request_s {
+  packet_header_t header;
   sdb_data_series_id_t data_series_id;
-} sdb_read_latest_request_t;
+} read_latest_request_t;
 
-typedef struct sdb_read_response_s {
+typedef struct read_response_s {
+  packet_header_t header;
   sdb_response_code_t code;
   int points_count;
-  sdb_data_point_t *points;
-} sdb_read_response_t;
+  sdb_data_point_t points[];
+} read_response_t;
 
-typedef struct sdb_truncate_request_s {
+typedef struct truncate_request_s {
+  packet_header_t header;
   sdb_data_series_id_t data_series_id;
-} sdb_truncate_request_t;
+} truncate_request_t;
 
-typedef struct sdb_simple_response_s {
+typedef struct simple_response_s {
+  packet_header_t header;
   sdb_response_code_t code;
-} sdb_simple_response_t;
+} simple_response_t;
+
+int packet_validate(uint8_t *data, int size);
 
 sdb_packet_t *sdb_write_request_create(sdb_data_series_id_t data_series_id, sdb_data_point_t *points, int points_count);
 sdb_packet_t *sdb_read_request_create(sdb_data_series_id_t data_series_id,

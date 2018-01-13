@@ -58,7 +58,7 @@ typedef struct client_s {
   size_t buffer_length;
 } client_t;
 
-typedef void (*packet_handler_t)(client_t *client, uint8_t *data, uint32_t size, void *context);
+typedef int (*packet_handler_t)(client_t *client, uint8_t *data, uint32_t size, void *context);
 
 typedef struct server_s {
   int _port;

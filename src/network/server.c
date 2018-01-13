@@ -136,11 +136,17 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
       return;
     }
 
-    client->server->_handler(
+    int result = client->server->_handler(
         client,
         client->buffer + sizeof(header_t),
         hdr->packet_size - sizeof(header_t),
         client->server->_handler_context);
+
+    if (result) {
+      client_disconnect_and_destroy(client);
+      return;
+    }
+
     client->buffer_length -= hdr->packet_size;
 
     if (client->buffer_length > 0) {
