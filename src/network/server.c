@@ -124,22 +124,22 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
       return;
     }
 
-    header_t *hdr = (header_t *)client->buffer;
+    header_t *packet = (header_t *)client->buffer;
 
-    if (hdr->magic != SDB_SERVER_MAGIC || hdr->packet_size > SDB_SERVER_PACKET_MAX_LEN) {
-      sdb_log_error("Received malformed packet, disconnecting, magic: %u, len: %u", hdr->magic, hdr->packet_size);
+    if (packet->magic != SDB_SERVER_MAGIC || packet->total_size > SDB_SERVER_PACKET_MAX_LEN) {
+      sdb_log_error("Received malformed packet, disconnecting, magic: %u, len: %u", packet->magic, packet->total_size);
       client_disconnect_and_destroy(client);
       return;
     }
 
-    if (hdr->packet_size < client->buffer_length) {
+    if (packet->total_size < client->buffer_length) {
       return;
     }
 
     int result = client->server->_handler(
         client,
-        client->buffer + sizeof(header_t),
-        hdr->packet_size - sizeof(header_t),
+        packet->payload,
+        packet->total_size - sizeof(header_t),
         client->server->_handler_context);
 
     if (result) {
@@ -147,10 +147,10 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
       return;
     }
 
-    client->buffer_length -= hdr->packet_size;
+    client->buffer_length -= packet->total_size;
 
     if (client->buffer_length > 0) {
-      memcpy(client->buffer, client->buffer + hdr->packet_size, client->buffer_length);
+      memcpy(client->buffer, client->buffer + packet->total_size, client->buffer_length);
     }
   }
 }

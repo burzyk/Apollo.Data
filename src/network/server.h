@@ -43,7 +43,8 @@
 
 typedef struct header_s {
   uint32_t magic;
-  uint32_t packet_size;
+  uint32_t total_size;
+  uint8_t payload[];
 } header_t;
 
 typedef struct client_s {
