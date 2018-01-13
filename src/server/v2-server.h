@@ -28,31 +28,47 @@
 
 #include <uv.h>
 
-#include "src/storage/database.h"
-#include "src/protocol.h"
-
 #ifndef SDB_MAX_CLIENTS
 #define SDB_MAX_CLIENTS 255
 #endif
 
+#ifndef SDB_SERVER_PACKET_MAX_LEN
+#define SDB_SERVER_PACKET_MAX_LEN 6553600
+#endif
+
+#define SDB_SERVER_READ_BUFFER_MAX_LEN  65536
+
+// spells 'KAMA' in ASCII
+#define SDB_SERVER_MAGIC 0x4B414D41
+
+typedef struct header_s {
+  uint32_t magic;
+  uint32_t packet_size;
+} header_t;
+
 typedef struct client_s {
   uv_tcp_t socket;
-  uint8_t buffer[SDB_PACKET_MAX_LEN];
-  int buffer_length;
   struct server_s *server;
   int index;
+
+  // as the SDB_SERVER_READ_BUFFER_MAX_LEN is maximal value read can return
+  // we can be certain that at any given time we will not need more memory
+  // than SDB_SERVER_PACKET_MAX_LEN + SDB_SERVER_READ_BUFFER_MAX_LEN
+  uint8_t buffer[SDB_SERVER_PACKET_MAX_LEN + SDB_SERVER_READ_BUFFER_MAX_LEN];
+  size_t buffer_length;
 } client_t;
 
+typedef void (*packet_handler_t)(client_t *client, uint8_t *data, uint32_t size);
+
 typedef struct server_s {
-  sdb_database_t *_db;
   int _port;
-  volatile int _stop;
   uv_loop_t *_loop;
   uv_tcp_t _master_socket;
   client_t *_clients[SDB_MAX_CLIENTS];
+  packet_handler_t _handler;
 } server_t;
 
-server_t *server_create(int port, sdb_database_t *db);
+server_t *server_create(int port, packet_handler_t handler);
 void server_run(server_t *server);
 void server_stop(server_t *server);
 void server_destroy(server_t *server);

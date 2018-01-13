@@ -67,9 +67,14 @@ void sdb_print_usage();
 int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]);
 void sdb_control_signal_handler(int sig);
 
+void on_msg(client_t *client, uint8_t *data, uint32_t len) {
+
+  int w = 0;
+}
+
 int main(int argc, char *argv[]) {
 
-  server_t *s = server_create(8080, NULL);
+  server_t *s = server_create(8080, on_msg);
 
 
   server_run(s);

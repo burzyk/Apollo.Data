@@ -35,8 +35,7 @@ endif ()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wpointer-arith")
 
 if ("${SDB_CONFIGURATION}" STREQUAL debug)
-    #    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
-    #-fprofile-instr-generate -fcoverage-mapping
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 endif ()
 
 if ("${SDB_CONFIGURATION}" STREQUAL release)
