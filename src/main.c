@@ -30,7 +30,7 @@
 #include <signal.h>
 #include <inttypes.h>
 #include <libdill.h>
-#include <src/server/v2-server.h>
+#include <src/server/server.h>
 
 #include "src/storage/database.h"
 #include "src/server/server.h"
@@ -59,9 +59,9 @@ typedef struct sdb_configuration_s {
   uint64_t cache_hard_limit;
 } sdb_configuration_t;
 
-sdb_server_t *g_server;
+server_t *g_server;
 
-void sdb_master_routine(sdb_configuration_t *data);
+void sdb_master_routine(sdb_configuration_t *config);
 void sdb_print_banner(sdb_configuration_t *config);
 void sdb_print_usage();
 int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]);
@@ -73,14 +73,6 @@ void on_msg(client_t *client, uint8_t *data, uint32_t len) {
 }
 
 int main(int argc, char *argv[]) {
-
-  server_t *s = server_create(8080, on_msg);
-
-
-  server_run(s);
-
-  return 0;
-
   sdb_configuration_t config = {};
 
   if (sdb_configuration_parse(&config, argc, argv)) {
@@ -106,7 +98,7 @@ int main(int argc, char *argv[]) {
 
 void sdb_control_signal_handler(int sig) {
   if (g_server != NULL) {
-    sdb_server_stop(g_server);
+    server_stop(g_server);
   }
 }
 
@@ -121,16 +113,16 @@ void sdb_master_routine(sdb_configuration_t *config) {
       config->cache_hard_limit);
 
   sdb_log_info("initializing server ...");
-  g_server = sdb_server_create(config->server_port, db);
+  g_server = server_create(config->server_port, on_msg);
 
   sdb_log_info("initialization complete");
 
-  sdb_server_run(g_server);
+  server_run(g_server);
 
   sdb_log_info("interrupt received");
 
   sdb_log_info("closing server ...");
-  sdb_server_destroy(g_server);
+  server_destroy(g_server);
 
   sdb_log_info("closing database ...");
   sdb_database_destroy(db);

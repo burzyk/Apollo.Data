@@ -1,210 +1,145 @@
-/*
- * Copyright (c) 2016 Pawel Burzynski. All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
 //
-// Created by Pawel Burzynski on 25/02/2017.
+// Created by Pawel Burzynski on 13/01/2018.
 //
 
-#include <stdlib.h>
-#include <inttypes.h>
-#include <libdill.h>
-
+#include "src/common.h"
 #include "src/server/server.h"
+
 #include "src/utils/memory.h"
 #include "src/utils/diagnostics.h"
 
-void sdb_server_worker_routine(sdb_server_t *server, sdb_socket_t client_socket);
-void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
-void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
-void sdb_server_handle_truncate(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
-void sdb_server_handle_read_latest(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet);
+client_t *client_create(server_t *server, int index);
+void client_disconnect_and_destroy(client_t *client);
 
-sdb_server_t *sdb_server_create(int port, sdb_database_t *db) {
-  sdb_server_t *server = (sdb_server_t *)sdb_alloc(sizeof(sdb_server_t));
-  server->_db = db;
+void on_alloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);
+void on_client_connected(uv_stream_t *master_socket, int status);
+void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf);
+
+client_t *client_create(server_t *server, int index) {
+  client_t *client = sdb_alloc(sizeof(client_t));
+  client->index = index;
+  client->buffer_length = 0;
+  client->server = server;
+  client->buffer_length = 0;
+  uv_tcp_init(server->_loop, &client->socket);
+  client->socket.data = client;
+
+  return client;
+}
+
+void client_disconnect_and_destroy(client_t *client) {
+  client->server->_clients[client->index] = NULL;
+  uv_close((uv_handle_t *)&client->socket, NULL);
+  sdb_free(client);
+}
+
+server_t *server_create(int port, packet_handler_t handler) {
+  server_t *server = sdb_alloc(sizeof(server_t));
   server->_port = port;
-  server->_stop = 0;
+  server->_loop = uv_default_loop();
+  server->_handler = handler;
+  uv_tcp_init(server->_loop, &server->_master_socket);
+  server->_master_socket.data = server;
+  memset(server->_clients, 0, SDB_MAX_CLIENTS * sizeof(client_t *));
 
   return server;
 }
 
-void sdb_server_run(sdb_server_t *server) {
-  sdb_socket_t master_socket;
-
-  if ((master_socket = sdb_socket_listen(server->_port, 10)) == SDB_INVALID_SOCKET) {
-    die("Unable to listen");
-  }
-
-  while (!server->_stop) {
-    sdb_socket_t client = sdb_socket_accept(master_socket);
-
-    if (client == SDB_INVALID_SOCKET) {
-      yield();
-      continue;
-    }
-
-    // TODO: Cleanup?
-    go(sdb_server_worker_routine(server, client));
-  }
-
-  sdb_socket_close(master_socket);
-}
-
-void sdb_server_stop(sdb_server_t *server) {
-  server->_stop = 1;
-}
-
-void sdb_server_destroy(sdb_server_t *server) {
+void server_destroy(server_t *server) {
+  uv_loop_close(server->_loop);
   sdb_free(server);
 }
 
-void sdb_server_worker_routine(sdb_server_t *server, sdb_socket_t client_socket) {
-  sdb_log_debug("client connected: %d", client_socket);
-  sdb_packet_t *packet = NULL;
+void server_run(server_t *server) {
+  struct sockaddr_in address = {0};
+  uv_ip4_addr("0.0.0.0", server->_port, &address);
 
-  while ((packet = sdb_packet_receive(client_socket)) != NULL) {
-    sdb_log_debug("packet received: { type: %d, length: %d }", packet->header.type, packet->header.payload_size);
-    sdb_stopwatch_t *sw = sdb_stopwatch_start();
-
-    switch (packet->header.type) {
-      case SDB_READ_REQUEST: sdb_server_handle_read(server, client_socket, packet);
-        break;
-      case SDB_WRITE_REQUEST:sdb_server_handle_write(server, client_socket, packet);
-        break;
-      case SDB_TRUNCATE_REQUEST:sdb_server_handle_truncate(server, client_socket, packet);
-        break;
-      case SDB_READ_LATEST_REQUEST:sdb_server_handle_read_latest(server, client_socket, packet);
-        break;
-      default: sdb_log_info("Unknown packet type: %d", packet->header.type);
-    }
-
-    sdb_log_debug("packet handled in: %fs", sdb_stopwatch_stop_and_destroy(sw));
-    sdb_packet_destroy(packet);
+  if (uv_tcp_bind(&server->_master_socket, (const struct sockaddr *)&address, 0) < 0) {
+    die("Failed to bind to the master socket");
   }
 
-  sdb_log_debug("client disconnected: %d", client_socket);
-  sdb_socket_close(client_socket);
+  if (uv_listen((uv_stream_t *)&server->_master_socket, 10, on_client_connected) != 0) {
+    die("Failed to listen for incoming clients");
+  }
+
+  uv_run(server->_loop, UV_RUN_DEFAULT);
+  uv_loop_close(server->_loop);
 }
 
-void sdb_server_handle_read(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
-  sdb_read_request_t *request = (sdb_read_request_t *)packet->payload;
-  sdb_log_debug("processing read request: { series: %d, begin: %" PRIu64 ", end: %" PRIu64 "  }",
-                request->data_series_id,
-                request->begin,
-                request->end);
+void server_stop(server_t *server) {
 
-  sdb_timestamp_t begin = request->begin;
-  int points_per_packet = sdb_max(1, sdb_min(SDB_POINTS_PER_PACKET_MAX, request->points_per_packet));
-
-  for (;;) {
-    int points_to_read = points_per_packet + 1;
-    sdb_data_points_reader_t *reader =
-        sdb_database_read(server->_db, request->data_series_id, begin, request->end, points_to_read);
-
-    if (reader == NULL) {
-      return;
-    }
-
-    begin = reader->points_count == points_to_read ? reader->points[reader->points_count - 1].time : request->end;
-
-    int points_to_send = sdb_min(points_per_packet, reader->points_count);
-    sdb_log_debug("sending response: { begin: %" PRIu64 ", end: %" PRIu64 ", points: %d }",
-                  points_to_send ? reader->points[0].time : 0,
-                  points_to_send ? reader->points[points_to_send - 1].time : 0,
-                  points_to_send);
-    int send_status = sdb_packet_send_and_destroy(
-        sdb_read_response_create(SDB_RESPONSE_OK, reader->points, points_to_send),
-        client_socket);
-
-    sdb_data_points_reader_destroy(reader);
-
-    if (send_status) {
-      sdb_log_debug("error sending the response");
-      return;
-    }
-
-    if (points_to_send == 0) {
-      sdb_log_debug("all points sent");
-      return;
-    }
-  }
 }
 
-void sdb_server_handle_write(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
-  sdb_write_request_t *request = (sdb_write_request_t *)packet->payload;
-  sdb_log_debug("processing write request: { series: %d, points: %d }",
-                request->data_series_id,
-                request->points_count);
+void on_alloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
+  suggested_size = (size_t)sdb_min(SDB_SERVER_READ_BUFFER_MAX_LEN, (int)suggested_size);
 
-  int status = sdb_database_write(server->_db, request->data_series_id, request->points, request->points_count);
-
-  if (status) {
-    sdb_log_error("failed to save data points");
-  }
-
-  if (sdb_packet_send_and_destroy(
-      sdb_simple_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
-      client_socket)) {
-    sdb_log_debug("error sending the response");
-  }
-
-  sdb_log_debug("all points written");
+  buf->base = sdb_alloc(suggested_size);
+  buf->len = suggested_size;
 }
 
-void sdb_server_handle_truncate(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
-  sdb_truncate_request_t *request = (sdb_truncate_request_t *)packet->payload;
-  sdb_log_debug("processing truncate request: { series: %d }", request->data_series_id);
+void on_client_connected(uv_stream_t *master_socket, int status) {
+  server_t *server = (server_t *)master_socket->data;
 
-  int status = sdb_database_truncate(server->_db, request->data_series_id);
-
-  if (status) {
-    sdb_log_error("failed to truncate data series: %d", request->data_series_id);
-  }
-
-  if (sdb_packet_send_and_destroy(
-      sdb_simple_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
-      client_socket)) {
-    sdb_log_debug("error sending the response");
-  }
-
-  sdb_log_debug("data series truncated");
-}
-
-void sdb_server_handle_read_latest(sdb_server_t *server, sdb_socket_t client_socket, sdb_packet_t *packet) {
-  int send_status = 0;
-  sdb_read_latest_request_t *request = (sdb_read_latest_request_t *)packet->payload;
-  sdb_log_debug("processing read latest request: { series: %d }", request->data_series_id);
-
-  sdb_data_point_t latest = sdb_database_read_latest(server->_db, request->data_series_id);
-  sdb_log_debug("latest point: { time: %" PRIu64, ", value: %f }", latest.time, latest.value);
-
-  if (latest.time != 0) {
-    send_status |= sdb_packet_send_and_destroy(sdb_read_response_create(SDB_RESPONSE_OK, &latest, 1), client_socket);
-  }
-
-  send_status |= sdb_packet_send_and_destroy(sdb_read_response_create(SDB_RESPONSE_OK, NULL, 0), client_socket);
-
-  if (send_status != 0) {
-    sdb_log_debug("error sending response");
+  if (status < 0) {
+    sdb_log_error("New connection error: %s", uv_strerror(status));
     return;
   }
+
+  sdb_log_debug("Client connected");
+  client_t *client = NULL;
+
+  for (int i = 0; i < SDB_MAX_CLIENTS && client == NULL; i++) {
+    if (server->_clients[i] == NULL) {
+      client = server->_clients[i] = client_create(server, i);
+    }
+  }
+
+  if (client == NULL) {
+    sdb_log_debug("Max clients connected, ignoring this client");
+    client_disconnect_and_destroy(client);
+    return;
+  }
+
+  if (uv_accept((uv_stream_t *)&server->_master_socket, (uv_stream_t *)&client->socket) < 0) {
+    sdb_log_error("Failed to accept the connection: %s", uv_strerror(status));
+    client_disconnect_and_destroy(client);
+  }
+
+  uv_read_start((uv_stream_t *)client, on_alloc, on_data_read);
 }
 
+void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf) {
+  client_t *client = (client_t *)client_socket->data;
+
+  if (nread < 0) {
+    sdb_log_debug("Client disconnected");
+    client_disconnect_and_destroy(client);
+  } else if (nread > 0) {
+    memcpy(client->buffer + client->buffer_length, buf->base, (size_t)nread);
+    client->buffer_length += nread;
+    sdb_free(buf->base);
+
+    if (client->buffer_length < sizeof(header_t)) {
+      return;
+    }
+
+    header_t *hdr = (header_t *)client->buffer;
+
+    if (hdr->magic != SDB_SERVER_MAGIC || hdr->packet_size > SDB_SERVER_PACKET_MAX_LEN) {
+      sdb_log_error("Received malformed packet, disconnecting, magic: %u, len: %u", hdr->magic, hdr->packet_size);
+      client_disconnect_and_destroy(client);
+      return;
+    }
+
+    if (hdr->packet_size < client->buffer_length) {
+      return;
+    }
+
+    client->server->_handler(client, client->buffer + sizeof(header_t), hdr->packet_size - sizeof(header_t));
+    client->buffer_length -= hdr->packet_size;
+
+    if (client->buffer_length > 0) {
+      memcpy(client->buffer, client->buffer + hdr->packet_size, client->buffer_length);
+    }
+  }
+}
