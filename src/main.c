@@ -30,6 +30,7 @@
 #include <signal.h>
 #include <inttypes.h>
 #include <libdill.h>
+#include <src/server/v2-server.h>
 
 #include "src/storage/database.h"
 #include "src/server/server.h"
@@ -67,6 +68,13 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
 void sdb_control_signal_handler(int sig);
 
 int main(int argc, char *argv[]) {
+
+  server_t *s = server_create(8080, NULL);
+
+
+  server_run(s);
+
+  return 0;
 
   sdb_configuration_t config = {};
 
