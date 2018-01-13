@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 14/04/2017.
 //
 
-#ifndef SRC_PROTOCOL_H_
-#define SRC_PROTOCOL_H_
+#ifndef SRC_NETWORK_PROTOCOL_H_
+#define SRC_NETWORK_PROTOCOL_H_
 
 #include <stdint.h>
 #include <stddef.h>
@@ -105,4 +105,4 @@ int sdb_packet_send(sdb_packet_t *packet, sdb_socket_t socket);
 int sdb_packet_send_and_destroy(sdb_packet_t *packet, sdb_socket_t socket);
 void sdb_packet_destroy(sdb_packet_t *packet);
 
-#endif  // SRC_PROTOCOL_H_
+#endif  // SRC_NETWORK_PROTOCOL_H_

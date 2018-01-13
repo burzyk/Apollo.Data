@@ -52,7 +52,7 @@ include_directories(/usr/local/Cellar/libuv/1.9.1/include)
 link_directories(/usr/local/Cellar/libuv/1.9.1/lib)
 link_directories(/usr/local/lib)
 
-set(SRC_DOMAIN src/protocol.h src/protocol.c src/common.h src/common.c)
+set(SRC_DOMAIN src/network/protocol.h src/network/protocol.c src/common.h src/common.c)
 set(SRC_CLIENT src/client/session.c src/client/session.h src/client/data-points-iterator.c src/client/data-points-iterator.h src/client/client.h src/client/client.c)
 set(SRC_SERVER src/network/server.c src/network/server.h)
 set(SRC_STORAGE src/storage/data-chunk.c src/storage/data-chunk.h src/storage/data-points-reader.c src/storage/data-points-reader.h src/storage/database.c src/storage/database.h src/storage/data-series.c src/storage/data-series.h src/storage/cache-manager.c src/storage/cache-manager.h)

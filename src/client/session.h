@@ -26,7 +26,7 @@
 #ifndef SRC_CLIENT_SESSION_H_
 #define SRC_CLIENT_SESSION_H_
 
-#include "src/protocol.h"
+#include "src/network/protocol.h"
 #include "src/client/data-points-iterator.h"
 
 typedef struct sdb_client_session_s {

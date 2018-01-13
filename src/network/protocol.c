@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 14/04/2017.
 //
 
-#include "src/protocol.h"
+#include "protocol.h"
 
 #include <string.h>
 #include <src/utils/diagnostics.h>

@@ -27,7 +27,7 @@
 #define SRC_CLIENT_DATA_POINTS_ITERATOR_H_
 
 #include "src/utils/network.h"
-#include "src/protocol.h"
+#include "src/network/protocol.h"
 
 typedef struct sdb_data_points_iterator_s {
   sdb_data_point_t *points;
