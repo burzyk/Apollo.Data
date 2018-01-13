@@ -118,7 +118,7 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
   sdb_stopwatch_t *sw;
 
   while (max_tests--) {
-    sdb_log_info("Connecting to server ...");
+    sdb_log_info("Connecting to network ...");
     shakadb_session_t session;
     sdb_assert(shakadb_session_open(&session, hostname, port) == SHAKADB_RESULT_OK, "Failed to connect");
 
@@ -182,7 +182,7 @@ void sdb_stress_test_read_write(const char *hostname, int port) {
   sdb_stopwatch_t *sw;
 
   while (max_tests--) {
-    sdb_log_info("Connecting to server ...");
+    sdb_log_info("Connecting to network ...");
     shakadb_session_t session;
     sdb_assert(shakadb_session_open(&session, hostname, port) == SHAKADB_RESULT_OK, "Failed to connect");
 

@@ -3,7 +3,7 @@
 //
 
 #include "src/common.h"
-#include "src/server/server.h"
+#include "src/network/server.h"
 
 #include "src/utils/memory.h"
 #include "src/utils/diagnostics.h"

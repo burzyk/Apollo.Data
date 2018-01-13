@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 25/02/2017.
 //
 
-#ifndef SRC_SERVER_SERVER_H_
-#define SRC_SERVER_SERVER_H_
+#ifndef SRC_NETWORK_SERVER_H_
+#define SRC_NETWORK_SERVER_H_
 
 #include <uv.h>
 
@@ -73,4 +73,4 @@ void server_run(server_t *server);
 void server_stop(server_t *server);
 void server_destroy(server_t *server);
 
-#endif  // SRC_SERVER_SERVER_H_
+#endif  // SRC_NETWORK_SERVER_H_

@@ -30,10 +30,9 @@
 #include <signal.h>
 #include <inttypes.h>
 #include <libdill.h>
-#include <src/server/server.h>
 
 #include "src/storage/database.h"
-#include "src/server/server.h"
+#include "src/network/server.h"
 #include "src/utils/diagnostics.h"
 #include "src/utils/memory.h"
 
@@ -112,7 +111,7 @@ void sdb_master_routine(sdb_configuration_t *config) {
       config->cache_soft_limit,
       config->cache_hard_limit);
 
-  sdb_log_info("initializing server ...");
+  sdb_log_info("initializing network ...");
   g_server = server_create(config->server_port, on_msg);
 
   sdb_log_info("initialization complete");
@@ -121,7 +120,7 @@ void sdb_master_routine(sdb_configuration_t *config) {
 
   sdb_log_info("interrupt received");
 
-  sdb_log_info("closing server ...");
+  sdb_log_info("closing network ...");
   server_destroy(g_server);
 
   sdb_log_info("closing database ...");

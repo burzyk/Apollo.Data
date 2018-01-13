@@ -30,7 +30,7 @@ class SafeInvoke(object):
         def do_call(*args, **kwargs):
             result = func(*args, **kwargs)
             if result == Constants.SHAKADB_RESULT_CONNECT_ERROR:
-                raise ShakaDbError('Unable to connect to the server')
+                raise ShakaDbError('Unable to connect to the network')
 
             if result == Constants.SHAKADB_RESULT_MULTIPLE_READS_ERROR:
                 raise ShakaDbError(
