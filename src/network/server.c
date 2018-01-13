@@ -33,11 +33,12 @@ void client_disconnect_and_destroy(client_t *client) {
   sdb_free(client);
 }
 
-server_t *server_create(int port, packet_handler_t handler) {
+server_t *server_create(int port, packet_handler_t handler, void *handler_context) {
   server_t *server = sdb_alloc(sizeof(server_t));
   server->_port = port;
   server->_loop = uv_default_loop();
   server->_handler = handler;
+  server->_handler_context = handler_context;
   uv_tcp_init(server->_loop, &server->_master_socket);
   server->_master_socket.data = server;
   memset(server->_clients, 0, SDB_MAX_CLIENTS * sizeof(client_t *));
@@ -135,7 +136,11 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
       return;
     }
 
-    client->server->_handler(client, client->buffer + sizeof(header_t), hdr->packet_size - sizeof(header_t));
+    client->server->_handler(
+        client,
+        client->buffer + sizeof(header_t),
+        hdr->packet_size - sizeof(header_t),
+        client->server->_handler_context);
     client->buffer_length -= hdr->packet_size;
 
     if (client->buffer_length > 0) {

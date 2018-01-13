@@ -58,7 +58,7 @@ typedef struct client_s {
   size_t buffer_length;
 } client_t;
 
-typedef void (*packet_handler_t)(client_t *client, uint8_t *data, uint32_t size);
+typedef void (*packet_handler_t)(client_t *client, uint8_t *data, uint32_t size, void *context);
 
 typedef struct server_s {
   int _port;
@@ -66,9 +66,10 @@ typedef struct server_s {
   uv_tcp_t _master_socket;
   client_t *_clients[SDB_MAX_CLIENTS];
   packet_handler_t _handler;
+  void *_handler_context;
 } server_t;
 
-server_t *server_create(int port, packet_handler_t handler);
+server_t *server_create(int port, packet_handler_t handler, void *handler_context);
 void server_run(server_t *server);
 void server_stop(server_t *server);
 void server_destroy(server_t *server);
