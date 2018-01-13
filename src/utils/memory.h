@@ -33,15 +33,4 @@ void *sdb_alloc(size_t size);
 void *sdb_realloc(void *buffer, size_t size);
 void sdb_free(void *buffer);
 
-typedef struct sdb_binary_reader_s {
-  int success;
-  void *_buffer;
-  void *_current;
-  size_t _size;
-} sdb_binary_reader_t;
-
-void sdb_binary_reader_init(sdb_binary_reader_t *reader, void *buffer, size_t size);
-void sdb_binary_reader_read(sdb_binary_reader_t *reader, void *buffer, size_t size);
-void sdb_binary_reader_read_pointer(sdb_binary_reader_t *reader, void *buffer, size_t size);
-
 #endif  // SRC_UTILS_MEMORY_H_

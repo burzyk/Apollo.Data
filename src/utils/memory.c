@@ -39,36 +39,3 @@ void *sdb_realloc(void *buffer, size_t size) {
 void sdb_free(void *buffer) {
   free(buffer);
 }
-
-int sdb_binary_reader_can_read(sdb_binary_reader_t *reader, size_t size) {
-  if (!reader->success) {
-    return 0;
-  }
-
-  return reader->success = ((char *)reader->_current - (char *)reader->_buffer) + size <= reader->_size;
-}
-
-void sdb_binary_reader_init(sdb_binary_reader_t *reader, void *buffer, size_t size) {
-  reader->_buffer = buffer;
-  reader->_current = buffer;
-  reader->_size = size;
-  reader->success = 1;
-}
-
-void sdb_binary_reader_read(sdb_binary_reader_t *reader, void *buffer, size_t size) {
-  if (!sdb_binary_reader_can_read(reader, size)) {
-    return;
-  }
-
-  memcpy(buffer, reader->_current, size);
-  reader->_current = (char *)reader->_current + size;
-}
-
-void sdb_binary_reader_read_pointer(sdb_binary_reader_t *reader, void *buffer, size_t size) {
-  if (!sdb_binary_reader_can_read(reader, size)) {
-    return;
-  }
-
-  memcpy(buffer, &reader->_current, sizeof(reader->_current));
-  reader->_current = (char *)reader->_current + size;
-}

@@ -64,7 +64,7 @@ sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t 
                                                            sdb_timestamp_t begin,
                                                            sdb_timestamp_t end,
                                                            int points_per_packet) {
-  if (sdb_packet_send_and_destroy(sdb_read_request_create(series_id, begin, end, points_per_packet), session->_sock)) {
+  if (packet_send_and_destroy(sdb_read_request_create(series_id, begin, end, points_per_packet), session->_sock)) {
     return NULL;
   }
 
@@ -74,7 +74,7 @@ sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t 
 int sdb_client_session_read_latest_point(sdb_client_session_t *session,
                                          sdb_data_series_id_t series_id,
                                          sdb_data_point_t *latest) {
-  if (sdb_packet_send_and_destroy(sdb_read_latest_request_create(series_id), session->_sock)) {
+  if (packet_send_and_destroy(sdb_read_latest_request_create(series_id), session->_sock)) {
     return -1;
   }
 
@@ -95,7 +95,7 @@ int sdb_client_session_read_latest_point(sdb_client_session_t *session,
 }
 
 int sdb_client_session_send_with_simple_response(sdb_client_session_t *session, sdb_packet_t *request) {
-  int send_status = sdb_packet_send_and_destroy(request, session->_sock);
+  int send_status = packet_send_and_destroy(request, session->_sock);
 
   if (send_status) {
     return send_status;
@@ -108,13 +108,13 @@ int sdb_client_session_send_with_simple_response(sdb_client_session_t *session, 
   }
 
   if (packet->header.type != SDB_SIMPLE_RESPONSE) {
-    sdb_packet_destroy(packet);
+    packet_destroy(packet);
     return -1;
   }
 
   sdb_simple_response_t *response = (sdb_simple_response_t *)packet->payload;
   int result = response->code != SDB_RESPONSE_OK;
-  sdb_packet_destroy(packet);
+  packet_destroy(packet);
 
   return result;
 }

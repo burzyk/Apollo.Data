@@ -31,26 +31,27 @@
 
 #include "src/common.h"
 
-#include "src/utils/network.h"
+typedef char packet_type_t;
+typedef char response_code_t;
 
-typedef char sdb_packet_type_t;
-typedef char sdb_response_code_t;
+#define SDB_RESPONSE_OK ((response_code_t)0)
+#define SDB_RESPONSE_ERROR  ((response_code_t)1)
 
-#define SDB_RESPONSE_OK ((sdb_response_code_t)0)
-#define SDB_RESPONSE_ERROR  ((sdb_response_code_t)1)
-
-#define SDB_WRITE_REQUEST ((sdb_packet_type_t)1)
-#define SDB_READ_REQUEST ((sdb_packet_type_t)3)
-#define SDB_READ_RESPONSE  ((sdb_packet_type_t)4)
-#define SDB_SIMPLE_RESPONSE  ((sdb_packet_type_t)2)
-#define SDB_TRUNCATE_REQUEST  ((sdb_packet_type_t)5)
-#define SDB_READ_LATEST_REQUEST ((sdb_packet_type_t)6)
-
-#define SDB_PACKET_MAX_LEN  65536000
+#define SDB_WRITE_REQUEST ((packet_type_t)1)
+#define SDB_READ_REQUEST ((packet_type_t)3)
+#define SDB_READ_RESPONSE  ((packet_type_t)4)
+#define SDB_SIMPLE_RESPONSE  ((packet_type_t)2)
+#define SDB_TRUNCATE_REQUEST  ((packet_type_t)5)
+#define SDB_READ_LATEST_REQUEST ((packet_type_t)6)
 
 typedef struct packet_header_s {
-  sdb_packet_type_t type;
+  packet_type_t type;
 } packet_header_t;
+
+typedef struct packet_s {
+  void *payload;
+  size_t size;
+} packet_t;
 
 typedef struct write_request_s {
   packet_header_t header;
@@ -74,7 +75,7 @@ typedef struct read_latest_request_s {
 
 typedef struct read_response_s {
   packet_header_t header;
-  sdb_response_code_t code;
+  response_code_t code;
   int points_count;
   sdb_data_point_t points[];
 } read_response_t;
@@ -86,24 +87,19 @@ typedef struct truncate_request_s {
 
 typedef struct simple_response_s {
   packet_header_t header;
-  sdb_response_code_t code;
+  response_code_t code;
 } simple_response_t;
 
+packet_t write_request_create(sdb_data_series_id_t data_series_id, sdb_data_point_t *points, int points_count);
+packet_t read_request_create(sdb_data_series_id_t data_series_id,
+                             sdb_timestamp_t begin,
+                             sdb_timestamp_t end,
+                             int points_per_packet);
+packet_t read_latest_request_create(sdb_data_series_id_t data_series_id);
+packet_t read_response_create(response_code_t code, sdb_data_point_t *points, int points_count);
+packet_t simple_response_create(response_code_t code);
+packet_t truncate_request_create(sdb_data_series_id_t data_series_id);
+
 int packet_validate(uint8_t *data, int size);
-
-sdb_packet_t *sdb_write_request_create(sdb_data_series_id_t data_series_id, sdb_data_point_t *points, int points_count);
-sdb_packet_t *sdb_read_request_create(sdb_data_series_id_t data_series_id,
-                                      sdb_timestamp_t begin,
-                                      sdb_timestamp_t end,
-                                      int points_per_packet);
-sdb_packet_t *sdb_read_latest_request_create(sdb_data_series_id_t data_series_id);
-sdb_packet_t *sdb_read_response_create(sdb_response_code_t code, sdb_data_point_t *points, int points_count);
-sdb_packet_t *sdb_simple_response_create(sdb_response_code_t code);
-sdb_packet_t *sdb_truncate_request_create(sdb_data_series_id_t data_series_id);
-
-sdb_packet_t *sdb_packet_receive(sdb_socket_t socket);
-int sdb_packet_send(sdb_packet_t *packet, sdb_socket_t socket);
-int sdb_packet_send_and_destroy(sdb_packet_t *packet, sdb_socket_t socket);
-void sdb_packet_destroy(sdb_packet_t *packet);
 
 #endif  // SRC_NETWORK_PROTOCOL_H_
