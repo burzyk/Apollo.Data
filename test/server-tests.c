@@ -140,7 +140,7 @@ void test_server_write_small(test_context_t ctx) {
   sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 3), "Error when sending");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -177,7 +177,7 @@ void test_server_write_unordered(test_context_t ctx) {
   sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -220,7 +220,7 @@ void test_server_write_two_batches(test_context_t ctx) {
   sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points_2, 2), "Error when sending");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -259,7 +259,7 @@ void test_server_read_two_batches(test_context_t ctx) {
   sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 2),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 2),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -303,7 +303,7 @@ void test_server_read_range(test_context_t ctx) {
   sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 5), "Error when sending");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -348,7 +348,7 @@ void test_server_read_range_with_multiple_series(test_context_t ctx) {
   sdb_assert(!session_write(context->session, SDB_EUR_GBP_ID, points_2, 5), "Error when sending");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -384,7 +384,7 @@ void test_server_update(test_context_t ctx) {
   sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -408,7 +408,7 @@ void test_server_update(test_context_t ctx) {
   sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points_2, 5), "Error when sending");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -448,7 +448,7 @@ void test_server_update_in_two_sessions(test_context_t ctx) {
   sdb_assert(!session_write(session_1, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
 
   sdb_assert(
-      session_read(session_1, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(session_1, SDB_EUR_USD_ID, 2, 4, 10),
       "Unable to read data");
 
   sdb_assert(session_read_next(session_1) != 0, "No data found in iterator");
@@ -477,7 +477,7 @@ void test_server_update_in_two_sessions(test_context_t ctx) {
   sdb_assert(!session_write(session_2, SDB_EUR_USD_ID, points_2, 5), "Error when sending");
 
   sdb_assert(
-      session_read(session_2, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(session_2, SDB_EUR_USD_ID, 2, 4, 10),
       "Unable to read data");
 
   sdb_assert(session_read_next(session_2) != 0, "No data found in iterator");
@@ -508,7 +508,7 @@ void test_server_truncate_not_existing(test_context_t ctx) {
   sdb_assert(session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -525,14 +525,14 @@ void test_server_truncate_empty(test_context_t ctx) {
       1);
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
   sdb_assert(session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -559,7 +559,7 @@ void test_server_truncate_and_write(test_context_t ctx) {
     sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
 
     sdb_assert(
-        session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+        !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
         "Unable to read data");
     sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
@@ -650,7 +650,7 @@ void test_server_read_series_out_of_range(test_context_t ctx) {
       1);
 
   sdb_assert(
-      session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -658,35 +658,29 @@ void test_server_read_series_out_of_range(test_context_t ctx) {
 }
 
 void test_server_truncate_series_out_of_range(test_context_t ctx) {
-  shakadb_session_t session;
-  int status = 0;
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, db);
-  pthread_t thread = sdb_test_server_run(server);
+  server_test_context_t *context = server_test_context_start(
+      ctx.working_directory,
+      10,
+      10,
+      UINT64_MAX,
+      UINT64_MAX,
+      1);
 
-  status = shakadb_session_open(&session, "localhost", 8081);
-  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
+  sdb_assert(session_truncate(context->session, SDB_EUR_USD_ID), "No error when truncating");
 
-  status = shakadb_truncate_data_series(&session, SDB_EUR_USD_ID);
-  sdb_assert(status != SHAKADB_RESULT_OK, "No Error when truncating");
-
-  shakadb_session_close(&session);
-
-  sdb_test_server_stop(thread, server);
-  sdb_database_destroy(db);
+  server_test_context_stop(context);
 }
 
 void test_server_write_filter_duplicates(test_context_t ctx) {
-  shakadb_session_t session;
-  int status = 0;
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_server_t *server = sdb_server_create(8081, db);
-  pthread_t thread = sdb_test_server_run(server);
+  server_test_context_t *context = server_test_context_start(
+      ctx.working_directory,
+      10,
+      SDB_DATA_SERIES_MAX,
+      UINT64_MAX,
+      UINT64_MAX,
+      1);
 
-  status = shakadb_session_open(&session, "localhost", 8081);
-  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to connect");
-
-  shakadb_data_point_t points[] = {
+  data_point_t points[] = {
       {.time=1, .value = 1},
       {.time=1, .value = 2},
       {.time=2, .value = 3},
@@ -697,29 +691,22 @@ void test_server_write_filter_duplicates(test_context_t ctx) {
       {.time=4, .value = 8},
   };
 
-  status = shakadb_write_points(&session, SDB_EUR_GBP_ID, points, 8);
-  sdb_assert(status == SHAKADB_RESULT_OK, "Write should fail");
+  sdb_assert(!session_write(context->session, SDB_EUR_GBP_ID, points, 8), "Write failed");
 
-  shakadb_data_points_iterator_t it = {};
-  status = shakadb_read_points(&session, SDB_EUR_GBP_ID, SHAKADB_MIN_TIMESTAMP, SHAKADB_MAX_TIMESTAMP, 10, &it);
-  sdb_assert(status == SHAKADB_RESULT_OK, "Unable to read data");
+  sdb_assert(
+      !session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      "Unable to read data");
+  sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
-  status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status != 0, "No data found in iterator");
+  sdb_assert(context->session->read_response->points_count == 4, "Invalid number of points");
+  sdb_assert(context->session->read_response->points[0].time == 1, "Invalid time value");
+  sdb_assert(context->session->read_response->points[1].time == 2, "Invalid time value");
+  sdb_assert(context->session->read_response->points[2].time == 3, "Invalid time value");
+  sdb_assert(context->session->read_response->points[3].time == 4, "Invalid time value");
 
-  sdb_assert(it.points_count == 4, "Invalid number of points");
-  sdb_assert(it.points[0].time == 1, "Invalid time value");
-  sdb_assert(it.points[1].time == 2, "Invalid time value");
-  sdb_assert(it.points[2].time == 3, "Invalid time value");
-  sdb_assert(it.points[3].time == 4, "Invalid time value");
+  sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
-  status = shakadb_data_points_iterator_next(&it);
-  sdb_assert(status == 0, "Data found in iterator");
-
-  shakadb_session_close(&session);
-
-  sdb_test_server_stop(thread, server);
-  sdb_database_destroy(db);
+  server_test_context_stop(context);
 }
 
 void test_server_write_filter_zeros(test_context_t ctx) {
