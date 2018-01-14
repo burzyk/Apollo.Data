@@ -24,9 +24,9 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <time.h>
-#include <src/diagnostics.h>
 
-#include "test/framework.h"
+#include "src/diagnostics.h"
+#include "src/client/session.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -112,51 +112,45 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
   int points_batch_count = 100;
   int read_count = 100000;
   int total_points = points_batch_count * points_batch_size;
-  shakadb_data_point_t *points = (shakadb_data_point_t *)sdb_alloc(sizeof(shakadb_data_point_t) * points_batch_size);
+  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_batch_size);
   stopwatch_t *sw;
 
   while (max_tests--) {
     log_info("Connecting to network ...");
-    shakadb_session_t session;
-    sdb_assert(shakadb_session_open(&session, hostname, port) == SHAKADB_RESULT_OK, "Failed to connect");
+    session_t *session = session_create(hostname, port);
+    sdb_assert(session != NULL, "Failed to connect");
 
-    shakadb_data_series_id_t series = rand() % 1000000U;
+    series_id_t series = rand() % 1000000U;
     log_info("Testing series: %d", series);
 
-    sdb_assert(shakadb_truncate_data_series(&session, series) == SHAKADB_RESULT_OK, "Failed to truncate data");
+    sdb_assert(!session_truncate(session, series), "Failed to truncate data");
 
     sw = stopwatch_start();
     log_info("Seeding database ...");
 
     for (int i = 0; i < points_batch_count; i++) {
-      for (shakadb_timestamp_t j = 0; j < points_batch_size; j++) {
+      for (timestamp_t j = 0; j < points_batch_size; j++) {
         points[j].time = i * points_batch_size + j + 100;
         points[j].value = j + 100;
       }
 
-      sdb_assert(
-          shakadb_write_points(&session, series, points, points_batch_size) == SHAKADB_RESULT_OK,
-          "Failed to write data");
+      sdb_assert(!session_write(session, series, points, points_batch_size), "Failed to write data");
     }
 
     log_info("> Seeded with: %d in: %fs", total_points, stopwatch_stop_and_destroy(sw));
 
     for (int i = 0; i < max_reads; i++) {
-      shakadb_timestamp_t begin = sdb_maxl((uint64_t)(rand() % total_points - read_count), 1);
-      shakadb_timestamp_t end = begin + read_count;
+      timestamp_t begin = sdb_maxl((uint64_t)(rand() % total_points - read_count), 1);
+      timestamp_t end = begin + read_count;
 
       for (int j = 0; j < max_reads_repeat; j++) {
 
         log_info("> Reading: [%d, %d)", begin, end);
 
         sw = stopwatch_start();
-        shakadb_data_points_iterator_t it;
+        sdb_assert(session_read(session, series, begin, end, SDB_POINTS_PER_PACKET_MAX), "Failed to read data");
 
-        sdb_assert(
-            shakadb_read_points(&session, series, begin, end, SDB_POINTS_PER_PACKET_MAX, &it) == SHAKADB_RESULT_OK,
-            "Failed to read data");
-
-        while (shakadb_data_points_iterator_next(&it)) {
+        while (session_read_next(session)) {
         }
 
         log_info("> Read: [%d, %d) in: %fs", begin, end, stopwatch_stop_and_destroy(sw));
@@ -164,7 +158,7 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
     }
 
     log_info("Closing session ...");
-    shakadb_session_close(&session);
+    session_destroy(session);
   }
 
   sdb_free(points);
@@ -181,49 +175,41 @@ void sdb_stress_test_read_write(const char *hostname, int port) {
 
   while (max_tests--) {
     log_info("Connecting to network ...");
-    shakadb_session_t session;
-    sdb_assert(shakadb_session_open(&session, hostname, port) == SHAKADB_RESULT_OK, "Failed to connect");
+    session_t *session = session_create(hostname, port);
+    sdb_assert(session != NULL, "Failed to connect");
 
-    shakadb_data_series_id_t series = rand() % 1000000U;
+    series_id_t series = rand() % 1000000U;
     log_info("Testing series: %d", series);
 
     while (points_count < max_count) {
       sw = stopwatch_start();
-      sdb_assert(shakadb_truncate_data_series(&session, series) == SHAKADB_RESULT_OK, "Failed to truncate data");
+      sdb_assert(!session_truncate(session, series), "Failed to truncate data");
       log_info("> Truncated in: %fs", stopwatch_stop_and_destroy(sw));
 
-      shakadb_data_point_t *points = (shakadb_data_point_t *)sdb_alloc(sizeof(shakadb_data_point_t) * points_count);
+      data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_count);
 
-      for (shakadb_timestamp_t i = 0; i < points_count; i++) {
+      for (timestamp_t i = 0; i < points_count; i++) {
         points[i].time = i + 100;
         points[i].value = i;
       }
 
       sw = stopwatch_start();
-      sdb_assert(
-          shakadb_write_points(&session, series, points, points_count) == SHAKADB_RESULT_OK,
-          "Failed to write data");
+      sdb_assert(!session_write(session, series, points, points_count), "Failed to write data");
       log_info("> Written in: %fs", stopwatch_stop_and_destroy(sw));
 
       for (int i = 0; i < max_reads; i++) {
         sw = stopwatch_start();
-        shakadb_data_points_iterator_t it;
 
-        status = shakadb_read_points(&session,
-                                     series,
-                                     SHAKADB_MIN_TIMESTAMP,
-                                     SHAKADB_MAX_TIMESTAMP,
-                                     SDB_POINTS_PER_PACKET_MAX,
-                                     &it);
-        sdb_assert(status == SHAKADB_RESULT_OK, "Failed to read data");
+        status = session_read(session, series, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, SDB_POINTS_PER_PACKET_MAX);
+        sdb_assert(!status, "Failed to read data");
 
         int expected_pos = 0;
         int actual_pos = 0;
 
-        while (shakadb_data_points_iterator_next(&it)) {
-          while (expected_pos < points_count && actual_pos < it.points_count) {
-            sdb_assert(it.points[actual_pos].time == points[expected_pos].time, "Invalid time");
-            sdb_assert(it.points[actual_pos].value == points[expected_pos].value, "Invalid value");
+        while (session_read_next(session)) {
+          while (expected_pos < points_count && actual_pos < session->read_response->points_count) {
+            sdb_assert(session->read_response->points[actual_pos].time == points[expected_pos].time, "Invalid time");
+            sdb_assert(session->read_response->points[actual_pos].value == points[expected_pos].value, "Invalid value");
 
             actual_pos++;
             expected_pos++;
@@ -242,6 +228,6 @@ void sdb_stress_test_read_write(const char *hostname, int port) {
 
     log_info("Closing session ...");
     points_count = 10000;
-    shakadb_session_close(&session);
+    session_destroy(session);
   }
 }
