@@ -27,7 +27,7 @@
 #define SRC_STORAGE_DATA_SERIES_H_
 
 #include "src/storage/chunk.h"
-#include "src/storage/data-points-reader.h"
+#include "src/storage/points-reader.h"
 
 typedef struct sdb_data_series_s {
   sdb_data_series_id_t id;
@@ -48,7 +48,7 @@ sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
 void sdb_data_series_destroy(sdb_data_series_t *series);
 int sdb_data_series_write(sdb_data_series_t *series, data_point_t *points, int count);
 int sdb_data_series_truncate(sdb_data_series_t *series);
-sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
+points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                timestamp_t begin,
                                                timestamp_t end,
                                                int max_points);

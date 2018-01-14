@@ -27,7 +27,7 @@
 #define SRC_STORAGE_CHUNK_H_
 
 #include "src/common.h"
-#include "src/storage/data-points-reader.h"
+#include "src/storage/points-reader.h"
 #include "src/storage/cache-manager.h"
 
 typedef struct data_chunk_s {
@@ -48,7 +48,7 @@ int chunk_calculate_size(int points_count);
 
 data_chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points, cache_manager_t *cache);
 void chunk_destroy(data_chunk_t *chunk);
-sdb_data_points_reader_t *chunk_read(data_chunk_t *chunk, timestamp_t begin, timestamp_t end);
+points_reader_t *chunk_read(data_chunk_t *chunk, timestamp_t begin, timestamp_t end);
 data_point_t chunk_read_latest(data_chunk_t *chunk);
 int chunk_write(data_chunk_t *chunk, int offset, data_point_t *points, int count);
 void chunk_clean_cache(data_chunk_t *chunk);

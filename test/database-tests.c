@@ -88,7 +88,7 @@ void sdb_test_database_validate_read_with_max(sdb_database_t *db,
                                               timestamp_t begin,
                                               timestamp_t end,
                                               int max_points) {
-  sdb_data_points_reader_t *reader = sdb_database_read(db, series_id, begin, end, max_points);
+  points_reader_t *reader = sdb_database_read(db, series_id, begin, end, max_points);
   int total_read = reader->points_count;
   data_point_t *points = reader->points;
 
@@ -101,7 +101,7 @@ void sdb_test_database_validate_read_with_max(sdb_database_t *db,
     sdb_assert(expected_count == total_read, "Unexpected number of elements");
   }
 
-  sdb_data_points_reader_destroy(reader);
+  points_reader_destroy(reader);
 }
 
 void sdb_test_database_simple_initialization_test(sdb_tests_context_t ctx) {
@@ -364,15 +364,15 @@ void sdb_test_database_cache_cleanup_old(sdb_tests_context_t ctx) {
   sdb_test_database_write(db, 12345, 2, 10);
 
   for (int i = 0; i < 10; i++) {
-    sdb_data_points_reader_t *reader = sdb_database_read(db, 12345, 1, 10, 100);
-    sdb_data_points_reader_destroy(reader);
+    points_reader_t *reader = sdb_database_read(db, 12345, 1, 10, 100);
+    points_reader_destroy(reader);
   }
 
   sdb_assert(((data_chunk_t *)db->_cache->guard.next->consumer)->begin == 1, "Invalid cached page");
 
   for (int i = 0; i < 10; i++) {
-    sdb_data_points_reader_t *reader = sdb_database_read(db, 12345, 11, 100, 100);
-    sdb_data_points_reader_destroy(reader);
+    points_reader_t *reader = sdb_database_read(db, 12345, 11, 100, 100);
+    points_reader_destroy(reader);
   }
 
   sdb_assert(((data_chunk_t *)db->_cache->guard.next->consumer)->begin == 11, "Invalid cached page");

@@ -66,7 +66,7 @@ void handle_read(client_t *client, read_request_t *request, sdb_database_t *db) 
 
   for (;;) {
     int points_to_read = points_per_packet + 1;
-    sdb_data_points_reader_t *reader =
+    points_reader_t *reader =
         sdb_database_read(db, request->data_series_id, begin, request->end, points_to_read);
 
     if (reader == NULL) {
@@ -82,7 +82,7 @@ void handle_read(client_t *client, read_request_t *request, sdb_database_t *db) 
               points_to_send);
     int send_status = send_and_destroy(client, read_response_create(reader->points, points_to_send));
 
-    sdb_data_points_reader_destroy(reader);
+    points_reader_destroy(reader);
 
     if (send_status) {
       log_debug("error sending the response");

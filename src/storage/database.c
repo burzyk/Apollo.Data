@@ -97,15 +97,15 @@ data_point_t sdb_database_read_latest(sdb_database_t *db, sdb_data_series_id_t s
   return result;
 }
 
-sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
+points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
                                             timestamp_t begin,
                                             timestamp_t end,
                                             int max_points) {
   stopwatch_t *sw = stopwatch_start();
 
   sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
-  sdb_data_points_reader_t *result = series == NULL
-                                     ? sdb_data_points_reader_create(0)
+  points_reader_t *result = series == NULL
+                                     ? points_reader_create(0)
                                      : sdb_data_series_read(series, begin, end, max_points);
 
   log_debug("Read series: %d, points: %d in: %fs",

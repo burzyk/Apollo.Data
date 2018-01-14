@@ -169,12 +169,12 @@ int sdb_data_series_chunk_compare_end(timestamp_t *end, data_chunk_t **chunk) {
   return *end == (*chunk)->begin ? 0 : *end < (*chunk)->begin ? -1 : 1;
 }
 
-sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
+points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
                                                timestamp_t begin,
                                                timestamp_t end,
                                                int max_points) {
-  sdb_data_points_reader_t **readers = (sdb_data_points_reader_t **)sdb_alloc(
-      series->_chunks_count * sizeof(sdb_data_points_reader_t));
+  points_reader_t **readers = (points_reader_t **)sdb_alloc(
+      series->_chunks_count * sizeof(points_reader_t));
   int ranges_count = 0;
   int total_points = 0;
 
@@ -187,21 +187,21 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
 
   for (int i = begin_index; i < end_index && total_points < max_points; i++) {
     data_chunk_t *chunk = series->_chunks[i];
-    sdb_data_points_reader_t *r = chunk_read(chunk, begin, end);
+    points_reader_t *r = chunk_read(chunk, begin, end);
 
     if (r->points_count > 0) {
       readers[ranges_count++] = r;
       total_points += r->points_count;
     } else {
-      sdb_data_points_reader_destroy(r);
+      points_reader_destroy(r);
     }
   }
 
-  sdb_data_points_reader_t *reader = sdb_data_points_reader_create(sdb_min(max_points, total_points));
+  points_reader_t *reader = points_reader_create(sdb_min(max_points, total_points));
 
   for (int i = 0; i < ranges_count; i++) {
-    sdb_data_points_reader_write(reader, readers[i]->points, readers[i]->points_count);
-    sdb_data_points_reader_destroy(readers[i]);
+    points_reader_write(reader, readers[i]->points, readers[i]->points_count);
+    points_reader_destroy(readers[i]);
   }
 
   sdb_free(readers);
@@ -254,7 +254,7 @@ int sdb_data_series_write_chunk(sdb_data_series_t *series,
     write_result = sdb_data_series_chunk_memcpy(series, chunk, chunk->number_of_points, points, count);
   } else {
     int buffer_count = count + chunk->number_of_points;
-    sdb_data_points_reader_t *reader = chunk_read(chunk, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+    points_reader_t *reader = chunk_read(chunk, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
     data_point_t *buffer = (data_point_t *)sdb_alloc(buffer_count * sizeof(data_point_t));
     data_point_t *content = reader->points;
     int points_pos = count - 1;
@@ -281,7 +281,7 @@ int sdb_data_series_write_chunk(sdb_data_series_t *series,
         sdb_data_series_chunk_memcpy(series, chunk, 0, buffer + duplicated_count, buffer_count - duplicated_count);
 
     sdb_free(buffer);
-    sdb_data_points_reader_destroy(reader);
+    points_reader_destroy(reader);
   }
 
   return write_result;
