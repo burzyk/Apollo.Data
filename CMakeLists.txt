@@ -29,9 +29,9 @@ message("===== building in " ${SDB_CONFIGURATION} " =====")
 message("flags: ${CMAKE_C_FLAGS}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(/usr/local/Cellar/libuv/1.9.1/include)
+include_directories(/usr/local/include)
 
-link_directories(/usr/local/Cellar/libuv/1.9.1/lib)
+link_directories(/usr/local/lib)
 
 set(SRC_COMMON src/network/protocol.h src/network/protocol.c src/common.h src/common.c src/diagnostics.c src/diagnostics.h)
 set(SRC_CLIENT src/client/session.c src/client/session.h)
