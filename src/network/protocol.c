@@ -111,7 +111,7 @@ buffer_t truncate_request_create(sdb_data_series_id_t data_series_id) {
   return packet;
 }
 
-int payload_validate(uint8_t *data, int size) {
+int payload_validate(uint8_t *data, size_t size) {
   // TODO: Implement
   return -1;
 }

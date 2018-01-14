@@ -62,7 +62,7 @@ server_t *g_server;
 
 void sdb_master_routine(sdb_configuration_t *config);
 void sdb_print_banner(sdb_configuration_t *config);
-void sdb_print_usage();
+void print_usage();
 int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]);
 void sdb_control_signal_handler(int sig);
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
   sdb_configuration_t config = {};
 
   if (sdb_configuration_parse(&config, argc, argv)) {
-    sdb_print_usage();
+    print_usage();
     return -1;
   }
 
@@ -157,7 +157,7 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
         break;
       case 'd':strncpy(config->database_directory, optarg, SDB_FILE_MAX_LEN);
         break;
-      case 'h':sdb_print_usage();
+      case 'h':print_usage();
         exit(0);
       case 'v':config->log_verbose = 1;
         break;
@@ -184,7 +184,7 @@ void sdb_print_banner(sdb_configuration_t *config) {
   sdb_log_info("");
 }
 
-void sdb_print_usage() {
+void print_usage() {
   printf("\n");
   printf("ShakaDB - time series database\n");
   printf("\n");

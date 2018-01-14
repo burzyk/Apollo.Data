@@ -27,7 +27,7 @@ void client_handler_destroy(client_handler_t *handler) {
   sdb_free(handler);
 }
 
-int client_handler_process_message(client_t *client, uint8_t *data, uint32_t size, void *context) {
+int client_handler_process_message(client_t *client, uint8_t *data, size_t size, void *context) {
   if (payload_validate(data, size)) {
     sdb_log_error("Received packet with malformed payload");
     return 1;
@@ -53,6 +53,7 @@ int client_handler_process_message(client_t *client, uint8_t *data, uint32_t siz
   }
 
   sdb_log_debug("packet handled in: %fs", sdb_stopwatch_stop_and_destroy(sw));
+  return 0;
 }
 
 void handle_read(client_t *client, read_request_t *request, sdb_database_t *db) {

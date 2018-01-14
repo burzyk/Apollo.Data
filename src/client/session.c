@@ -24,97 +24,214 @@
 //
 
 #include "src/client/session.h"
+
+#include <sys/socket.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <stdio.h>
+#include <signal.h>
+#include <errno.h>
+#include <memory.h>
+
 #include "src/utils/memory.h"
 
-int sdb_client_session_send_with_simple_response(sdb_client_session_t *session, sdb_packet_t *request);
+int socket_connect(const char *server, int port);
+void socket_send_and_destroy(int socket, uint8_t *buffer, size_t size);
+int socket_receive(int socket, void *buffer, size_t size);
+void socket_close(int socket);
 
-sdb_client_session_t *sdb_client_session_create(const char *server, int port) {
-  sdb_socket_t sock = sdb_socket_connect(server, port);
+int session_send_with_simple_response(session_t *session, buffer_t request);
+packet_t *session_receive(session_t *session, packet_type_t type);
 
-  if (sock == SDB_INVALID_SOCKET) {
+int socket_connect(const char *server, int port) {
+  struct addrinfo hints = {0};
+  struct addrinfo *result;
+  int sock = -1;
+  char port_string[SDB_FILE_MAX_LEN] = {0};
+  snprintf(port_string, SDB_FILE_MAX_LEN, "%d", port);
+
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+
+  if (getaddrinfo(server, port_string, &hints, &result) != 0) {
+    return sock;
+  }
+
+  for (struct addrinfo *rp = result; rp != NULL; rp = rp->ai_next) {
+    if ((sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) == -1) {
+      continue;
+    }
+
+    if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
+      break;
+    }
+
+    close(sock);
+    sock = -1;
+  }
+
+  freeaddrinfo(result);
+  return sock;
+}
+
+void socket_send_and_destroy(int socket, uint8_t *buffer, size_t size) {
+  if (buffer == NULL) {
+    return;
+  }
+
+  ssize_t sent = 0;
+  int total_send = 0;
+  char *ptr = (char *)buffer;
+
+  while (size && (sent = send(socket, ptr, size, 0)) > 0) {
+    ptr += sent;
+    size -= sent;
+    total_send += sent;
+  }
+
+  sdb_free(buffer);
+}
+
+int socket_receive(int socket, void *buffer, size_t size) {
+  ssize_t read = 0;
+  int total_read = 0;
+  char *ptr = (char *)buffer;
+
+  while (size && (read = recv(socket, ptr, size, 0)) > 0) {
+    ptr += read;
+    size -= read;
+    total_read += read;
+  }
+
+  return total_read;
+}
+
+void socket_close(int socket) {
+  shutdown(socket, SHUT_RDWR);
+  close(socket);
+}
+
+session_t *session_create(const char *server, int port) {
+  int sock = socket_connect(server, port);
+
+  if (sock == -1) {
     return NULL;
   }
 
-  sdb_client_session_t *session = (sdb_client_session_t *)sdb_alloc(sizeof(sdb_client_session_t));
-  session->_sock = sock;
+  session_t *session = (session_t *)sdb_alloc(sizeof(session_t));
+  session->socket = sock;
+  session->read_response = NULL;
 
   return session;
 }
 
-void sdb_client_session_destroy(sdb_client_session_t *session) {
-  sdb_socket_close(session->_sock);
+void session_destroy(session_t *session) {
+  if (session->read_response != NULL) {
+    sdb_free(session->read_response);
+  }
+
+  socket_close(session->socket);
   sdb_free(session);
 }
 
-int sdb_client_session_write_points(sdb_client_session_t *session,
-                                    sdb_data_series_id_t series_id,
-                                    sdb_data_point_t *points,
-                                    int count) {
-  sdb_packet_t *request = sdb_write_request_create(series_id, points, count);
-  return sdb_client_session_send_with_simple_response(session, request);
+int session_write(session_t *session, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
+  buffer_t request = write_request_create(series_id, points, count);
+  return session_send_with_simple_response(session, request);
 }
 
-int sdb_client_session_truncate_data_series(sdb_client_session_t *session, sdb_data_series_id_t series_id) {
-  sdb_packet_t *request = sdb_truncate_request_create(series_id);
-  return sdb_client_session_send_with_simple_response(session, request);
+int session_truncate(session_t *session, sdb_data_series_id_t series_id) {
+  buffer_t request = truncate_request_create(series_id);
+  return session_send_with_simple_response(session, request);
 }
 
-sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t *session,
-                                                           sdb_data_series_id_t series_id,
-                                                           sdb_timestamp_t begin,
-                                                           sdb_timestamp_t end,
-                                                           int points_per_packet) {
-  if (packet_send_and_destroy(sdb_read_request_create(series_id, begin, end, points_per_packet), session->_sock)) {
-    return NULL;
-  }
-
-  return sdb_data_points_iterator_create(session->_sock);
-}
-
-int sdb_client_session_read_latest_point(sdb_client_session_t *session,
-                                         sdb_data_series_id_t series_id,
-                                         sdb_data_point_t *latest) {
-  if (packet_send_and_destroy(sdb_read_latest_request_create(series_id), session->_sock)) {
+int session_read(session_t *session,
+                 sdb_data_series_id_t series_id,
+                 sdb_timestamp_t begin,
+                 sdb_timestamp_t end,
+                 int points_per_packet) {
+  if (session->read_response != NULL) {
     return -1;
   }
 
-  sdb_data_point_t result = {.value=0, .time=0};
-  sdb_data_points_iterator_t *it = sdb_data_points_iterator_create(session->_sock);
+  buffer_t packet = read_request_create(series_id, begin, end, points_per_packet);
+  socket_send_and_destroy(session->socket, packet.content, packet.size);
 
-  while (sdb_data_points_iterator_next(it)) {
-    if (it->points_count > 0) {
-      result = it->points[it->points_count - 1];
-    }
-  }
-
-  latest->time = result.time;
-  latest->value = result.value;
-  
-  sdb_data_points_iterator_destroy(it);
   return 0;
 }
 
-int sdb_client_session_send_with_simple_response(sdb_client_session_t *session, sdb_packet_t *request) {
-  int send_status = packet_send_and_destroy(request, session->_sock);
-
-  if (send_status) {
-    return send_status;
+int session_read_next(session_t *session) {
+  if (session->read_response != NULL) {
+    sdb_free(session->read_response);
+    session->read_response = NULL;
   }
 
-  sdb_packet_t *packet = sdb_packet_receive(session->_sock);
+  read_response_t *response = (read_response_t *)session_receive(session, SDB_READ_RESPONSE);
 
-  if (packet == NULL) {
-    return -1;
+  if (response == NULL || response->points_count == 0) {
+    sdb_free(response);
+    return 0;
   }
 
-  if (packet->header.type != SDB_SIMPLE_RESPONSE) {
-    packet_destroy(packet);
-    return -1;
+  session->read_response = response;
+  return 1;
+}
+
+int session_read_latest(session_t *session, sdb_data_series_id_t series_id, sdb_data_point_t *latest) {
+  buffer_t packet = read_latest_request_create(series_id);
+  socket_send_and_destroy(session->socket, packet.content, packet.size);
+
+  latest->time = 0;
+  latest->value = 0;
+
+  while (session_read_next(session)) {
+    if (session->read_response->points_count > 0) {
+      *latest = session->read_response->points[0];
+    }
   }
 
-  sdb_simple_response_t *response = (sdb_simple_response_t *)packet->payload;
-  int result = response->code != SDB_RESPONSE_OK;
-  packet_destroy(packet);
+  return latest->time != 0;
+}
 
-  return result;
+int session_send_with_simple_response(session_t *session, buffer_t request) {
+  socket_send_and_destroy(session->socket, request.content, request.size);
+  simple_response_t *response = (simple_response_t *)session_receive(session, SDB_SIMPLE_RESPONSE);
+
+  return response == NULL || response->code != SDB_RESPONSE_OK;
+}
+
+packet_t *session_receive(session_t *session, packet_type_t type) {
+  packet_t header;
+
+  if (socket_receive(session->socket, &header, sizeof(header)) != sizeof(header)) {
+    return NULL;
+  }
+
+  if (header.magic != SDB_SERVER_MAGIC) {
+    return NULL;
+  }
+
+  packet_t *packet = (packet_t *)sdb_alloc(header.total_size);
+  memcpy(packet, &header, sizeof(packet_t));
+  size_t payload_size = header.total_size - sizeof(packet_t);
+
+  if (socket_receive(session->socket, packet->payload, payload_size) != payload_size) {
+    sdb_free(packet);
+    return NULL;
+  }
+
+  payload_header_t *hdr = (payload_header_t *)packet->payload;
+
+  if (hdr->type != type) {
+    sdb_free(packet);
+    return NULL;
+  }
+
+  if (payload_validate(packet->payload, payload_size)) {
+    sdb_free(packet);
+    return NULL;
+  }
+
+  return packet;
 }

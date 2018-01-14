@@ -8,11 +8,10 @@
 #include <inttypes.h>
 #include <getopt.h>
 
-#include "src/client/client.h"
 #include "src/common.h"
 #include "src/utils/diagnostics.h"
 #include "src/utils/memory.h"
-#include "client.h"
+#include "src/client/session.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -27,21 +26,21 @@
 #define SDB_CLIENT_CMD_TRUNCATE   "truncate"
 #define SDB_CLIENT_CMD_LATEST     "latest"
 
-typedef struct sdb_client_configuration_s {
+typedef struct client_configuration_s {
   char command[SDB_FILE_MAX_LEN];
   char hostname[SDB_FILE_MAX_LEN];
   int port;
   sdb_data_series_id_t series_id;
   sdb_timestamp_t begin;
   sdb_timestamp_t end;
-} sdb_client_configuration_t;
+} client_configuration_t;
 
-void sdb_print_usage();
-int sdb_client_configuration_load(int argc, char *argv[], sdb_client_configuration_t *config);
-int sdb_execute_command(shakadb_session_t *session, sdb_client_configuration_t *config);
+void print_usage();
+int client_configuration_load(int argc, char **argv, client_configuration_t *config);
+int execute_command(session_t *session, client_configuration_t *config);
 
 int main(int argc, char *argv[]) {
-  sdb_client_configuration_t config;
+  client_configuration_t config;
   strcpy(config.command, "");
   strcpy(config.hostname, "localhost");
   config.port = 8487;
@@ -49,24 +48,24 @@ int main(int argc, char *argv[]) {
   config.begin = 0;
   config.end = 0;
 
-  if (sdb_client_configuration_load(argc, argv, &config)) {
-    sdb_print_usage();
+  if (client_configuration_load(argc, argv, &config)) {
+    print_usage();
     return -1;
   }
 
-  shakadb_session_t session = {};
+  session_t *session = NULL;
   sdb_stopwatch_t *sw = sdb_stopwatch_start();
 
-  if (shakadb_session_open(&session, config.hostname, config.port) != SHAKADB_RESULT_OK) {
+  if ((session = session_create(config.hostname, config.port)) == NULL) {
     fprintf(stderr, "Failed to connect to: %s:%d\n", config.hostname, config.port);
     return -1;
   }
 
   fprintf(stderr, "Connected to: %s:%d\n", config.hostname, config.port);
 
-  int status = sdb_execute_command(&session, &config);
+  int status = execute_command(session, &config);
 
-  shakadb_session_close(&session);
+  session_destroy(session);
   float elapsed = sdb_stopwatch_stop_and_destroy(sw);
 
   if (status == 0) {
@@ -78,7 +77,7 @@ int main(int argc, char *argv[]) {
   return status;
 }
 
-void sdb_print_usage() {
+void print_usage() {
   printf("\n");
   printf("ShakaDB client - time series database client\n");
   printf("\n");
@@ -104,7 +103,7 @@ void sdb_print_usage() {
   printf("\n");
 }
 
-int sdb_client_configuration_load(int argc, char **argv, sdb_client_configuration_t *config) {
+int client_configuration_load(int argc, char **argv, client_configuration_t *config) {
   while (1) {
     int option_index = 0;
     static struct option long_options[] = {
@@ -138,11 +137,11 @@ int sdb_client_configuration_load(int argc, char **argv, sdb_client_configuratio
     }
   }
 }
-int sdb_execute_command(shakadb_session_t *session, sdb_client_configuration_t *config) {
+int execute_command(session_t *session, client_configuration_t *config) {
   if (!strncmp(SDB_CLIENT_CMD_WRITE, config->command, SDB_FILE_MAX_LEN)) {
     fprintf(stderr, "writing to series: %d\n", config->series_id);
     int points_size = 65536;
-    shakadb_data_point_t *points = (shakadb_data_point_t *)sdb_alloc(sizeof(shakadb_data_point_t *) * points_size);
+    sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(sizeof(sdb_data_point_t *) * points_size);
     int read = 0;
     int data_available = 1;
 
@@ -155,7 +154,7 @@ int sdb_execute_command(shakadb_session_t *session, sdb_client_configuration_t *
       }
 
       if (read >= points_size || !data_available) {
-        if (shakadb_write_points(session, config->series_id, points, read) != SHAKADB_RESULT_OK) {
+        if (session_write(session, config->series_id, points, read)) {
           fprintf(stderr, "failed to write points\n");
           return -1;
         }
@@ -170,20 +169,18 @@ int sdb_execute_command(shakadb_session_t *session, sdb_client_configuration_t *
             config->begin,
             config->end);
 
-    shakadb_data_points_iterator_t it;
     int total_read = 0;
-    int s = shakadb_read_points(session, config->series_id, config->begin, config->end, SDB_POINTS_PER_PACKET_MAX, &it);
 
-    if (s != SHAKADB_RESULT_OK) {
+    if (session_read(session, config->series_id, config->begin, config->end, SDB_POINTS_PER_PACKET_MAX)) {
       fprintf(stderr, "failed to read data points\n");
       return -1;
     }
 
-    while (shakadb_data_points_iterator_next(&it)) {
-      total_read += it.points_count;
+    while (session_read_next(session)) {
+      total_read += session->read_response->points_count;
 
-      for (int i = 0; i < it.points_count; i++) {
-        printf("%" PRIu64 ",%f\n", it.points[i].time, it.points[i].value);
+      for (int i = 0; i < session->read_response->points_count; i++) {
+        printf("%" PRIu64 ",%f\n", session->read_response->points[i].time, session->read_response->points[i].value);
       }
     }
 
@@ -191,7 +188,7 @@ int sdb_execute_command(shakadb_session_t *session, sdb_client_configuration_t *
   } else if (!strncmp(SDB_CLIENT_CMD_TRUNCATE, config->command, SDB_FILE_MAX_LEN)) {
     fprintf(stderr, "truncating data series: %d\n", config->series_id);
 
-    if (shakadb_truncate_data_series(session, config->series_id) != SHAKADB_RESULT_OK) {
+    if (session_truncate(session, config->series_id)) {
       fprintf(stderr, "failed to read data points\n");
       return -1;
     }
@@ -200,9 +197,9 @@ int sdb_execute_command(shakadb_session_t *session, sdb_client_configuration_t *
   } else if (!strncmp(SDB_CLIENT_CMD_LATEST, config->command, SDB_FILE_MAX_LEN)) {
     fprintf(stderr, "getting latest from: %d\n", config->series_id);
 
-    shakadb_data_point_t latest = {0};
+    sdb_data_point_t latest = {0};
 
-    if (shakadb_read_latest_point(session, config->series_id, &latest) != SHAKADB_RESULT_OK) {
+    if (session_read_latest(session, config->series_id, &latest)) {
       fprintf(stderr, "failed to get latest data point\n");
       return -1;
     }
@@ -213,7 +210,7 @@ int sdb_execute_command(shakadb_session_t *session, sdb_client_configuration_t *
       fprintf(stderr, "time series empty\n");
     }
   } else if (!strncmp("", config->command, SDB_FILE_MAX_LEN)) {
-    sdb_print_usage();
+    print_usage();
   } else {
     fprintf(stderr, "unknown command: '%s'\n", config->command);
     return -1;

@@ -107,6 +107,6 @@ buffer_t read_response_create(response_code_t code, sdb_data_point_t *points, in
 buffer_t simple_response_create(response_code_t code);
 buffer_t truncate_request_create(sdb_data_series_id_t data_series_id);
 
-int payload_validate(uint8_t *data, int size);
+int payload_validate(uint8_t *data, size_t size);
 
 #endif  // SRC_NETWORK_PROTOCOL_H_
