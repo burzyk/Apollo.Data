@@ -38,15 +38,6 @@
 
 #define SDB_SERVER_READ_BUFFER_MAX_LEN  65536
 
-// spells 'KAMA' in ASCII
-#define SDB_SERVER_MAGIC 0x4B414D41
-
-typedef struct header_s {
-  uint32_t magic;
-  uint32_t total_size;
-  uint8_t payload[];
-} header_t;
-
 typedef struct client_s {
   uv_tcp_t socket;
   struct server_s *server;

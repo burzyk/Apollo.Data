@@ -29,6 +29,11 @@
 
 #include <stdio.h>
 
+typedef struct buffer_s {
+  void *content;
+  size_t size;
+} buffer_t;
+
 void *sdb_alloc(size_t size);
 void *sdb_realloc(void *buffer, size_t size);
 void sdb_free(void *buffer);

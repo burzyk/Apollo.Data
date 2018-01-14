@@ -2,11 +2,12 @@
 // Created by Pawel Burzynski on 13/01/2018.
 //
 
-#include "src/common.h"
 #include "src/network/server.h"
 
+#include "src/common.h"
 #include "src/utils/memory.h"
 #include "src/utils/diagnostics.h"
+#include "src/network/protocol.h"
 
 client_t *client_create(server_t *server, int index);
 void client_disconnect_and_destroy(client_t *client);
@@ -149,11 +150,11 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
     client->buffer_length += nread;
     sdb_free(buf->base);
 
-    if (client->buffer_length < sizeof(header_t)) {
+    if (client->buffer_length < sizeof(packet_t)) {
       return;
     }
 
-    header_t *packet = (header_t *)client->buffer;
+    packet_t *packet = (packet_t *)client->buffer;
 
     if (packet->magic != SDB_SERVER_MAGIC || packet->total_size > SDB_SERVER_PACKET_MAX_LEN) {
       sdb_log_error("Received malformed packet, disconnecting, magic: %u, len: %u", packet->magic, packet->total_size);
@@ -168,7 +169,7 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
     int result = client->server->_handler(
         client,
         packet->payload,
-        packet->total_size - sizeof(header_t),
+        packet->total_size - sizeof(packet_t),
         client->server->_handler_context);
 
     if (result) {

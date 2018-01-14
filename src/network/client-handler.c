@@ -14,7 +14,7 @@ void handle_read(client_t *client, read_request_t *request, sdb_database_t *db);
 void handle_write(client_t *client, write_request_t *request, sdb_database_t *db);
 void handle_truncate(client_t *client, truncate_request_t *request, sdb_database_t *db);
 void handle_read_latest(client_t *client, truncate_request_t *request, sdb_database_t *db);
-int send_and_destroy(packet_t packet, client_t *client);
+int send_and_destroy(buffer_t packet, client_t *client);
 
 client_handler_t *client_handler_create(sdb_database_t *db) {
   client_handler_t *handler = (client_handler_t *)sdb_alloc(sizeof(client_handler_t));
@@ -28,13 +28,13 @@ void client_handler_destroy(client_handler_t *handler) {
 }
 
 int client_handler_process_message(client_t *client, uint8_t *data, uint32_t size, void *context) {
-  if (packet_validate(data, size)) {
+  if (payload_validate(data, size)) {
     sdb_log_error("Received packet with malformed payload");
     return 1;
   }
 
   sdb_database_t *db = ((client_handler_t *)context)->_db;
-  packet_header_t *hdr = (packet_header_t *)data;
+  payload_header_t *hdr = (payload_header_t *)data;
 
   sdb_log_debug("packet received, type: %d", hdr->type);
   sdb_stopwatch_t *sw = sdb_stopwatch_start();
@@ -156,6 +156,6 @@ void handle_read_latest(client_t *client, truncate_request_t *request, sdb_datab
   }
 }
 
-int send_and_destroy(packet_t packet, client_t *client) {
-  return client_send_and_destroy_data(client, packet.payload, packet.size);
+int send_and_destroy(buffer_t packet, client_t *client) {
+  return client_send_and_destroy_data(client, packet.content, packet.size);
 }

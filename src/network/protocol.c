@@ -27,9 +27,7 @@
 
 #include <string.h>
 
-#include "src/utils/memory.h"
-
-packet_t write_request_create(sdb_data_series_id_t data_series_id, sdb_data_point_t *points, int points_count) {
+buffer_t write_request_create(sdb_data_series_id_t data_series_id, sdb_data_point_t *points, int points_count) {
   size_t total_size = sizeof(write_request_t) + points_count * sizeof(sdb_data_point_t);
   write_request_t *request = (write_request_t *)sdb_alloc(total_size);
   request->header.type = SDB_WRITE_REQUEST;
@@ -37,26 +35,26 @@ packet_t write_request_create(sdb_data_series_id_t data_series_id, sdb_data_poin
   request->points_count = points_count;
   memcpy(request->points, points, points_count * sizeof(sdb_data_point_t));
 
-  packet_t packet;
-  packet.payload = request;
+  buffer_t packet;
+  packet.content = request;
   packet.size = total_size;
 
   return packet;
 }
 
-packet_t simple_response_create(response_code_t code) {
+buffer_t simple_response_create(response_code_t code) {
   simple_response_t *response = (simple_response_t *)sdb_alloc(sizeof(simple_response_t));
   response->header.type = SDB_SIMPLE_RESPONSE;
   response->code = code;
 
-  packet_t packet;
-  packet.payload = response;
+  buffer_t packet;
+  packet.content = response;
   packet.size = sizeof(simple_response_t);
 
   return packet;
 }
 
-packet_t read_request_create(sdb_data_series_id_t data_series_id,
+buffer_t read_request_create(sdb_data_series_id_t data_series_id,
                              sdb_timestamp_t begin,
                              sdb_timestamp_t end,
                              int points_per_packet) {
@@ -67,26 +65,26 @@ packet_t read_request_create(sdb_data_series_id_t data_series_id,
   request->end = end;
   request->points_per_packet = points_per_packet;
 
-  packet_t packet;
-  packet.payload = request;
+  buffer_t packet;
+  packet.content = request;
   packet.size = sizeof(read_request_t);
 
   return packet;
 }
 
-packet_t read_latest_request_create(sdb_data_series_id_t data_series_id) {
+buffer_t read_latest_request_create(sdb_data_series_id_t data_series_id) {
   read_latest_request_t *request = (read_latest_request_t *)sdb_alloc(sizeof(read_latest_request_t));
   request->header.type = SDB_READ_LATEST_REQUEST;
   request->data_series_id = data_series_id;
 
-  packet_t packet;
-  packet.payload = request;
+  buffer_t packet;
+  packet.content = request;
   packet.size = sizeof(read_latest_request_t);
 
   return packet;
 }
 
-packet_t read_response_create(response_code_t code, sdb_data_point_t *points, int points_count) {
+buffer_t read_response_create(response_code_t code, sdb_data_point_t *points, int points_count) {
   size_t total_size = sizeof(read_response_t) + points_count * sizeof(sdb_data_point_t);
   read_response_t *response = (read_response_t *)sdb_alloc(total_size);
   response->header.type = SDB_READ_RESPONSE;
@@ -94,21 +92,26 @@ packet_t read_response_create(response_code_t code, sdb_data_point_t *points, in
   response->points_count = points_count;
   memcpy(response->points, points, points_count * sizeof(sdb_data_point_t));
 
-  packet_t packet;
-  packet.payload = response;
+  buffer_t packet;
+  packet.content = response;
   packet.size = total_size;
 
   return packet;
 }
 
-packet_t truncate_request_create(sdb_data_series_id_t data_series_id) {
+buffer_t truncate_request_create(sdb_data_series_id_t data_series_id) {
   truncate_request_t *request = (truncate_request_t *)sdb_alloc(sizeof(truncate_request_t));
   request->header.type = SDB_TRUNCATE_REQUEST;
   request->data_series_id = data_series_id;
 
-  packet_t packet;
-  packet.payload = request;
+  buffer_t packet;
+  packet.content = request;
   packet.size = sizeof(truncate_request_t);
 
   return packet;
+}
+
+int payload_validate(uint8_t *data, int size) {
+  // TODO: Implement
+  return -1;
 }
