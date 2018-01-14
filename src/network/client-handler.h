@@ -9,7 +9,7 @@
 #include "src/network/server.h"
 
 typedef struct client_handler_s {
-  database_t *_db;
+  database_t *db;
 } client_handler_t;
 
 client_handler_t *client_handler_create(database_t *db);

@@ -10,7 +10,6 @@
 
 #include "src/common.h"
 #include "src/diagnostics.h"
-#include "src/utils/memory.h"
 #include "src/client/session.h"
 
 #ifndef SDB_VERSION

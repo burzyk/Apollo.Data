@@ -53,12 +53,12 @@ typedef struct client_s {
 typedef int (*packet_handler_t)(client_t *client, uint8_t *data, uint32_t size, void *context);
 
 typedef struct server_s {
-  int _port;
-  uv_loop_t *_loop;
-  uv_tcp_t _master_socket;
-  client_t *_clients[SDB_MAX_CLIENTS];
-  packet_handler_t _handler;
-  void *_handler_context;
+  int port;
+  uv_loop_t *loop;
+  uv_tcp_t master_socket;
+  client_t *clients[SDB_MAX_CLIENTS];
+  packet_handler_t handler;
+  void *handler_context;
 } server_t;
 
 int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count);

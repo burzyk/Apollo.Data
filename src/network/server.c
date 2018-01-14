@@ -22,14 +22,14 @@ client_t *client_create(server_t *server, int index) {
   client->buffer_length = 0;
   client->server = server;
   client->buffer_length = 0;
-  uv_tcp_init(server->_loop, &client->socket);
+  uv_tcp_init(server->loop, &client->socket);
   client->socket.data = client;
 
   return client;
 }
 
 void client_disconnect_and_destroy(client_t *client) {
-  client->server->_clients[client->index] = NULL;
+  client->server->clients[client->index] = NULL;
   uv_close((uv_handle_t *)&client->socket, NULL);
   sdb_free(client);
 }
@@ -62,36 +62,36 @@ void on_write_complete(uv_write_t *req, int status) {
 
 server_t *server_create(int port, packet_handler_t handler, void *handler_context) {
   server_t *server = sdb_alloc(sizeof(server_t));
-  server->_port = port;
-  server->_loop = uv_default_loop();
-  server->_handler = handler;
-  server->_handler_context = handler_context;
-  uv_tcp_init(server->_loop, &server->_master_socket);
-  server->_master_socket.data = server;
-  memset(server->_clients, 0, SDB_MAX_CLIENTS * sizeof(client_t *));
+  server->port = port;
+  server->loop = uv_default_loop();
+  server->handler = handler;
+  server->handler_context = handler_context;
+  uv_tcp_init(server->loop, &server->master_socket);
+  server->master_socket.data = server;
+  memset(server->clients, 0, SDB_MAX_CLIENTS * sizeof(client_t *));
 
   return server;
 }
 
 void server_destroy(server_t *server) {
-  uv_loop_close(server->_loop);
+  uv_loop_close(server->loop);
   sdb_free(server);
 }
 
 void server_run(server_t *server) {
   struct sockaddr_in address = {0};
-  uv_ip4_addr("0.0.0.0", server->_port, &address);
+  uv_ip4_addr("0.0.0.0", server->port, &address);
 
-  if (uv_tcp_bind(&server->_master_socket, (const struct sockaddr *)&address, 0) < 0) {
+  if (uv_tcp_bind(&server->master_socket, (const struct sockaddr *)&address, 0) < 0) {
     die("Failed to bind to the master socket");
   }
 
-  if (uv_listen((uv_stream_t *)&server->_master_socket, 10, on_client_connected) != 0) {
+  if (uv_listen((uv_stream_t *)&server->master_socket, 10, on_client_connected) != 0) {
     die("Failed to listen for incoming clients");
   }
 
-  uv_run(server->_loop, UV_RUN_DEFAULT);
-  uv_loop_close(server->_loop);
+  uv_run(server->loop, UV_RUN_DEFAULT);
+  uv_loop_close(server->loop);
 }
 
 void server_stop(server_t *server) {
@@ -117,8 +117,8 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
   client_t *client = NULL;
 
   for (int i = 0; i < SDB_MAX_CLIENTS && client == NULL; i++) {
-    if (server->_clients[i] == NULL) {
-      client = server->_clients[i] = client_create(server, i);
+    if (server->clients[i] == NULL) {
+      client = server->clients[i] = client_create(server, i);
     }
   }
 
@@ -127,7 +127,7 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
     return;
   }
 
-  if ((status = uv_accept((uv_stream_t *)&server->_master_socket, (uv_stream_t *)&client->socket)) < 0) {
+  if ((status = uv_accept((uv_stream_t *)&server->master_socket, (uv_stream_t *)&client->socket)) < 0) {
     log_error("Failed to accept the connection: %s", uv_strerror(status));
     client_disconnect_and_destroy(client);
   }
@@ -165,11 +165,11 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
       return;
     }
 
-    int result = client->server->_handler(
+    int result = client->server->handler(
         client,
         packet->payload,
         packet->total_size - sizeof(packet_t),
-        client->server->_handler_context);
+        client->server->handler_context);
 
     if (result) {
       client_disconnect_and_destroy(client);

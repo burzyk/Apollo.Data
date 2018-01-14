@@ -17,7 +17,7 @@ int send_and_destroy(client_t *client, buffer_t packet);
 
 client_handler_t *client_handler_create(database_t *db) {
   client_handler_t *handler = (client_handler_t *)sdb_alloc(sizeof(client_handler_t));
-  handler->_db = db;
+  handler->db = db;
 
   return handler;
 }
@@ -32,7 +32,7 @@ int client_handler_process_message(client_t *client, uint8_t *data, size_t size,
     return 1;
   }
 
-  database_t *db = ((client_handler_t *)context)->_db;
+  database_t *db = ((client_handler_t *)context)->db;
   payload_header_t *hdr = (payload_header_t *)data;
 
   log_debug("packet received, type: %d", hdr->type);
