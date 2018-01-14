@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <time.h>
-#include <src/client/client.h>
-#include <src/utils/memory.h>
 #include <src/diagnostics.h>
 
 #include "test/framework.h"
@@ -41,7 +39,7 @@
 #define SDB_BUILD "<COMMIT_ID>"
 #endif
 
-#define TEST(test_case) result |= sdb_tests_session_run(session, #test_case, test_case);
+#define TEST(test_case) result |= test_session_run(session, #test_case, test_case);
 
 int main(int argc, char *argv[]) {
   int configuration_parsed = 0;

@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <time.h>
-#include <src/client/client.h>
-#include <src/utils/memory.h>
 #include <src/diagnostics.h>
 
 #include "test/framework.h"
