@@ -172,8 +172,12 @@ int configuration_parse(configuration_t *config, int argc, char **argv) {
 
 void print_banner(configuration_t *config) {
 
-  log_info("========== Starting ShakaDB ==========");
-  log_info("");
+  log_info("          _           _             _ _          ");
+  log_info("      ___| |__   __ _| | ____ _  __| | |__       ");
+  log_info("     / __| '_ \\ / _` | |/ / _` |/ _` | '_ \\      ");
+  log_info("     \\__ \\ | | | (_| |   < (_| | (_| | |_) |     ");
+  log_info("     |___/_| |_|\\__,_|_|\\_\\__,_|\\__,_|_.__/      ");
+  log_info("                                                 ");
   log_info("    Version:   " SDB_VERSION);
   log_info("    Build:     " SDB_BUILD);
   log_info("");
