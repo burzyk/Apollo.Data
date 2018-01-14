@@ -30,7 +30,7 @@
 #include <time.h>
 
 #include "src/utils/memory.h"
-#include "src/utils/disk.h"
+#include "src/storage/disk.h"
 
 sdb_tests_session_t *sdb_tests_session_create(const char *root_directory) {
   sdb_tests_session_t *session = (sdb_tests_session_t *)sdb_alloc(sizeof(sdb_tests_session_t));

@@ -30,7 +30,7 @@
 #include <inttypes.h>
 
 #include "src/utils/memory.h"
-#include "src/utils/disk.h"
+#include "src/storage/disk.h"
 
 void sdb_data_chunk_ensure_content_loaded(sdb_data_chunk_t *chunk);
 

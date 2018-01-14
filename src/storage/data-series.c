@@ -31,7 +31,7 @@
 
 #include "src/utils/diagnostics.h"
 #include "src/utils/memory.h"
-#include "src/utils/disk.h"
+#include "src/storage/disk.h"
 
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk);
 void sdb_data_series_delete_chunks(sdb_data_series_t *series);
