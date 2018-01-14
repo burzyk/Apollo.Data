@@ -82,15 +82,15 @@ int main(int argc, char *argv[]) {
   printf("    Directory: %s\n", directory);
   printf("\n");
 
-  TEST(sdb_test_search_empty);
-  TEST(sdb_test_search_left_out);
-  TEST(sdb_test_search_right_out);
-  TEST(sdb_test_search_left_approx);
-  TEST(sdb_test_search_right_approx);
-  TEST(sdb_test_search_exactly);
-  TEST(sdb_test_search_even);
-  TEST(sdb_test_search_odd);
-  TEST(sdb_test_search_duplicates);
+  TEST(test_search_empty);
+  TEST(test_search_left_out);
+  TEST(test_search_right_out);
+  TEST(test_search_left_approx);
+  TEST(test_search_right_approx);
+  TEST(test_search_exactly);
+  TEST(test_search_even);
+  TEST(test_search_odd);
+  TEST(test_search_duplicates);
 
   TEST(sdb_test_database_simple_initialization_test);
   TEST(sdb_test_database_write_and_read_all);

@@ -28,14 +28,14 @@
 
 #include "test/framework.h"
 
-void sdb_test_search_empty(sdb_tests_context_t ctx);
-void sdb_test_search_left_out(sdb_tests_context_t ctx);
-void sdb_test_search_right_out(sdb_tests_context_t ctx);
-void sdb_test_search_left_approx(sdb_tests_context_t ctx);
-void sdb_test_search_right_approx(sdb_tests_context_t ctx);
-void sdb_test_search_exactly(sdb_tests_context_t ctx);
-void sdb_test_search_even(sdb_tests_context_t ctx);
-void sdb_test_search_odd(sdb_tests_context_t ctx);
-void sdb_test_search_duplicates(sdb_tests_context_t ctx);
+void test_search_empty(sdb_tests_context_t ctx);
+void test_search_left_out(sdb_tests_context_t ctx);
+void test_search_right_out(sdb_tests_context_t ctx);
+void test_search_left_approx(sdb_tests_context_t ctx);
+void test_search_right_approx(sdb_tests_context_t ctx);
+void test_search_exactly(sdb_tests_context_t ctx);
+void test_search_even(sdb_tests_context_t ctx);
+void test_search_odd(sdb_tests_context_t ctx);
+void test_search_duplicates(sdb_tests_context_t ctx);
 
 #endif  // TEST_COMMON_TESTS_H_
