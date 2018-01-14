@@ -26,31 +26,31 @@
 #ifndef SRC_STORAGE_DATABASE_H_
 #define SRC_STORAGE_DATABASE_H_
 
-#include "src/storage/data-chunk.h"
-#include "src/storage/data-series.h"
+#include "src/storage/chunk.h"
+#include "src/storage/series.h"
 
-typedef struct sdb_database_s {
-  char _directory[SDB_FILE_MAX_LEN];
-  int _points_per_chunk;
-  sdb_rwlock_t *_lock;
+typedef struct database_s {
+  char directory[SDB_FILE_MAX_LEN];
+  int points_per_chunk;
 
-  sdb_data_series_t **_series;
-  int _max_series_count;
-  sdb_cache_manager_t *_cache;
-} sdb_database_t;
+  series_t **series;
+  int max_series_count;
+  cache_manager_t *cache_manager;
+} database_t;
 
-sdb_database_t *sdb_database_create(const char *directory,
-                                    int points_per_chunk,
-                                    int max_series,
-                                    uint64_t soft_limit,
-                                    uint64_t hard_limit);
-void sdb_database_destroy(sdb_database_t *db);
-int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count);
-int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id);
-sdb_data_point_t sdb_database_read_latest(sdb_database_t *db, sdb_data_series_id_t series_id);
-sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
-                                            sdb_timestamp_t begin,
-                                            sdb_timestamp_t end,
-                                            int max_points);
+database_t *database_create(const char *directory,
+                            int points_per_chunk,
+                            int max_series,
+                            uint64_t soft_limit,
+                            uint64_t hard_limit);
+void database_destroy(database_t *db);
+int database_write(database_t *db, series_id_t series_id, data_point_t *points, int count);
+int database_truncate(database_t *db, series_id_t series_id);
+data_point_t database_read_latest(database_t *db, series_id_t series_id);
+points_reader_t *database_read(database_t *db,
+                               series_id_t series_id,
+                               timestamp_t begin,
+                               timestamp_t end,
+                               int max_points);
 
 #endif  // SRC_STORAGE_DATABASE_H_

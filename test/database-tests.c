@@ -25,49 +25,42 @@
 
 #include "database-tests.h"
 
-#include <memory.h>
-
-#include "src/utils/memory.h"
 #include "src/storage/database.h"
 
-void sdb_test_database_write_with_time(sdb_database_t *db,
-                                       sdb_data_series_id_t series_id,
-                                       int batches,
-                                       int count,
-                                       sdb_timestamp_t time);
-void sdb_test_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, int batches, int count);
-void sdb_test_database_validate_read_with_max(sdb_database_t *db,
-                                              sdb_data_series_id_t series_id,
-                                              int expected_count,
-                                              sdb_timestamp_t begin,
-                                              sdb_timestamp_t end,
-                                              int max_points);
-void sdb_test_database_validate_read(sdb_database_t *db,
-                                     sdb_data_series_id_t series_id,
-                                     int expected_count,
-                                     sdb_timestamp_t begin,
-                                     sdb_timestamp_t end);
+void test_database_write_with_time(database_t *db, series_id_t series_id, int batches, int count, timestamp_t time);
+void test_database_write(database_t *db, series_id_t series_id, int batches, int count);
+void test_database_validate_read_with_max(database_t *db,
+                                          series_id_t series_id,
+                                          int expected_count,
+                                          timestamp_t begin,
+                                          timestamp_t end,
+                                          int max_points);
+void test_database_validate_read(database_t *db,
+                                 series_id_t series_id,
+                                 int expected_count,
+                                 timestamp_t begin,
+                                 timestamp_t end);
 
-void sdb_test_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, int batches, int count) {
-  sdb_test_database_write_with_time(db, series_id, batches, count, 1);
+void test_database_write(database_t *db, series_id_t series_id, int batches, int count) {
+  test_database_write_with_time(db, series_id, batches, count, 1);
 }
 
-void sdb_test_database_validate_read(sdb_database_t *db,
-                                     sdb_data_series_id_t series_id,
-                                     int expected_count,
-                                     sdb_timestamp_t begin,
-                                     sdb_timestamp_t end) {
-  sdb_test_database_validate_read_with_max(db, series_id, expected_count, begin, end, INT32_MAX);
+void test_database_validate_read(database_t *db,
+                                 series_id_t series_id,
+                                 int expected_count,
+                                 timestamp_t begin,
+                                 timestamp_t end) {
+  test_database_validate_read_with_max(db, series_id, expected_count, begin, end, INT32_MAX);
 }
 
-void sdb_test_database_write_with_time(sdb_database_t *db,
-                                       sdb_data_series_id_t series_id,
-                                       int batches,
-                                       int count,
-                                       sdb_timestamp_t time) {
+void test_database_write_with_time(database_t *db,
+                                   series_id_t series_id,
+                                   int batches,
+                                   int count,
+                                   timestamp_t time) {
   sdb_assert(time != 0, "Time cannot be 0");
 
-  sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(sizeof(sdb_data_point_t) * count);
+  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * count);
 
   for (int i = 0; i < batches; i++) {
     for (int j = 0; j < count; j++) {
@@ -76,21 +69,21 @@ void sdb_test_database_write_with_time(sdb_database_t *db,
       time++;
     }
 
-    sdb_database_write(db, series_id, points, count);
+    database_write(db, series_id, points, count);
   }
 
   sdb_free(points);
 }
 
-void sdb_test_database_validate_read_with_max(sdb_database_t *db,
-                                              sdb_data_series_id_t series_id,
-                                              int expected_count,
-                                              sdb_timestamp_t begin,
-                                              sdb_timestamp_t end,
-                                              int max_points) {
-  sdb_data_points_reader_t *reader = sdb_database_read(db, series_id, begin, end, max_points);
+void test_database_validate_read_with_max(database_t *db,
+                                          series_id_t series_id,
+                                          int expected_count,
+                                          timestamp_t begin,
+                                          timestamp_t end,
+                                          int max_points) {
+  points_reader_t *reader = database_read(db, series_id, begin, end, max_points);
   int total_read = reader->points_count;
-  sdb_data_point_t *points = reader->points;
+  data_point_t *points = reader->points;
 
   for (int i = 1; i < total_read; i++) {
     sdb_assert(points[i - 1].time <= points[i].time, "Invalid order of elements");
@@ -101,325 +94,325 @@ void sdb_test_database_validate_read_with_max(sdb_database_t *db,
     sdb_assert(expected_count == total_read, "Unexpected number of elements");
   }
 
-  sdb_data_points_reader_destroy(reader);
+  points_reader_destroy(reader);
 }
 
-void sdb_test_database_simple_initialization_test(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_database_destroy(db);
+void test_database_simple_initialization_test(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  database_destroy(db);
 }
 
-void sdb_test_database_write_and_read_all(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_write_and_read_all(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 5, 3);
-  sdb_test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 5, 3);
+  test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_write_database_in_one_big_batch(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_write_database_in_one_big_batch(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 1, 32);
-  sdb_test_database_validate_read(db, 12345, 32, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 1, 32);
+  test_database_validate_read(db, 12345, 32, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_write_database_in_multiple_small_batches(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_write_database_in_multiple_small_batches(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 32, 1);
-  sdb_test_database_validate_read(db, 12345, 32, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 32, 1);
+  test_database_validate_read(db, 12345, 32, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_multi_write_and_read_all(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_multi_write_and_read_all(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 100, 3);
-  sdb_test_database_write(db, 12345, 100, 3);
-  sdb_test_database_write(db, 12345, 100, 3);
-  sdb_test_database_write(db, 12345, 100, 3);
-  sdb_test_database_validate_read(db, 12345, 300, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 100, 3);
+  test_database_write(db, 12345, 100, 3);
+  test_database_write(db, 12345, 100, 3);
+  test_database_write(db, 12345, 100, 3);
+  test_database_validate_read(db, 12345, 300, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_write_history(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_write_history(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 10000);
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 1000);
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 100);
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 10);
-  sdb_test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write_with_time(db, 12345, 5, 3, 10000);
+  test_database_write_with_time(db, 12345, 5, 3, 1000);
+  test_database_write_with_time(db, 12345, 5, 3, 100);
+  test_database_write_with_time(db, 12345, 5, 3, 10);
+  test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_write_close_and_write_more(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_write_close_and_write_more(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 5, 3);
-  sdb_test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
-  sdb_database_destroy(db);
+  test_database_write(db, 12345, 5, 3);
+  test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  database_destroy(db);
 
-  db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 100);
-  sdb_test_database_validate_read(db, 12345, 30, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
-  sdb_database_destroy(db);
+  test_database_write_with_time(db, 12345, 5, 3, 100);
+  test_database_validate_read(db, 12345, 30, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  database_destroy(db);
 
-  db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 1000);
-  sdb_test_database_validate_read(db, 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
-  sdb_database_destroy(db);
+  test_database_write_with_time(db, 12345, 5, 3, 1000);
+  test_database_validate_read(db, 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  database_destroy(db);
 }
 
-void sdb_test_database_continuous_write(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_continuous_write(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 5, 3);
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 30);
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 100);
-  sdb_test_database_validate_read(db, 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 5, 3);
+  test_database_write_with_time(db, 12345, 5, 3, 30);
+  test_database_write_with_time(db, 12345, 5, 3, 100);
+  test_database_validate_read(db, 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_continuous_write_with_pickup(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_continuous_write_with_pickup(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 5, 3);
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 30);
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 100);
-  sdb_test_database_validate_read(db, 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
-  sdb_database_destroy(db);
+  test_database_write(db, 12345, 5, 3);
+  test_database_write_with_time(db, 12345, 5, 3, 30);
+  test_database_write_with_time(db, 12345, 5, 3, 100);
+  test_database_validate_read(db, 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  database_destroy(db);
 
-  db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 800);
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 10000);
-  sdb_test_database_write_with_time(db, 12345, 5, 3, 100000);
-  sdb_test_database_validate_read(db, 12345, 90, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
-  sdb_database_destroy(db);
+  test_database_write_with_time(db, 12345, 5, 3, 800);
+  test_database_write_with_time(db, 12345, 5, 3, 10000);
+  test_database_write_with_time(db, 12345, 5, 3, 100000);
+  test_database_validate_read(db, 12345, 90, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  database_destroy(db);
 }
 
-void sdb_test_database_write_batch_size_equal_to_page_capacity(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_write_batch_size_equal_to_page_capacity(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 5, 5);
-  sdb_test_database_write(db, 12345, 5, 5);
-  sdb_test_database_write(db, 12345, 5, 5);
-  sdb_test_database_write(db, 12345, 5, 5);
-  sdb_test_database_write(db, 12345, 5, 5);
-  sdb_test_database_write(db, 12345, 5, 5);
-  sdb_test_database_validate_read(db, 12345, 25, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 5, 5);
+  test_database_write(db, 12345, 5, 5);
+  test_database_write(db, 12345, 5, 5);
+  test_database_write(db, 12345, 5, 5);
+  test_database_write(db, 12345, 5, 5);
+  test_database_write(db, 12345, 5, 5);
+  test_database_validate_read(db, 12345, 25, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_write_batch_size_greater_than_page_capacity(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_write_batch_size_greater_than_page_capacity(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 5, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 100, 7);
-  sdb_test_database_write(db, 12345, 100, 7);
-  sdb_test_database_validate_read(db, 12345, 700, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 100, 7);
+  test_database_write(db, 12345, 100, 7);
+  test_database_validate_read(db, 12345, 700, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_read_inside_single_chunk(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_read_inside_single_chunk(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 10, 10);
-  sdb_test_database_validate_read(db, 12345, 3, 2, 5);
+  test_database_write(db, 12345, 10, 10);
+  test_database_validate_read(db, 12345, 3, 2, 5);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_read_span_two_chunks(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_read_span_two_chunks(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 10, 10);
-  sdb_test_database_validate_read(db, 12345, 4, 8, 12);
+  test_database_write(db, 12345, 10, 10);
+  test_database_validate_read(db, 12345, 4, 8, 12);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_read_span_three_chunks(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_read_span_three_chunks(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 10, 10);
-  sdb_test_database_validate_read(db, 12345, 14, 8, 22);
+  test_database_write(db, 12345, 10, 10);
+  test_database_validate_read(db, 12345, 14, 8, 22);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_read_chunk_edges(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_read_chunk_edges(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 10, 10);
-  sdb_test_database_validate_read(db, 12345, 10, 10, 20);
+  test_database_write(db, 12345, 10, 10);
+  test_database_validate_read(db, 12345, 10, 10, 20);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_read_duplicated_values(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_read_duplicated_values(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 1, 2);
-  sdb_test_database_write(db, 12345, 1, 2);
-  sdb_test_database_write(db, 12345, 1, 2);
-  sdb_test_database_write(db, 12345, 1, 2);
-  sdb_test_database_write(db, 12345, 1, 2);
-  sdb_test_database_validate_read(db, 12345, 2, 0, 3);
-  sdb_test_database_validate_read(db, 12345, 1, 2, 3);
+  test_database_write(db, 12345, 1, 2);
+  test_database_write(db, 12345, 1, 2);
+  test_database_write(db, 12345, 1, 2);
+  test_database_write(db, 12345, 1, 2);
+  test_database_write(db, 12345, 1, 2);
+  test_database_validate_read(db, 12345, 2, 0, 3);
+  test_database_validate_read(db, 12345, 1, 2, 3);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_read_with_limit(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_read_with_limit(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 10, 10);
-  sdb_test_database_validate_read_with_max(db, 12345, 2, 0, 10, 2);
-  sdb_test_database_validate_read_with_max(db, 12345, 4, 0, 10, 4);
-  sdb_test_database_validate_read_with_max(db, 12345, 100, 0, 200, 200);
+  test_database_write(db, 12345, 10, 10);
+  test_database_validate_read_with_max(db, 12345, 2, 0, 10, 2);
+  test_database_validate_read_with_max(db, 12345, 4, 0, 10, 4);
+  test_database_validate_read_with_max(db, 12345, 100, 0, 200, 200);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_truncate(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_truncate(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 1, 100);
-  sdb_test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 1, 100);
+  test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_truncate(db, 12345);
+  database_truncate(db, 12345);
 
-  sdb_test_database_validate_read(db, 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_validate_read(db, 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_truncate_multiple(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_truncate_multiple(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 100, 1);
-  sdb_test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 100, 1);
+  test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_truncate(db, 12345);
-  sdb_database_truncate(db, 1234555);
-  sdb_database_truncate(db, 12345);
+  database_truncate(db, 12345);
+  database_truncate(db, 1234555);
+  database_truncate(db, 12345);
 
-  sdb_test_database_validate_read(db, 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_validate_read(db, 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_truncate_write_again(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+void test_database_truncate_write_again(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  sdb_test_database_write(db, 12345, 100, 1);
-  sdb_test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 100, 1);
+  test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_truncate(db, 12345);
+  database_truncate(db, 12345);
 
-  sdb_test_database_validate_read(db, 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
-  sdb_test_database_write(db, 12345, 100, 1);
-  sdb_test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_validate_read(db, 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 100, 1);
+  test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_failed_write(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create("/blah/blah", 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_data_point_t points[] = {{.time = 1, .value = 13}};
+void test_database_failed_write(test_context_t ctx) {
+  database_t *db = database_create("/blah/blah", 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
+  data_point_t points[] = {{.time = 1, .value = 13}};
 
-  int result = sdb_database_write(db, 12345, points, 1);
+  int result = database_write(db, 12345, points, 1);
   sdb_assert(result != 0, "write operation should fail");
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_cache_cleanup(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, 100, 200);
+void test_database_cache_cleanup(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, 100, 200);
 
-  sdb_test_database_write(db, 12345, 10, 6);
-  sdb_test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 10, 6);
+  test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_assert(db->_cache->_allocated == 144, "Memory has not been cleaned up");
+  sdb_assert(db->cache_manager->allocated == 144, "Memory has not been cleaned up");
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_cache_cleanup_old(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
+void test_database_cache_cleanup_old(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
 
-  sdb_test_database_write(db, 12345, 2, 10);
+  test_database_write(db, 12345, 2, 10);
 
   for (int i = 0; i < 10; i++) {
-    sdb_data_points_reader_t *reader = sdb_database_read(db, 12345, 1, 10, 100);
-    sdb_data_points_reader_destroy(reader);
+    points_reader_t *reader = database_read(db, 12345, 1, 10, 100);
+    points_reader_destroy(reader);
   }
 
-  sdb_assert(((sdb_data_chunk_t *)db->_cache->_guard.next->consumer)->begin == 1, "Invalid cached page");
+  sdb_assert(((chunk_t *)db->cache_manager->guard.next->consumer)->begin == 1, "Invalid cached page");
 
   for (int i = 0; i < 10; i++) {
-    sdb_data_points_reader_t *reader = sdb_database_read(db, 12345, 11, 100, 100);
-    sdb_data_points_reader_destroy(reader);
+    points_reader_t *reader = database_read(db, 12345, 11, 100, 100);
+    points_reader_destroy(reader);
   }
 
-  sdb_assert(((sdb_data_chunk_t *)db->_cache->_guard.next->consumer)->begin == 11, "Invalid cached page");
+  sdb_assert(((chunk_t *)db->cache_manager->guard.next->consumer)->begin == 11, "Invalid cached page");
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_cache_smaller_than_chunk(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, 1, 1);
+void test_database_cache_smaller_than_chunk(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, 1, 1);
 
-  sdb_test_database_write(db, 12345, 10, 6);
-  sdb_test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  test_database_write(db, 12345, 10, 6);
+  test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_read_latest_no_data(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
+void test_database_read_latest_no_data(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
 
-  sdb_data_point_t latest = sdb_database_read_latest(db, 12345);
+  data_point_t latest = database_read_latest(db, 12345);
 
   sdb_assert(latest.value == 0, "Value is non-zero");
   sdb_assert(latest.time == 0, "Time is non-zero");
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_read_latest_data_in_first_chunk(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
+void test_database_read_latest_data_in_first_chunk(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
 
-  sdb_test_database_write(db, 12345, 1, 10);
-  sdb_data_point_t latest = sdb_database_read_latest(db, 12345);
+  test_database_write(db, 12345, 1, 10);
+  data_point_t latest = database_read_latest(db, 12345);
 
   sdb_assert(latest.value == 1000, "Incorrect value");
   sdb_assert(latest.time == 10, "Incorrect time");
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
-void sdb_test_database_read_latest_data_in_second_chunk(sdb_tests_context_t ctx) {
-  sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
+void test_database_read_latest_data_in_second_chunk(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
 
-  sdb_test_database_write(db, 12345, 2, 10);
-  sdb_data_point_t latest = sdb_database_read_latest(db, 12345);
+  test_database_write(db, 12345, 2, 10);
+  data_point_t latest = database_read_latest(db, 12345);
 
   sdb_assert(latest.value == 2000, "Incorrect value");
   sdb_assert(latest.time == 20, "Incorrect time");
 
-  sdb_database_destroy(db);
+  database_destroy(db);
 }

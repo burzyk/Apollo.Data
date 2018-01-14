@@ -23,39 +23,37 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#include "src/storage/data-points-reader.h"
+#include "src/storage/points-reader.h"
 
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
 
-#include "src/utils/memory.h"
-
-sdb_data_points_reader_t *sdb_data_points_reader_create(int points_count) {
-  sdb_data_points_reader_t *reader = (sdb_data_points_reader_t *)sdb_alloc(sizeof(sdb_data_points_reader_t));
+points_reader_t *points_reader_create(int points_count) {
+  points_reader_t *reader = (points_reader_t *)sdb_alloc(sizeof(points_reader_t));
 
   reader->points_count = points_count;
   reader->points = points_count == 0
                    ? NULL
-                   : (sdb_data_point_t *)sdb_alloc(points_count * sizeof(sdb_data_point_t));
-  reader->_write_position = 0;
+                   : (data_point_t *)sdb_alloc(points_count * sizeof(data_point_t));
+  reader->write_position = 0;
 
   return reader;
 }
 
-int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, sdb_data_point_t *points, int count) {
+int points_reader_write(points_reader_t *reader, data_point_t *points, int count) {
   if (count == 0 || reader->points == NULL) {
     return 0;
   }
 
-  int to_write = sdb_min(count, reader->points_count - reader->_write_position);
-  memcpy(reader->points + reader->_write_position, points, to_write * sizeof(sdb_data_point_t));
-  reader->_write_position += to_write;
+  int to_write = sdb_min(count, reader->points_count - reader->write_position);
+  memcpy(reader->points + reader->write_position, points, to_write * sizeof(data_point_t));
+  reader->write_position += to_write;
 
-  return reader->_write_position < reader->points_count;
+  return reader->write_position < reader->points_count;
 }
 
-void sdb_data_points_reader_destroy(sdb_data_points_reader_t *reader) {
+void points_reader_destroy(points_reader_t *reader) {
   sdb_free(reader->points);
   sdb_free(reader);
 }

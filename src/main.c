@@ -30,11 +30,8 @@
 #include <signal.h>
 #include <inttypes.h>
 
-#include "src/utils/threading.h"
-#include "src/storage/database.h"
-#include "src/server/server.h"
-#include "src/utils/diagnostics.h"
-#include "src/utils/memory.h"
+#include "src/network/client-handler.h"
+#include "src/diagnostics.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -44,120 +41,96 @@
 #define SDB_BUILD "<COMMIT_ID>"
 #endif
 
-#define SDB_CONFIG_DEFAULT_DIRECTORY  "/usr/local/shakadb/data"
+#define SDB_CONFIG_DEFAULT_DIRECTORY  "/var/lib/shakadb"
 #define SDB_CONFIG_DEFAULT_PORT 8487
 #define SDB_CONFIG_DEFAULT_SOFT_LIMIT 1500000000
 #define SDB_CONFIG_DEFAULT_HARD_LIMIT 2000000000
 
-typedef struct sdb_control_info_s {
-  sdb_rwlock_t *_lock;
-  volatile int _is_running;
-} sdb_control_info_t;
-
-sdb_control_info_t *sdb_control_info_create();
-void sdb_control_info_destroy(sdb_control_info_t *info);
-int sdb_control_info_check_running(sdb_control_info_t *info);
-void sdb_control_info_signal_stop(sdb_control_info_t *info);
-
-typedef struct sdb_configuration_s {
+typedef struct configuration_s {
   int log_verbose;
   char database_directory[SDB_FILE_MAX_LEN];
   int database_points_per_chunk;
   int server_port;
-  int server_backlog;
-  int server_max_clients;
   uint64_t cache_soft_limit;
   uint64_t cache_hard_limit;
-} sdb_configuration_t;
+} configuration_t;
 
-void *sdb_master_thread_routine(void *data);
-void sdb_print_usage();
-int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]);
-void sdb_control_signal_handler(int sig);
+server_t *g_server;
 
-sdb_control_info_t *g_control = NULL;
+void master_routine(configuration_t *config);
+void print_banner(configuration_t *config);
+void print_usage();
+int configuration_parse(configuration_t *config, int argc, char **argv);
+void control_signal_handler(int sig);
+int on_message_received(client_t *client, uint8_t *data, uint32_t size, void *context);
 
 int main(int argc, char *argv[]) {
-  sdb_configuration_t config = {};
+  configuration_t config = {};
 
-  if (sdb_configuration_parse(&config, argc, argv)) {
-    sdb_print_usage();
+  if (configuration_parse(&config, argc, argv)) {
+    print_usage();
     return -1;
   }
 
-  sdb_log_init(config.log_verbose);
-  sdb_log_info("========== Starting ShakaDB ==========");
-  sdb_log_info("");
-  sdb_log_info("    Version:   " SDB_VERSION);
-  sdb_log_info("    Build:     " SDB_BUILD);
-  sdb_log_info("");
-  sdb_log_info("    directory:   %s", config.database_directory);
-  sdb_log_info("    port:        %d", config.server_port);
-  sdb_log_info("    soft limit:  %" PRIu64 " bytes", config.cache_soft_limit);
-  sdb_log_info("    hard limit:  %" PRIu64 " bytes", config.cache_hard_limit);
-  sdb_log_info("");
+  log_init(config.log_verbose);
 
-  g_control = sdb_control_info_create();
-  signal(SIGUSR1, sdb_control_signal_handler);
-  signal(SIGTERM, sdb_control_signal_handler);
-  signal(SIGINT, sdb_control_signal_handler);
+  print_banner(&config);
 
-  sdb_thread_t *master_thread = sdb_thread_start(sdb_master_thread_routine, &config);
-  sdb_thread_join_and_destroy(master_thread);
+  signal(SIGUSR1, control_signal_handler);
+  signal(SIGTERM, control_signal_handler);
+  signal(SIGINT, control_signal_handler);
 
-  sdb_control_info_destroy(g_control);
+  master_routine(&config);
 
-  sdb_log_info("========== ShakaDB Stopped  ==========");
-  sdb_log_close();
+  log_info("========== ShakaDB Stopped  ==========");
+  log_close();
 
   return 0;
 }
 
-void sdb_control_signal_handler(int sig) {
-  sdb_control_info_signal_stop(g_control);
+void control_signal_handler(int sig) {
+  if (g_server != NULL) {
+    server_stop(g_server);
+  }
 }
 
-void *sdb_master_thread_routine(void *data) {
-  sdb_configuration_t *config = (sdb_configuration_t *)data;
+void master_routine(configuration_t *config) {
 
-  sdb_log_info("initializing database ...");
-  sdb_database_t *db = sdb_database_create(
+  log_info("initializing database ...");
+  database_t *db = database_create(
       config->database_directory,
       config->database_points_per_chunk,
       SDB_DATA_SERIES_MAX,
       config->cache_soft_limit,
       config->cache_hard_limit);
 
-  sdb_log_info("initializing server ...");
-  sdb_server_t *server = sdb_server_create(
-      config->server_port,
-      config->server_backlog,
-      config->server_max_clients,
-      db);
+  log_info("initializing network ...");
+  client_handler_t *handler = client_handler_create(db);
+  g_server = server_create(config->server_port, on_message_received, handler);
 
-  sdb_log_info("initialization complete");
+  log_info("initialization complete");
 
-  while (sdb_control_info_check_running(g_control)) {
-    sdb_thread_sleep(200);
-  }
+  server_run(g_server);
 
-  sdb_log_info("interrupt received");
+  log_info("interrupt received");
 
-  sdb_log_info("closing server ...");
-  sdb_server_destroy(server);
+  log_info("closing network ...");
+  server_destroy(g_server);
+  client_handler_destroy(handler);
 
-  sdb_log_info("closing database ...");
-  sdb_database_destroy(db);
-
-  return NULL;
+  log_info("closing database ...");
+  database_destroy(db);
 }
 
-int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]) {
+int on_message_received(client_t *client, uint8_t *data, uint32_t size, void *context) {
+  client_handler_t *handler = (client_handler_t *)context;
+  return client_handler_process_message(client, data, size, handler);
+}
+
+int configuration_parse(configuration_t *config, int argc, char **argv) {
   config->server_port = SDB_CONFIG_DEFAULT_PORT;
   strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_FILE_MAX_LEN);
   config->log_verbose = 0;
-  config->server_backlog = 20;
-  config->server_max_clients = 10;
   config->database_points_per_chunk = 10000;
   config->cache_soft_limit = SDB_CONFIG_DEFAULT_SOFT_LIMIT;
   config->cache_hard_limit = SDB_CONFIG_DEFAULT_HARD_LIMIT;
@@ -184,7 +157,7 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
         break;
       case 'd':strncpy(config->database_directory, optarg, SDB_FILE_MAX_LEN);
         break;
-      case 'h':sdb_print_usage();
+      case 'h':print_usage();
         exit(0);
       case 'v':config->log_verbose = 1;
         break;
@@ -197,7 +170,25 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
   }
 }
 
-void sdb_print_usage() {
+void print_banner(configuration_t *config) {
+
+  log_info("          _           _             _ _          ");
+  log_info("      ___| |__   __ _| | ____ _  __| | |__       ");
+  log_info("     / __| '_ \\ / _` | |/ / _` |/ _` | '_ \\      ");
+  log_info("     \\__ \\ | | | (_| |   < (_| | (_| | |_) |     ");
+  log_info("     |___/_| |_|\\__,_|_|\\_\\__,_|\\__,_|_.__/      ");
+  log_info("                                                 ");
+  log_info("    Version:   " SDB_VERSION);
+  log_info("    Build:     " SDB_BUILD);
+  log_info("");
+  log_info("    directory:   %s", config->database_directory);
+  log_info("    port:        %d", config->server_port);
+  log_info("    soft limit:  %" PRIu64 " bytes", config->cache_soft_limit);
+  log_info("    hard limit:  %" PRIu64 " bytes", config->cache_hard_limit);
+  log_info("");
+}
+
+void print_usage() {
   printf("\n");
   printf("ShakaDB - time series database\n");
   printf("\n");
@@ -220,31 +211,4 @@ void sdb_print_usage() {
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
   printf("\n");
-}
-
-sdb_control_info_t *sdb_control_info_create() {
-  sdb_control_info_t *info = (sdb_control_info_t *)sdb_alloc(sizeof(sdb_control_info_t));
-  info->_is_running = 1;
-  info->_lock = sdb_rwlock_create();
-
-  return info;
-}
-
-void sdb_control_info_destroy(sdb_control_info_t *info) {
-  sdb_rwlock_destroy(info->_lock);
-  sdb_free(info);
-}
-
-int sdb_control_info_check_running(sdb_control_info_t *info) {
-  sdb_rwlock_rdlock(info->_lock);
-  int status = info->_is_running;
-  sdb_rwlock_unlock(info->_lock);
-
-  return status;
-}
-
-void sdb_control_info_signal_stop(sdb_control_info_t *info) {
-  sdb_rwlock_wrlock(info->_lock);
-  info->_is_running = 0;
-  sdb_rwlock_unlock(info->_lock);
 }

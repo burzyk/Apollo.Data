@@ -20,31 +20,32 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 14/04/2017.
+// Created by Pawel Burzynski on 28/01/2017.
 //
 
-#ifndef SRC_UTILS_DIAGNOSTICS_H_
-#define SRC_UTILS_DIAGNOSTICS_H_
+#ifndef SRC_STORAGE_SERIES_H_
+#define SRC_STORAGE_SERIES_H_
 
-#include <time.h>
-#include <stdint.h>
+#include "src/storage/chunk.h"
+#include "src/storage/points-reader.h"
 
-#define SDB_LOG_LINE_MAX_LEN  1024
+typedef struct series_s {
+  series_id_t id;
 
-typedef struct sdb_stopwatch_s {
-  uint64_t _start;
-  uint64_t _stop;
-} sdb_stopwatch_t;
+  char file_name[SDB_FILE_MAX_LEN];
+  int points_per_chunk;
 
-uint64_t sdb_now();
+  chunk_t **chunks;
+  int chunks_count;
+  int max_chunks;
+  cache_manager_t *cache_manager;
+} series_t;
 
-sdb_stopwatch_t *sdb_stopwatch_start();
-float sdb_stopwatch_stop_and_destroy(sdb_stopwatch_t *stopwatch);
+series_t *series_create(series_id_t id, const char *file_name, int points_per_chunk, cache_manager_t *cache);
+void series_destroy(series_t *series);
+int series_write(series_t *series, data_point_t *points, int count);
+int series_truncate(series_t *series);
+points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, int max_points);
+data_point_t series_read_latest(series_t *series);
 
-void sdb_log_init(int verbose);
-void sdb_log_close();
-void sdb_log_error(const char *format, ...);
-void sdb_log_info(const char *format, ...);
-void sdb_log_debug(const char *format, ...);
-
-#endif  // SRC_UTILS_DIAGNOSTICS_H_
+#endif  // SRC_STORAGE_SERIES_H_

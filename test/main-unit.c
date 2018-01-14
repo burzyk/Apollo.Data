@@ -24,9 +24,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <time.h>
-#include <src/client/client.h>
-#include <src/utils/memory.h>
-#include <src/utils/diagnostics.h>
+#include <src/diagnostics.h>
 
 #include "test/framework.h"
 #include "test/database-tests.h"
@@ -41,7 +39,7 @@
 #define SDB_BUILD "<COMMIT_ID>"
 #endif
 
-#define TEST(test_case) result |= sdb_tests_session_run(session, #test_case, test_case);
+#define TEST(test_case) result |= test_session_run(session, #test_case, test_case);
 
 int main(int argc, char *argv[]) {
   int configuration_parsed = 0;
@@ -71,7 +69,7 @@ int main(int argc, char *argv[]) {
     die("invalid arguments");
   }
 
-  sdb_tests_session_t *session = sdb_tests_session_create(directory);
+  test_session_t *session = test_session_create(directory);
   int result = 0;
 
   printf("==================== Running unit tests ====================\n");
@@ -82,78 +80,74 @@ int main(int argc, char *argv[]) {
   printf("    Directory: %s\n", directory);
   printf("\n");
 
-  TEST(sdb_test_search_empty);
-  TEST(sdb_test_search_left_out);
-  TEST(sdb_test_search_right_out);
-  TEST(sdb_test_search_left_approx);
-  TEST(sdb_test_search_right_approx);
-  TEST(sdb_test_search_exactly);
-  TEST(sdb_test_search_even);
-  TEST(sdb_test_search_odd);
-  TEST(sdb_test_search_duplicates);
+  TEST(test_search_empty);
+  TEST(test_search_left_out);
+  TEST(test_search_right_out);
+  TEST(test_search_left_approx);
+  TEST(test_search_right_approx);
+  TEST(test_search_exactly);
+  TEST(test_search_even);
+  TEST(test_search_odd);
+  TEST(test_search_duplicates);
 
-  TEST(sdb_test_database_simple_initialization_test);
-  TEST(sdb_test_database_write_and_read_all);
-  TEST(sdb_test_database_write_database_in_one_big_batch);
-  TEST(sdb_test_database_write_database_in_multiple_small_batches);
-  TEST(sdb_test_database_multi_write_and_read_all);
-  TEST(sdb_test_database_write_history);
-  TEST(sdb_test_database_write_close_and_write_more);
-  TEST(sdb_test_database_continuous_write);
-  TEST(sdb_test_database_continuous_write_with_pickup);
-  TEST(sdb_test_database_write_batch_size_equal_to_page_capacity);
-  TEST(sdb_test_database_write_batch_size_greater_than_page_capacity);
-  TEST(sdb_test_database_read_inside_single_chunk);
-  TEST(sdb_test_database_read_span_two_chunks);
-  TEST(sdb_test_database_read_span_three_chunks);
-  TEST(sdb_test_database_read_chunk_edges);
-  TEST(sdb_test_database_read_duplicated_values);
-  TEST(sdb_test_database_read_with_limit);
-  TEST(sdb_test_database_truncate);
-  TEST(sdb_test_database_truncate_multiple);
-  TEST(sdb_test_database_truncate_write_again);
-  TEST(sdb_test_database_failed_write);
-  TEST(sdb_test_database_cache_cleanup);
-  TEST(sdb_test_database_cache_cleanup_old);
-  TEST(sdb_test_database_cache_smaller_than_chunk);
-  TEST(sdb_test_database_read_latest_no_data);
-  TEST(sdb_test_database_read_latest_data_in_first_chunk);
-  TEST(sdb_test_database_read_latest_data_in_second_chunk);
+  TEST(test_database_simple_initialization_test);
+  TEST(test_database_write_and_read_all);
+  TEST(test_database_write_database_in_one_big_batch);
+  TEST(test_database_write_database_in_multiple_small_batches);
+  TEST(test_database_multi_write_and_read_all);
+  TEST(test_database_write_history);
+  TEST(test_database_write_close_and_write_more);
+  TEST(test_database_continuous_write);
+  TEST(test_database_continuous_write_with_pickup);
+  TEST(test_database_write_batch_size_equal_to_page_capacity);
+  TEST(test_database_write_batch_size_greater_than_page_capacity);
+  TEST(test_database_read_inside_single_chunk);
+  TEST(test_database_read_span_two_chunks);
+  TEST(test_database_read_span_three_chunks);
+  TEST(test_database_read_chunk_edges);
+  TEST(test_database_read_duplicated_values);
+  TEST(test_database_read_with_limit);
+  TEST(test_database_truncate);
+  TEST(test_database_truncate_multiple);
+  TEST(test_database_truncate_write_again);
+  TEST(test_database_failed_write);
+  TEST(test_database_cache_cleanup);
+  TEST(test_database_cache_cleanup_old);
+  TEST(test_database_cache_smaller_than_chunk);
+  TEST(test_database_read_latest_no_data);
+  TEST(test_database_read_latest_data_in_first_chunk);
+  TEST(test_database_read_latest_data_in_second_chunk);
 
+  TEST(test_server_simple_initialization_test);
+  TEST(test_server_connect);
+  TEST(test_server_connect_invalid_address);
+  TEST(test_server_connect_invalid_port);
+  TEST(test_server_write_small);
+  TEST(test_server_write_unordered);
+  TEST(test_server_write_two_batches);
+  TEST(test_server_read_two_batches);
+  TEST(test_server_read_range);
+  TEST(test_server_read_range_with_multiple_series);
+  TEST(test_server_update);
+  TEST(test_server_update_in_two_sessions);
+  TEST(test_server_truncate_not_existing);
+  TEST(test_server_truncate_empty);
+  TEST(test_server_truncate_and_write);
+  TEST(test_server_no_sig_pipe_on_too_large_packet);
+  TEST(test_server_failed_write);
+  TEST(test_server_write_series_out_of_range);
+  TEST(test_server_read_series_out_of_range);
+  TEST(test_server_truncate_series_out_of_range);
+  TEST(test_server_write_filter_duplicates);
+  TEST(test_server_write_filter_zeros);
+  TEST(test_server_read_multiple_active);
+  TEST(test_server_read_latest_series_out_of_range);
+  TEST(test_server_read_latest_when_empty);
+  TEST(test_server_read_latest);
 
-  TEST(sdb_test_server_simple_initialization_test);
-  TEST(sdb_test_server_connect);
-  TEST(sdb_test_server_connect_invalid_address);
-  TEST(sdb_test_server_connect_invalid_port);
-  TEST(sdb_test_server_write_small);
-  TEST(sdb_test_server_write_unordered);
-  TEST(sdb_test_server_write_two_batches);
-  TEST(sdb_test_server_read_two_batches);
-  TEST(sdb_test_server_read_range);
-  TEST(sdb_test_server_read_range_with_multiple_series);
-  TEST(sdb_test_server_update);
-  TEST(sdb_test_server_update_in_two_sessions);
-  TEST(sdb_test_server_truncate_not_existing);
-  TEST(sdb_test_server_truncate_empty);
-  TEST(sdb_test_server_truncate_and_write);
-  TEST(sdb_test_server_no_sig_pipe_on_too_large_packet);
-  TEST(sdb_test_server_failed_write);
-  TEST(sdb_test_server_write_series_out_of_range);
-  TEST(sdb_test_server_read_series_out_of_range);
-  TEST(sdb_test_server_truncate_series_out_of_range);
-  TEST(sdb_test_server_write_filter_duplicates);
-  TEST(sdb_test_server_write_filter_zeros);
-  TEST(sdb_test_server_read_multiple_active);
-  TEST(sdb_test_server_read_latest_series_out_of_range);
-  TEST(sdb_test_server_read_latest_when_empty);
-  TEST(sdb_test_server_read_latest);
-  TEST(sdb_test_server_write_when_read_opened);
-  TEST(sdb_test_server_truncate_when_read_opened);
-  TEST(sdb_test_server_read_latest_when_read_opened);
-
-  sdb_tests_session_print_summary(session);
+  test_session_print_summary(session);
   printf("==================== Tests finished ===================\n");
 
-  sdb_tests_session_destroy(session);
+  test_session_destroy(session);
   return result;
 }

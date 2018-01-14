@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 14/04/2017.
 //
 
-#ifndef SRC_UTILS_DISK_H_
-#define SRC_UTILS_DISK_H_
+#ifndef SRC_STORAGE_DISK_H_
+#define SRC_STORAGE_DISK_H_
 
 #include <stdio.h>
 
@@ -40,4 +40,4 @@ int sdb_file_seek(sdb_file_t *file, off_t offset, int origin);
 long sdb_file_size(const char *file_name);
 int sdb_file_truncate(const char *file_name);
 
-#endif  // SRC_UTILS_DISK_H_
+#endif  // SRC_STORAGE_DISK_H_

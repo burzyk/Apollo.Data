@@ -31,55 +31,55 @@ int sdb_test_cmp(void *lhs, void *rhs) {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-void sdb_test_search_empty(sdb_tests_context_t ctx) {
+void test_search_empty(test_context_t ctx) {
   int array[] = {};
   int elem = 13;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == -1, "Expected -1");
 }
 
-void sdb_test_search_left_out(sdb_tests_context_t ctx) {
+void test_search_left_out(test_context_t ctx) {
   int array[] = {4, 5, 6, 7, 8, 111};
   int elem = 2;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 0, "Expected 0");
 }
 
-void sdb_test_search_right_out(sdb_tests_context_t ctx) {
+void test_search_right_out(test_context_t ctx) {
   int array[] = {4, 5, 6, 7, 8, 111};
   int elem = 200;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 6, "Expected 6");
 }
 
-void sdb_test_search_left_approx(sdb_tests_context_t ctx) {
+void test_search_left_approx(test_context_t ctx) {
   int array[] = {4, 50, 60, 70, 80, 111};
   int elem = 55;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 2, "Expected 2");
 }
 
-void sdb_test_search_right_approx(sdb_tests_context_t ctx) {
+void test_search_right_approx(test_context_t ctx) {
   int array[] = {4, 50, 60, 70, 80, 111};
   int elem = 90;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 5, "Expected 5");
 }
 
-void sdb_test_search_exactly(sdb_tests_context_t ctx) {
+void test_search_exactly(test_context_t ctx) {
   int array[] = {4, 50, 60, 70, 80, 111};
   int elem = 50;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 1, "Expected 1");
 }
 
-void sdb_test_search_even(sdb_tests_context_t ctx) {
+void test_search_even(test_context_t ctx) {
   int array[] = {4, 50, 60, 70, 80, 111, 200, 1000};
   int elem = 50;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 1, "Expected 1");
 }
 
-void sdb_test_search_odd(sdb_tests_context_t ctx) {
+void test_search_odd(test_context_t ctx) {
   int array[] = {4, 50, 60, 70, 80, 111, 1000};
   int elem = 111;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 5, "Expected 5");
 }
 
-void sdb_test_search_duplicates(sdb_tests_context_t ctx) {
+void test_search_duplicates(test_context_t ctx) {
   int array[] = {1, 1, 1, 4, 4, 4, 4, 4};
   int elem = 3;
   sdb_assert(sdb_find(array, sizeof(int), sizeof(array) / sizeof(int), &elem, sdb_test_cmp) == 3, "Expected 3");

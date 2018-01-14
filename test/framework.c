@@ -25,53 +25,50 @@
 
 #include "test/framework.h"
 
-#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
-#include "src/utils/memory.h"
-#include "src/utils/disk.h"
+#include "src/storage/disk.h"
 
-sdb_tests_session_t *sdb_tests_session_create(const char *root_directory) {
-  sdb_tests_session_t *session = (sdb_tests_session_t *)sdb_alloc(sizeof(sdb_tests_session_t));
-  snprintf(session->_directory, SDB_FILE_MAX_LEN, "%s/%lu", root_directory, time(NULL));
-  session->_tests_failed = 0;
-  session->_tests_success = 0;
+test_session_t *test_session_create(const char *root_directory) {
+  test_session_t *session = (test_session_t *)sdb_alloc(sizeof(test_session_t));
+  snprintf(session->directory, SDB_FILE_MAX_LEN, "%s/%lu", root_directory, time(NULL));
+  session->tests_failed = 0;
+  session->tests_success = 0;
 
-  if (sdb_directory_create(session->_directory)) {
+  if (sdb_directory_create(session->directory)) {
     die("Unable to create directory for tests");
   }
 
   return session;
 }
 
-void sdb_tests_session_destroy(sdb_tests_session_t *session) {
+void test_session_destroy(test_session_t *session) {
   sdb_free(session);
 }
 
-int sdb_tests_session_run(sdb_tests_session_t *session, const char *name, sdb_test_function_t test_function) {
+int test_session_run(test_session_t *session, const char *name, sdb_test_function_t test_function) {
   printf("Running: %s ...", name);
 
   char working_directory[SDB_FILE_MAX_LEN] = {0};
-  snprintf(working_directory, SDB_FILE_MAX_LEN, "%s/%s", session->_directory, name);
+  snprintf(working_directory, SDB_FILE_MAX_LEN, "%s/%s", session->directory, name);
 
   if (sdb_directory_create(working_directory)) {
     die("Unable to create working directory");
   }
 
-  sdb_tests_context_t context = {};
+  test_context_t context = {};
   strncpy(context.working_directory, working_directory, SDB_FILE_MAX_LEN);
   context.session = session;
 
   test_function(context);
 
-  // TODO (pburzynski): we are not printing failed as the assertion will kill the process anyway
   printf(ANSI_COLOR_GREEN " [ OK ]\n" ANSI_COLOR_RESET);
-  session->_tests_success++;
+  session->tests_success++;
 
   return 0;
 }
 
-void sdb_tests_session_print_summary(sdb_tests_session_t *session) {
-  printf("Test run: %d, failed: %d\n", session->_tests_success + session->_tests_failed, session->_tests_failed);
+void test_session_print_summary(test_session_t *session) {
+  printf("Test run: %d, failed: %d\n", session->tests_success + session->tests_failed, session->tests_failed);
 }

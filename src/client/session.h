@@ -26,27 +26,24 @@
 #ifndef SRC_CLIENT_SESSION_H_
 #define SRC_CLIENT_SESSION_H_
 
-#include "src/protocol.h"
-#include "src/client/data-points-iterator.h"
+#include "src/network/protocol.h"
 
-typedef struct sdb_client_session_s {
-  sdb_socket_t _sock;
-} sdb_client_session_t;
+typedef struct session_s {
+  int socket;
+  read_response_t *read_response;
+  int read_open;
+} session_t;
 
-sdb_client_session_t *sdb_client_session_create(const char *server, int port);
-void sdb_client_session_destroy(sdb_client_session_t *session);
-int sdb_client_session_write_points(sdb_client_session_t *session,
-                                    sdb_data_series_id_t series_id,
-                                    sdb_data_point_t *points,
-                                    int count);
-int sdb_client_session_truncate_data_series(sdb_client_session_t *session, sdb_data_series_id_t series_id);
-sdb_data_points_iterator_t *sdb_client_session_read_points(sdb_client_session_t *session,
-                                                           sdb_data_series_id_t series_id,
-                                                           sdb_timestamp_t begin,
-                                                           sdb_timestamp_t end,
-                                                           int points_per_packet);
-int sdb_client_session_read_latest_point(sdb_client_session_t *session,
-                                         sdb_data_series_id_t series_id,
-                                         sdb_data_point_t *latest);
+session_t *session_create(const char *server, int port);
+void session_destroy(session_t *session);
+int session_write(session_t *session, series_id_t series_id, data_point_t *points, int count);
+int session_truncate(session_t *session, series_id_t series_id);
+int session_read(session_t *session,
+                  series_id_t series_id,
+                  timestamp_t begin,
+                  timestamp_t end,
+                  int points_per_packet);
+int session_read_next(session_t *session);
+int session_read_latest(session_t *session, series_id_t series_id, data_point_t *latest);
 
-#endif  // SRC_CLIENT_SESSION_H_
+#endif  // SRC_NETWORK_CLIENT_SESSION_H_

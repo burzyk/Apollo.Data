@@ -23,39 +23,34 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SRC_STORAGE_DATA_CHUNK_H_
-#define SRC_STORAGE_DATA_CHUNK_H_
+#ifndef SRC_STORAGE_CHUNK_H_
+#define SRC_STORAGE_CHUNK_H_
 
 #include "src/common.h"
-#include "src/utils/threading.h"
-#include "src/storage/data-points-reader.h"
+#include "src/storage/points-reader.h"
 #include "src/storage/cache-manager.h"
 
-typedef struct sdb_data_chunk_s {
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
+typedef struct chunk_s {
+  timestamp_t begin;
+  timestamp_t end;
   int number_of_points;
   int max_points;
 
-  char _file_name[SDB_FILE_MAX_LEN];
-  uint64_t _file_offset;
-  sdb_data_point_t *_cached_content;
-  sdb_rwlock_t *_lock;
+  char file_name[SDB_FILE_MAX_LEN];
+  uint64_t file_offset;
+  data_point_t *cached_content;
 
-  sdb_cache_manager_t *_cache;
-  sdb_cache_entry_t *_cache_entry;
-} sdb_data_chunk_t;
+  cache_manager_t *cache_manager;
+  cache_entry_t *cache_entry;
+} chunk_t;
 
-int sdb_data_chunk_calculate_size(int points_count);
+int chunk_calculate_size(int points_count);
 
-sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name,
-                                        uint64_t file_offset,
-                                        int max_points,
-                                        sdb_cache_manager_t *cache);
-void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
-sdb_data_point_t sdb_data_chunk_read_latest(sdb_data_chunk_t *chunk);
-int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
-void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk);
+chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points, cache_manager_t *cache);
+void chunk_destroy(chunk_t *chunk);
+points_reader_t *chunk_read(chunk_t *chunk, timestamp_t begin, timestamp_t end);
+data_point_t chunk_read_latest(chunk_t *chunk);
+int chunk_write(chunk_t *chunk, int offset, data_point_t *points, int count);
+void chunk_clean_cache(chunk_t *chunk);
 
-#endif  // SRC_STORAGE_DATA_CHUNK_H_
+#endif  // SRC_STORAGE_CHUNK_H_

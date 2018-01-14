@@ -23,25 +23,26 @@
 // Created by Pawel Burzynski on 14/04/2017.
 //
 
+#ifndef SRC_DIAGNOSTICS_H_
+#define SRC_DIAGNOSTICS_H_
 
-#ifndef SRC_UTILS_MEMORY_H_
-#define SRC_UTILS_MEMORY_H_
+#include <time.h>
+#include <stdint.h>
 
-#include <stdio.h>
+#define SDB_LOG_LINE_MAX_LEN  1024
 
-void *sdb_alloc(size_t size);
-void *sdb_realloc(void *buffer, size_t size);
-void sdb_free(void *buffer);
+typedef struct stopwatch_s {
+  uint64_t start;
+  uint64_t stop;
+} stopwatch_t;
 
-typedef struct sdb_binary_reader_s {
-  int success;
-  void *_buffer;
-  void *_current;
-  size_t _size;
-} sdb_binary_reader_t;
+stopwatch_t *stopwatch_start();
+float stopwatch_stop_and_destroy(stopwatch_t *stopwatch);
 
-void sdb_binary_reader_init(sdb_binary_reader_t *reader, void *buffer, size_t size);
-void sdb_binary_reader_read(sdb_binary_reader_t *reader, void *buffer, size_t size);
-void sdb_binary_reader_read_pointer(sdb_binary_reader_t *reader, void *buffer, size_t size);
+void log_init(int verbose);
+void log_close();
+void log_error(const char *format, ...);
+void log_info(const char *format, ...);
+void log_debug(const char *format, ...);
 
-#endif  // SRC_UTILS_MEMORY_H_
+#endif  // SRC_DIAGNOSTICS_H_

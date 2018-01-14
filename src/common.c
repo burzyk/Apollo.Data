@@ -25,10 +25,21 @@
 
 #include "src/common.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
-int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs) {
+void *sdb_alloc(size_t size) {
+  return calloc(1, size);
+}
+
+void *sdb_realloc(void *buffer, size_t size) {
+  return realloc(buffer, size);
+}
+
+void sdb_free(void *buffer) {
+  free(buffer);
+}
+
+int data_point_compare(data_point_t *lhs, data_point_t *rhs) {
   return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;
 }
 
@@ -47,7 +58,7 @@ inline int sdb_max(int a, int b) {
   return a < b ? b : a;
 }
 
-int sdb_find(void *elements, int element_size, int elements_count, void *data, sdb_find_predicate predicate) {
+int sdb_find(void *elements, int element_size, int elements_count, void *data, find_predicate predicate) {
   if (elements == NULL || element_size == 0 || elements_count == 0 || data == NULL) {
     return -1;
   }
@@ -86,7 +97,7 @@ void die_internal(const char *message, const char *file, int line_number) {
   exit(-1);
 }
 
-void sdb_assert_internal(int status, const char *message, const char *file, int line_number) {
+void assert_internal(int status, const char *message, const char *file, int line_number) {
   if (!status) {
     char line[SDB_FILE_MAX_LEN] = {0};
     sprintf(line, "ASSERT: %s:%d -> %s", file, line_number, message);

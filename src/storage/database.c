@@ -27,131 +27,107 @@
 
 #include <memory.h>
 
-#include "src/utils/diagnostics.h"
-#include "src/utils/memory.h"
+#include "src/diagnostics.h"
 
-sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
-sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
-sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
+series_t *database_get_or_create_data_series(database_t *db, series_id_t series_id);
 
-sdb_database_t *sdb_database_create(const char *directory,
-                                    int points_per_chunk,
-                                    int max_series,
-                                    uint64_t soft_limit,
-                                    uint64_t hard_limit) {
+database_t *database_create(const char *directory,
+                            int points_per_chunk,
+                            int max_series,
+                            uint64_t soft_limit,
+                            uint64_t hard_limit) {
   sdb_assert(points_per_chunk > 1, "points_per_chunk must be greater than one");
 
-  sdb_database_t *db = (sdb_database_t *)sdb_alloc(sizeof(sdb_database_t));
-  strncpy(db->_directory, directory, SDB_FILE_MAX_LEN);
-  db->_lock = sdb_rwlock_create();
-  db->_max_series_count = max_series;
-  db->_series = (sdb_data_series_t **)sdb_alloc(sizeof(sdb_data_series_t *) * db->_max_series_count);
-  db->_points_per_chunk = points_per_chunk;
-  db->_cache = sdb_cache_manager_create(soft_limit, hard_limit);
+  database_t *db = (database_t *)sdb_alloc(sizeof(database_t));
+  strncpy(db->directory, directory, SDB_FILE_MAX_LEN);
+  db->max_series_count = max_series;
+  db->series = (series_t **)sdb_alloc(sizeof(series_t *) * db->max_series_count);
+  db->points_per_chunk = points_per_chunk;
+  db->cache_manager = cache_manager_create(soft_limit, hard_limit);
 
   return db;
 }
 
-void sdb_database_destroy(sdb_database_t *db) {
-  for (int i = 0; i < db->_max_series_count; i++) {
-    if (db->_series[i] == NULL) {
+void database_destroy(database_t *db) {
+  for (int i = 0; i < db->max_series_count; i++) {
+    if (db->series[i] == NULL) {
       continue;
     }
 
-    sdb_log_info("closing time series: %d", db->_series[i]->id);
-    sdb_data_series_destroy(db->_series[i]);
+    log_info("closing time series: %d", db->series[i]->id);
+    series_destroy(db->series[i]);
   }
 
-  sdb_free(db->_series);
+  sdb_free(db->series);
 
-  sdb_cache_manager_destroy(db->_cache);
-  sdb_rwlock_destroy(db->_lock);
+  cache_manager_destroy(db->cache_manager);
   sdb_free(db);
 }
 
-int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
-  sdb_stopwatch_t *sw = sdb_stopwatch_start();
+int database_write(database_t *db, series_id_t series_id, data_point_t *points, int count) {
+  stopwatch_t *sw = stopwatch_start();
 
-  sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
-  int result = series == NULL ? -1 : sdb_data_series_write(series, points, count);
-  sdb_log_debug("Written series: %d, points: %d in: %fs", series_id, count, sdb_stopwatch_stop_and_destroy(sw));
-
-  return result;
-}
-
-int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id) {
-  sdb_stopwatch_t *sw = sdb_stopwatch_start();
-
-  sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
-  int result = series == NULL ? -1 : sdb_data_series_truncate(series);
-  sdb_log_debug("Truncated series: %d in: %fs", series_id, sdb_stopwatch_stop_and_destroy(sw));
+  series_t *series = database_get_or_create_data_series(db, series_id);
+  int result = series == NULL ? -1 : series_write(series, points, count);
+  log_debug("Written series: %d, points: %d in: %fs", series_id, count, stopwatch_stop_and_destroy(sw));
 
   return result;
 }
 
-sdb_data_point_t sdb_database_read_latest(sdb_database_t *db, sdb_data_series_id_t series_id) {
-  sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
-  sdb_data_point_t result = {.time = 0, .value = 0};
+int database_truncate(database_t *db, series_id_t series_id) {
+  stopwatch_t *sw = stopwatch_start();
+
+  series_t *series = database_get_or_create_data_series(db, series_id);
+  int result = series == NULL ? -1 : series_truncate(series);
+  log_debug("Truncated series: %d in: %fs", series_id, stopwatch_stop_and_destroy(sw));
+
+  return result;
+}
+
+data_point_t database_read_latest(database_t *db, series_id_t series_id) {
+  series_t *series = database_get_or_create_data_series(db, series_id);
+  data_point_t result = {.time = 0, .value = 0};
 
   if (series != NULL) {
-    result = sdb_data_series_read_latest(series);
+    result = series_read_latest(series);
   }
 
   return result;
 }
 
-sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
-                                            sdb_timestamp_t begin,
-                                            sdb_timestamp_t end,
-                                            int max_points) {
-  sdb_stopwatch_t *sw = sdb_stopwatch_start();
+points_reader_t *database_read(database_t *db,
+                               series_id_t series_id,
+                               timestamp_t begin,
+                               timestamp_t end,
+                               int max_points) {
+  stopwatch_t *sw = stopwatch_start();
 
-  sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
-  sdb_data_points_reader_t *result = series == NULL
-                                     ? sdb_data_points_reader_create(0)
-                                     : sdb_data_series_read(series, begin, end, max_points);
+  series_t *series = database_get_or_create_data_series(db, series_id);
+  points_reader_t *result = series == NULL ? points_reader_create(0) : series_read(series, begin, end, max_points);
 
-  sdb_log_debug("Read series: %d, points: %d in: %fs",
-                series_id,
-                result->points_count,
-                sdb_stopwatch_stop_and_destroy(sw));
+  log_debug("Read series: %d, points: %d in: %fs",
+            series_id,
+            result->points_count,
+            stopwatch_stop_and_destroy(sw));
 
   return result;
 }
 
-sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
-  if (db->_series == NULL || series_id >= db->_max_series_count) {
+series_t *database_get_or_create_data_series(database_t *db, series_id_t series_id) {
+  if (db->series == NULL || series_id >= db->max_series_count) {
     return NULL;
   }
 
-  return db->_series[series_id];
-}
+  series_t *series = NULL;
 
-sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
-  if (series_id >= db->_max_series_count) {
-    return NULL;
+  if ((series = db->series[series_id]) == NULL) {
+    char file_name[SDB_FILE_MAX_LEN] = {0};
+    snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->directory, series_id);
+
+    log_info("loading time series: %d", series_id);
+    series = db->series[series_id] = series_create(series_id, file_name, db->points_per_chunk, db->cache_manager);
   }
 
-  char file_name[SDB_FILE_MAX_LEN] = {0};
-  snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->_directory, series_id);
-
-  sdb_log_info("loading time series: %d", series_id);
-  return db->_series[series_id] = sdb_data_series_create(series_id, file_name, db->_points_per_chunk, db->_cache);
-}
-
-sdb_data_series_t *sdb_database_get_or_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id) {
-  sdb_rwlock_rdlock(db->_lock);
-  sdb_data_series_t *series = NULL;
-
-  if ((series = sdb_database_get_data_series(db, series_id)) == NULL) {
-    sdb_rwlock_upgrade(db->_lock);
-
-    if ((series = sdb_database_get_data_series(db, series_id)) == NULL) {
-      series = sdb_database_create_data_series(db, series_id);
-    }
-  }
-
-  sdb_rwlock_unlock(db->_lock);
   return series;
 }
 
