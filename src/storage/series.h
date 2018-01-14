@@ -38,7 +38,7 @@ typedef struct series_s {
   chunk_t **chunks;
   int chunks_count;
   int max_chunks;
-  cache_manager_t *cache;
+  cache_manager_t *cache_manager;
 } series_t;
 
 series_t *series_create(series_id_t id, const char *file_name, int points_per_chunk, cache_manager_t *cache);

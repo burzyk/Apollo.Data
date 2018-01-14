@@ -102,7 +102,7 @@ void sdb_control_signal_handler(int sig) {
 void sdb_master_routine(sdb_configuration_t *config) {
 
   log_info("initializing database ...");
-  sdb_database_t *db = sdb_database_create(
+  database_t *db = database_create(
       config->database_directory,
       config->database_points_per_chunk,
       SDB_DATA_SERIES_MAX,
@@ -122,7 +122,7 @@ void sdb_master_routine(sdb_configuration_t *config) {
   server_destroy(g_server);
 
   log_info("closing database ...");
-  sdb_database_destroy(db);
+  database_destroy(db);
 }
 
 int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]) {

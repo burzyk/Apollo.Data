@@ -48,7 +48,7 @@ series_t *series_create(series_id_t id, const char *file_name, int points_per_ch
   series->chunks = NULL;
   series->max_chunks = 0;
   series->chunks_count = 0;
-  series->cache = cache;
+  series->cache_manager = cache;
 
   int chunk_size = chunk_calculate_size(points_per_chunk);
 
@@ -325,7 +325,7 @@ chunk_t *series_create_empty_chunk(series_t *series) {
       series->file_name,
       chunk_calculate_size(series->points_per_chunk) * (uint64_t)series->chunks_count,
       series->points_per_chunk,
-      series->cache);
+      series->cache_manager);
 }
 
 void series_delete_chunks(series_t *series) {

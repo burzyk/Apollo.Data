@@ -9,10 +9,10 @@
 #include "src/network/server.h"
 
 typedef struct client_handler_s {
-  sdb_database_t *_db;
+  database_t *_db;
 } client_handler_t;
 
-client_handler_t *client_handler_create(sdb_database_t *db);
+client_handler_t *client_handler_create(database_t *db);
 void client_handler_destroy(client_handler_t *handler);
 int client_handler_process_message(client_t *client, uint8_t *data, size_t size, void *context);
 
