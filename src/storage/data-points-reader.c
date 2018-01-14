@@ -35,19 +35,19 @@ sdb_data_points_reader_t *sdb_data_points_reader_create(int points_count) {
   reader->points_count = points_count;
   reader->points = points_count == 0
                    ? NULL
-                   : (sdb_data_point_t *)sdb_alloc(points_count * sizeof(sdb_data_point_t));
+                   : (data_point_t *)sdb_alloc(points_count * sizeof(data_point_t));
   reader->_write_position = 0;
 
   return reader;
 }
 
-int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, sdb_data_point_t *points, int count) {
+int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, data_point_t *points, int count) {
   if (count == 0 || reader->points == NULL) {
     return 0;
   }
 
   int to_write = sdb_min(count, reader->points_count - reader->_write_position);
-  memcpy(reader->points + reader->_write_position, points, to_write * sizeof(sdb_data_point_t));
+  memcpy(reader->points + reader->_write_position, points, to_write * sizeof(data_point_t));
   reader->_write_position += to_write;
 
   return reader->_write_position < reader->points_count;

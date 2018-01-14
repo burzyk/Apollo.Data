@@ -134,7 +134,7 @@ void session_destroy(session_t *session) {
   sdb_free(session);
 }
 
-int session_write(session_t *session, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
+int session_write(session_t *session, sdb_data_series_id_t series_id, data_point_t *points, int count) {
   buffer_t request = write_request_create(series_id, points, count);
   return session_send_with_simple_response(session, request);
 }
@@ -146,8 +146,8 @@ int session_truncate(session_t *session, sdb_data_series_id_t series_id) {
 
 int session_read(session_t *session,
                  sdb_data_series_id_t series_id,
-                 sdb_timestamp_t begin,
-                 sdb_timestamp_t end,
+                 timestamp_t begin,
+                 timestamp_t end,
                  int points_per_packet) {
   if (session->read_response != NULL) {
     return -1;
@@ -176,7 +176,7 @@ int session_read_next(session_t *session) {
   return 1;
 }
 
-int session_read_latest(session_t *session, sdb_data_series_id_t series_id, sdb_data_point_t *latest) {
+int session_read_latest(session_t *session, sdb_data_series_id_t series_id, data_point_t *latest) {
   buffer_t packet = read_latest_request_create(series_id);
   socket_send_and_destroy(session->socket, packet.content, packet.size);
 

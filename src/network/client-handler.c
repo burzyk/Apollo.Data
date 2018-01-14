@@ -61,7 +61,7 @@ void handle_read(client_t *client, read_request_t *request, sdb_database_t *db) 
             request->begin,
             request->end);
 
-  sdb_timestamp_t begin = request->begin;
+  timestamp_t begin = request->begin;
   int points_per_packet = sdb_max(1, sdb_min(SDB_POINTS_PER_PACKET_MAX, request->points_per_packet));
 
   for (;;) {
@@ -133,7 +133,7 @@ void handle_truncate(client_t *client, truncate_request_t *request, sdb_database
 void handle_read_latest(client_t *client, read_latest_request_t *request, sdb_database_t *db) {
   log_debug("processing read latest request: { series: %d }", request->data_series_id);
 
-  sdb_data_point_t latest = sdb_database_read_latest(db, request->data_series_id);
+  data_point_t latest = sdb_database_read_latest(db, request->data_series_id);
   log_debug("latest point: { time: %"PRIu64, ", value: %f }", latest.time, latest.value);
 
   int send_status = 0;

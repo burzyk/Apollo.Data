@@ -46,12 +46,12 @@ sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
                                           int points_per_chunk,
                                           sdb_cache_manager_t *cache);
 void sdb_data_series_destroy(sdb_data_series_t *series);
-int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count);
+int sdb_data_series_write(sdb_data_series_t *series, data_point_t *points, int count);
 int sdb_data_series_truncate(sdb_data_series_t *series);
 sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
-                                               sdb_timestamp_t begin,
-                                               sdb_timestamp_t end,
+                                               timestamp_t begin,
+                                               timestamp_t end,
                                                int max_points);
-sdb_data_point_t sdb_data_series_read_latest(sdb_data_series_t *series);
+data_point_t sdb_data_series_read_latest(sdb_data_series_t *series);
 
 #endif  // SRC_STORAGE_DATA_SERIES_H_

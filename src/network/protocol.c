@@ -29,13 +29,13 @@
 
 #include "src/diagnostics.h"
 
-buffer_t write_request_create(sdb_data_series_id_t data_series_id, sdb_data_point_t *points, int points_count) {
-  size_t total_size = sizeof(write_request_t) + points_count * sizeof(sdb_data_point_t);
+buffer_t write_request_create(sdb_data_series_id_t data_series_id, data_point_t *points, int points_count) {
+  size_t total_size = sizeof(write_request_t) + points_count * sizeof(data_point_t);
   write_request_t *request = (write_request_t *)sdb_alloc(total_size);
   request->header.type = SDB_WRITE_REQUEST;
   request->data_series_id = data_series_id;
   request->points_count = points_count;
-  memcpy(request->points, points, points_count * sizeof(sdb_data_point_t));
+  memcpy(request->points, points, points_count * sizeof(data_point_t));
 
   buffer_t packet;
   packet.content = request;
@@ -57,8 +57,8 @@ buffer_t simple_response_create(response_code_t code) {
 }
 
 buffer_t read_request_create(sdb_data_series_id_t data_series_id,
-                             sdb_timestamp_t begin,
-                             sdb_timestamp_t end,
+                             timestamp_t begin,
+                             timestamp_t end,
                              int points_per_packet) {
   read_request_t *request = (read_request_t *)sdb_alloc(sizeof(read_request_t));
   request->header.type = SDB_READ_REQUEST;
@@ -86,12 +86,12 @@ buffer_t read_latest_request_create(sdb_data_series_id_t data_series_id) {
   return packet;
 }
 
-buffer_t read_response_create(sdb_data_point_t *points, int points_count) {
-  size_t total_size = sizeof(read_response_t) + points_count * sizeof(sdb_data_point_t);
+buffer_t read_response_create(data_point_t *points, int points_count) {
+  size_t total_size = sizeof(read_response_t) + points_count * sizeof(data_point_t);
   read_response_t *response = (read_response_t *)sdb_alloc(total_size);
   response->header.type = SDB_READ_RESPONSE;
   response->points_count = points_count;
-  memcpy(response->points, points, points_count * sizeof(sdb_data_point_t));
+  memcpy(response->points, points, points_count * sizeof(data_point_t));
 
   buffer_t packet;
   packet.content = response;
@@ -119,12 +119,12 @@ int payload_validate(uint8_t *data, size_t size) {
     case SDB_WRITE_REQUEST:
       return size >= sizeof(write_request_t) &&
           ((write_request_t *)data)->points_count <= SDB_POINTS_PER_PACKET_MAX &&
-          size == sizeof(write_request_t) + sizeof(sdb_data_point_t) * ((write_request_t *)data)->points_count;
+          size == sizeof(write_request_t) + sizeof(data_point_t) * ((write_request_t *)data)->points_count;
     case SDB_READ_REQUEST: return size == sizeof(read_request_t);
     case SDB_READ_RESPONSE:
       return size >= sizeof(read_response_t) &&
           ((read_response_t *)data)->points_count <= SDB_POINTS_PER_PACKET_MAX &&
-          size == sizeof(read_response_t) + sizeof(sdb_data_point_t) * ((read_response_t *)data)->points_count;
+          size == sizeof(read_response_t) + sizeof(data_point_t) * ((read_response_t *)data)->points_count;
     case SDB_SIMPLE_RESPONSE: return size == sizeof(simple_response_t);
     case SDB_TRUNCATE_REQUEST: return size == sizeof(truncate_request_t);
     case SDB_READ_LATEST_REQUEST: return size == sizeof(read_latest_request_t);

@@ -37,15 +37,15 @@ void sdb_data_series_delete_chunks(sdb_data_series_t *series);
 sdb_data_chunk_t *sdb_data_series_create_empty_chunk(sdb_data_series_t *series);
 int sdb_data_series_write_chunk(sdb_data_series_t *series,
                                 sdb_data_chunk_t *chunk,
-                                sdb_data_point_t *points,
+                                data_point_t *points,
                                 int count);
 int sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
                                  sdb_data_chunk_t *chunk,
                                  int position,
-                                 sdb_data_point_t *points,
+                                 data_point_t *points,
                                  int count);
-int sdb_data_series_chunk_compare_begin(sdb_timestamp_t *begin, sdb_data_chunk_t **chunk);
-int sdb_data_series_chunk_compare_end(sdb_timestamp_t *end, sdb_data_chunk_t **chunk);
+int sdb_data_series_chunk_compare_begin(timestamp_t *begin, sdb_data_chunk_t **chunk);
+int sdb_data_series_chunk_compare_end(timestamp_t *end, sdb_data_chunk_t **chunk);
 
 sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
                                           const char *file_name,
@@ -80,11 +80,11 @@ void sdb_data_series_destroy(sdb_data_series_t *series) {
   sdb_free(series);
 }
 
-int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, int count) {
+int sdb_data_series_write(sdb_data_series_t *series, data_point_t *points, int count) {
   qsort(points,
         (size_t)count,
-        sizeof(sdb_data_point_t),
-        (int (*)(const void *, const void *))sdb_data_point_compare);
+        sizeof(data_point_t),
+        (int (*)(const void *, const void *))data_point_compare);
 
   int tail = -1;
 
@@ -161,17 +161,17 @@ int sdb_data_series_truncate(sdb_data_series_t *series) {
   return sdb_file_truncate(series->_file_name);
 }
 
-int sdb_data_series_chunk_compare_begin(sdb_timestamp_t *begin, sdb_data_chunk_t **chunk) {
+int sdb_data_series_chunk_compare_begin(timestamp_t *begin, sdb_data_chunk_t **chunk) {
   return *begin == (*chunk)->end ? 0 : *begin < (*chunk)->end ? -1 : 1;
 }
 
-int sdb_data_series_chunk_compare_end(sdb_timestamp_t *end, sdb_data_chunk_t **chunk) {
+int sdb_data_series_chunk_compare_end(timestamp_t *end, sdb_data_chunk_t **chunk) {
   return *end == (*chunk)->begin ? 0 : *end < (*chunk)->begin ? -1 : 1;
 }
 
 sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
-                                               sdb_timestamp_t begin,
-                                               sdb_timestamp_t end,
+                                               timestamp_t begin,
+                                               timestamp_t end,
                                                int max_points) {
   sdb_data_points_reader_t **readers = (sdb_data_points_reader_t **)sdb_alloc(
       series->_chunks_count * sizeof(sdb_data_points_reader_t));
@@ -179,8 +179,8 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
   int total_points = 0;
 
   int element_size = sizeof(sdb_data_chunk_t *);
-  sdb_find_predicate begin_predicate = (sdb_find_predicate)sdb_data_series_chunk_compare_begin;
-  sdb_find_predicate end_predicate = (sdb_find_predicate)sdb_data_series_chunk_compare_end;
+  find_predicate begin_predicate = (find_predicate)sdb_data_series_chunk_compare_begin;
+  find_predicate end_predicate = (find_predicate)sdb_data_series_chunk_compare_end;
 
   int begin_index = sdb_find(series->_chunks, element_size, series->_chunks_count, &begin, begin_predicate);
   int end_index = sdb_find(series->_chunks, element_size, series->_chunks_count, &end, end_predicate);
@@ -209,8 +209,8 @@ sdb_data_points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
   return reader;
 }
 
-sdb_data_point_t sdb_data_series_read_latest(sdb_data_series_t *series) {
-  sdb_data_point_t result = {.value=0, .time=0};
+data_point_t sdb_data_series_read_latest(sdb_data_series_t *series) {
+  data_point_t result = {.value=0, .time=0};
 
   if (series->_chunks_count > 0) {
     sdb_data_chunk_t *last_chunk = series->_chunks[series->_chunks_count - 1];
@@ -242,7 +242,7 @@ void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t 
 
 int sdb_data_series_write_chunk(sdb_data_series_t *series,
                                 sdb_data_chunk_t *chunk,
-                                sdb_data_point_t *points,
+                                data_point_t *points,
                                 int count) {
   if (count == 0) {
     return 0;
@@ -255,8 +255,8 @@ int sdb_data_series_write_chunk(sdb_data_series_t *series,
   } else {
     int buffer_count = count + chunk->number_of_points;
     sdb_data_points_reader_t *reader = sdb_data_chunk_read(chunk, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
-    sdb_data_point_t *buffer = (sdb_data_point_t *)sdb_alloc(buffer_count * sizeof(sdb_data_point_t));
-    sdb_data_point_t *content = reader->points;
+    data_point_t *buffer = (data_point_t *)sdb_alloc(buffer_count * sizeof(data_point_t));
+    data_point_t *content = reader->points;
     int points_pos = count - 1;
     int content_pos = reader->points_count - 1;
     int duplicated_count = 0;
@@ -290,7 +290,7 @@ int sdb_data_series_write_chunk(sdb_data_series_t *series,
 int sdb_data_series_chunk_memcpy(sdb_data_series_t *series,
                                  sdb_data_chunk_t *chunk,
                                  int position,
-                                 sdb_data_point_t *points,
+                                 data_point_t *points,
                                  int count) {
   int to_write = sdb_min(count, chunk->max_points - position);
 

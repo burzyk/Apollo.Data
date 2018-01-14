@@ -44,12 +44,12 @@ sdb_database_t *sdb_database_create(const char *directory,
                                     uint64_t soft_limit,
                                     uint64_t hard_limit);
 void sdb_database_destroy(sdb_database_t *db);
-int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count);
+int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, data_point_t *points, int count);
 int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id);
-sdb_data_point_t sdb_database_read_latest(sdb_database_t *db, sdb_data_series_id_t series_id);
+data_point_t sdb_database_read_latest(sdb_database_t *db, sdb_data_series_id_t series_id);
 sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
-                                            sdb_timestamp_t begin,
-                                            sdb_timestamp_t end,
+                                            timestamp_t begin,
+                                            timestamp_t end,
                                             int max_points);
 
 #endif  // SRC_STORAGE_DATABASE_H_

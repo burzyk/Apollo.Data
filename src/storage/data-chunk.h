@@ -31,14 +31,14 @@
 #include "src/storage/cache-manager.h"
 
 typedef struct sdb_data_chunk_s {
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
+  timestamp_t begin;
+  timestamp_t end;
   int number_of_points;
   int max_points;
 
   char _file_name[SDB_FILE_MAX_LEN];
   uint64_t _file_offset;
-  sdb_data_point_t *_cached_content;
+  data_point_t *_cached_content;
 
   sdb_cache_manager_t *_cache;
   sdb_cache_entry_t *_cache_entry;
@@ -51,9 +51,9 @@ sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name,
                                         int max_points,
                                         sdb_cache_manager_t *cache);
 void sdb_data_chunk_destroy(sdb_data_chunk_t *chunk);
-sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, sdb_timestamp_t begin, sdb_timestamp_t end);
-sdb_data_point_t sdb_data_chunk_read_latest(sdb_data_chunk_t *chunk);
-int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, sdb_data_point_t *points, int count);
+sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, timestamp_t begin, timestamp_t end);
+data_point_t sdb_data_chunk_read_latest(sdb_data_chunk_t *chunk);
+int sdb_data_chunk_write(sdb_data_chunk_t *chunk, int offset, data_point_t *points, int count);
 void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk);
 
 #endif  // SRC_STORAGE_DATA_CHUNK_H_

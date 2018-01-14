@@ -29,13 +29,13 @@
 #include "src/common.h"
 
 typedef struct sdb_data_points_reader_s {
-  sdb_data_point_t *points;
+  data_point_t *points;
   int points_count;
   int _write_position;
 } sdb_data_points_reader_t;
 
 sdb_data_points_reader_t *sdb_data_points_reader_create(int points_count);
-int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, sdb_data_point_t *points, int count);
+int sdb_data_points_reader_write(sdb_data_points_reader_t *reader, data_point_t *points, int count);
 void sdb_data_points_reader_destroy(sdb_data_points_reader_t *reader);
 
 #endif  // SRC_STORAGE_DATA_POINTS_READER_H_

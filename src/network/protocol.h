@@ -63,14 +63,14 @@ typedef struct write_request_s {
   payload_header_t header;
   sdb_data_series_id_t data_series_id;
   int points_count;
-  sdb_data_point_t *points;
+  data_point_t *points;
 } write_request_t;
 
 typedef struct read_request_s {
   payload_header_t header;
   sdb_data_series_id_t data_series_id;
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
+  timestamp_t begin;
+  timestamp_t end;
   int points_per_packet;
 } read_request_t;
 
@@ -82,7 +82,7 @@ typedef struct read_latest_request_s {
 typedef struct read_response_s {
   payload_header_t header;
   int points_count;
-  sdb_data_point_t points[];
+  data_point_t points[];
 } read_response_t;
 
 typedef struct truncate_request_s {
@@ -95,13 +95,13 @@ typedef struct simple_response_s {
   response_code_t code;
 } simple_response_t;
 
-buffer_t write_request_create(sdb_data_series_id_t data_series_id, sdb_data_point_t *points, int points_count);
+buffer_t write_request_create(sdb_data_series_id_t data_series_id, data_point_t *points, int points_count);
 buffer_t read_request_create(sdb_data_series_id_t data_series_id,
-                             sdb_timestamp_t begin,
-                             sdb_timestamp_t end,
+                             timestamp_t begin,
+                             timestamp_t end,
                              int points_per_packet);
 buffer_t read_latest_request_create(sdb_data_series_id_t data_series_id);
-buffer_t read_response_create(sdb_data_point_t *points, int points_count);
+buffer_t read_response_create(data_point_t *points, int points_count);
 buffer_t simple_response_create(response_code_t code);
 buffer_t truncate_request_create(sdb_data_series_id_t data_series_id);
 

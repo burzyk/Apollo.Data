@@ -34,19 +34,19 @@ void sdb_test_database_write_with_time(sdb_database_t *db,
                                        sdb_data_series_id_t series_id,
                                        int batches,
                                        int count,
-                                       sdb_timestamp_t time);
+                                       timestamp_t time);
 void sdb_test_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, int batches, int count);
 void sdb_test_database_validate_read_with_max(sdb_database_t *db,
                                               sdb_data_series_id_t series_id,
                                               int expected_count,
-                                              sdb_timestamp_t begin,
-                                              sdb_timestamp_t end,
+                                              timestamp_t begin,
+                                              timestamp_t end,
                                               int max_points);
 void sdb_test_database_validate_read(sdb_database_t *db,
                                      sdb_data_series_id_t series_id,
                                      int expected_count,
-                                     sdb_timestamp_t begin,
-                                     sdb_timestamp_t end);
+                                     timestamp_t begin,
+                                     timestamp_t end);
 
 void sdb_test_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, int batches, int count) {
   sdb_test_database_write_with_time(db, series_id, batches, count, 1);
@@ -55,8 +55,8 @@ void sdb_test_database_write(sdb_database_t *db, sdb_data_series_id_t series_id,
 void sdb_test_database_validate_read(sdb_database_t *db,
                                      sdb_data_series_id_t series_id,
                                      int expected_count,
-                                     sdb_timestamp_t begin,
-                                     sdb_timestamp_t end) {
+                                     timestamp_t begin,
+                                     timestamp_t end) {
   sdb_test_database_validate_read_with_max(db, series_id, expected_count, begin, end, INT32_MAX);
 }
 
@@ -64,10 +64,10 @@ void sdb_test_database_write_with_time(sdb_database_t *db,
                                        sdb_data_series_id_t series_id,
                                        int batches,
                                        int count,
-                                       sdb_timestamp_t time) {
+                                       timestamp_t time) {
   sdb_assert(time != 0, "Time cannot be 0");
 
-  sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(sizeof(sdb_data_point_t) * count);
+  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * count);
 
   for (int i = 0; i < batches; i++) {
     for (int j = 0; j < count; j++) {
@@ -85,12 +85,12 @@ void sdb_test_database_write_with_time(sdb_database_t *db,
 void sdb_test_database_validate_read_with_max(sdb_database_t *db,
                                               sdb_data_series_id_t series_id,
                                               int expected_count,
-                                              sdb_timestamp_t begin,
-                                              sdb_timestamp_t end,
+                                              timestamp_t begin,
+                                              timestamp_t end,
                                               int max_points) {
   sdb_data_points_reader_t *reader = sdb_database_read(db, series_id, begin, end, max_points);
   int total_read = reader->points_count;
-  sdb_data_point_t *points = reader->points;
+  data_point_t *points = reader->points;
 
   for (int i = 1; i < total_read; i++) {
     sdb_assert(points[i - 1].time <= points[i].time, "Invalid order of elements");
@@ -339,7 +339,7 @@ void sdb_test_database_truncate_write_again(sdb_tests_context_t ctx) {
 
 void sdb_test_database_failed_write(sdb_tests_context_t ctx) {
   sdb_database_t *db = sdb_database_create("/blah/blah", 3, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
-  sdb_data_point_t points[] = {{.time = 1, .value = 13}};
+  data_point_t points[] = {{.time = 1, .value = 13}};
 
   int result = sdb_database_write(db, 12345, points, 1);
   sdb_assert(result != 0, "write operation should fail");
@@ -392,7 +392,7 @@ void sdb_test_database_cache_smaller_than_chunk(sdb_tests_context_t ctx) {
 void sdb_test_database_read_latest_no_data(sdb_tests_context_t ctx) {
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
 
-  sdb_data_point_t latest = sdb_database_read_latest(db, 12345);
+  data_point_t latest = sdb_database_read_latest(db, 12345);
 
   sdb_assert(latest.value == 0, "Value is non-zero");
   sdb_assert(latest.time == 0, "Time is non-zero");
@@ -404,7 +404,7 @@ void sdb_test_database_read_latest_data_in_first_chunk(sdb_tests_context_t ctx) 
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
 
   sdb_test_database_write(db, 12345, 1, 10);
-  sdb_data_point_t latest = sdb_database_read_latest(db, 12345);
+  data_point_t latest = sdb_database_read_latest(db, 12345);
 
   sdb_assert(latest.value == 1000, "Incorrect value");
   sdb_assert(latest.time == 10, "Incorrect time");
@@ -416,7 +416,7 @@ void sdb_test_database_read_latest_data_in_second_chunk(sdb_tests_context_t ctx)
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
 
   sdb_test_database_write(db, 12345, 2, 10);
-  sdb_data_point_t latest = sdb_database_read_latest(db, 12345);
+  data_point_t latest = sdb_database_read_latest(db, 12345);
 
   sdb_assert(latest.value == 2000, "Incorrect value");
   sdb_assert(latest.time == 20, "Incorrect time");

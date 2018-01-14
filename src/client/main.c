@@ -31,8 +31,8 @@ typedef struct client_configuration_s {
   char hostname[SDB_FILE_MAX_LEN];
   int port;
   sdb_data_series_id_t series_id;
-  sdb_timestamp_t begin;
-  sdb_timestamp_t end;
+  timestamp_t begin;
+  timestamp_t end;
 } client_configuration_t;
 
 void print_usage();
@@ -141,7 +141,7 @@ int execute_command(session_t *session, client_configuration_t *config) {
   if (!strncmp(SDB_CLIENT_CMD_WRITE, config->command, SDB_FILE_MAX_LEN)) {
     fprintf(stderr, "writing to series: %d\n", config->series_id);
     int points_size = 65536;
-    sdb_data_point_t *points = (sdb_data_point_t *)sdb_alloc(sizeof(sdb_data_point_t *) * points_size);
+    data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t *) * points_size);
     int read = 0;
     int data_available = 1;
 
@@ -197,7 +197,7 @@ int execute_command(session_t *session, client_configuration_t *config) {
   } else if (!strncmp(SDB_CLIENT_CMD_LATEST, config->command, SDB_FILE_MAX_LEN)) {
     fprintf(stderr, "getting latest from: %d\n", config->series_id);
 
-    sdb_data_point_t latest = {0};
+    data_point_t latest = {0};
 
     if (session_read_latest(session, config->series_id, &latest)) {
       fprintf(stderr, "failed to get latest data point\n");
