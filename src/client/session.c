@@ -36,12 +36,13 @@
 #include <memory.h>
 
 int socket_connect(const char *server, int port);
-void socket_send_and_destroy(int socket, uint8_t *buffer, size_t size);
+void socket_send(int socket, uint8_t *buffer, size_t size);
 int socket_receive(int socket, void *buffer, size_t size);
 void socket_close(int socket);
 
 int session_send_with_simple_response(session_t *session, buffer_t request);
-packet_t *session_receive(session_t *session, packet_type_t type);
+void *session_receive(session_t *session, packet_type_t type);
+void session_send_and_destroy(session_t *session, buffer_t response);
 
 int socket_connect(const char *server, int port) {
   struct addrinfo hints = {0};
@@ -60,6 +61,13 @@ int socket_connect(const char *server, int port) {
   for (struct addrinfo *rp = result; rp != NULL; rp = rp->ai_next) {
     if ((sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) == -1) {
       continue;
+    } else {
+#ifdef __APPLE__
+      int option_value = 1;
+      if (setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, &option_value, sizeof(option_value)) < 0) {
+        die("unable to set SO_NOSIGPIPE on a socket");
+      }
+#endif
     }
 
     if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
@@ -74,7 +82,7 @@ int socket_connect(const char *server, int port) {
   return sock;
 }
 
-void socket_send_and_destroy(int socket, uint8_t *buffer, size_t size) {
+void socket_send(int socket, uint8_t *buffer, size_t size) {
   if (buffer == NULL) {
     return;
   }
@@ -88,8 +96,6 @@ void socket_send_and_destroy(int socket, uint8_t *buffer, size_t size) {
     size -= sent;
     total_send += sent;
   }
-
-  sdb_free(buffer);
 }
 
 int socket_receive(int socket, void *buffer, size_t size) {
@@ -121,6 +127,7 @@ session_t *session_create(const char *server, int port) {
   session_t *session = (session_t *)sdb_alloc(sizeof(session_t));
   session->socket = sock;
   session->read_response = NULL;
+  session->read_open = 0;
 
   return session;
 }
@@ -135,11 +142,19 @@ void session_destroy(session_t *session) {
 }
 
 int session_write(session_t *session, series_id_t series_id, data_point_t *points, int count) {
+  if (session->read_open) {
+    return -1;
+  }
+
   buffer_t request = write_request_create(series_id, points, count);
   return session_send_with_simple_response(session, request);
 }
 
 int session_truncate(session_t *session, series_id_t series_id) {
+  if (session->read_open) {
+    return -1;
+  }
+
   buffer_t request = truncate_request_create(series_id);
   return session_send_with_simple_response(session, request);
 }
@@ -149,17 +164,22 @@ int session_read(session_t *session,
                  timestamp_t begin,
                  timestamp_t end,
                  int points_per_packet) {
-  if (session->read_response != NULL) {
+  if (session->read_open) {
     return -1;
   }
 
   buffer_t packet = read_request_create(series_id, begin, end, points_per_packet);
-  socket_send_and_destroy(session->socket, packet.content, packet.size);
+  session_send_and_destroy(session, packet);
+  session->read_open = 1;
 
   return 0;
 }
 
 int session_read_next(session_t *session) {
+  if (!session->read_open) {
+    return 0;
+  }
+
   if (session->read_response != NULL) {
     sdb_free(session->read_response);
     session->read_response = NULL;
@@ -169,6 +189,7 @@ int session_read_next(session_t *session) {
 
   if (response == NULL || response->points_count == 0) {
     sdb_free(response);
+    session->read_open = 0;
     return 0;
   }
 
@@ -177,8 +198,13 @@ int session_read_next(session_t *session) {
 }
 
 int session_read_latest(session_t *session, series_id_t series_id, data_point_t *latest) {
+  if (session->read_open) {
+    return -1;
+  }
+
   buffer_t packet = read_latest_request_create(series_id);
-  socket_send_and_destroy(session->socket, packet.content, packet.size);
+  session_send_and_destroy(session, packet);
+  session->read_open = 1;
 
   latest->time = 0;
   latest->value = 0;
@@ -189,17 +215,33 @@ int session_read_latest(session_t *session, series_id_t series_id, data_point_t 
     }
   }
 
+  session->read_open = 0;
+
   return 0;
 }
 
 int session_send_with_simple_response(session_t *session, buffer_t request) {
-  socket_send_and_destroy(session->socket, request.content, request.size);
+  session_send_and_destroy(session, request);
   simple_response_t *response = (simple_response_t *)session_receive(session, SDB_SIMPLE_RESPONSE);
 
-  return response == NULL || response->code != SDB_RESPONSE_OK;
+  int result = response == NULL || response->code != SDB_RESPONSE_OK;
+  sdb_free(response);
+
+  return result;
 }
 
-packet_t *session_receive(session_t *session, packet_type_t type) {
+void session_send_and_destroy(session_t *session, buffer_t response) {
+  packet_t hdr;
+  hdr.magic = SDB_SERVER_MAGIC;
+  hdr.total_size = sizeof(packet_t) + response.size;
+
+  socket_send(session->socket, (uint8_t *)&hdr, sizeof(hdr));
+  socket_send(session->socket, response.content, response.size);
+
+  sdb_free(response.content);
+}
+
+void *session_receive(session_t *session, packet_type_t type) {
   packet_t header;
 
   if (socket_receive(session->socket, &header, sizeof(header)) != sizeof(header)) {
@@ -210,26 +252,25 @@ packet_t *session_receive(session_t *session, packet_type_t type) {
     return NULL;
   }
 
-  packet_t *packet = (packet_t *)sdb_alloc(header.total_size);
-  memcpy(packet, &header, sizeof(packet_t));
   size_t payload_size = header.total_size - sizeof(packet_t);
+  void *payload = sdb_alloc(payload_size);
 
-  if (socket_receive(session->socket, packet->payload, payload_size) != payload_size) {
-    sdb_free(packet);
+  if (socket_receive(session->socket, payload, payload_size) != payload_size) {
+    sdb_free(payload);
     return NULL;
   }
 
-  payload_header_t *hdr = (payload_header_t *)packet->payload;
+  payload_header_t *hdr = (payload_header_t *)payload;
 
   if (hdr->type != type) {
-    sdb_free(packet);
+    sdb_free(payload);
     return NULL;
   }
 
-  if (!payload_validate(packet->payload, payload_size)) {
-    sdb_free(packet);
+  if (!payload_validate(payload, payload_size)) {
+    sdb_free(payload);
     return NULL;
   }
 
-  return packet;
+  return payload;
 }

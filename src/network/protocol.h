@@ -52,19 +52,19 @@ typedef struct packet_s {
   uint32_t magic;
   uint32_t total_size;
   uint8_t payload[];
-} packet_t;
+} __attribute__((packed)) packet_t;
 
 // defines the application layer payload
 typedef struct payload_header_s {
   packet_type_t type;
-} payload_header_t;
+} __attribute__((packed)) payload_header_t;
 
 typedef struct write_request_s {
   payload_header_t header;
   series_id_t data_series_id;
   int points_count;
-  data_point_t *points;
-} write_request_t;
+  data_point_t points[];
+} __attribute__((packed)) write_request_t;
 
 typedef struct read_request_s {
   payload_header_t header;
@@ -72,28 +72,28 @@ typedef struct read_request_s {
   timestamp_t begin;
   timestamp_t end;
   int points_per_packet;
-} read_request_t;
+} __attribute__((packed)) read_request_t;
 
 typedef struct read_latest_request_s {
   payload_header_t header;
   series_id_t data_series_id;
-} read_latest_request_t;
+} __attribute__((packed)) read_latest_request_t;
 
 typedef struct read_response_s {
   payload_header_t header;
   int points_count;
   data_point_t points[];
-} read_response_t;
+} __attribute__((packed)) read_response_t;
 
 typedef struct truncate_request_s {
   payload_header_t header;
   series_id_t data_series_id;
-} truncate_request_t;
+} __attribute__((packed)) truncate_request_t;
 
 typedef struct simple_response_s {
   payload_header_t header;
   response_code_t code;
-} simple_response_t;
+} __attribute__((packed)) simple_response_t;
 
 buffer_t write_request_create(series_id_t data_series_id, data_point_t *points, int points_count);
 buffer_t read_request_create(series_id_t data_series_id,

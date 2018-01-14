@@ -45,6 +45,7 @@ server_test_context_t *server_test_context_start(
   context->server = server_create(8081, on_message_received, context);
   pthread_create(&context->runner, NULL, server_test_routine, context->server);
   context->session = with_session ? session_create("localhost", 8081) : NULL;
+  context->handler = client_handler_create(context->db);
 
   if (with_session) {
     sdb_assert(context->session != NULL, "Failed to connect");
@@ -73,6 +74,7 @@ void server_test_context_stop(server_test_context_t *context) {
   server_stop(context->server);
   pthread_join(context->runner, NULL);
   server_destroy(context->server);
+  client_handler_destroy(context->handler);
   database_destroy(context->db);
   sdb_free(context);
 }
@@ -513,7 +515,7 @@ void test_server_truncate_not_existing(test_context_t ctx) {
       UINT64_MAX,
       1);
 
-  sdb_assert(session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
+  sdb_assert(!session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
@@ -537,7 +539,7 @@ void test_server_truncate_empty(test_context_t ctx) {
       "Unable to read data");
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
-  sdb_assert(session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
+  sdb_assert(!session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
@@ -583,7 +585,7 @@ void test_server_truncate_and_write(test_context_t ctx) {
 
     sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
-    sdb_assert(session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
+    sdb_assert(!session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
   }
 
   server_test_context_stop(context);
@@ -799,7 +801,7 @@ void test_server_read_multiple_active(test_context_t ctx) {
   // third iterator returns data
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
-  sdb_assert(context->session->read_response->points_count == 1, "Invalid number of points");
+  sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
   sdb_assert(context->session->read_response->points[0].time == 1, "Invalid time value");
   sdb_assert(context->session->read_response->points[1].time == 2, "Invalid time value");
 

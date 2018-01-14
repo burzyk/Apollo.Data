@@ -31,6 +31,7 @@
 typedef struct session_s {
   int socket;
   read_response_t *read_response;
+  int read_open;
 } session_t;
 
 session_t *session_create(const char *server, int port);

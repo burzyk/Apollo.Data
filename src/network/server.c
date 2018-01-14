@@ -37,14 +37,21 @@ void client_disconnect_and_destroy(client_t *client) {
 
 int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count) {
   uv_write_t *request = (uv_write_t *)sdb_alloc(sizeof(uv_write_t));
-  uv_buf_t *buf = (uv_buf_t *)sdb_alloc(sizeof(uv_buf_t));
+  uv_buf_t *buf = (uv_buf_t *)sdb_alloc(sizeof(uv_buf_t) * 2);
   request->data = buf;
-  buf->base = (char *)data;
-  buf->len = count;
+
+  packet_t *packet = (packet_t *)sdb_alloc(sizeof(packet_t));
+  packet->magic = SDB_SERVER_MAGIC;
+  packet->total_size = sizeof(packet_t) + count;
+
+  buf[0].base = (char *)packet;
+  buf[0].len = sizeof(packet_t);
+  buf[1].base = (char *)data;
+  buf[1].len = count;
 
   int status;
 
-  if ((status = uv_write(request, (uv_stream_t *)&client->socket, buf, 1, on_write_complete)) >= 0) {
+  if ((status = uv_write(request, (uv_stream_t *)&client->socket, buf, 2, on_write_complete)) >= 0) {
     return 0;
   }
 
@@ -56,7 +63,8 @@ int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count) 
 void on_write_complete(uv_write_t *req, int status) {
   uv_buf_t *buf = (uv_buf_t *)req->data;
 
-  sdb_free(buf->base);
+  sdb_free(buf[0].base);
+  sdb_free(buf[1].base);
   sdb_free(buf);
   sdb_free(req);
 }
