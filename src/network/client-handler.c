@@ -26,13 +26,13 @@ void client_handler_destroy(client_handler_t *handler) {
   sdb_free(handler);
 }
 
-int client_handler_process_message(client_t *client, uint8_t *data, size_t size, void *context) {
+int client_handler_process_message(client_t *client, uint8_t *data, size_t size, client_handler_t *handler) {
   if (!payload_validate(data, size)) {
     log_error("Received packet with malformed payload");
     return 1;
   }
 
-  database_t *db = ((client_handler_t *)context)->db;
+  database_t *db = handler->db;
   payload_header_t *hdr = (payload_header_t *)data;
 
   log_debug("packet received, type: %d", hdr->type);

@@ -29,11 +29,9 @@
 #include <memory.h>
 #include <signal.h>
 #include <inttypes.h>
-#include <libdill.h>
 
-#include "src/storage/database.h"
-#include "src/network/server.h"
-#include "diagnostics.h"
+#include "src/network/client-handler.h"
+#include "src/diagnostics.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -48,43 +46,41 @@
 #define SDB_CONFIG_DEFAULT_SOFT_LIMIT 1500000000
 #define SDB_CONFIG_DEFAULT_HARD_LIMIT 2000000000
 
-typedef struct sdb_configuration_s {
+typedef struct configuration_s {
   int log_verbose;
   char database_directory[SDB_FILE_MAX_LEN];
   int database_points_per_chunk;
   int server_port;
   uint64_t cache_soft_limit;
   uint64_t cache_hard_limit;
-} sdb_configuration_t;
+} configuration_t;
 
 server_t *g_server;
 
-void sdb_master_routine(sdb_configuration_t *config);
-void sdb_print_banner(sdb_configuration_t *config);
+void master_routine(configuration_t *config);
+void print_banner(configuration_t *config);
 void print_usage();
-int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]);
-void sdb_control_signal_handler(int sig);
-
-void on_msg(client_t *client, uint8_t *data, uint32_t len) {
-}
+int configuration_parse(configuration_t *config, int argc, char **argv);
+void control_signal_handler(int sig);
+int on_message_received(client_t *client, uint8_t *data, uint32_t size, void *context);
 
 int main(int argc, char *argv[]) {
-  sdb_configuration_t config = {};
+  configuration_t config = {};
 
-  if (sdb_configuration_parse(&config, argc, argv)) {
+  if (configuration_parse(&config, argc, argv)) {
     print_usage();
     return -1;
   }
 
   log_init(config.log_verbose);
 
-  sdb_print_banner(&config);
+  print_banner(&config);
 
-  signal(SIGUSR1, sdb_control_signal_handler);
-  signal(SIGTERM, sdb_control_signal_handler);
-  signal(SIGINT, sdb_control_signal_handler);
+  signal(SIGUSR1, control_signal_handler);
+  signal(SIGTERM, control_signal_handler);
+  signal(SIGINT, control_signal_handler);
 
-  sdb_master_routine(&config);
+  master_routine(&config);
 
   log_info("========== ShakaDB Stopped  ==========");
   log_close();
@@ -92,14 +88,13 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-
-void sdb_control_signal_handler(int sig) {
+void control_signal_handler(int sig) {
   if (g_server != NULL) {
     server_stop(g_server);
   }
 }
 
-void sdb_master_routine(sdb_configuration_t *config) {
+void master_routine(configuration_t *config) {
 
   log_info("initializing database ...");
   database_t *db = database_create(
@@ -110,7 +105,8 @@ void sdb_master_routine(sdb_configuration_t *config) {
       config->cache_hard_limit);
 
   log_info("initializing network ...");
-  g_server = server_create(config->server_port, on_msg, NULL);
+  client_handler_t *handler = client_handler_create(db);
+  g_server = server_create(config->server_port, on_message_received, handler);
 
   log_info("initialization complete");
 
@@ -120,12 +116,18 @@ void sdb_master_routine(sdb_configuration_t *config) {
 
   log_info("closing network ...");
   server_destroy(g_server);
+  client_handler_destroy(handler);
 
   log_info("closing database ...");
   database_destroy(db);
 }
 
-int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[]) {
+int on_message_received(client_t *client, uint8_t *data, uint32_t size, void *context) {
+  client_handler_t *handler = (client_handler_t *)context;
+  return client_handler_process_message(client, data, size, handler);
+}
+
+int configuration_parse(configuration_t *config, int argc, char **argv) {
   config->server_port = SDB_CONFIG_DEFAULT_PORT;
   strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_FILE_MAX_LEN);
   config->log_verbose = 0;
@@ -168,7 +170,7 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
   }
 }
 
-void sdb_print_banner(sdb_configuration_t *config) {
+void print_banner(configuration_t *config) {
 
   log_info("========== Starting ShakaDB ==========");
   log_info("");
