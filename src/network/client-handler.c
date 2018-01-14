@@ -28,7 +28,7 @@ void client_handler_destroy(client_handler_t *handler) {
 }
 
 int client_handler_process_message(client_t *client, uint8_t *data, size_t size, void *context) {
-  if (payload_validate(data, size)) {
+  if (!payload_validate(data, size)) {
     sdb_log_error("Received packet with malformed payload");
     return 1;
   }

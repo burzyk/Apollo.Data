@@ -35,8 +35,6 @@
 #include <errno.h>
 #include <memory.h>
 
-#include "src/utils/memory.h"
-
 int socket_connect(const char *server, int port);
 void socket_send_and_destroy(int socket, uint8_t *buffer, size_t size);
 int socket_receive(int socket, void *buffer, size_t size);
@@ -228,7 +226,7 @@ packet_t *session_receive(session_t *session, packet_type_t type) {
     return NULL;
   }
 
-  if (payload_validate(packet->payload, payload_size)) {
+  if (!payload_validate(packet->payload, payload_size)) {
     sdb_free(packet);
     return NULL;
   }

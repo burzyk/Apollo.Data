@@ -27,6 +27,8 @@
 
 #include <string.h>
 
+#include "src/utils/diagnostics.h"
+
 buffer_t write_request_create(sdb_data_series_id_t data_series_id, sdb_data_point_t *points, int points_count) {
   size_t total_size = sizeof(write_request_t) + points_count * sizeof(sdb_data_point_t);
   write_request_t *request = (write_request_t *)sdb_alloc(total_size);
@@ -111,6 +113,20 @@ buffer_t truncate_request_create(sdb_data_series_id_t data_series_id) {
 }
 
 int payload_validate(uint8_t *data, size_t size) {
-  // TODO: Implement
-  return -1;
+  payload_header_t *hdr = (payload_header_t *)data;
+
+  switch (hdr->type) {
+    case SDB_WRITE_REQUEST:
+      return size >= sizeof(write_request_t) &&
+          size == sizeof(write_request_t) + sizeof(sdb_data_point_t) * ((write_request_t *)data)->points_count;
+    case SDB_READ_REQUEST: return size == sizeof(read_request_t);
+    case SDB_READ_RESPONSE:
+      return size >= sizeof(read_response_t) &&
+          size == sizeof(read_response_t) + sizeof(sdb_data_point_t) * ((read_response_t *)data)->points_count;
+    case SDB_SIMPLE_RESPONSE: return size == sizeof(simple_response_t);
+    case SDB_TRUNCATE_REQUEST: return size == sizeof(truncate_request_t);
+    case SDB_READ_LATEST_REQUEST: return size == sizeof(read_latest_request_t);
+    default:sdb_log_error("Unknown packet type: %d", (int)hdr->type);
+      return 0;
+  }
 }
