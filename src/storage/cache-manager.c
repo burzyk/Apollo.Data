@@ -27,8 +27,7 @@
 
 #include <inttypes.h>
 
-#include "src/utils/diagnostics.h"
-#include "src/utils/memory.h"
+#include "src/diagnostics.h"
 #include "src/storage/data-chunk.h"
 
 void sdb_cache_manager_cleanup(sdb_cache_manager_t *cache, sdb_cache_entry_t *reason);
@@ -75,11 +74,11 @@ sdb_cache_entry_t *sdb_cache_manager_register_consumer(sdb_cache_manager_t *cach
   entry->allocated += memory;
 
   if (cache->soft_limit < cache->_allocated && cache->_allocated < cache->hard_limit) {
-    sdb_log_debug("Soft cache limit reached with %" PRIu64 " bytes allocated", cache->_allocated);
+    log_debug("Soft cache limit reached with %" PRIu64 " bytes allocated", cache->_allocated);
   }
 
   if (cache->hard_limit < cache->_allocated) {
-    sdb_log_info("Hard cache limit reached with %" PRIu64 " bytes allocated", cache->_allocated);
+    log_info("Hard cache limit reached with %" PRIu64 " bytes allocated", cache->_allocated);
     sdb_cache_manager_cleanup(cache, entry);
   }
 
@@ -112,8 +111,8 @@ void sdb_cache_manager_cut_entry(sdb_cache_manager_t *cache, sdb_cache_entry_t *
 }
 
 void sdb_cache_manager_cleanup(sdb_cache_manager_t *cache, sdb_cache_entry_t *reason) {
-  sdb_stopwatch_t *sw = sdb_stopwatch_start();
-  sdb_log_info("Starting cache cleanup ...");
+  stopwatch_t *sw = stopwatch_start();
+  log_info("Starting cache cleanup ...");
   sdb_cache_entry_t *curr = cache->_guard.prev;
   int purged = 0;
 
@@ -131,5 +130,5 @@ void sdb_cache_manager_cleanup(sdb_cache_manager_t *cache, sdb_cache_entry_t *re
     }
   }
 
-  sdb_log_info("Cache cleaned up in %fs, removed: %d entries", sdb_stopwatch_stop_and_destroy(sw), purged);
+  log_info("Cache cleaned up in %fs, removed: %d entries", stopwatch_stop_and_destroy(sw), purged);
 }

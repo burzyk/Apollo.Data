@@ -29,8 +29,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
-#include "src/utils/diagnostics.h"
-#include "src/utils/memory.h"
+#include "src/diagnostics.h"
 #include "src/storage/disk.h"
 
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk);
@@ -69,7 +68,7 @@ sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
     if (chunk != NULL) {
       sdb_data_series_register_chunk(series, chunk);
     } else {
-      sdb_log_error("failed to load chunk at index: %d", i);
+      log_error("failed to load chunk at index: %d", i);
     }
   }
 
@@ -104,7 +103,7 @@ int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, i
   tail++;
 
   if (tail != count) {
-    sdb_log_info("duplicated or zero timestamp points detected in request: %d -> %d", count, tail);
+    log_info("duplicated or zero timestamp points detected in request: %d -> %d", count, tail);
   }
 
   count = tail;
@@ -113,7 +112,7 @@ int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, i
     sdb_data_chunk_t *chunk = sdb_data_series_create_empty_chunk(series);
 
     if (chunk == NULL) {
-      sdb_log_error("failed to create initial data chunk");
+      log_error("failed to create initial data chunk");
       return -1;
     }
 
@@ -128,7 +127,7 @@ int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, i
   }
 
   if (sdb_data_series_write_chunk(series, last_chunk, points + first_current, count - first_current)) {
-    sdb_log_error("failed to append to last chunk");
+    log_error("failed to append to last chunk");
     return -1;
   }
 
@@ -145,7 +144,7 @@ int sdb_data_series_write(sdb_data_series_t *series, sdb_data_point_t *points, i
 
       if (stop != start) {
         if (sdb_data_series_write_chunk(series, chunk, points + start, stop - start)) {
-          sdb_log_error("failed to write to chunk: [%" PRIu64 ", %" PRIu64 ")", chunk->begin, chunk->end);
+          log_error("failed to write to chunk: [%" PRIu64 ", %" PRIu64 ")", chunk->begin, chunk->end);
           return -1;
         }
       }
@@ -223,7 +222,7 @@ sdb_data_point_t sdb_data_series_read_latest(sdb_data_series_t *series) {
 
 void sdb_data_series_register_chunk(sdb_data_series_t *series, sdb_data_chunk_t *chunk) {
   if (series->_chunks_count + 1 >= series->_max_chunks) {
-    sdb_log_debug("expanding chunks collection");
+    log_debug("expanding chunks collection");
     series->_max_chunks += SDB_REALLOC_GROW_INCREMENT;
     series->_chunks = (sdb_data_chunk_t **)sdb_realloc(
         series->_chunks,
@@ -326,7 +325,7 @@ sdb_data_chunk_t *sdb_data_series_create_empty_chunk(sdb_data_series_t *series) 
   sdb_file_t *file = sdb_file_open(series->_file_name);
 
   if (file == NULL) {
-    sdb_log_error("unable to open chunk file: %s", series->_file_name);
+    log_error("unable to open chunk file: %s", series->_file_name);
     return NULL;
   }
 

@@ -27,8 +27,7 @@
 
 #include <memory.h>
 
-#include "src/utils/diagnostics.h"
-#include "src/utils/memory.h"
+#include "src/diagnostics.h"
 
 sdb_data_series_t *sdb_database_get_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
 sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_series_id_t series_id);
@@ -57,7 +56,7 @@ void sdb_database_destroy(sdb_database_t *db) {
       continue;
     }
 
-    sdb_log_info("closing time series: %d", db->_series[i]->id);
+    log_info("closing time series: %d", db->_series[i]->id);
     sdb_data_series_destroy(db->_series[i]);
   }
 
@@ -68,21 +67,21 @@ void sdb_database_destroy(sdb_database_t *db) {
 }
 
 int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, sdb_data_point_t *points, int count) {
-  sdb_stopwatch_t *sw = sdb_stopwatch_start();
+  stopwatch_t *sw = stopwatch_start();
 
   sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
   int result = series == NULL ? -1 : sdb_data_series_write(series, points, count);
-  sdb_log_debug("Written series: %d, points: %d in: %fs", series_id, count, sdb_stopwatch_stop_and_destroy(sw));
+  log_debug("Written series: %d, points: %d in: %fs", series_id, count, stopwatch_stop_and_destroy(sw));
 
   return result;
 }
 
 int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id) {
-  sdb_stopwatch_t *sw = sdb_stopwatch_start();
+  stopwatch_t *sw = stopwatch_start();
 
   sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
   int result = series == NULL ? -1 : sdb_data_series_truncate(series);
-  sdb_log_debug("Truncated series: %d in: %fs", series_id, sdb_stopwatch_stop_and_destroy(sw));
+  log_debug("Truncated series: %d in: %fs", series_id, stopwatch_stop_and_destroy(sw));
 
   return result;
 }
@@ -102,17 +101,17 @@ sdb_data_points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_
                                             sdb_timestamp_t begin,
                                             sdb_timestamp_t end,
                                             int max_points) {
-  sdb_stopwatch_t *sw = sdb_stopwatch_start();
+  stopwatch_t *sw = stopwatch_start();
 
   sdb_data_series_t *series = sdb_database_get_or_create_data_series(db, series_id);
   sdb_data_points_reader_t *result = series == NULL
                                      ? sdb_data_points_reader_create(0)
                                      : sdb_data_series_read(series, begin, end, max_points);
 
-  sdb_log_debug("Read series: %d, points: %d in: %fs",
-                series_id,
-                result->points_count,
-                sdb_stopwatch_stop_and_destroy(sw));
+  log_debug("Read series: %d, points: %d in: %fs",
+            series_id,
+            result->points_count,
+            stopwatch_stop_and_destroy(sw));
 
   return result;
 }
@@ -133,7 +132,7 @@ sdb_data_series_t *sdb_database_create_data_series(sdb_database_t *db, sdb_data_
   char file_name[SDB_FILE_MAX_LEN] = {0};
   snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->_directory, series_id);
 
-  sdb_log_info("loading time series: %d", series_id);
+  log_info("loading time series: %d", series_id);
   return db->_series[series_id] = sdb_data_series_create(series_id, file_name, db->_points_per_chunk, db->_cache);
 }
 

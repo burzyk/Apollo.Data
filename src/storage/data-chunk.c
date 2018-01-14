@@ -26,10 +26,9 @@
 #include "src/storage/data-chunk.h"
 
 #include <string.h>
-#include <src/utils/diagnostics.h>
+#include <src/diagnostics.h>
 #include <inttypes.h>
 
-#include "src/utils/memory.h"
 #include "src/storage/disk.h"
 
 void sdb_data_chunk_ensure_content_loaded(sdb_data_chunk_t *chunk);
@@ -164,10 +163,10 @@ void sdb_data_chunk_clean_cache(sdb_data_chunk_t *chunk) {
     chunk->_cached_content = NULL;
     chunk->_cache_entry = NULL;
 
-    sdb_log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> cache cleared",
-                  chunk->_file_name,
-                  chunk->begin,
-                  chunk->end);
+    log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> cache cleared",
+              chunk->_file_name,
+              chunk->begin,
+              chunk->end);
   }
 }
 
@@ -176,10 +175,10 @@ void sdb_data_chunk_ensure_content_loaded(sdb_data_chunk_t *chunk) {
     return;
   }
 
-  sdb_log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> loading cache",
-                chunk->_file_name,
-                chunk->begin,
-                chunk->end);
+  log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> loading cache",
+            chunk->_file_name,
+            chunk->begin,
+            chunk->end);
 
   size_t cached_content_size = sizeof(sdb_data_point_t) * chunk->max_points;
   chunk->_cached_content = (sdb_data_point_t *)sdb_alloc(cached_content_size);

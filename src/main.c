@@ -33,8 +33,7 @@
 
 #include "src/storage/database.h"
 #include "src/network/server.h"
-#include "src/utils/diagnostics.h"
-#include "src/utils/memory.h"
+#include "diagnostics.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -67,8 +66,6 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
 void sdb_control_signal_handler(int sig);
 
 void on_msg(client_t *client, uint8_t *data, uint32_t len) {
-
-  int w = 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -79,7 +76,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  sdb_log_init(config.log_verbose);
+  log_init(config.log_verbose);
 
   sdb_print_banner(&config);
 
@@ -89,11 +86,12 @@ int main(int argc, char *argv[]) {
 
   sdb_master_routine(&config);
 
-  sdb_log_info("========== ShakaDB Stopped  ==========");
-  sdb_log_close();
+  log_info("========== ShakaDB Stopped  ==========");
+  log_close();
 
   return 0;
 }
+
 
 void sdb_control_signal_handler(int sig) {
   if (g_server != NULL) {
@@ -103,7 +101,7 @@ void sdb_control_signal_handler(int sig) {
 
 void sdb_master_routine(sdb_configuration_t *config) {
 
-  sdb_log_info("initializing database ...");
+  log_info("initializing database ...");
   sdb_database_t *db = sdb_database_create(
       config->database_directory,
       config->database_points_per_chunk,
@@ -111,19 +109,19 @@ void sdb_master_routine(sdb_configuration_t *config) {
       config->cache_soft_limit,
       config->cache_hard_limit);
 
-  sdb_log_info("initializing network ...");
-  g_server = server_create(config->server_port, on_msg);
+  log_info("initializing network ...");
+  g_server = server_create(config->server_port, on_msg, NULL);
 
-  sdb_log_info("initialization complete");
+  log_info("initialization complete");
 
   server_run(g_server);
 
-  sdb_log_info("interrupt received");
+  log_info("interrupt received");
 
-  sdb_log_info("closing network ...");
+  log_info("closing network ...");
   server_destroy(g_server);
 
-  sdb_log_info("closing database ...");
+  log_info("closing database ...");
   sdb_database_destroy(db);
 }
 
@@ -172,16 +170,16 @@ int sdb_configuration_parse(sdb_configuration_t *config, int argc, char *argv[])
 
 void sdb_print_banner(sdb_configuration_t *config) {
 
-  sdb_log_info("========== Starting ShakaDB ==========");
-  sdb_log_info("");
-  sdb_log_info("    Version:   " SDB_VERSION);
-  sdb_log_info("    Build:     " SDB_BUILD);
-  sdb_log_info("");
-  sdb_log_info("    directory:   %s", config->database_directory);
-  sdb_log_info("    port:        %d", config->server_port);
-  sdb_log_info("    soft limit:  %" PRIu64 " bytes", config->cache_soft_limit);
-  sdb_log_info("    hard limit:  %" PRIu64 " bytes", config->cache_hard_limit);
-  sdb_log_info("");
+  log_info("========== Starting ShakaDB ==========");
+  log_info("");
+  log_info("    Version:   " SDB_VERSION);
+  log_info("    Build:     " SDB_BUILD);
+  log_info("");
+  log_info("    directory:   %s", config->database_directory);
+  log_info("    port:        %d", config->server_port);
+  log_info("    soft limit:  %" PRIu64 " bytes", config->cache_soft_limit);
+  log_info("    hard limit:  %" PRIu64 " bytes", config->cache_hard_limit);
+  log_info("");
 }
 
 void print_usage() {

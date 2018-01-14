@@ -9,7 +9,7 @@
 #include <getopt.h>
 
 #include "src/common.h"
-#include "src/utils/diagnostics.h"
+#include "src/diagnostics.h"
 #include "src/utils/memory.h"
 #include "src/client/session.h"
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   }
 
   session_t *session = NULL;
-  sdb_stopwatch_t *sw = sdb_stopwatch_start();
+  stopwatch_t *sw = stopwatch_start();
 
   if ((session = session_create(config.hostname, config.port)) == NULL) {
     fprintf(stderr, "Failed to connect to: %s:%d\n", config.hostname, config.port);
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
   int status = execute_command(session, &config);
 
   session_destroy(session);
-  float elapsed = sdb_stopwatch_stop_and_destroy(sw);
+  float elapsed = stopwatch_stop_and_destroy(sw);
 
   if (status == 0) {
     fprintf(stderr, "Command executed (%fs)\n", elapsed);

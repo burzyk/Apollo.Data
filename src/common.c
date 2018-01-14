@@ -25,8 +25,19 @@
 
 #include "src/common.h"
 
-#include <stdio.h>
 #include <stdlib.h>
+
+void *sdb_alloc(size_t size) {
+  return calloc(1, size);
+}
+
+void *sdb_realloc(void *buffer, size_t size) {
+  return realloc(buffer, size);
+}
+
+void sdb_free(void *buffer) {
+  free(buffer);
+}
 
 int sdb_data_point_compare(sdb_data_point_t *lhs, sdb_data_point_t *rhs) {
   return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;

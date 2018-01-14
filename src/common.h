@@ -58,10 +58,21 @@ typedef uint32_t sdb_data_series_id_t;
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
+#include <stdio.h>
+
 typedef struct sdb_data_point_s {
   sdb_timestamp_t time;
   float value;
 } __attribute__((packed)) sdb_data_point_t;
+
+typedef struct buffer_s {
+  void *content;
+  size_t size;
+} buffer_t;
+
+void *sdb_alloc(size_t size);
+void *sdb_realloc(void *buffer, size_t size);
+void sdb_free(void *buffer);
 
 typedef int (*sdb_find_predicate)(void *, void *);
 

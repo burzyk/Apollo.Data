@@ -26,7 +26,7 @@
 #include <time.h>
 #include <src/client/client.h>
 #include <src/utils/memory.h>
-#include <src/utils/diagnostics.h>
+#include <src/diagnostics.h>
 
 #include "test/framework.h"
 #include "test/database-tests.h"

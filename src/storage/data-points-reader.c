@@ -29,8 +29,6 @@
 #include <math.h>
 #include <string.h>
 
-#include "src/utils/memory.h"
-
 sdb_data_points_reader_t *sdb_data_points_reader_create(int points_count) {
   sdb_data_points_reader_t *reader = (sdb_data_points_reader_t *)sdb_alloc(sizeof(sdb_data_points_reader_t));
 

@@ -29,7 +29,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "src/utils/memory.h"
 #include "src/common.h"
 
 typedef char packet_type_t;

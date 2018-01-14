@@ -5,8 +5,7 @@
 #include "src/network/server.h"
 
 #include "src/common.h"
-#include "src/utils/memory.h"
-#include "src/utils/diagnostics.h"
+#include "src/diagnostics.h"
 #include "src/network/protocol.h"
 
 client_t *client_create(server_t *server, int index);
@@ -48,7 +47,7 @@ int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count) 
     return 0;
   }
 
-  sdb_log_error("Failed to write to client: %s", uv_strerror(status));
+  log_error("Failed to write to client: %s", uv_strerror(status));
   on_write_complete(request, -1);
   return status;
 }
@@ -110,11 +109,11 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
   server_t *server = (server_t *)master_socket->data;
 
   if (status < 0) {
-    sdb_log_error("New connection error: %s", uv_strerror(status));
+    log_error("New connection error: %s", uv_strerror(status));
     return;
   }
 
-  sdb_log_debug("Client connected");
+  log_debug("Client connected");
   client_t *client = NULL;
 
   for (int i = 0; i < SDB_MAX_CLIENTS && client == NULL; i++) {
@@ -124,17 +123,17 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
   }
 
   if (client == NULL) {
-    sdb_log_debug("Max clients connected, ignoring this client");
+    log_debug("Max clients connected, ignoring this client");
     return;
   }
 
   if ((status = uv_accept((uv_stream_t *)&server->_master_socket, (uv_stream_t *)&client->socket)) < 0) {
-    sdb_log_error("Failed to accept the connection: %s", uv_strerror(status));
+    log_error("Failed to accept the connection: %s", uv_strerror(status));
     client_disconnect_and_destroy(client);
   }
 
   if ((status = uv_read_start((uv_stream_t *)client, on_alloc, on_data_read)) < 0) {
-    sdb_log_error("Failed to start reading: %s", uv_strerror(status));
+    log_error("Failed to start reading: %s", uv_strerror(status));
     client_disconnect_and_destroy(client);
   }
 }
@@ -143,7 +142,7 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
   client_t *client = (client_t *)client_socket->data;
 
   if (nread < 0) {
-    sdb_log_debug("Client disconnected, %d", client->index);
+    log_debug("Client disconnected, %d", client->index);
     client_disconnect_and_destroy(client);
   } else if (nread > 0) {
     memcpy(client->buffer + client->buffer_length, buf->base, (size_t)nread);
@@ -157,7 +156,7 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
     packet_t *packet = (packet_t *)client->buffer;
 
     if (packet->magic != SDB_SERVER_MAGIC || packet->total_size > SDB_SERVER_PACKET_MAX_LEN) {
-      sdb_log_error("Received malformed packet, disconnecting, magic: %u, len: %u", packet->magic, packet->total_size);
+      log_error("Received malformed packet, disconnecting, magic: %u, len: %u", packet->magic, packet->total_size);
       client_disconnect_and_destroy(client);
       return;
     }
