@@ -35,7 +35,7 @@ typedef uint32_t series_id_t;
 #define SDB_TIMESTAMP_MAX ((timestamp_t)UINT64_MAX)
 
 #ifndef SDB_POINTS_PER_PACKET_MAX
-#define SDB_POINTS_PER_PACKET_MAX  655360
+#define SDB_POINTS_PER_PACKET_MAX  6553600
 #endif
 
 #ifndef SDB_SOCKET_TIMEOUT
