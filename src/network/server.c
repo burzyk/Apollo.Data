@@ -195,7 +195,7 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
       return;
     }
 
-    if (packet->total_size < client->buffer_length) {
+    if (client->buffer_length < packet->total_size) {
       return;
     }
 

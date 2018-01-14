@@ -48,7 +48,7 @@ int client_handler_process_message(client_t *client, uint8_t *data, size_t size,
     case SDB_READ_LATEST_REQUEST:handle_read_latest(client, (read_latest_request_t *)data, db);
       break;
     default:log_info("Unknown packet type: %d", hdr->type);
-      return 1;
+      return 2;
   }
 
   log_debug("packet handled in: %fs", stopwatch_stop_and_destroy(sw));
