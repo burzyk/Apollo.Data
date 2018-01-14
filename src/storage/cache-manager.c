@@ -119,7 +119,7 @@ void cache_manager_cleanup(cache_manager_t *cache, cache_entry_t *reason) {
   while (cache->allocated > cache->soft_limit && curr != &cache->guard) {
     if (curr != reason) {
       cache_manager_cut_entry(cache, curr);
-      chunk_clean_cache((data_chunk_t *)curr->consumer);
+      chunk_clean_cache((chunk_t *)curr->consumer);
 
       cache_entry_t *next = curr->prev;
       sdb_free(curr);

@@ -29,7 +29,7 @@
 #include <stdint.h>
 
 typedef uint64_t timestamp_t;
-typedef uint32_t sdb_data_series_id_t;
+typedef uint32_t series_id_t;
 
 #define SDB_TIMESTAMP_MIN ((timestamp_t)0)
 #define SDB_TIMESTAMP_MAX ((timestamp_t)UINT64_MAX)

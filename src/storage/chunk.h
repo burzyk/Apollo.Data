@@ -30,7 +30,7 @@
 #include "src/storage/points-reader.h"
 #include "src/storage/cache-manager.h"
 
-typedef struct data_chunk_s {
+typedef struct chunk_s {
   timestamp_t begin;
   timestamp_t end;
   int number_of_points;
@@ -42,15 +42,15 @@ typedef struct data_chunk_s {
 
   cache_manager_t *cache_manager;
   cache_entry_t *cache_entry;
-} data_chunk_t;
+} chunk_t;
 
 int chunk_calculate_size(int points_count);
 
-data_chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points, cache_manager_t *cache);
-void chunk_destroy(data_chunk_t *chunk);
-points_reader_t *chunk_read(data_chunk_t *chunk, timestamp_t begin, timestamp_t end);
-data_point_t chunk_read_latest(data_chunk_t *chunk);
-int chunk_write(data_chunk_t *chunk, int offset, data_point_t *points, int count);
-void chunk_clean_cache(data_chunk_t *chunk);
+chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points, cache_manager_t *cache);
+void chunk_destroy(chunk_t *chunk);
+points_reader_t *chunk_read(chunk_t *chunk, timestamp_t begin, timestamp_t end);
+data_point_t chunk_read_latest(chunk_t *chunk);
+int chunk_write(chunk_t *chunk, int offset, data_point_t *points, int count);
+void chunk_clean_cache(chunk_t *chunk);
 
 #endif  // SRC_STORAGE_CHUNK_H_

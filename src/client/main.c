@@ -30,7 +30,7 @@ typedef struct client_configuration_s {
   char command[SDB_FILE_MAX_LEN];
   char hostname[SDB_FILE_MAX_LEN];
   int port;
-  sdb_data_series_id_t series_id;
+  series_id_t series_id;
   timestamp_t begin;
   timestamp_t end;
 } client_configuration_t;
@@ -127,7 +127,7 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
         break;
       case 'p':config->port = atoi(optarg);
         break;
-      case 's':config->series_id = (sdb_data_series_id_t)atoi(optarg);
+      case 's':config->series_id = (series_id_t)atoi(optarg);
         break;
       case 'b':sscanf(optarg, "%" PRIu64, &config->begin);
         break;

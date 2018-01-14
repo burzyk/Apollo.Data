@@ -31,20 +31,20 @@
 
 #include "src/storage/disk.h"
 
-void chunk_ensure_content_loaded(data_chunk_t *chunk);
+void chunk_ensure_content_loaded(chunk_t *chunk);
 
 int chunk_calculate_size(int points_count) {
   return points_count * sizeof(data_point_t);
 }
 
-data_chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points, cache_manager_t *cache) {
+chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points, cache_manager_t *cache) {
   sdb_file_t *file = sdb_file_open(file_name);
 
   if (file == NULL) {
     return NULL;
   }
 
-  data_chunk_t *chunk = (data_chunk_t *)sdb_alloc(sizeof(data_chunk_t));
+  chunk_t *chunk = (chunk_t *)sdb_alloc(sizeof(chunk_t));
   strncpy(chunk->file_name, file_name, SDB_FILE_MAX_LEN);
   chunk->file_offset = file_offset;
   chunk->max_points = max_points;
@@ -72,7 +72,7 @@ data_chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_
   return chunk;
 }
 
-void chunk_destroy(data_chunk_t *chunk) {
+void chunk_destroy(chunk_t *chunk) {
   if (chunk->cached_content != NULL) {
     sdb_free(chunk->cached_content);
   }
@@ -80,7 +80,7 @@ void chunk_destroy(data_chunk_t *chunk) {
   sdb_free(chunk);
 }
 
-points_reader_t *chunk_read(data_chunk_t *chunk, timestamp_t begin, timestamp_t end) {
+points_reader_t *chunk_read(chunk_t *chunk, timestamp_t begin, timestamp_t end) {
 
   chunk_ensure_content_loaded(chunk);
 
@@ -104,7 +104,7 @@ points_reader_t *chunk_read(data_chunk_t *chunk, timestamp_t begin, timestamp_t 
   return reader;
 }
 
-data_point_t chunk_read_latest(data_chunk_t *chunk) {
+data_point_t chunk_read_latest(chunk_t *chunk) {
 
   chunk_ensure_content_loaded(chunk);
 
@@ -119,7 +119,7 @@ data_point_t chunk_read_latest(data_chunk_t *chunk) {
   return result;
 }
 
-int chunk_write(data_chunk_t *chunk, int offset, data_point_t *points, int count) {
+int chunk_write(chunk_t *chunk, int offset, data_point_t *points, int count) {
   if (count == 0) {
     return 0;
   }
@@ -153,7 +153,7 @@ int chunk_write(data_chunk_t *chunk, int offset, data_point_t *points, int count
   return 0;
 }
 
-void chunk_clean_cache(data_chunk_t *chunk) {
+void chunk_clean_cache(chunk_t *chunk) {
   if (chunk->cached_content == NULL) {
     return;
   }
@@ -165,7 +165,7 @@ void chunk_clean_cache(data_chunk_t *chunk) {
   log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> cache cleared", chunk->file_name, chunk->begin, chunk->end);
 }
 
-void chunk_ensure_content_loaded(data_chunk_t *chunk) {
+void chunk_ensure_content_loaded(chunk_t *chunk) {
   if (chunk->cached_content != NULL) {
     return;
   }

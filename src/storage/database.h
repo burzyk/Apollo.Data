@@ -27,13 +27,13 @@
 #define SRC_STORAGE_DATABASE_H_
 
 #include "src/storage/chunk.h"
-#include "src/storage/data-series.h"
+#include "src/storage/series.h"
 
 typedef struct sdb_database_s {
   char _directory[SDB_FILE_MAX_LEN];
   int _points_per_chunk;
 
-  sdb_data_series_t **_series;
+  series_t **_series;
   int _max_series_count;
   cache_manager_t *_cache;
 } sdb_database_t;
@@ -44,10 +44,10 @@ sdb_database_t *sdb_database_create(const char *directory,
                                     uint64_t soft_limit,
                                     uint64_t hard_limit);
 void sdb_database_destroy(sdb_database_t *db);
-int sdb_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, data_point_t *points, int count);
-int sdb_database_truncate(sdb_database_t *db, sdb_data_series_id_t series_id);
-data_point_t sdb_database_read_latest(sdb_database_t *db, sdb_data_series_id_t series_id);
-points_reader_t *sdb_database_read(sdb_database_t *db, sdb_data_series_id_t series_id,
+int sdb_database_write(sdb_database_t *db, series_id_t series_id, data_point_t *points, int count);
+int sdb_database_truncate(sdb_database_t *db, series_id_t series_id);
+data_point_t sdb_database_read_latest(sdb_database_t *db, series_id_t series_id);
+points_reader_t *sdb_database_read(sdb_database_t *db, series_id_t series_id,
                                             timestamp_t begin,
                                             timestamp_t end,
                                             int max_points);

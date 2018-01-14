@@ -23,35 +23,29 @@
 // Created by Pawel Burzynski on 28/01/2017.
 //
 
-#ifndef SRC_STORAGE_DATA_SERIES_H_
-#define SRC_STORAGE_DATA_SERIES_H_
+#ifndef SRC_STORAGE_SERIES_H_
+#define SRC_STORAGE_SERIES_H_
 
 #include "src/storage/chunk.h"
 #include "src/storage/points-reader.h"
 
-typedef struct sdb_data_series_s {
-  sdb_data_series_id_t id;
+typedef struct series_s {
+  series_id_t id;
 
-  char _file_name[SDB_FILE_MAX_LEN];
-  int _points_per_chunk;
+  char file_name[SDB_FILE_MAX_LEN];
+  int points_per_chunk;
 
-  data_chunk_t **_chunks;
-  int _chunks_count;
-  int _max_chunks;
-  cache_manager_t *_cache;
-} sdb_data_series_t;
+  chunk_t **chunks;
+  int chunks_count;
+  int max_chunks;
+  cache_manager_t *cache;
+} series_t;
 
-sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
-                                          const char *file_name,
-                                          int points_per_chunk,
-                                          cache_manager_t *cache);
-void sdb_data_series_destroy(sdb_data_series_t *series);
-int sdb_data_series_write(sdb_data_series_t *series, data_point_t *points, int count);
-int sdb_data_series_truncate(sdb_data_series_t *series);
-points_reader_t *sdb_data_series_read(sdb_data_series_t *series,
-                                               timestamp_t begin,
-                                               timestamp_t end,
-                                               int max_points);
-data_point_t sdb_data_series_read_latest(sdb_data_series_t *series);
+series_t *series_create(series_id_t id, const char *file_name, int points_per_chunk, cache_manager_t *cache);
+void series_destroy(series_t *series);
+int series_write(series_t *series, data_point_t *points, int count);
+int series_truncate(series_t *series);
+points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, int max_points);
+data_point_t series_read_latest(series_t *series);
 
-#endif  // SRC_STORAGE_DATA_SERIES_H_
+#endif  // SRC_STORAGE_SERIES_H_

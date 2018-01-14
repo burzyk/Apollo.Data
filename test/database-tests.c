@@ -31,29 +31,29 @@
 #include "src/storage/database.h"
 
 void sdb_test_database_write_with_time(sdb_database_t *db,
-                                       sdb_data_series_id_t series_id,
+                                       series_id_t series_id,
                                        int batches,
                                        int count,
                                        timestamp_t time);
-void sdb_test_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, int batches, int count);
+void sdb_test_database_write(sdb_database_t *db, series_id_t series_id, int batches, int count);
 void sdb_test_database_validate_read_with_max(sdb_database_t *db,
-                                              sdb_data_series_id_t series_id,
+                                              series_id_t series_id,
                                               int expected_count,
                                               timestamp_t begin,
                                               timestamp_t end,
                                               int max_points);
 void sdb_test_database_validate_read(sdb_database_t *db,
-                                     sdb_data_series_id_t series_id,
+                                     series_id_t series_id,
                                      int expected_count,
                                      timestamp_t begin,
                                      timestamp_t end);
 
-void sdb_test_database_write(sdb_database_t *db, sdb_data_series_id_t series_id, int batches, int count) {
+void sdb_test_database_write(sdb_database_t *db, series_id_t series_id, int batches, int count) {
   sdb_test_database_write_with_time(db, series_id, batches, count, 1);
 }
 
 void sdb_test_database_validate_read(sdb_database_t *db,
-                                     sdb_data_series_id_t series_id,
+                                     series_id_t series_id,
                                      int expected_count,
                                      timestamp_t begin,
                                      timestamp_t end) {
@@ -61,7 +61,7 @@ void sdb_test_database_validate_read(sdb_database_t *db,
 }
 
 void sdb_test_database_write_with_time(sdb_database_t *db,
-                                       sdb_data_series_id_t series_id,
+                                       series_id_t series_id,
                                        int batches,
                                        int count,
                                        timestamp_t time) {
@@ -83,7 +83,7 @@ void sdb_test_database_write_with_time(sdb_database_t *db,
 }
 
 void sdb_test_database_validate_read_with_max(sdb_database_t *db,
-                                              sdb_data_series_id_t series_id,
+                                              series_id_t series_id,
                                               int expected_count,
                                               timestamp_t begin,
                                               timestamp_t end,
@@ -368,14 +368,14 @@ void sdb_test_database_cache_cleanup_old(sdb_tests_context_t ctx) {
     points_reader_destroy(reader);
   }
 
-  sdb_assert(((data_chunk_t *)db->_cache->guard.next->consumer)->begin == 1, "Invalid cached page");
+  sdb_assert(((chunk_t *)db->_cache->guard.next->consumer)->begin == 1, "Invalid cached page");
 
   for (int i = 0; i < 10; i++) {
     points_reader_t *reader = sdb_database_read(db, 12345, 11, 100, 100);
     points_reader_destroy(reader);
   }
 
-  sdb_assert(((data_chunk_t *)db->_cache->guard.next->consumer)->begin == 11, "Invalid cached page");
+  sdb_assert(((chunk_t *)db->_cache->guard.next->consumer)->begin == 11, "Invalid cached page");
 
   sdb_database_destroy(db);
 }

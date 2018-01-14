@@ -35,14 +35,14 @@ typedef struct session_s {
 
 session_t *session_create(const char *server, int port);
 void session_destroy(session_t *session);
-int session_write(session_t *session, sdb_data_series_id_t series_id, data_point_t *points, int count);
-int session_truncate(session_t *session, sdb_data_series_id_t series_id);
+int session_write(session_t *session, series_id_t series_id, data_point_t *points, int count);
+int session_truncate(session_t *session, series_id_t series_id);
 int session_read(session_t *session,
-                  sdb_data_series_id_t series_id,
+                  series_id_t series_id,
                   timestamp_t begin,
                   timestamp_t end,
                   int points_per_packet);
 int session_read_next(session_t *session);
-int session_read_latest(session_t *session, sdb_data_series_id_t series_id, data_point_t *latest);
+int session_read_latest(session_t *session, series_id_t series_id, data_point_t *latest);
 
 #endif  // SRC_NETWORK_CLIENT_SESSION_H_
