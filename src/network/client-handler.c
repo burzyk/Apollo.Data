@@ -8,13 +8,13 @@
 
 #include "src/utils/diagnostics.h"
 #include "src/utils/memory.h"
-#include "src/utils/network.h"
 #include "src/network/protocol.h"
 
 void handle_read(client_t *client, read_request_t *request, sdb_database_t *db);
 void handle_write(client_t *client, write_request_t *request, sdb_database_t *db);
 void handle_truncate(client_t *client, truncate_request_t *request, sdb_database_t *db);
 void handle_read_latest(client_t *client, truncate_request_t *request, sdb_database_t *db);
+int send_and_destroy(packet_t packet, client_t *client);
 
 client_handler_t *client_handler_create(sdb_database_t *db) {
   client_handler_t *handler = (client_handler_t *)sdb_alloc(sizeof(client_handler_t));
@@ -80,8 +80,8 @@ void handle_read(client_t *client, read_request_t *request, sdb_database_t *db) 
                   points_to_send ? reader->points[0].time : 0,
                   points_to_send ? reader->points[points_to_send - 1].time : 0,
                   points_to_send);
-    int send_status = packet_send_and_destroy(
-        sdb_read_response_create(SDB_RESPONSE_OK, reader->points, points_to_send),
+    int send_status = send_and_destroy(
+        read_response_create(SDB_RESPONSE_OK, reader->points, points_to_send),
         client);
 
     sdb_data_points_reader_destroy(reader);
@@ -109,8 +109,8 @@ void handle_write(client_t *client, write_request_t *request, sdb_database_t *db
     sdb_log_error("failed to save data points");
   }
 
-  if (packet_send_and_destroy(
-      sdb_simple_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
+  if (send_and_destroy(
+      simple_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
       client)) {
     sdb_log_debug("error sending the response");
   }
@@ -127,8 +127,8 @@ void handle_truncate(client_t *client, truncate_request_t *request, sdb_database
     sdb_log_error("failed to truncate data series: %d", request->data_series_id);
   }
 
-  if (packet_send_and_destroy(
-      sdb_simple_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
+  if (send_and_destroy(
+      simple_response_create(status ? SDB_RESPONSE_ERROR : SDB_RESPONSE_OK),
       client)) {
     sdb_log_debug("error sending the response");
   }
@@ -145,13 +145,17 @@ void handle_read_latest(client_t *client, truncate_request_t *request, sdb_datab
   int send_status = 0;
 
   if (latest.time != 0) {
-    send_status |= packet_send_and_destroy(sdb_read_response_create(SDB_RESPONSE_OK, &latest, 1), client);
+    send_status |= send_and_destroy(read_response_create(SDB_RESPONSE_OK, &latest, 1), client);
   }
 
-  send_status |= packet_send_and_destroy(sdb_read_response_create(SDB_RESPONSE_OK, NULL, 0), client);
+  send_status |= send_and_destroy(read_response_create(SDB_RESPONSE_OK, NULL, 0), client);
 
   if (send_status != 0) {
     sdb_log_debug("error sending response");
     return;
   }
+}
+
+int send_and_destroy(packet_t packet, client_t *client) {
+  return client_send_and_destroy_data(client, packet.payload, packet.size);
 }

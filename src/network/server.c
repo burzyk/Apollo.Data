@@ -14,6 +14,7 @@ void client_disconnect_and_destroy(client_t *client);
 void on_alloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);
 void on_client_connected(uv_stream_t *master_socket, int status);
 void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf);
+void on_write_complete(uv_write_t *req, int status);
 
 client_t *client_create(server_t *server, int index) {
   client_t *client = sdb_alloc(sizeof(client_t));
@@ -31,6 +32,32 @@ void client_disconnect_and_destroy(client_t *client) {
   client->server->_clients[client->index] = NULL;
   uv_close((uv_handle_t *)&client->socket, NULL);
   sdb_free(client);
+}
+
+int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count) {
+  uv_write_t *request = (uv_write_t *)sdb_alloc(sizeof(uv_write_t));
+  uv_buf_t *buf = (uv_buf_t *)sdb_alloc(sizeof(uv_buf_t));
+  request->data = buf;
+  buf->base = (char *)data;
+  buf->len = count;
+
+  int status;
+
+  if ((status = uv_write(request, (uv_stream_t *)&client->socket, buf, 1, on_write_complete)) >= 0) {
+    return 0;
+  }
+
+  sdb_log_error("Failed to write to client: %s", uv_strerror(status));
+  on_write_complete(request, -1);
+  return status;
+}
+
+void on_write_complete(uv_write_t *req, int status) {
+  uv_buf_t *buf = (uv_buf_t *)req->data;
+
+  sdb_free(buf->base);
+  sdb_free(buf);
+  sdb_free(req);
 }
 
 server_t *server_create(int port, packet_handler_t handler, void *handler_context) {
@@ -97,23 +124,25 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
 
   if (client == NULL) {
     sdb_log_debug("Max clients connected, ignoring this client");
-    client_disconnect_and_destroy(client);
     return;
   }
 
-  if (uv_accept((uv_stream_t *)&server->_master_socket, (uv_stream_t *)&client->socket) < 0) {
+  if ((status = uv_accept((uv_stream_t *)&server->_master_socket, (uv_stream_t *)&client->socket)) < 0) {
     sdb_log_error("Failed to accept the connection: %s", uv_strerror(status));
     client_disconnect_and_destroy(client);
   }
 
-  uv_read_start((uv_stream_t *)client, on_alloc, on_data_read);
+  if ((status = uv_read_start((uv_stream_t *)client, on_alloc, on_data_read)) < 0) {
+    sdb_log_error("Failed to start reading: %s", uv_strerror(status));
+    client_disconnect_and_destroy(client);
+  }
 }
 
 void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf) {
   client_t *client = (client_t *)client_socket->data;
 
   if (nread < 0) {
-    sdb_log_debug("Client disconnected");
+    sdb_log_debug("Client disconnected, %d", client->index);
     client_disconnect_and_destroy(client);
   } else if (nread > 0) {
     memcpy(client->buffer + client->buffer_length, buf->base, (size_t)nread);

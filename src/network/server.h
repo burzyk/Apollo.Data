@@ -70,6 +70,8 @@ typedef struct server_s {
   void *_handler_context;
 } server_t;
 
+int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count);
+
 server_t *server_create(int port, packet_handler_t handler, void *handler_context);
 void server_run(server_t *server);
 void server_stop(server_t *server);
