@@ -38,13 +38,13 @@ typedef struct sdb_data_series_s {
   sdb_data_chunk_t **_chunks;
   int _chunks_count;
   int _max_chunks;
-  sdb_cache_manager_t *_cache;
+  chunk_cache_t *_cache;
 } sdb_data_series_t;
 
 sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
                                           const char *file_name,
                                           int points_per_chunk,
-                                          sdb_cache_manager_t *cache);
+                                          chunk_cache_t *cache);
 void sdb_data_series_destroy(sdb_data_series_t *series);
 int sdb_data_series_write(sdb_data_series_t *series, data_point_t *points, int count);
 int sdb_data_series_truncate(sdb_data_series_t *series);

@@ -353,7 +353,7 @@ void sdb_test_database_cache_cleanup(sdb_tests_context_t ctx) {
   sdb_test_database_write(db, 12345, 10, 6);
   sdb_test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  sdb_assert(db->_cache->_allocated == 144, "Memory has not been cleaned up");
+  sdb_assert(db->_cache->allocated == 144, "Memory has not been cleaned up");
 
   sdb_database_destroy(db);
 }
@@ -368,14 +368,14 @@ void sdb_test_database_cache_cleanup_old(sdb_tests_context_t ctx) {
     sdb_data_points_reader_destroy(reader);
   }
 
-  sdb_assert(((sdb_data_chunk_t *)db->_cache->_guard.next->consumer)->begin == 1, "Invalid cached page");
+  sdb_assert(((sdb_data_chunk_t *)db->_cache->guard.next->consumer)->begin == 1, "Invalid cached page");
 
   for (int i = 0; i < 10; i++) {
     sdb_data_points_reader_t *reader = sdb_database_read(db, 12345, 11, 100, 100);
     sdb_data_points_reader_destroy(reader);
   }
 
-  sdb_assert(((sdb_data_chunk_t *)db->_cache->_guard.next->consumer)->begin == 11, "Invalid cached page");
+  sdb_assert(((sdb_data_chunk_t *)db->_cache->guard.next->consumer)->begin == 11, "Invalid cached page");
 
   sdb_database_destroy(db);
 }

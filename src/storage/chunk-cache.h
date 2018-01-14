@@ -23,29 +23,29 @@
 // Created by Pawel Burzynski on 17/01/2017.
 //
 
-#ifndef SRC_STORAGE_CACHE_MANAGER_H_
-#define SRC_STORAGE_CACHE_MANAGER_H_
+#ifndef SRC_STORAGE_CACHE_H_
+#define SRC_STORAGE_CACHE_H_
 
 #include <stdint.h>
 
-typedef struct sdb_cache_entry_s {
+typedef struct cache_entry_s {
   uint64_t allocated;
   void *consumer;
-  struct sdb_cache_entry_s *prev;
-  struct sdb_cache_entry_s *next;
-} sdb_cache_entry_t;
+  struct cache_entry_s *prev;
+  struct cache_entry_s *next;
+} cache_entry_t;
 
-typedef struct sdb_cache_manager_s {
+typedef struct chunk_cache_s {
   uint64_t soft_limit;
   uint64_t hard_limit;
-  uint64_t _allocated;
+  uint64_t allocated;
 
-  sdb_cache_entry_t _guard;
-} sdb_cache_manager_t;
+  cache_entry_t guard;
+} chunk_cache_t;
 
-sdb_cache_manager_t *sdb_cache_manager_create(uint64_t soft_limit, uint64_t hard_limit);
-void sdb_cache_manager_destroy(sdb_cache_manager_t *cache);
-sdb_cache_entry_t *sdb_cache_manager_register_consumer(sdb_cache_manager_t *cache, void *consumer, uint64_t memory);
-void sdb_cache_manager_update(sdb_cache_manager_t *cache, sdb_cache_entry_t *entry);
+chunk_cache_t *chunk_cache_create(uint64_t soft_limit, uint64_t hard_limit);
+void chunk_cache_destroy(chunk_cache_t *cache);
+cache_entry_t *chunk_cache_register_consumer(chunk_cache_t *cache, void *consumer, uint64_t memory);
+void chunk_cache_update(chunk_cache_t *cache, cache_entry_t *entry);
 
-#endif  // SRC_STORAGE_CACHE_MANAGER_H_
+#endif  // SRC_STORAGE_CACHE_H_

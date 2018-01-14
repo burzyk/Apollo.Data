@@ -40,7 +40,7 @@ int sdb_data_chunk_calculate_size(int points_count) {
 sdb_data_chunk_t *sdb_data_chunk_create(const char *file_name,
                                         uint64_t file_offset,
                                         int max_points,
-                                        sdb_cache_manager_t *cache) {
+                                        chunk_cache_t *cache) {
   sdb_file_t *file = sdb_file_open(file_name);
 
   if (file == NULL) {
@@ -102,7 +102,7 @@ sdb_data_points_reader_t *sdb_data_chunk_read(sdb_data_chunk_t *chunk, timestamp
   sdb_data_points_reader_t *reader = sdb_data_points_reader_create(number_of_points);
   sdb_data_points_reader_write(reader, points, number_of_points);
 
-  sdb_cache_manager_update(chunk->_cache, chunk->_cache_entry);
+  chunk_cache_update(chunk->_cache, chunk->_cache_entry);
 
   return reader;
 }
@@ -117,7 +117,7 @@ data_point_t sdb_data_chunk_read_latest(sdb_data_chunk_t *chunk) {
     result = chunk->_cached_content[chunk->number_of_points - 1];
   }
 
-  sdb_cache_manager_update(chunk->_cache, chunk->_cache_entry);
+  chunk_cache_update(chunk->_cache, chunk->_cache_entry);
 
   return result;
 }
@@ -184,7 +184,7 @@ void sdb_data_chunk_ensure_content_loaded(sdb_data_chunk_t *chunk) {
   chunk->_cached_content = (data_point_t *)sdb_alloc(cached_content_size);
 
   if (chunk->_cache_entry == NULL) {
-    chunk->_cache_entry = sdb_cache_manager_register_consumer(chunk->_cache, chunk, cached_content_size);
+    chunk->_cache_entry = chunk_cache_register_consumer(chunk->_cache, chunk, cached_content_size);
   }
 
   sdb_file_t *file = sdb_file_open(chunk->_file_name);

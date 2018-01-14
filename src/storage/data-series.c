@@ -50,7 +50,7 @@ int sdb_data_series_chunk_compare_end(timestamp_t *end, sdb_data_chunk_t **chunk
 sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
                                           const char *file_name,
                                           int points_per_chunk,
-                                          sdb_cache_manager_t *cache) {
+                                          chunk_cache_t *cache) {
   sdb_data_series_t *series = (sdb_data_series_t *)sdb_alloc(sizeof(sdb_data_series_t));
   series->id = id;
   strncpy(series->_file_name, file_name, SDB_FILE_MAX_LEN);

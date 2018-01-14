@@ -45,7 +45,7 @@ sdb_database_t *sdb_database_create(const char *directory,
   db->_max_series_count = max_series;
   db->_series = (sdb_data_series_t **)sdb_alloc(sizeof(sdb_data_series_t *) * db->_max_series_count);
   db->_points_per_chunk = points_per_chunk;
-  db->_cache = sdb_cache_manager_create(soft_limit, hard_limit);
+  db->_cache = chunk_cache_create(soft_limit, hard_limit);
 
   return db;
 }
@@ -62,7 +62,7 @@ void sdb_database_destroy(sdb_database_t *db) {
 
   sdb_free(db->_series);
 
-  sdb_cache_manager_destroy(db->_cache);
+  chunk_cache_destroy(db->_cache);
   sdb_free(db);
 }
 
