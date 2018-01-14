@@ -81,7 +81,7 @@ void handle_read(client_t *client, read_request_t *request, sdb_database_t *db) 
                   points_to_send ? reader->points[0].time : 0,
                   points_to_send ? reader->points[points_to_send - 1].time : 0,
                   points_to_send);
-    int send_status = send_and_destroy(client, read_response_create(SDB_RESPONSE_OK, reader->points, points_to_send));
+    int send_status = send_and_destroy(client, read_response_create(reader->points, points_to_send));
 
     sdb_data_points_reader_destroy(reader);
 
@@ -140,10 +140,10 @@ void handle_read_latest(client_t *client, read_latest_request_t *request, sdb_da
   int send_status = 0;
 
   if (latest.time != 0) {
-    send_status |= send_and_destroy(client, read_response_create(SDB_RESPONSE_OK, &latest, 1));
+    send_status |= send_and_destroy(client, read_response_create(&latest, 1));
   }
 
-  send_status |= send_and_destroy(client, read_response_create(SDB_RESPONSE_OK, NULL, 0));
+  send_status |= send_and_destroy(client, read_response_create(NULL, 0));
 
   if (send_status != 0) {
     sdb_log_debug("error sending response");

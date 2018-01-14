@@ -84,11 +84,10 @@ buffer_t read_latest_request_create(sdb_data_series_id_t data_series_id) {
   return packet;
 }
 
-buffer_t read_response_create(response_code_t code, sdb_data_point_t *points, int points_count) {
+buffer_t read_response_create(sdb_data_point_t *points, int points_count) {
   size_t total_size = sizeof(read_response_t) + points_count * sizeof(sdb_data_point_t);
   read_response_t *response = (read_response_t *)sdb_alloc(total_size);
   response->header.type = SDB_READ_RESPONSE;
-  response->code = code;
   response->points_count = points_count;
   memcpy(response->points, points, points_count * sizeof(sdb_data_point_t));
 
