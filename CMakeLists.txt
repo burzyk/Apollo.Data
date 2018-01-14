@@ -55,7 +55,7 @@ link_directories(/usr/local/lib)
 set(SRC_DOMAIN src/network/protocol.h src/network/protocol.c src/common.h src/common.c)
 set(SRC_CLIENT src/client/session.c src/client/session.h)
 set(SRC_SERVER src/network/server.c src/network/server.h src/network/client-handler.c src/network/client-handler.h)
-set(SRC_STORAGE src/storage/data-chunk.c src/storage/data-chunk.h src/storage/data-points-reader.c src/storage/data-points-reader.h src/storage/database.c src/storage/database.h src/storage/data-series.c src/storage/data-series.h src/storage/chunk-cache.c src/storage/chunk-cache.h)
+set(SRC_STORAGE src/storage/chunk.c src/storage/chunk.h src/storage/data-points-reader.c src/storage/data-points-reader.h src/storage/database.c src/storage/database.h src/storage/data-series.c src/storage/data-series.h src/storage/cache-manager.c src/storage/cache-manager.h)
 set(SRC_UTILS src/diagnostics.c src/diagnostics.h src/storage/disk.h src/storage/disk.c)
 set(SRC_TEST test/database-tests.h test/database-tests.c test/framework.c test/framework.h test/server-tests.c test/server-tests.h test/common-tests.c test/common-tests.h)
 

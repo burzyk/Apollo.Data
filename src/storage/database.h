@@ -26,7 +26,7 @@
 #ifndef SRC_STORAGE_DATABASE_H_
 #define SRC_STORAGE_DATABASE_H_
 
-#include "src/storage/data-chunk.h"
+#include "src/storage/chunk.h"
 #include "src/storage/data-series.h"
 
 typedef struct sdb_database_s {
@@ -35,7 +35,7 @@ typedef struct sdb_database_s {
 
   sdb_data_series_t **_series;
   int _max_series_count;
-  chunk_cache_t *_cache;
+  cache_manager_t *_cache;
 } sdb_database_t;
 
 sdb_database_t *sdb_database_create(const char *directory,

@@ -368,14 +368,14 @@ void sdb_test_database_cache_cleanup_old(sdb_tests_context_t ctx) {
     sdb_data_points_reader_destroy(reader);
   }
 
-  sdb_assert(((sdb_data_chunk_t *)db->_cache->guard.next->consumer)->begin == 1, "Invalid cached page");
+  sdb_assert(((data_chunk_t *)db->_cache->guard.next->consumer)->begin == 1, "Invalid cached page");
 
   for (int i = 0; i < 10; i++) {
     sdb_data_points_reader_t *reader = sdb_database_read(db, 12345, 11, 100, 100);
     sdb_data_points_reader_destroy(reader);
   }
 
-  sdb_assert(((sdb_data_chunk_t *)db->_cache->guard.next->consumer)->begin == 11, "Invalid cached page");
+  sdb_assert(((data_chunk_t *)db->_cache->guard.next->consumer)->begin == 11, "Invalid cached page");
 
   sdb_database_destroy(db);
 }

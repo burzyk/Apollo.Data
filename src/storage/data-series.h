@@ -26,7 +26,7 @@
 #ifndef SRC_STORAGE_DATA_SERIES_H_
 #define SRC_STORAGE_DATA_SERIES_H_
 
-#include "src/storage/data-chunk.h"
+#include "src/storage/chunk.h"
 #include "src/storage/data-points-reader.h"
 
 typedef struct sdb_data_series_s {
@@ -35,16 +35,16 @@ typedef struct sdb_data_series_s {
   char _file_name[SDB_FILE_MAX_LEN];
   int _points_per_chunk;
 
-  sdb_data_chunk_t **_chunks;
+  data_chunk_t **_chunks;
   int _chunks_count;
   int _max_chunks;
-  chunk_cache_t *_cache;
+  cache_manager_t *_cache;
 } sdb_data_series_t;
 
 sdb_data_series_t *sdb_data_series_create(sdb_data_series_id_t id,
                                           const char *file_name,
                                           int points_per_chunk,
-                                          chunk_cache_t *cache);
+                                          cache_manager_t *cache);
 void sdb_data_series_destroy(sdb_data_series_t *series);
 int sdb_data_series_write(sdb_data_series_t *series, data_point_t *points, int count);
 int sdb_data_series_truncate(sdb_data_series_t *series);
