@@ -56,6 +56,7 @@ typedef struct server_s {
   int port;
   uv_loop_t *loop;
   uv_tcp_t master_socket;
+  uv_async_t shutdown_request;
   client_t *clients[SDB_MAX_CLIENTS];
   packet_handler_t handler;
   void *handler_context;

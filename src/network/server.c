@@ -15,6 +15,7 @@ void on_alloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);
 void on_client_connected(uv_stream_t *master_socket, int status);
 void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf);
 void on_write_complete(uv_write_t *req, int status);
+void on_server_shutdown(uv_async_t *request);
 
 client_t *client_create(server_t *server, int index) {
   client_t *client = sdb_alloc(sizeof(client_t));
@@ -67,6 +68,8 @@ server_t *server_create(int port, packet_handler_t handler, void *handler_contex
   server->handler = handler;
   server->handler_context = handler_context;
   uv_tcp_init(server->loop, &server->master_socket);
+  server->shutdown_request.data = NULL;
+  uv_async_init(server->loop, &server->shutdown_request, on_server_shutdown);
   server->master_socket.data = server;
   memset(server->clients, 0, SDB_MAX_CLIENTS * sizeof(client_t *));
 
@@ -95,7 +98,30 @@ void server_run(server_t *server) {
 }
 
 void server_stop(server_t *server) {
+  server->shutdown_request.data = server;
+  uv_async_send(&server->shutdown_request);
+}
 
+void on_server_shutdown(uv_async_t *request) {
+  server_t *server = (server_t *)request->data;
+
+  if (server == NULL) {
+    return;
+  }
+
+  log_info("Received shutdown request");
+  uv_close((uv_handle_t *)&server->master_socket, NULL);
+
+  for (int i = 0; i < SDB_MAX_CLIENTS; i++) {
+    client_t *client = server->clients[i];
+
+    if (client != NULL) {
+      client_disconnect_and_destroy(client);
+    }
+  }
+
+  log_info("All clients disconnected");
+  uv_close((uv_handle_t *)request, NULL);
 }
 
 void on_alloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
