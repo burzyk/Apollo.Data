@@ -189,7 +189,7 @@ int session_read_latest(session_t *session, series_id_t series_id, data_point_t 
     }
   }
 
-  return latest->time != 0;
+  return 0;
 }
 
 int session_send_with_simple_response(session_t *session, buffer_t request) {

@@ -33,8 +33,5 @@ void test_server_read_multiple_active(test_context_t ctx);
 void test_server_read_latest_series_out_of_range(test_context_t ctx);
 void test_server_read_latest_when_empty(test_context_t ctx);
 void test_server_read_latest(test_context_t ctx);
-void test_server_write_when_read_opened(test_context_t ctx);
-void test_server_truncate_when_read_opened(test_context_t ctx);
-void test_server_read_latest_when_read_opened(test_context_t ctx);
 
 #endif  // TEST_SERVER_TESTS_H_
