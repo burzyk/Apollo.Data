@@ -32,7 +32,7 @@ void sdb_test_server_stop(pthread_t thread, sdb_server_t *server) {
   sdb_server_destroy(server);
 }
 
-void sdb_test_server_simple_initialization_test(sdb_tests_context_t ctx) {
+void sdb_test_server_simple_initialization_test(test_context_t ctx) {
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
   sdb_server_t *server = sdb_server_create(8081, db);
   pthread_t thread = sdb_test_server_run(server);
@@ -41,7 +41,7 @@ void sdb_test_server_simple_initialization_test(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_connect(sdb_tests_context_t ctx) {
+void sdb_test_server_connect(test_context_t ctx) {
   shakadb_session_t session;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
   sdb_server_t *server = sdb_server_create(8081, db);
@@ -54,7 +54,7 @@ void sdb_test_server_connect(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_connect_invalid_address(sdb_tests_context_t ctx) {
+void sdb_test_server_connect_invalid_address(test_context_t ctx) {
   shakadb_session_t session;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
   sdb_server_t *server = sdb_server_create(8081, db);
@@ -68,7 +68,7 @@ void sdb_test_server_connect_invalid_address(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_connect_invalid_port(sdb_tests_context_t ctx) {
+void sdb_test_server_connect_invalid_port(test_context_t ctx) {
   shakadb_session_t session;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
   sdb_server_t *server = sdb_server_create(8081, db);
@@ -82,7 +82,7 @@ void sdb_test_server_connect_invalid_port(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_write_small(sdb_tests_context_t ctx) {
+void sdb_test_server_write_small(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -125,7 +125,7 @@ void sdb_test_server_write_small(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_write_unordered(sdb_tests_context_t ctx) {
+void sdb_test_server_write_unordered(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -171,7 +171,7 @@ void sdb_test_server_write_unordered(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_write_two_batches(sdb_tests_context_t ctx) {
+void sdb_test_server_write_two_batches(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -223,7 +223,7 @@ void sdb_test_server_write_two_batches(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_read_two_batches(sdb_tests_context_t ctx) {
+void sdb_test_server_read_two_batches(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 2, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -274,7 +274,7 @@ void sdb_test_server_read_two_batches(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_read_range(sdb_tests_context_t ctx) {
+void sdb_test_server_read_range(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -317,7 +317,7 @@ void sdb_test_server_read_range(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_read_range_with_multiple_series(sdb_tests_context_t ctx) {
+void sdb_test_server_read_range_with_multiple_series(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -371,7 +371,7 @@ void sdb_test_server_read_range_with_multiple_series(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_update(sdb_tests_context_t ctx) {
+void sdb_test_server_update(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -441,7 +441,7 @@ void sdb_test_server_update(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_update_in_two_sessions(sdb_tests_context_t ctx) {
+void sdb_test_server_update_in_two_sessions(test_context_t ctx) {
   shakadb_session_t session_1;
   shakadb_session_t session_2;
   int status = 0;
@@ -517,7 +517,7 @@ void sdb_test_server_update_in_two_sessions(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_truncate_not_existing(sdb_tests_context_t ctx) {
+void sdb_test_server_truncate_not_existing(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -543,7 +543,7 @@ void sdb_test_server_truncate_not_existing(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_truncate_empty(sdb_tests_context_t ctx) {
+void sdb_test_server_truncate_empty(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -576,7 +576,7 @@ void sdb_test_server_truncate_empty(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_truncate_and_write(sdb_tests_context_t ctx) {
+void sdb_test_server_truncate_and_write(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -627,7 +627,7 @@ void sdb_test_server_truncate_and_write(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_no_sig_pipe_on_too_large_packet(sdb_tests_context_t ctx) {
+void sdb_test_server_no_sig_pipe_on_too_large_packet(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -649,7 +649,7 @@ void sdb_test_server_no_sig_pipe_on_too_large_packet(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_failed_write(sdb_tests_context_t ctx) {
+void sdb_test_server_failed_write(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create("/blah/blah", 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -675,7 +675,7 @@ void sdb_test_server_failed_write(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_write_series_out_of_range(sdb_tests_context_t ctx) {
+void sdb_test_server_write_series_out_of_range(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
@@ -698,7 +698,7 @@ void sdb_test_server_write_series_out_of_range(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_read_series_out_of_range(sdb_tests_context_t ctx) {
+void sdb_test_server_read_series_out_of_range(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
@@ -721,7 +721,7 @@ void sdb_test_server_read_series_out_of_range(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_truncate_series_out_of_range(sdb_tests_context_t ctx) {
+void sdb_test_server_truncate_series_out_of_range(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
@@ -740,7 +740,7 @@ void sdb_test_server_truncate_series_out_of_range(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_write_filter_duplicates(sdb_tests_context_t ctx) {
+void sdb_test_server_write_filter_duplicates(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -786,7 +786,7 @@ void sdb_test_server_write_filter_duplicates(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_write_filter_zeros(sdb_tests_context_t ctx) {
+void sdb_test_server_write_filter_zeros(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -834,7 +834,7 @@ void sdb_test_server_write_filter_zeros(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_read_multiple_active(sdb_tests_context_t ctx) {
+void sdb_test_server_read_multiple_active(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -890,7 +890,7 @@ void sdb_test_server_read_multiple_active(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_read_latest_series_out_of_range(sdb_tests_context_t ctx) {
+void sdb_test_server_read_latest_series_out_of_range(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, 100, UINT64_MAX, UINT64_MAX);
@@ -914,7 +914,7 @@ void sdb_test_server_read_latest_series_out_of_range(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_read_latest_when_empty(sdb_tests_context_t ctx) {
+void sdb_test_server_read_latest_when_empty(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -938,7 +938,7 @@ void sdb_test_server_read_latest_when_empty(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_read_latest(sdb_tests_context_t ctx) {
+void sdb_test_server_read_latest(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 2, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -973,7 +973,7 @@ void sdb_test_server_read_latest(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_write_when_read_opened(sdb_tests_context_t ctx) {
+void sdb_test_server_write_when_read_opened(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -1007,7 +1007,7 @@ void sdb_test_server_write_when_read_opened(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_truncate_when_read_opened(sdb_tests_context_t ctx) {
+void sdb_test_server_truncate_when_read_opened(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
@@ -1033,7 +1033,7 @@ void sdb_test_server_truncate_when_read_opened(sdb_tests_context_t ctx) {
   sdb_database_destroy(db);
 }
 
-void sdb_test_server_read_latest_when_read_opened(sdb_tests_context_t ctx) {
+void sdb_test_server_read_latest_when_read_opened(test_context_t ctx) {
   shakadb_session_t session;
   int status = 0;
   sdb_database_t *db = sdb_database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);

@@ -28,22 +28,22 @@
 
 #include "src/common.h"
 
-typedef struct sdb_tests_session_s {
-  char _directory[SDB_FILE_MAX_LEN];
-  int _tests_success;
-  int _tests_failed;
-} sdb_tests_session_t;
+typedef struct test_session_s {
+  char directory[SDB_FILE_MAX_LEN];
+  int tests_success;
+  int tests_failed;
+} test_session_t;
 
-typedef struct sdb_tests_context_s {
+typedef struct test_context_s {
   char working_directory[SDB_FILE_MAX_LEN];
-  sdb_tests_session_t *session;
-} sdb_tests_context_t;
+  test_session_t *session;
+} test_context_t;
 
-typedef void (*sdb_test_function_t)(sdb_tests_context_t);
+typedef void (*sdb_test_function_t)(test_context_t);
 
-sdb_tests_session_t *sdb_tests_session_create(const char *root_directory);
-void sdb_tests_session_destroy(sdb_tests_session_t *session);
-int sdb_tests_session_run(sdb_tests_session_t *session, const char *name, sdb_test_function_t test_function);
-void sdb_tests_session_print_summary(sdb_tests_session_t *session);
+test_session_t *test_session_create(const char *root_directory);
+void test_session_destroy(test_session_t *session);
+int test_session_run(test_session_t *session, const char *name, sdb_test_function_t test_function);
+void test_session_print_summary(test_session_t *session);
 
 #endif  // TEST_FRAMEWORK_H_

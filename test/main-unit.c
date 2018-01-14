@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     die("invalid arguments");
   }
 
-  sdb_tests_session_t *session = sdb_tests_session_create(directory);
+  test_session_t *session = test_session_create(directory);
   int result = 0;
 
   printf("==================== Running unit tests ====================\n");
@@ -120,7 +120,6 @@ int main(int argc, char *argv[]) {
   TEST(test_database_read_latest_data_in_first_chunk);
   TEST(test_database_read_latest_data_in_second_chunk);
 
-
   TEST(sdb_test_server_simple_initialization_test);
   TEST(sdb_test_server_connect);
   TEST(sdb_test_server_connect_invalid_address);
@@ -151,9 +150,9 @@ int main(int argc, char *argv[]) {
   TEST(sdb_test_server_truncate_when_read_opened);
   TEST(sdb_test_server_read_latest_when_read_opened);
 
-  sdb_tests_session_print_summary(session);
+  test_session_print_summary(session);
   printf("==================== Tests finished ===================\n");
 
-  sdb_tests_session_destroy(session);
+  test_session_destroy(session);
   return result;
 }
