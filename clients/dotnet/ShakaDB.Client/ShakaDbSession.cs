@@ -1,208 +1,91 @@
-using Microsoft.Win32.SafeHandles;
-
 namespace ShakaDB.Client
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
-    using Wrapper;
+    using System.Net.Sockets;
+    using System.Threading.Tasks;
+    using Protocol;
 
     public class ShakaDbSession : IDisposable
     {
-        private SdbSession _session;
+        private readonly Stream _stream;
 
-        protected ShakaDbSession(string hostname, int port)
+        public ShakaDbSession(Stream stream)
         {
-            Hostname = hostname;
-            Port = port;
+            _stream = stream;
         }
 
-        ~ShakaDbSession()
+        public static async Task<ShakaDbSession> Open(string hostname, int port)
         {
-            Dispose(false);
-        }
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            await socket.ConnectAsync(hostname, port);
 
-        public string Hostname { get; }
-
-        public int Port { get; }
-
-        public bool IsDisposed { get; private set; }
-
-        public static ShakaDbSession Open(string hostname, int port)
-        {
-            var session = new ShakaDbSession(hostname, port);
-            CallWrapper(
-                () => SdbWrapper.ShakaDbSessionOpen(ref session._session, hostname, port),
-                $"{hostname}:{port}");
-            return session;
+            return new ShakaDbSession(new NetworkStream(socket, true));
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            _stream.Dispose();
         }
 
-        public void Close()
+        public async Task Write(uint seriesId, IEnumerable<DataPoint> dataPoints)
         {
-            Dispose();
+            await WithSimpleResponse(new WriteRequest(seriesId, dataPoints), "Failed to write points");
         }
 
-        public void Write(uint seriesId, IEnumerable<DataPoint> dataPoints)
+        public async Task<DataPoint> GetLatest(uint seriesId)
         {
-            EnsureNotDisposed();
+            var request = new ReadLatestRequest(seriesId);
+            await Transmitter.Write(request.Serialize(), _stream);
 
-            var content = dataPoints
-                .Select(x => new SdbDataPoint {Time = x.Timestamp, Value = x.Value})
-                .ToArray();
+            var response = new ReadResponse(await Transmitter.Read(_stream));
 
-            CallWrapper(
-                () => SdbWrapper.ShakaDbWritePoints(ref _session, seriesId, content, content.Length),
-                $"Failed to write data to {seriesId}");
+            if (!response.Points.Any())
+            {
+                return null;
+            }
+
+            // read the end of transmission
+            await Transmitter.Read(_stream);
+            return response.Points.Single();
         }
 
-        public DataPoint GetLatest(uint seriesId)
-        {
-            EnsureNotDisposed();
-            var result = new SdbDataPoint();
-
-            CallWrapper(
-                () => SdbWrapper.ShakaDbReadLatestPoint(ref _session, seriesId, ref result),
-                $"Failed to read latest from {seriesId}");
-
-            return result.Time == 0 ? null : new DataPoint(result.Time, result.Value);
-        }
-
-        public IEnumerable<DataPoint> Read(
+        public async Task<IEnumerable<DataPoint>> Read(
             uint seriesId,
             ulong? begin = null,
             ulong? end = null,
             int pointsPerPacket = 655360)
         {
-            EnsureNotDisposed();
+            var request = new ReadRequest(
+                seriesId,
+                begin ?? Constants.ShakadbMinTimestamp,
+                end ?? Constants.ShakadbMaxTimestamp,
+                pointsPerPacket);
 
-            begin = begin ?? Constants.ShakadbMinTimestamp;
-            end = end ?? Constants.ShakadbMaxTimestamp;
+            await Transmitter.Write(request.Serialize(), _stream);
 
-            var iterator = new SdbDataPointsIterator();
-            CallWrapper(
-                () => SdbWrapper.ShakaDbReadPoints(
-                    ref _session,
-                    seriesId,
-                    begin.Value,
-                    end.Value,
-                    pointsPerPacket,
-                    ref iterator),
-                $"Failed to read data: {seriesId}");
-            return new PointsEnumerable(iterator);
+            return Enumerable.Range(0, int.MaxValue)
+                .Select(async x => await Transmitter.Read(_stream))
+                .Select(x => new ReadResponse(x.Result))
+                .TakeWhile(x => x.Points.Any())
+                .SelectMany(x => x.Points);
         }
 
-        public void Truncate(uint seriesId)
+        public async Task Truncate(uint seriesId)
         {
-            EnsureNotDisposed();
-            CallWrapper(
-                () => SdbWrapper.ShakaDbTruncateDataSeries(ref _session, seriesId),
-                $"Failed to truncate the series: {seriesId}");
+            await WithSimpleResponse(new TruncateRequest(seriesId), "Failed to truncate data series");
         }
 
-        protected virtual void Dispose(bool disposing)
+        private async Task WithSimpleResponse(BasePacket request, string errorMessage)
         {
-            EnsureNotDisposed();
-            IsDisposed = true;
-            SdbWrapper.ShakaDbSessionClose(ref _session);
-        }
+            await Transmitter.Write(request.Serialize(), _stream);
+            var response = new SimpleResponse(await Transmitter.Read(_stream));
 
-        private static void CallWrapper(Func<int> action, string message)
-        {
-            var result = action();
-
-            if (result == Constants.ShakadbResultConnectError)
+            if (response.ResponseCode == ResponseCode.Failure)
             {
-                throw new ShakaDbException($"Failed to connect: {message}");
-            }
-
-            if (result == Constants.ShakadbResultMultipleReadsError)
-            {
-                throw new ShakaDbException($"Multiple results active: {message}");
-            }
-
-            if (result != Constants.ShakadbResultOk)
-            {
-                throw new ShakaDbException($"Call failed: {message}");
-            }
-        }
-
-        private void EnsureNotDisposed()
-        {
-            if (IsDisposed)
-            {
-                throw new ObjectDisposedException("Session has been disposed");
-            }
-        }
-
-        private class PointsEnumerable : IEnumerable<DataPoint>
-        {
-            private readonly SdbDataPointsIterator _iterator;
-
-            public PointsEnumerable(SdbDataPointsIterator iterator)
-            {
-                _iterator = iterator;
-            }
-
-            public IEnumerator<DataPoint> GetEnumerator()
-            {
-                return new PointsEnumerator(_iterator);
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-        }
-
-        private class PointsEnumerator : IEnumerator<DataPoint>
-        {
-            private SdbDataPointsIterator _iterator;
-
-            private int _offset = int.MaxValue;
-
-            public PointsEnumerator(SdbDataPointsIterator iterator)
-            {
-                _iterator = iterator;
-            }
-
-            public bool MoveNext()
-            {
-                if (_offset >= _iterator.PointsCount)
-                {
-                    _offset = 0;
-
-                    if (SdbWrapper.ShakaDbDataPointsIteratorNext(ref _iterator) == 0)
-                    {
-                        return false;
-                    }
-                }
-
-                var point = _iterator.ReadAt(_offset++);
-                Current = new DataPoint(point.Time, point.Value);
-                return true;
-            }
-
-            public void Reset()
-            {
-                throw new NotSupportedException();
-            }
-
-            public DataPoint Current { get; private set; }
-
-            object IEnumerator.Current => Current;
-
-            public void Dispose()
-            {
-                while (SdbWrapper.ShakaDbDataPointsIteratorNext(ref _iterator) != 0)
-                {
-                    // read all remaining data and close the iterator
-                }
+                throw new ShakaDbException(errorMessage);
             }
         }
     }

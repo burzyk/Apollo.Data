@@ -13,13 +13,18 @@
         {
             using (var r = new BinaryReader(new MemoryStream(payload)))
             {
-                PacketType = (PacketType) r.ReadByte();
+                var type = (PacketType) r.ReadByte();
+
+                if (type != PacketType)
+                {
+                    throw new ShakaDbException("Received unexpected packet type");
+                }
 
                 Load(r);
             }
         }
 
-        public PacketType PacketType { get; private set; }
+        public PacketType PacketType { get; }
 
         public byte[] Serialize()
         {
