@@ -87,9 +87,9 @@ void print_usage() {
   printf("\n");
   printf("    --command, -c:    Command to be executed. Command can be:\n");
   printf("                      write, read, truncate, latest\n");
-  printf("    --hostname, -h:   ShakaDB network hostname\n");
+  printf("    --hostname, -h:   ShakaDB server hostname\n");
   printf("                      Default value: 'localhost'\n");
-  printf("    --port, -p:       ShakaDB network port\n");
+  printf("    --port, -p:       ShakaDB server port\n");
   printf("                      Default value: 8487\n");
   printf("    --series, -s:     Time series id\n");
   printf("                      Default value: 0\n");
