@@ -10,7 +10,7 @@
         private const uint Magic = 0x4B414D41;
         private const int HeaderSize = 8;
 
-        public static async Task<byte[]> Read(Stream input)
+        public static async Task<byte[]> Receive(Stream input)
         {
             var header = await ReadBuffer(input, HeaderSize);
 
@@ -28,7 +28,7 @@
             }
         }
 
-        public static async Task Write(byte[] payload, Stream output)
+        public static async Task Send(byte[] payload, Stream output)
         {
             var header = new MemoryStream();
 

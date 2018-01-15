@@ -38,9 +38,9 @@ namespace ShakaDB.Client
         public async Task<DataPoint> GetLatest(uint seriesId)
         {
             var request = new ReadLatestRequest(seriesId);
-            await Transmitter.Write(request.Serialize(), _stream);
+            await Transmitter.Send(request.Serialize(), _stream);
 
-            var response = new ReadResponse(await Transmitter.Read(_stream));
+            var response = new ReadResponse(await Transmitter.Receive(_stream));
 
             if (!response.Points.Any())
             {
@@ -48,7 +48,7 @@ namespace ShakaDB.Client
             }
 
             // read the end of transmission
-            await Transmitter.Read(_stream);
+            await Transmitter.Receive(_stream);
             return response.Points.Single();
         }
 
@@ -64,10 +64,10 @@ namespace ShakaDB.Client
                 end ?? Constants.ShakadbMaxTimestamp,
                 pointsPerPacket);
 
-            await Transmitter.Write(request.Serialize(), _stream);
+            await Transmitter.Send(request.Serialize(), _stream);
 
             return Enumerable.Range(0, int.MaxValue)
-                .Select(async x => await Transmitter.Read(_stream))
+                .Select(async x => await Transmitter.Receive(_stream))
                 .Select(x => new ReadResponse(x.Result))
                 .TakeWhile(x => x.Points.Any())
                 .SelectMany(x => x.Points);
@@ -80,8 +80,8 @@ namespace ShakaDB.Client
 
         private async Task WithSimpleResponse(BasePacket request, string errorMessage)
         {
-            await Transmitter.Write(request.Serialize(), _stream);
-            var response = new SimpleResponse(await Transmitter.Read(_stream));
+            await Transmitter.Send(request.Serialize(), _stream);
+            var response = new SimpleResponse(await Transmitter.Receive(_stream));
 
             if (response.ResponseCode == ResponseCode.Failure)
             {
