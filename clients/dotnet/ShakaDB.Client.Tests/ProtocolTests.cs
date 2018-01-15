@@ -29,5 +29,23 @@
             Assert.Equal(1, (int) deserialized.Points[1].Timestamp);
             Assert.Equal(5.4f, deserialized.Points[1].Value);
         }
+
+        [Fact]
+        public void SerializeReadRequestTest()
+        {
+            var request = new ReadRequest(15, 0, 100, 123);
+
+            var serialized = request.Serialize();
+
+            Assert.Equal(25, serialized.Length);
+
+            var deserialized = new ReadRequest(serialized);
+
+            Assert.Equal(PacketType.ReadRequest, deserialized.PacketType);
+            Assert.Equal(15, (int) deserialized.DataSeriesId);
+            Assert.Equal(0L, (long) deserialized.Begin);
+            Assert.Equal(100L, (long) deserialized.End);
+            Assert.Equal(123, deserialized.PointsPerPacket);
+        }
     }
 }
