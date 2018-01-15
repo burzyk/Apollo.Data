@@ -101,5 +101,20 @@
             Assert.Equal(PacketType.TruncateRequest, deserialized.PacketType);
             Assert.Equal(76, (int) deserialized.DataSeriesId);
         }
+
+        [Fact]
+        public void SerializeSimpleResponseTest()
+        {
+            var request = new SimpleResponse(ResponseCode.Failure);
+
+            var serialized = request.Serialize();
+
+            Assert.Equal(2, serialized.Length);
+
+            var deserialized = new SimpleResponse(serialized);
+
+            Assert.Equal(PacketType.SimpleResponse, deserialized.PacketType);
+            Assert.Equal(ResponseCode.Failure, deserialized.ResponseCode);
+        }
     }
 }
