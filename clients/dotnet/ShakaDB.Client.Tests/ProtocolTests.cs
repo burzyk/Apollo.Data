@@ -86,5 +86,20 @@
             Assert.Equal(1, (int) deserialized.Points[1].Timestamp);
             Assert.Equal(5.4f, deserialized.Points[1].Value);
         }
+
+        [Fact]
+        public void SerializeTruncateRequestTest()
+        {
+            var request = new TruncateRequest(76);
+
+            var serialized = request.Serialize();
+
+            Assert.Equal(5, serialized.Length);
+
+            var deserialized = new TruncateRequest(serialized);
+
+            Assert.Equal(PacketType.TruncateRequest, deserialized.PacketType);
+            Assert.Equal(76, (int) deserialized.DataSeriesId);
+        }
     }
 }
