@@ -2,15 +2,15 @@ namespace ShakaDB.Client
 {
     using System;
 
-    public class ShakaDbDataPoint
+    public class DataPoint
     {
-        public ShakaDbDataPoint(ulong timestamp, float value)
+        public DataPoint(ulong timestamp, float value)
         {
             Timestamp = timestamp;
             Value = value;
         }
 
-        public ShakaDbDataPoint(DateTime timestamp, float value)
+        public DataPoint(DateTime timestamp, float value)
         {
             Timestamp = (ulong) timestamp.ToFileTime();
             Value = value;

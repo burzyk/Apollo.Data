@@ -48,7 +48,7 @@ namespace ShakaDB.Client
             Dispose();
         }
 
-        public void Write(uint seriesId, IEnumerable<ShakaDbDataPoint> dataPoints)
+        public void Write(uint seriesId, IEnumerable<DataPoint> dataPoints)
         {
             EnsureNotDisposed();
 
@@ -61,7 +61,7 @@ namespace ShakaDB.Client
                 $"Failed to write data to {seriesId}");
         }
 
-        public ShakaDbDataPoint GetLatest(uint seriesId)
+        public DataPoint GetLatest(uint seriesId)
         {
             EnsureNotDisposed();
             var result = new SdbDataPoint();
@@ -70,10 +70,10 @@ namespace ShakaDB.Client
                 () => SdbWrapper.ShakaDbReadLatestPoint(ref _session, seriesId, ref result),
                 $"Failed to read latest from {seriesId}");
 
-            return result.Time == 0 ? null : new ShakaDbDataPoint(result.Time, result.Value);
+            return result.Time == 0 ? null : new DataPoint(result.Time, result.Value);
         }
 
-        public IEnumerable<ShakaDbDataPoint> Read(
+        public IEnumerable<DataPoint> Read(
             uint seriesId,
             ulong? begin = null,
             ulong? end = null,
@@ -140,7 +140,7 @@ namespace ShakaDB.Client
             }
         }
 
-        private class PointsEnumerable : IEnumerable<ShakaDbDataPoint>
+        private class PointsEnumerable : IEnumerable<DataPoint>
         {
             private readonly SdbDataPointsIterator _iterator;
 
@@ -149,7 +149,7 @@ namespace ShakaDB.Client
                 _iterator = iterator;
             }
 
-            public IEnumerator<ShakaDbDataPoint> GetEnumerator()
+            public IEnumerator<DataPoint> GetEnumerator()
             {
                 return new PointsEnumerator(_iterator);
             }
@@ -160,7 +160,7 @@ namespace ShakaDB.Client
             }
         }
 
-        private class PointsEnumerator : IEnumerator<ShakaDbDataPoint>
+        private class PointsEnumerator : IEnumerator<DataPoint>
         {
             private SdbDataPointsIterator _iterator;
 
@@ -184,7 +184,7 @@ namespace ShakaDB.Client
                 }
 
                 var point = _iterator.ReadAt(_offset++);
-                Current = new ShakaDbDataPoint(point.Time, point.Value);
+                Current = new DataPoint(point.Time, point.Value);
                 return true;
             }
 
@@ -193,7 +193,7 @@ namespace ShakaDB.Client
                 throw new NotSupportedException();
             }
 
-            public ShakaDbDataPoint Current { get; private set; }
+            public DataPoint Current { get; private set; }
 
             object IEnumerator.Current => Current;
 

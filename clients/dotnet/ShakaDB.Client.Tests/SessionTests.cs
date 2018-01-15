@@ -41,8 +41,8 @@ namespace ShakaDB.Client.Tests
                 session.Truncate(TestConstants.UsdAud);
                 session.Write(TestConstants.UsdAud, new[]
                 {
-                    new ShakaDbDataPoint(1, 12),
-                    new ShakaDbDataPoint(2, 13)
+                    new DataPoint(1, 12),
+                    new DataPoint(2, 13)
                 });
 
                 var result = session.Read(TestConstants.UsdAud).ToList();
@@ -63,8 +63,8 @@ namespace ShakaDB.Client.Tests
                 session.Truncate(TestConstants.UsdAud);
                 session.Write(TestConstants.UsdAud, new[]
                 {
-                    new ShakaDbDataPoint(1, 12),
-                    new ShakaDbDataPoint(2, 13)
+                    new DataPoint(1, 12),
+                    new DataPoint(2, 13)
                 });
 
                 var result = session.Read(TestConstants.UsdAud, 0, 2).ToList();
@@ -83,9 +83,9 @@ namespace ShakaDB.Client.Tests
                 session.Truncate(TestConstants.UsdAud);
                 session.Write(TestConstants.UsdAud, new[]
                 {
-                    new ShakaDbDataPoint(1, 12),
-                    new ShakaDbDataPoint(2, 13),
-                    new ShakaDbDataPoint(3, 15)
+                    new DataPoint(1, 12),
+                    new DataPoint(2, 13),
+                    new DataPoint(3, 15)
                 });
 
                 var result = session.Read(TestConstants.UsdAud, pointsPerPacket: 2).ToList();
@@ -114,9 +114,9 @@ namespace ShakaDB.Client.Tests
                 session.Truncate(TestConstants.UsdAud);
                 session.Write(TestConstants.UsdAud, new[]
                 {
-                    new ShakaDbDataPoint(1, 12),
-                    new ShakaDbDataPoint(2, 13),
-                    new ShakaDbDataPoint(3, 15)
+                    new DataPoint(1, 12),
+                    new DataPoint(2, 13),
+                    new DataPoint(3, 15)
                 });
 
                 var latest = session.GetLatest(TestConstants.UsdAud);
@@ -134,8 +134,8 @@ namespace ShakaDB.Client.Tests
                 session.Truncate(TestConstants.UsdAud);
                 session.Write(TestConstants.UsdAud, new[]
                 {
-                    new ShakaDbDataPoint(1, 12),
-                    new ShakaDbDataPoint(2, 13)
+                    new DataPoint(1, 12),
+                    new DataPoint(2, 13)
                 });
 
                 var result = session.Read(TestConstants.UsdAud, 0, 2).ToList();
@@ -159,8 +159,8 @@ namespace ShakaDB.Client.Tests
                 session.Truncate(TestConstants.UsdAud);
                 session.Write(TestConstants.UsdAud, new[]
                 {
-                    new ShakaDbDataPoint(1, 12),
-                    new ShakaDbDataPoint(2, 13)
+                    new DataPoint(1, 12),
+                    new DataPoint(2, 13)
                 });
 
                 session.Read(TestConstants.UsdAud);

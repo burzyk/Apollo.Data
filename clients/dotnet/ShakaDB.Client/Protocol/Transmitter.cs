@@ -5,7 +5,7 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    public static class Packet
+    public static class Transmitter
     {
         private const uint Magic = 0x4B414D41;
         private const int HeaderSize = 8;
