@@ -104,7 +104,7 @@ void master_routine(configuration_t *config) {
       config->cache_soft_limit,
       config->cache_hard_limit);
 
-  log_info("initializing network ...");
+  log_info("initializing server ...");
   client_handler_t *handler = client_handler_create(db);
   g_server = server_create(config->server_port, on_message_received, handler);
 
@@ -114,7 +114,7 @@ void master_routine(configuration_t *config) {
 
   log_info("interrupt received");
 
-  log_info("closing network ...");
+  log_info("closing server ...");
   server_destroy(g_server);
   client_handler_destroy(handler);
 
