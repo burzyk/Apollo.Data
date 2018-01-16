@@ -12,6 +12,8 @@ namespace ShakaDB.Client
     public class ShakaDbSession : IDisposable
     {
         private readonly Stream _stream;
+        private bool _readOpen;
+        private bool _disposed;
 
         public ShakaDbSession(Stream stream)
         {
@@ -33,6 +35,7 @@ namespace ShakaDB.Client
         public void Dispose()
         {
             _stream.Dispose();
+            _disposed = true;
         }
 
         public async Task Write(uint seriesId, IEnumerable<DataPoint> dataPoints)
@@ -42,6 +45,8 @@ namespace ShakaDB.Client
 
         public async Task<DataPoint> GetLatest(uint seriesId)
         {
+            EnsurePreConditions();
+
             var request = new ReadLatestRequest(seriesId);
             await Transmitter.Send(request.Serialize(), _stream);
 
@@ -63,6 +68,10 @@ namespace ShakaDB.Client
             ulong? end = null,
             int pointsPerPacket = 655360)
         {
+            EnsurePreConditions();
+
+            _readOpen = true;
+
             var request = new ReadRequest(
                 seriesId,
                 begin ?? Constants.ShakadbMinTimestamp,
@@ -75,7 +84,13 @@ namespace ShakaDB.Client
                 .Select(async x => await Transmitter.Receive(_stream))
                 .Select(x => new ReadResponse(x.Result))
                 .TakeWhile(x => x.Points.Any())
-                .SelectMany(x => x.Points);
+                .SelectMany(x => x.Points)
+                .Concat(new[] {new DataPoint(0, 0)}.Select(x =>
+                {
+                    _readOpen = false;
+                    return x;
+                }))
+                .Where(x => x.Timestamp != 0);
         }
 
         public async Task Truncate(uint seriesId)
@@ -83,8 +98,23 @@ namespace ShakaDB.Client
             await WithSimpleResponse(new TruncateRequest(seriesId), "Failed to truncate data series");
         }
 
+        private void EnsurePreConditions()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("This object has been disposed");
+            }
+
+            if (_readOpen)
+            {
+                throw new ShakaDbException("Multiple active reads are not alliwed");
+            }
+        }
+
         private async Task WithSimpleResponse(BasePacket request, string errorMessage)
         {
+            EnsurePreConditions();
+
             await Transmitter.Send(request.Serialize(), _stream);
             var response = new SimpleResponse(await Transmitter.Receive(_stream));
 
