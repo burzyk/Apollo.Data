@@ -52,14 +52,7 @@ namespace ShakaDB.Client
 
             var response = new ReadResponse(await Transmitter.Receive(_stream));
 
-            if (!response.Points.Any())
-            {
-                return null;
-            }
-
-            // read the end of transmission
-            await Transmitter.Receive(_stream);
-            return response.Points.Single();
+            return response.Points.SingleOrDefault();
         }
 
         public async Task<IEnumerable<DataPoint>> Read(

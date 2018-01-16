@@ -136,15 +136,10 @@ void handle_read_latest(client_t *client, read_latest_request_t *request, databa
   data_point_t latest = database_read_latest(db, request->data_series_id);
   log_debug("latest point: { time: %"PRIu64, ", value: %f }", latest.time, latest.value);
 
-  int send_status = 0;
+  data_point_t *result = latest.time != 0 ? &latest : NULL;
+  int count = result != NULL ? 1 : 0;
 
-  if (latest.time != 0) {
-    send_status |= send_and_destroy(client, read_response_create(&latest, 1));
-  }
-
-  send_status |= send_and_destroy(client, read_response_create(NULL, 0));
-
-  if (send_status != 0) {
+  if (send_and_destroy(client, read_response_create(result, count)) != 0) {
     log_debug("error sending response");
     return;
   }

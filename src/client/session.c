@@ -204,18 +204,11 @@ int session_read_latest(session_t *session, series_id_t series_id, data_point_t 
 
   buffer_t packet = read_latest_request_create(series_id);
   session_send_and_destroy(session, packet);
-  session->read_open = 1;
 
-  latest->time = 0;
-  latest->value = 0;
+  read_response_t *response = (read_response_t *)session_receive(session, SDB_READ_RESPONSE);
 
-  while (session_read_next(session)) {
-    if (session->read_response->points_count > 0) {
-      *latest = session->read_response->points[0];
-    }
-  }
-
-  session->read_open = 0;
+  latest->time = response->points_count != 0 ? response->points[0].time : 0;
+  latest->value = response->points_count != 0 ? response->points[0].value : 0;
 
   return 0;
 }
