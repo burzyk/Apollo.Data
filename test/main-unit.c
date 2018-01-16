@@ -133,7 +133,6 @@ int main(int argc, char *argv[]) {
   TEST(test_server_truncate_not_existing);
   TEST(test_server_truncate_empty);
   TEST(test_server_truncate_and_write);
-  TEST(test_server_no_sig_pipe_on_too_large_packet);
   TEST(test_server_failed_write);
   TEST(test_server_write_series_out_of_range);
   TEST(test_server_read_series_out_of_range);

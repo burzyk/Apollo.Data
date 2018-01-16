@@ -591,26 +591,6 @@ void test_server_truncate_and_write(test_context_t ctx) {
   server_test_context_stop(context);
 }
 
-void test_server_no_sig_pipe_on_too_large_packet(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
-
-  data_point_t *points = (data_point_t *)sdb_alloc((SDB_SERVER_PACKET_MAX_LEN + 1) * sizeof(data_point_t));
-
-  sdb_assert(
-      session_write(context->session, SDB_EUR_USD_ID, points, SDB_SERVER_PACKET_MAX_LEN + 1),
-      "Packet should not be processed");
-
-  sdb_free(points);
-
-  server_test_context_stop(context);
-}
-
 void test_server_failed_write(test_context_t ctx) {
   server_test_context_t *context = server_test_context_start(
       "/blah/blah",

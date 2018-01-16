@@ -4,6 +4,8 @@
 
 #include "src/network/server.h"
 
+#include <string.h>
+
 #include "src/common.h"
 #include "src/diagnostics.h"
 #include "src/network/protocol.h"
