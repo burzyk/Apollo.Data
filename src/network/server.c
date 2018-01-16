@@ -28,6 +28,11 @@ client_t *client_create(server_t *server, int index) {
   uv_tcp_init(server->loop, &client->socket);
   client->socket.data = client;
 
+  // if this is not available on linux
+  // each time a connection is reset by a peer
+  // the application will crash
+  signal(SIGPIPE, SIG_IGN);
+
   return client;
 }
 
