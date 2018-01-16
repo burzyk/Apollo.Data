@@ -25,7 +25,7 @@ client_t *client_create(server_t *server, int index) {
   client->buffer_length = 0;
   client->server = server;
   client->buffer_length = 0;
-  uv_tcp_init(server->loop, &client->socket);
+  uv_tcp_init(&server->loop, &client->socket);
   client->socket.data = client;
 
   // if this is not available on linux
@@ -79,12 +79,12 @@ void on_write_complete(uv_write_t *req, int status) {
 server_t *server_create(int port, packet_handler_t handler, void *handler_context) {
   server_t *server = sdb_alloc(sizeof(server_t));
   server->port = port;
-  server->loop = uv_default_loop();
+  uv_loop_init(&server->loop);
   server->handler = handler;
   server->handler_context = handler_context;
-  uv_tcp_init(server->loop, &server->master_socket);
+  uv_tcp_init(&server->loop, &server->master_socket);
   server->shutdown_request.data = NULL;
-  uv_async_init(server->loop, &server->shutdown_request, on_server_shutdown);
+  uv_async_init(&server->loop, &server->shutdown_request, on_server_shutdown);
   server->master_socket.data = server;
   memset(server->clients, 0, SDB_MAX_CLIENTS * sizeof(client_t *));
 
@@ -92,7 +92,7 @@ server_t *server_create(int port, packet_handler_t handler, void *handler_contex
 }
 
 void server_destroy(server_t *server) {
-  uv_loop_close(server->loop);
+  uv_loop_close(&server->loop);
   sdb_free(server);
 }
 
@@ -108,8 +108,9 @@ void server_run(server_t *server) {
     die("Failed to listen for incoming clients");
   }
 
-  uv_run(server->loop, UV_RUN_DEFAULT);
-  uv_loop_close(server->loop);
+  if (uv_run(&server->loop, UV_RUN_DEFAULT) != 0) {
+    die("Failed to start the main loop");
+  }
 }
 
 void server_stop(server_t *server) {

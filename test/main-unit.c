@@ -44,7 +44,7 @@
 int main(int argc, char *argv[]) {
   int configuration_parsed = 0;
   char directory[SDB_FILE_MAX_LEN] = {0};
-  strcpy(directory, "/Users/pburzynski/shakadb-test/data/test-stuff");
+  strcpy(directory, "/home/pawel/projects/ShakaDB/build/tests");
 
   while (!configuration_parsed) {
     int option_index = 0;

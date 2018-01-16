@@ -210,6 +210,8 @@ int session_read_latest(session_t *session, series_id_t series_id, data_point_t 
   latest->time = response->points_count != 0 ? response->points[0].time : 0;
   latest->value = response->points_count != 0 ? response->points[0].value : 0;
 
+  sdb_free(response);
+
   return 0;
 }
 

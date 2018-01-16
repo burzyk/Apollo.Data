@@ -3,6 +3,7 @@
 //
 
 #include <pthread.h>
+#include <unistd.h>
 
 #include "src/network/server.h"
 #include "src/network/client-handler.h"
@@ -29,8 +30,7 @@ server_test_context_t *server_test_context_start(
     int points_per_chunk,
     int max_series,
     uint64_t soft_limit,
-    uint64_t hard_limit,
-    int with_session);
+    uint64_t hard_limit);
 void server_test_context_stop(server_test_context_t *context);
 
 server_test_context_t *server_test_context_start(
@@ -38,29 +38,30 @@ server_test_context_t *server_test_context_start(
     int points_per_chunk,
     int max_series,
     uint64_t soft_limit,
-    uint64_t hard_limit,
-    int with_session) {
-  server_test_context_t *context = (server_test_context_t *)sdb_alloc(sizeof(server_test_context_t));
+    uint64_t hard_limit) {
+  server_test_context_t *context = (server_test_context_t *) sdb_alloc(sizeof(server_test_context_t));
   context->db = database_create(directory, points_per_chunk, max_series, soft_limit, hard_limit);
   context->server = server_create(8081, on_message_received, context);
   pthread_create(&context->runner, NULL, server_test_routine, context->server);
-  context->session = with_session ? session_create("localhost", 8081) : NULL;
+  context->session = NULL;
   context->handler = client_handler_create(context->db);
 
-  if (with_session) {
-    sdb_assert(context->session != NULL, "Failed to connect");
+  // wait until server is responsive
+  while (context->session == NULL) {
+    usleep(100);
+    context->session = session_create("localhost", 8081);
   }
 
   return context;
 }
 
 int on_message_received(client_t *client, uint8_t *data, uint32_t size, void *context) {
-  server_test_context_t *test_context = (server_test_context_t *)context;
+  server_test_context_t *test_context = (server_test_context_t *) context;
   return client_handler_process_message(client, data, size, test_context->handler);
 }
 
 void *server_test_routine(void *data) {
-  server_t *server = (server_t *)data;
+  server_t *server = (server_t *) data;
   server_run(server);
 
   return NULL;
@@ -80,66 +81,41 @@ void server_test_context_stop(server_test_context_t *context) {
 }
 
 void test_server_simple_initialization_test(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      100,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      0);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
   server_test_context_stop(context);
 }
 
 void test_server_connect(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      100,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   server_test_context_stop(context);
 }
 
 void test_server_connect_invalid_address(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      100,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      0);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  context->session = session_create("asdasdasdas.asdsa", 8081);
-  sdb_assert(context->session == NULL, "Should not connect");
+  session_t *session = session_create("asdasdasdas.asdsa", 8081);
+  sdb_assert(session == NULL, "Should not connect");
 
   server_test_context_stop(context);
 }
 
 void test_server_connect_invalid_port(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      100,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      0);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
-  context->session = session_create("localhost", 23445);
-  sdb_assert(context->session == NULL, "Should not connect");
+  session_t *session = session_create("localhost", 23445);
+  sdb_assert(session == NULL, "Should not connect");
 
   server_test_context_stop(context);
 }
 
 void test_server_write_small(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      100,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=3, .value = 13},
@@ -169,13 +145,8 @@ void test_server_write_small(test_context_t ctx) {
 }
 
 void test_server_write_unordered(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      100,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=6, .value = 13},
@@ -208,13 +179,8 @@ void test_server_write_unordered(test_context_t ctx) {
 }
 
 void test_server_write_two_batches(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      100,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points_1[] = {
       {.time=1, .value = 1},
@@ -251,13 +217,8 @@ void test_server_write_two_batches(test_context_t ctx) {
 }
 
 void test_server_read_two_batches(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      2,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 2, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=1, .value = 1},
@@ -294,13 +255,8 @@ void test_server_read_two_batches(test_context_t ctx) {
 }
 
 void test_server_read_range(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=1, .value = 1},
@@ -330,13 +286,8 @@ void test_server_read_range(test_context_t ctx) {
 }
 
 void test_server_read_range_with_multiple_series(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points_1[] = {
       {.time=1, .value = 1},
@@ -375,13 +326,8 @@ void test_server_read_range_with_multiple_series(test_context_t ctx) {
 }
 
 void test_server_update(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points_1[] = {
       {.time=1, .value = 1},
@@ -435,13 +381,8 @@ void test_server_update(test_context_t ctx) {
 }
 
 void test_server_update_in_two_sessions(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      0);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   // First session
   session_t *session_1 = session_create("localhost", 8081);
@@ -507,13 +448,8 @@ void test_server_update_in_two_sessions(test_context_t ctx) {
 }
 
 void test_server_truncate_not_existing(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   sdb_assert(!session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
 
@@ -526,13 +462,8 @@ void test_server_truncate_not_existing(test_context_t ctx) {
 }
 
 void test_server_truncate_empty(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
@@ -550,13 +481,8 @@ void test_server_truncate_empty(test_context_t ctx) {
 }
 
 void test_server_truncate_and_write(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   for (timestamp_t i = 0; i < 3; i++) {
     data_point_t points[] = {
@@ -592,13 +518,8 @@ void test_server_truncate_and_write(test_context_t ctx) {
 }
 
 void test_server_failed_write(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      "/blah/blah",
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start("/blah/blah", 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=1, .value = 1},
@@ -613,13 +534,7 @@ void test_server_failed_write(test_context_t ctx) {
 }
 
 void test_server_write_series_out_of_range(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      10,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context = server_test_context_start(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=1, .value = 1},
@@ -631,13 +546,7 @@ void test_server_write_series_out_of_range(test_context_t ctx) {
 }
 
 void test_server_read_series_out_of_range(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      10,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context = server_test_context_start(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
@@ -648,13 +557,7 @@ void test_server_read_series_out_of_range(test_context_t ctx) {
 }
 
 void test_server_truncate_series_out_of_range(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      10,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context = server_test_context_start(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
 
   sdb_assert(session_truncate(context->session, SDB_EUR_USD_ID), "No error when truncating");
 
@@ -662,13 +565,8 @@ void test_server_truncate_series_out_of_range(test_context_t ctx) {
 }
 
 void test_server_write_filter_duplicates(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=1, .value = 1},
@@ -700,13 +598,8 @@ void test_server_write_filter_duplicates(test_context_t ctx) {
 }
 
 void test_server_write_filter_zeros(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=1, .value = 1},
@@ -740,13 +633,8 @@ void test_server_write_filter_zeros(test_context_t ctx) {
 }
 
 void test_server_read_multiple_active(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=1, .value = 1},
@@ -791,13 +679,7 @@ void test_server_read_multiple_active(test_context_t ctx) {
 }
 
 void test_server_read_latest_series_out_of_range(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      10,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context = server_test_context_start(ctx.working_directory, 10, 10, UINT64_MAX, UINT64_MAX);
 
   data_point_t result = {0};
 
@@ -810,13 +692,8 @@ void test_server_read_latest_series_out_of_range(test_context_t ctx) {
 }
 
 void test_server_read_latest_when_empty(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      10,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t result = {0};
 
@@ -829,13 +706,8 @@ void test_server_read_latest_when_empty(test_context_t ctx) {
 }
 
 void test_server_read_latest(test_context_t ctx) {
-  server_test_context_t *context = server_test_context_start(
-      ctx.working_directory,
-      2,
-      SDB_DATA_SERIES_MAX,
-      UINT64_MAX,
-      UINT64_MAX,
-      1);
+  server_test_context_t *context =
+      server_test_context_start(ctx.working_directory, 2, SDB_DATA_SERIES_MAX, UINT64_MAX, UINT64_MAX);
 
   data_point_t points[] = {
       {.time=1, .value = 10},
