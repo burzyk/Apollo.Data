@@ -4,6 +4,7 @@ namespace ShakaDB.Client
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Net;
     using System.Net.Sockets;
     using System.Threading.Tasks;
     using Protocol;
@@ -19,10 +20,14 @@ namespace ShakaDB.Client
 
         public static async Task<ShakaDbSession> Open(string hostname, int port)
         {
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            await socket.ConnectAsync(hostname, port);
+            var client = new TcpClient
+            {
+                ReceiveTimeout = 10000,
+                SendTimeout = 10000
+            };
 
-            return new ShakaDbSession(new NetworkStream(socket, true));
+            await client.ConnectAsync(hostname, port);
+            return new ShakaDbSession(client.GetStream());
         }
 
         public void Dispose()

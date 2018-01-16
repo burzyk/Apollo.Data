@@ -48,7 +48,7 @@
             var read = 0;
             var totalRead = 0;
 
-            while ((read = await stream.ReadAsync(result, totalRead, count - totalRead)) > 0)
+            while (count != totalRead && (read = await stream.ReadAsync(result, totalRead, count - totalRead)) > 0)
             {
                 totalRead += read;
             }

@@ -5,7 +5,6 @@
     public class TruncateRequest : BasePacket
     {
         public TruncateRequest(uint dataSeriesId)
-            : base(PacketType.TruncateRequest)
         {
             DataSeriesId = dataSeriesId;
         }
@@ -16,6 +15,8 @@
         }
 
         public uint DataSeriesId { get; private set; }
+
+        public override PacketType PacketType => PacketType.TruncateRequest;
 
         protected override void Load(BinaryReader reader)
         {

@@ -5,7 +5,6 @@
     public class SimpleResponse : BasePacket
     {
         public SimpleResponse(ResponseCode responseCode)
-            : base(PacketType.SimpleResponse)
         {
             ResponseCode = responseCode;
         }
@@ -16,6 +15,8 @@
         }
 
         public ResponseCode ResponseCode { get; private set; }
+
+        public override PacketType PacketType => PacketType.SimpleResponse;
 
         protected override void Load(BinaryReader reader)
         {

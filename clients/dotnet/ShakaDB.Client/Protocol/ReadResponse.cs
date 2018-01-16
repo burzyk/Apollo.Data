@@ -7,7 +7,6 @@
     public class ReadResponse : BasePacket
     {
         public ReadResponse(IReadOnlyList<DataPoint> points)
-            : base(PacketType.ReadResponse)
         {
             Points = points;
         }
@@ -18,6 +17,8 @@
         }
 
         public IReadOnlyList<DataPoint> Points { get; private set; }
+
+        public override PacketType PacketType => PacketType.ReadResponse;
 
         protected override void Load(BinaryReader reader)
         {

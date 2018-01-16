@@ -9,7 +9,6 @@
     public class WriteRequest : BasePacket
     {
         public WriteRequest(uint dataSeriesId, IEnumerable<DataPoint> points)
-            : base(PacketType.WriteRequest)
         {
             DataSeriesId = dataSeriesId;
             Points = points.ToList();
@@ -23,6 +22,8 @@
         public uint DataSeriesId { get; private set; }
 
         public IReadOnlyList<DataPoint> Points { get; private set; }
+
+        public override PacketType PacketType => PacketType.WriteRequest;
 
         protected override void Load(BinaryReader reader)
         {

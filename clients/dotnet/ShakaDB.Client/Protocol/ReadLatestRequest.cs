@@ -5,7 +5,6 @@
     public class ReadLatestRequest : BasePacket
     {
         public ReadLatestRequest(uint dataSeriesId)
-            : base(PacketType.ReadLatestRequest)
         {
             DataSeriesId = dataSeriesId;
         }
@@ -16,6 +15,8 @@
         }
 
         public uint DataSeriesId { get; private set; }
+
+        public override PacketType PacketType => PacketType.ReadLatestRequest;
 
         protected override void Load(BinaryReader reader)
         {

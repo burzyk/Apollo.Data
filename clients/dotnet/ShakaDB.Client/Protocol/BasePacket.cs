@@ -4,9 +4,8 @@
 
     public abstract class BasePacket
     {
-        protected BasePacket(PacketType packetType)
+        protected BasePacket()
         {
-            PacketType = packetType;
         }
 
         protected BasePacket(byte[] payload)
@@ -24,7 +23,7 @@
             }
         }
 
-        public PacketType PacketType { get; }
+        public abstract PacketType PacketType { get; }
 
         public byte[] Serialize()
         {

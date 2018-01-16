@@ -9,7 +9,6 @@
     public class ReadRequest : BasePacket
     {
         public ReadRequest(uint dataSeriesId, ulong begin, ulong end, int pointsPerPacket)
-            : base(PacketType.ReadRequest)
         {
             DataSeriesId = dataSeriesId;
             Begin = begin;
@@ -28,6 +27,8 @@
         public ulong End { get; private set; }
 
         public int PointsPerPacket { get; private set; }
+
+        public override PacketType PacketType => PacketType.ReadRequest;
 
         protected override void Load(BinaryReader reader)
         {
