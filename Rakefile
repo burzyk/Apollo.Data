@@ -75,6 +75,14 @@ task :build_dotnet_package => [:init] do
     sh("dotnet pack -o #{BINARIES_DIR} /p:PackageVersion=#{version} #{DOTNET_CLIENT_DIR}/ShakaDB.Client")
 end
 
+task :build_docker_image => [:init] do
+    puts "building docker image ..."
+
+    sh("git archive HEAD | bzip2 > #{BUILD_DIR}/source-latest.bz2")
+    sh("docker build . --squash --tag burzyk/shakadb:$SDB_VERSION --build-arg version=${SDB_VERSION} --build-arg build_number=${SDB_BUILD_NUMBER}")
+    sh("docker push burzyk/shakadb")
+end
+
 task :build_clients => [
     # :build_pyshaka_package,
     :build_dotnet_package]
