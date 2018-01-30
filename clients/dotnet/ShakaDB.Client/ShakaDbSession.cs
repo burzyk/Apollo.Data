@@ -20,6 +20,11 @@ namespace ShakaDB.Client
             _stream = stream;
         }
 
+        public static Task<ShakaDbSession> Open(Uri url)
+        {
+            return Open(url.Host, url.Port);
+        }
+
         public static async Task<ShakaDbSession> Open(string hostname, int port)
         {
             var client = new TcpClient
