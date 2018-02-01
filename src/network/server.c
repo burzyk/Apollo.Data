@@ -162,7 +162,7 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
   log_debug("Client connected");
   int new_client_index = 0;
 
-  while (new_client_index < SDB_MAX_CLIENTS && server->clients[new_client_index] == NULL) {
+  while (new_client_index < SDB_MAX_CLIENTS && server->clients[new_client_index] != NULL) {
     new_client_index++;
   }
 
