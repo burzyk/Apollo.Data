@@ -8,7 +8,7 @@ else ()
 endif ()
 
 if (DEFINED ENV{SDB_VERSION})
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDB_BUILD='\"$ENV{SDB_VERSION}\"'")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDB_VERSION='\"$ENV{SDB_VERSION}\"'")
 endif ()
 
 if (DEFINED ENV{SDB_BUILD})

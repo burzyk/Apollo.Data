@@ -1,10 +1,10 @@
 FROM alpine
 
 ARG version
-ARG build_number
+ARG build
 
 ENV SDB_VERSION=$version
-ENV SDB_BUILD=$build_number
+ENV SDB_BUILD=$build
 ENV SDB_CONFIGURATION release
 
 RUN mkdir /opt

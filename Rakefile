@@ -79,7 +79,7 @@ task :build_docker_image => [:init] do
     puts "building docker image ..."
 
     sh("git archive HEAD | bzip2 > #{BUILD_DIR}/source-latest.bz2")
-    sh("docker build . --squash --tag persephonecloud.com/shakadb:$SDB_VERSION --build-arg version=${SDB_VERSION} --build-arg build_number=${SDB_BUILD_NUMBER}")
+    sh("docker build . --squash --tag persephonecloud.com/shakadb:$SDB_VERSION --build-arg version=${SDB_VERSION} --build-arg build=${SDB_BUILD}")
 end
 
 task :build_clients => [
