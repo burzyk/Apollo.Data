@@ -12,7 +12,7 @@ namespace ShakaDB.Client
 
         public DataPoint(DateTime timestamp, float value)
         {
-            Timestamp = (ulong) timestamp.ToFileTime();
+            Timestamp = (ulong) new DateTimeOffset(timestamp).ToUnixTimeMilliseconds();
             Value = value;
         }
 
