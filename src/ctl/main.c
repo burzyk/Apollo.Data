@@ -167,26 +167,17 @@ int execute_command(session_t *session, client_configuration_t *config) {
 int execute_write(session_t *session, client_configuration_t *config) {
 
   fprintf(stderr, "writing to series: %d\n", config->series_id);
-  int points_size = 65536;
+  int points_size = 6553600;
   data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_size);
-  int read = 0;
-  int data_available = 1;
 
-  while (data_available) {
-    data_available = !feof(stdin);
+  while (!feof(stdin)) {
+    size_t read = fread(points, sizeof(data_point_t), (size_t)points_size, stdin);
 
-    if (data_available) {
-      fscanf(stdin, "%" PRIu64 ",%f", &points[read].time, &points[read].value);
-      read++;
-    }
-
-    if (read >= points_size || !data_available) {
-      if (session_write(session, config->series_id, points, read)) {
+    if (read > 0) {
+      if (session_write(session, config->series_id, points, (int)read)) {
         fprintf(stderr, "failed to write points\n");
         return -1;
       }
-
-      read = 0;
     }
   }
 
@@ -210,9 +201,11 @@ int execute_read(session_t *session, client_configuration_t *config) {
   while (session_read_next(session)) {
     total_read += session->read_response->points_count;
 
-    for (int i = 0; i < session->read_response->points_count; i++) {
-      printf("%" PRIu64 ",%f\n", session->read_response->points[i].time, session->read_response->points[i].value);
-    }
+    fwrite(
+        session->read_response->points,
+        sizeof(data_point_t),
+        (size_t)session->read_response->points_count,
+        stdout);
   }
 
   fprintf(stderr, "total read: %d points\n", total_read);
