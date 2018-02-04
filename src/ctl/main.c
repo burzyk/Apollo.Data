@@ -24,6 +24,8 @@
 #define SDB_CLIENT_CMD_READ       "read"
 #define SDB_CLIENT_CMD_TRUNCATE   "truncate"
 #define SDB_CLIENT_CMD_LATEST     "latest"
+#define SDB_CLIENT_CMD_TO_CSV     "to_csv"
+#define SDB_CLIENT_CMD_FROM_CSV   "from_csv"
 
 typedef struct client_configuration_s {
   char command[SDB_FILE_MAX_LEN];
@@ -41,6 +43,8 @@ int execute_write(session_t *session, client_configuration_t *config);
 int execute_read(session_t *session, client_configuration_t *config);
 int execute_truncate(session_t *session, client_configuration_t *config);
 int execute_get_latest(session_t *session, client_configuration_t *config);
+int execute_from_csv(session_t *session, client_configuration_t *config);
+int execute_to_csv(session_t *session, client_configuration_t *config);
 
 int main(int argc, char *argv[]) {
   client_configuration_t config;
@@ -90,7 +94,7 @@ void print_usage() {
   printf("Usage: shakadbctl [options]\n");
   printf("\n");
   printf("    --command, -c:    Command to be executed. Command can be:\n");
-  printf("                      write, read, truncate, latest\n");
+  printf("                      write, read, truncate, latest, to_csv, from_csv\n");
   printf("    --hostname, -h:   ShakaDB server hostname\n");
   printf("                      Default value: 'localhost'\n");
   printf("    --port, -p:       ShakaDB server port\n");
@@ -154,6 +158,12 @@ int execute_command(session_t *session, client_configuration_t *config) {
   } else if (!strncmp(SDB_CLIENT_CMD_LATEST, config->command, SDB_FILE_MAX_LEN)) {
     return execute_get_latest(session, config);
 
+  } else if (!strncmp(SDB_CLIENT_CMD_TO_CSV, config->command, SDB_FILE_MAX_LEN)) {
+    return execute_to_csv(session, config);
+
+  } else if (!strncmp(SDB_CLIENT_CMD_FROM_CSV, config->command, SDB_FILE_MAX_LEN)) {
+    return execute_from_csv(session, config);
+
   } else if (!strncmp("", config->command, SDB_FILE_MAX_LEN)) {
     print_usage();
   } else {
@@ -181,6 +191,7 @@ int execute_write(session_t *session, client_configuration_t *config) {
     }
   }
 
+  sdb_free(points);
   return 0;
 }
 
@@ -243,5 +254,37 @@ int execute_get_latest(session_t *session, client_configuration_t *config) {
     fprintf(stderr, "time series empty\n");
   }
 
+  return 0;
+}
+
+int execute_from_csv(session_t *session, client_configuration_t *config) {
+  fprintf(stderr, "converting to binary\n");
+  timestamp_t time;
+  float value;
+
+  while (!feof(stdin)) {
+    fscanf(stdin, "%" PRIu64 ",%f\n", &time, &value);
+
+    fwrite(&time, sizeof(time), 1, stdout);
+    fwrite(&value, sizeof(value), 1, stdout);
+  }
+
+  return 0;
+}
+
+int execute_to_csv(session_t *session, client_configuration_t *config) {
+  fprintf(stderr, "converting to string\n");
+  int points_size = 6553600;
+  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_size);
+
+  while (!feof(stdin)) {
+    size_t read = fread(points, sizeof(data_point_t), (size_t)points_size, stdin);
+
+    for (int i = 0; i < read; i++) {
+      printf("%" PRIu64 ",%f\n", points[i].time, points[i].value);
+    }
+  }
+
+  sdb_free(points);
   return 0;
 }
