@@ -1,10 +1,33 @@
 FROM alpine
 
+ARG version
+ARG build
+
+ENV SDB_VERSION=$version
+ENV SDB_BUILD=$build
+ENV SDB_CONFIGURATION release
+
+RUN mkdir /opt
 RUN mkdir /opt/shakadb
 RUN mkdir /var/lib/shakadb
 
-COPY build/bin/shakadb /opt/shakadb
+COPY build/source-latest.bz2 /root
+
+RUN apk add --no-cache cmake gcc make musl-dev libuv-dev
+
+RUN cd /root && \
+    tar -jxf source-latest.bz2 && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make && \
+    cp shakadb /opt/shakadb
+
+RUN apk del --no-cache cmake gcc make musl-dev libuv-dev
+RUN apk add --no-cache libuv
+RUN rm -rf /root/*
 
 VOLUME /var/lib/shakadb
+EXPOSE 8487
 
-CMD [ "sh", "-c", "/usr/local/bin/shakadb" ]
+CMD [ "/bin/ash", "-c", "/opt/shakadb/shakadb" ]

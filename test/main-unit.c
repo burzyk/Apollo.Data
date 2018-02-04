@@ -44,7 +44,7 @@
 int main(int argc, char *argv[]) {
   int configuration_parsed = 0;
   char directory[SDB_FILE_MAX_LEN] = {0};
-  strcpy(directory, "/Users/pburzynski/shakadb-test/data/test-stuff");
+  strcpy(directory, "/home/pawel/projects/ShakaDB/build/tests");
 
   while (!configuration_parsed) {
     int option_index = 0;
@@ -133,7 +133,6 @@ int main(int argc, char *argv[]) {
   TEST(test_server_truncate_not_existing);
   TEST(test_server_truncate_empty);
   TEST(test_server_truncate_and_write);
-  TEST(test_server_no_sig_pipe_on_too_large_packet);
   TEST(test_server_failed_write);
   TEST(test_server_write_series_out_of_range);
   TEST(test_server_read_series_out_of_range);

@@ -10,9 +10,9 @@ namespace ShakaDB.Client
             Value = value;
         }
 
-        public DataPoint(DateTime timestamp, float value)
+        public DataPoint(DateTimeOffset timestamp, float value)
         {
-            Timestamp = (ulong) timestamp.ToFileTime();
+            Timestamp = (ulong) timestamp.ToUnixTimeMilliseconds();
             Value = value;
         }
 
@@ -20,6 +20,6 @@ namespace ShakaDB.Client
 
         public float Value { get; }
 
-        public DateTime TimestampAsDate => DateTime.FromFileTime((long) Timestamp);
+        public DateTimeOffset TimestampAsDate => DateTimeOffset.FromUnixTimeMilliseconds((long) Timestamp);
     }
 }

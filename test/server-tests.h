@@ -22,7 +22,6 @@ void test_server_update_in_two_sessions(test_context_t ctx);
 void test_server_truncate_not_existing(test_context_t ctx);
 void test_server_truncate_empty(test_context_t ctx);
 void test_server_truncate_and_write(test_context_t ctx);
-void test_server_no_sig_pipe_on_too_large_packet(test_context_t ctx);
 void test_server_failed_write(test_context_t ctx);
 void test_server_write_series_out_of_range(test_context_t ctx);
 void test_server_read_series_out_of_range(test_context_t ctx);

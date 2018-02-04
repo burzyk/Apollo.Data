@@ -4,6 +4,8 @@
 
 #include "src/network/server.h"
 
+#include <string.h>
+
 #include "src/common.h"
 #include "src/diagnostics.h"
 #include "src/network/protocol.h"
@@ -16,6 +18,7 @@ void on_client_connected(uv_stream_t *master_socket, int status);
 void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf);
 void on_write_complete(uv_write_t *req, int status);
 void on_server_shutdown(uv_async_t *request);
+void on_client_free(uv_handle_t *socket);
 
 client_t *client_create(server_t *server, int index) {
   client_t *client = sdb_alloc(sizeof(client_t));
@@ -23,16 +26,24 @@ client_t *client_create(server_t *server, int index) {
   client->buffer_length = 0;
   client->server = server;
   client->buffer_length = 0;
-  uv_tcp_init(server->loop, &client->socket);
+  uv_tcp_init(&server->loop, &client->socket);
   client->socket.data = client;
+
+  // if this is not available on linux
+  // each time a connection is reset by a peer
+  // the application will crash
+  signal(SIGPIPE, SIG_IGN);
 
   return client;
 }
 
 void client_disconnect_and_destroy(client_t *client) {
   client->server->clients[client->index] = NULL;
-  uv_close((uv_handle_t *)&client->socket, NULL);
-  sdb_free(client);
+  uv_close((uv_handle_t *)&client->socket, on_client_free);
+}
+
+void on_client_free(uv_handle_t *socket) {
+  sdb_free(socket->data);
 }
 
 int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count) {
@@ -72,12 +83,12 @@ void on_write_complete(uv_write_t *req, int status) {
 server_t *server_create(int port, packet_handler_t handler, void *handler_context) {
   server_t *server = sdb_alloc(sizeof(server_t));
   server->port = port;
-  server->loop = uv_default_loop();
+  uv_loop_init(&server->loop);
   server->handler = handler;
   server->handler_context = handler_context;
-  uv_tcp_init(server->loop, &server->master_socket);
+  uv_tcp_init(&server->loop, &server->master_socket);
   server->shutdown_request.data = NULL;
-  uv_async_init(server->loop, &server->shutdown_request, on_server_shutdown);
+  uv_async_init(&server->loop, &server->shutdown_request, on_server_shutdown);
   server->master_socket.data = server;
   memset(server->clients, 0, SDB_MAX_CLIENTS * sizeof(client_t *));
 
@@ -85,7 +96,7 @@ server_t *server_create(int port, packet_handler_t handler, void *handler_contex
 }
 
 void server_destroy(server_t *server) {
-  uv_loop_close(server->loop);
+  uv_loop_close(&server->loop);
   sdb_free(server);
 }
 
@@ -101,8 +112,9 @@ void server_run(server_t *server) {
     die("Failed to listen for incoming clients");
   }
 
-  uv_run(server->loop, UV_RUN_DEFAULT);
-  uv_loop_close(server->loop);
+  if (uv_run(&server->loop, UV_RUN_DEFAULT) != 0) {
+    die("Failed to start the main loop");
+  }
 }
 
 void server_stop(server_t *server) {
@@ -148,18 +160,18 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
   }
 
   log_debug("Client connected");
-  client_t *client = NULL;
+  int new_client_index = 0;
 
-  for (int i = 0; i < SDB_MAX_CLIENTS && client == NULL; i++) {
-    if (server->clients[i] == NULL) {
-      client = server->clients[i] = client_create(server, i);
-    }
+  while (new_client_index < SDB_MAX_CLIENTS && server->clients[new_client_index] != NULL) {
+    new_client_index++;
   }
 
-  if (client == NULL) {
+  if (new_client_index >= SDB_MAX_CLIENTS) {
     log_debug("Max clients connected, ignoring this client");
     return;
   }
+
+  client_t *client = server->clients[new_client_index] = client_create(server, new_client_index);
 
   if ((status = uv_accept((uv_stream_t *)&server->master_socket, (uv_stream_t *)&client->socket)) < 0) {
     log_error("Failed to accept the connection: %s", uv_strerror(status));
@@ -177,6 +189,11 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
 
   if (nread < 0) {
     log_debug("Client disconnected, %d", client->index);
+
+    if (buf->base != NULL) {
+      sdb_free(buf->base);
+    }
+
     client_disconnect_and_destroy(client);
   } else if (nread > 0) {
     memcpy(client->buffer + client->buffer_length, buf->base, (size_t)nread);

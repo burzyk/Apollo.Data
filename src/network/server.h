@@ -55,7 +55,7 @@ typedef int (*packet_handler_t)(client_t *client, uint8_t *data, uint32_t size, 
 
 typedef struct server_s {
   int port;
-  uv_loop_t *loop;
+  uv_loop_t loop;
   uv_tcp_t master_socket;
   uv_async_t shutdown_request;
   client_t *clients[SDB_MAX_CLIENTS];
