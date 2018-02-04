@@ -37,6 +37,10 @@ typedef struct client_configuration_s {
 void print_usage();
 int client_configuration_load(int argc, char **argv, client_configuration_t *config);
 int execute_command(session_t *session, client_configuration_t *config);
+int execute_write(session_t *session, client_configuration_t *config);
+int execute_read(session_t *session, client_configuration_t *config);
+int execute_truncate(session_t *session, client_configuration_t *config);
+int execute_get_latest(session_t *session, client_configuration_t *config);
 
 int main(int argc, char *argv[]) {
   client_configuration_t config;
@@ -78,12 +82,12 @@ int main(int argc, char *argv[]) {
 
 void print_usage() {
   printf("\n");
-  printf("ShakaDB ctl - time series database ctl\n");
+  printf("shakadbctl - controls shakadb instance\n");
   printf("\n");
   printf("    Version:\t" SDB_VERSION "\n");
   printf("    Build:\t" SDB_BUILD "\n");
   printf("\n");
-  printf("Usage: shakadb.ctl [options]\n");
+  printf("Usage: shakadbctl [options]\n");
   printf("\n");
   printf("    --command, -c:    Command to be executed. Command can be:\n");
   printf("                      write, read, truncate, latest\n");
@@ -136,83 +140,114 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
     }
   }
 }
+
 int execute_command(session_t *session, client_configuration_t *config) {
   if (!strncmp(SDB_CLIENT_CMD_WRITE, config->command, SDB_FILE_MAX_LEN)) {
-    fprintf(stderr, "writing to series: %d\n", config->series_id);
-    int points_size = 65536;
-    data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t *) * points_size);
-    int read = 0;
-    int data_available = 1;
+    return execute_write(session, config);
 
-    while (data_available) {
-      data_available = !feof(stdin);
-
-      if (data_available) {
-        fscanf(stdin, "%" PRIu64 ",%f", &points[read].time, &points[read].value);
-        read++;
-      }
-
-      if (read >= points_size || !data_available) {
-        if (session_write(session, config->series_id, points, read)) {
-          fprintf(stderr, "failed to write points\n");
-          return -1;
-        }
-
-        read = 0;
-      }
-    }
   } else if (!strncmp(SDB_CLIENT_CMD_READ, config->command, SDB_FILE_MAX_LEN)) {
-    fprintf(stderr,
-            "reading points: %d -> [%" PRIu64 ", %" PRIu64 ")\n",
-            config->series_id,
-            config->begin,
-            config->end);
+    return execute_read(session, config);
 
-    int total_read = 0;
-
-    if (session_read(session, config->series_id, config->begin, config->end, SDB_POINTS_PER_PACKET_MAX)) {
-      fprintf(stderr, "failed to read data points\n");
-      return -1;
-    }
-
-    while (session_read_next(session)) {
-      total_read += session->read_response->points_count;
-
-      for (int i = 0; i < session->read_response->points_count; i++) {
-        printf("%" PRIu64 ",%f\n", session->read_response->points[i].time, session->read_response->points[i].value);
-      }
-    }
-
-    fprintf(stderr, "total read: %d points\n", total_read);
   } else if (!strncmp(SDB_CLIENT_CMD_TRUNCATE, config->command, SDB_FILE_MAX_LEN)) {
-    fprintf(stderr, "truncating data series: %d\n", config->series_id);
+    return execute_truncate(session, config);
 
-    if (session_truncate(session, config->series_id)) {
-      fprintf(stderr, "failed to read data points\n");
-      return -1;
-    }
-
-    fprintf(stderr, "truncate successful\n");
   } else if (!strncmp(SDB_CLIENT_CMD_LATEST, config->command, SDB_FILE_MAX_LEN)) {
-    fprintf(stderr, "getting latest from: %d\n", config->series_id);
+    return execute_get_latest(session, config);
 
-    data_point_t latest = {0};
-
-    if (session_read_latest(session, config->series_id, &latest)) {
-      fprintf(stderr, "failed to get latest data point\n");
-      return -1;
-    }
-
-    if (latest.time != 0) {
-      printf("%" PRIu64 ",%f\n", latest.time, latest.value);
-    } else {
-      fprintf(stderr, "time series empty\n");
-    }
   } else if (!strncmp("", config->command, SDB_FILE_MAX_LEN)) {
     print_usage();
   } else {
     fprintf(stderr, "unknown command: '%s'\n", config->command);
     return -1;
+  }
+
+  return 0;
+}
+
+int execute_write(session_t *session, client_configuration_t *config) {
+
+  fprintf(stderr, "writing to series: %d\n", config->series_id);
+  int points_size = 65536;
+  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t *) * points_size);
+  int read = 0;
+  int data_available = 1;
+
+  while (data_available) {
+    data_available = !feof(stdin);
+
+    if (data_available) {
+      fscanf(stdin, "%" PRIu64 ",%f", &points[read].time, &points[read].value);
+      read++;
+    }
+
+    if (read >= points_size || !data_available) {
+      if (session_write(session, config->series_id, points, read)) {
+        fprintf(stderr, "failed to write points\n");
+        return -1;
+      }
+
+      read = 0;
+    }
+  }
+
+  return 0;
+}
+
+int execute_read(session_t *session, client_configuration_t *config) {
+  fprintf(stderr,
+          "reading points: %d -> [%" PRIu64 ", %" PRIu64 ")\n",
+          config->series_id,
+          config->begin,
+          config->end);
+
+  int total_read = 0;
+
+  if (session_read(session, config->series_id, config->begin, config->end, SDB_POINTS_PER_PACKET_MAX)) {
+    fprintf(stderr, "failed to read data points\n");
+    return -1;
+  }
+
+  while (session_read_next(session)) {
+    total_read += session->read_response->points_count;
+
+    for (int i = 0; i < session->read_response->points_count; i++) {
+      printf("%" PRIu64 ",%f\n", session->read_response->points[i].time, session->read_response->points[i].value);
+    }
+  }
+
+  fprintf(stderr, "total read: %d points\n", total_read);
+
+  return 0;
+}
+
+int execute_truncate(session_t *session, client_configuration_t *config) {
+
+  fprintf(stderr, "truncating data series: %d\n", config->series_id);
+
+  if (session_truncate(session, config->series_id)) {
+    fprintf(stderr, "failed to read data points\n");
+    return -1;
+  }
+
+  fprintf(stderr, "truncate successful\n");
+
+  return 0;
+}
+
+int execute_get_latest(session_t *session, client_configuration_t *config) {
+
+  fprintf(stderr, "getting latest from: %d\n", config->series_id);
+  data_point_t latest = {0};
+
+  if (session_read_latest(session, config->series_id, &latest)) {
+    fprintf(stderr, "failed to get latest data point\n");
+    return -1;
+  }
+
+  if (latest.time != 0) {
+    printf("%" PRIu64 ",%f\n", latest.time, latest.value);
+  } else {
+    fprintf(stderr, "time series empty\n");
   }
 
   return 0;
