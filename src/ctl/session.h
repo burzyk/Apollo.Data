@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 08/02/2017.
 //
 
-#ifndef SRC_CLIENT_SESSION_H_
-#define SRC_CLIENT_SESSION_H_
+#ifndef SRC_CTL_SESSION_H_
+#define SRC_CTL_SESSION_H_
 
 #include "src/network/protocol.h"
 
@@ -46,4 +46,4 @@ int session_read(session_t *session,
 int session_read_next(session_t *session);
 int session_read_latest(session_t *session, series_id_t series_id, data_point_t *latest);
 
-#endif  // SRC_NETWORK_CLIENT_SESSION_H_
+#endif  // SRC_NETWORK_CTL_SESSION_H_

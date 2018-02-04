@@ -23,7 +23,7 @@
 // Created by Pawel Burzynski on 08/02/2017.
 //
 
-#include "src/client/session.h"
+#include "src/ctl/session.h"
 
 #include <sys/socket.h>
 #include <unistd.h>

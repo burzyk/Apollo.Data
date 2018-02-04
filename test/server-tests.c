@@ -7,7 +7,7 @@
 
 #include "src/network/server.h"
 #include "src/network/client-handler.h"
-#include "src/client/session.h"
+#include "src/ctl/session.h"
 #include "src/storage/database.h"
 #include "test/server-tests.h"
 

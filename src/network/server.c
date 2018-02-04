@@ -66,7 +66,7 @@ int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count) 
     return 0;
   }
 
-  log_error("Failed to write to client: %s", uv_strerror(status));
+  log_error("Failed to write to ctl: %s", uv_strerror(status));
   on_write_complete(request, -1);
   return status;
 }
@@ -167,7 +167,7 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
   }
 
   if (new_client_index >= SDB_MAX_CLIENTS) {
-    log_debug("Max clients connected, ignoring this client");
+    log_debug("Max clients connected, ignoring this ctl");
     return;
   }
 

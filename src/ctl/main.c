@@ -10,7 +10,7 @@
 
 #include "src/common.h"
 #include "src/diagnostics.h"
-#include "src/client/session.h"
+#include "src/ctl/session.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
@@ -78,12 +78,12 @@ int main(int argc, char *argv[]) {
 
 void print_usage() {
   printf("\n");
-  printf("ShakaDB client - time series database client\n");
+  printf("ShakaDB ctl - time series database ctl\n");
   printf("\n");
   printf("    Version:\t" SDB_VERSION "\n");
   printf("    Build:\t" SDB_BUILD "\n");
   printf("\n");
-  printf("Usage: shakadb.client [options]\n");
+  printf("Usage: shakadb.ctl [options]\n");
   printf("\n");
   printf("    --command, -c:    Command to be executed. Command can be:\n");
   printf("                      write, read, truncate, latest\n");

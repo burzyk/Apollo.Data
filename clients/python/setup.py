@@ -18,7 +18,7 @@ setup(
 
     version=version,
 
-    description='ShakaDB python client library',
+    description='ShakaDB python ctl library',
     long_description=long_description,
 
     url='http://shakadb.com',
@@ -43,7 +43,7 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
 
-    keywords='shakadb client timeseries',
+    keywords='shakadb ctl timeseries',
 
     packages=find_packages(exclude=['tests'])
 )
