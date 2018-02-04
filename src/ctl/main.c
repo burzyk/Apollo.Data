@@ -26,6 +26,7 @@
 #define SDB_CLIENT_CMD_LATEST     "latest"
 #define SDB_CLIENT_CMD_TO_CSV     "to_csv"
 #define SDB_CLIENT_CMD_FROM_CSV   "from_csv"
+#define SDB_CLIENT_CMD_RESAMPLE   "resample"
 
 typedef struct client_configuration_s {
   char command[SDB_FILE_MAX_LEN];
@@ -34,6 +35,7 @@ typedef struct client_configuration_s {
   series_id_t series_id;
   timestamp_t begin;
   timestamp_t end;
+  int window_width;
 } client_configuration_t;
 
 void print_usage();
@@ -45,6 +47,7 @@ int execute_truncate(session_t *session, client_configuration_t *config);
 int execute_get_latest(session_t *session, client_configuration_t *config);
 int execute_from_csv(session_t *session, client_configuration_t *config);
 int execute_to_csv(session_t *session, client_configuration_t *config);
+int execute_resample(session_t *session, client_configuration_t *config);
 
 int main(int argc, char *argv[]) {
   client_configuration_t config;
@@ -54,6 +57,7 @@ int main(int argc, char *argv[]) {
   config.series_id = 0;
   config.begin = 0;
   config.end = 0;
+  config.window_width = 0;
 
   if (client_configuration_load(argc, argv, &config)) {
     print_usage();
@@ -105,6 +109,8 @@ void print_usage() {
   printf("                      Default value: 0\n");
   printf("    --end, -e:        End for reading, exclusive\n");
   printf("                      Default value: 0\n");
+  printf("    --width, -w:      Resample window width\n");
+  printf("                      Default value: 0\n");
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
   printf("\n");
@@ -119,10 +125,11 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
         {"port", required_argument, 0, 'p'},
         {"series", required_argument, 0, 's'},
         {"begin", required_argument, 0, 'b'},
-        {"end", required_argument, 0, 'e'}
+        {"end", required_argument, 0, 'e'},
+        {"width", required_argument, 0, 'w'}
     };
 
-    int c = getopt_long(argc, argv, "c:m:p:s:b:e:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "c:m:p:s:b:e:w:", long_options, &option_index);
     if (c == -1) {
       return 0;
     }
@@ -139,6 +146,8 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
       case 'b':sscanf(optarg, "%" PRIu64, &config->begin);
         break;
       case 'e':sscanf(optarg, "%" PRIu64, &config->end);
+        break;
+      case 'w':sscanf(optarg, "%d", &config->window_width);
         break;
       default:return -1;
     }
@@ -163,6 +172,9 @@ int execute_command(session_t *session, client_configuration_t *config) {
 
   } else if (!strncmp(SDB_CLIENT_CMD_FROM_CSV, config->command, SDB_FILE_MAX_LEN)) {
     return execute_from_csv(session, config);
+
+  } else if (!strncmp(SDB_CLIENT_CMD_RESAMPLE, config->command, SDB_FILE_MAX_LEN)) {
+    return execute_resample(session, config);
 
   } else if (!strncmp("", config->command, SDB_FILE_MAX_LEN)) {
     print_usage();
@@ -286,5 +298,49 @@ int execute_to_csv(session_t *session, client_configuration_t *config) {
   }
 
   sdb_free(points);
+  return 0;
+}
+
+int execute_resample(session_t *session, client_configuration_t *config) {
+  fprintf(stderr, "resampling input with: %d window\n", config->window_width);
+  int points_size = 6553600;
+  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_size);
+  data_point_t *resampled = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_size);
+
+  while (!feof(stdin)) {
+    size_t read = fread(points, sizeof(data_point_t), (size_t)points_size, stdin);
+
+    if (read == 0) {
+      return 0;
+    }
+
+    timestamp_t begin = points[0].time;
+    int ri = 0;
+    int i = 0;
+    int window_count = 0;
+
+    while (i < read) {
+      if (points[i].time < begin + config->window_width) {
+        resampled[ri].time = (begin + begin + config->window_width) / 2;
+        resampled[ri].value = (resampled[ri].value * window_count + points[i].value) / (window_count + 1);
+
+        window_count++;
+        i++;
+      } else {
+        if (window_count != 0) {
+          ri++;
+        }
+
+        begin += config->window_width;
+        window_count = 0;
+      }
+    }
+
+    fwrite(resampled, sizeof(data_point_t), (size_t)ri, stdout);
+  }
+
+  sdb_free(points);
+  sdb_free(resampled);
+
   return 0;
 }
