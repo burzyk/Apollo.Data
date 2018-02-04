@@ -168,7 +168,7 @@ int execute_write(session_t *session, client_configuration_t *config) {
 
   fprintf(stderr, "writing to series: %d\n", config->series_id);
   int points_size = 65536;
-  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t *) * points_size);
+  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_size);
   int read = 0;
   int data_available = 1;
 
