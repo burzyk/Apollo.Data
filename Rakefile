@@ -7,6 +7,7 @@ BINARIES_DIR=BUILD_DIR + '/bin'
 TESTS_DIR=BUILD_DIR + '/tests'
 INTEGRATION_TESTS_DATA_DIR=BUILD_DIR + '/integration-tests'
 PYTHON_CLIENT_DIR=THIS_DIR + '/clients/python'
+PYTHON_CLIENT_DIST=PYTHON_CLIENT_DIR + '/dist'
 DOTNET_CLIENT_DIR=THIS_DIR + '/clients/dotnet'
 
 def start_test_instance()
@@ -45,6 +46,7 @@ task :init do
     puts "Initializing build ..."
 
     FileUtils.rm_rf(BUILD_DIR) if Dir.exists?(BUILD_DIR)
+    FileUtils.rm_rf(PYTHON_CLIENT_DIST) if Dir.exists?(PYTHON_CLIENT_DIST)
     Dir.mkdir(BUILD_DIR)
     Dir.mkdir(BINARIES_DIR)
     Dir.mkdir(TESTS_DIR)
@@ -63,7 +65,7 @@ end
 task :build_pyshaka_package => [:init] do
     sh("python3 -m pip install wheel")
     sh("cd #{PYTHON_CLIENT_DIR} && python3 setup.py bdist_wheel")
-    sh("cp #{PYTHON_CLIENT_DIR}/dist/pyshaka-*-py2.py3-none-any.whl #{BINARIES_DIR}")
+    sh("cp #{PYTHON_CLIENT_DIST}/pyshaka-*-py2.py3-none-any.whl #{BINARIES_DIR}")
 end
 
 task :build_dotnet_package => [:init] do
@@ -83,7 +85,7 @@ task :build_docker_image => [:init] do
 end
 
 task :build_clients => [
-    # :build_pyshaka_package,
+    :build_pyshaka_package,
     :build_dotnet_package]
 
 task :start_test_instance do
@@ -106,7 +108,7 @@ task :run_integration_tests => [:build_binaries] do
     start_test_instance()
     sleep 1
 
-    # run_python_tests()
+    run_python_tests()
     run_dotnet_tests()
 
     sleep 1

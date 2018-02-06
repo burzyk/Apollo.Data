@@ -1,5 +1,6 @@
 from pytest import raises
 
+import socket
 import pyshaka
 
 
@@ -13,15 +14,16 @@ def test_server_running():
 
 
 def test_invalid_server():
-    with raises(pyshaka.ShakaDbError):
+    with raises(socket.gaierror):
         pyshaka.Session('blah.blah', 8487)
 
 
 def test_multiple_open_iterators():
     with raises(pyshaka.ShakaDbError):
         s = pyshaka.Session('localhost', 8487)
-        s.read(0, 100, 1000)
-        s.read(0, 100, 1000)
+        s.write(TestConstants.USD_AUD, [(1, 12), (2, 13)])
+        f = next(s.read(TestConstants.USD_AUD, 0, 1000, 1))
+        s = list(s.read(TestConstants.USD_AUD, 0, 1000, 1))
 
 
 def test_server_read_and_write_with_iterator():
@@ -105,4 +107,4 @@ def test_server_truncate_test():
 
 
 if __name__ == '__main__':
-    test_server_read_and_write_with_iterator_and_points_per_packet_limit()
+    test_invalid_server()

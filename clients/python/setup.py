@@ -8,17 +8,14 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-version = '{0}.{1}.{2}'.format(
-    environ['SDB_VERSION_MAJOR'],
-    environ['SDB_VERSION_MINOR'],
-    environ['SDB_VERSION_PATCH'])
+version = environ['SDB_VERSION']
 
 setup(
     name='pyshaka',
 
     version=version,
 
-    description='ShakaDB python ctl library',
+    description='ShakaDB python client library',
     long_description=long_description,
 
     url='http://shakadb.com',
@@ -43,7 +40,7 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
 
-    keywords='shakadb ctl timeseries',
+    keywords='shakadb client timeseries',
 
     packages=find_packages(exclude=['tests'])
 )

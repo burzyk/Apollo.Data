@@ -21,7 +21,7 @@ class ShakaDbError(Exception):
 
 def ensure_reading_closed(func):
     def do_ensure_reading_closed(self, *args, **kwargs):
-        if not self.is_reading_open():
+        if self.is_reading_open():
             raise ShakaDbError("Multiple active reads are not supported")
 
         return func(self, *args, **kwargs)
@@ -56,10 +56,10 @@ class Session:
         self._assert_simple_response()
 
     @ensure_reading_closed
-    def get_latest(self, series_id):
+    def latest(self, series_id):
         self._send(s.pack('I', series_id), READ_LATEST_REQUEST)
         points = self._read_points()
-        return None if len(points) == 0 else points[1]
+        return None if len(points) == 0 else points[0]
 
     @ensure_reading_closed
     def read(self, series_id, begin, end, points_per_packet=65536):
