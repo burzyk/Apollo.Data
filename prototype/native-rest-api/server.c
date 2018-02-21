@@ -2,13 +2,15 @@
 // Created by Pawel Burzynski on 13/01/2018.
 //
 
-#include "src/network/server.h"
+#include "server.h"
 
 #include <string.h>
+#include <stdlib.h>
 
-#include "src/common.h"
-#include "src/diagnostics.h"
-#include "src/network/protocol.h"
+void die(char *msg) {
+  fprintf(stderr, msg);
+  exit(-1);
+}
 
 client_t *client_create(server_t *server, int index);
 void client_disconnect_and_destroy(client_t *client);
@@ -21,7 +23,7 @@ void on_server_shutdown(uv_async_t *request);
 void on_client_free(uv_handle_t *socket);
 
 client_t *client_create(server_t *server, int index) {
-  client_t *client = sdb_alloc(sizeof(client_t));
+  client_t *client = calloc(sizeof(client_t), 1);
   client->index = index;
   client->buffer_length = 0;
   client->server = server;
@@ -43,30 +45,24 @@ void client_disconnect_and_destroy(client_t *client) {
 }
 
 void on_client_free(uv_handle_t *socket) {
-  sdb_free(socket->data);
+  free(socket->data);
 }
 
 int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count) {
-  uv_write_t *request = (uv_write_t *)sdb_alloc(sizeof(uv_write_t));
-  uv_buf_t *buf = (uv_buf_t *)sdb_alloc(sizeof(uv_buf_t) * 2);
+  uv_write_t *request = (uv_write_t *)calloc(sizeof(uv_write_t), 1);
+  uv_buf_t *buf = (uv_buf_t *)calloc(sizeof(uv_buf_t), 2);
   request->data = buf;
 
-  packet_t *packet = (packet_t *)sdb_alloc(sizeof(packet_t));
-  packet->magic = SDB_SERVER_MAGIC;
-  packet->total_size = sizeof(packet_t) + count;
-
-  buf[0].base = (char *)packet;
-  buf[0].len = sizeof(packet_t);
-  buf[1].base = (char *)data;
-  buf[1].len = count;
+  buf->base = (char *)data;
+  buf->len = count;
+  buf[1].base = client;
 
   int status;
 
-  if ((status = uv_write(request, (uv_stream_t *)&client->socket, buf, 2, on_write_complete)) >= 0) {
+  if ((status = uv_write(request, (uv_stream_t *)&client->socket, buf, 1, on_write_complete)) >= 0) {
     return 0;
   }
 
-  log_error("Failed to write to ctl: %s", uv_strerror(status));
   on_write_complete(request, -1);
   return status;
 }
@@ -74,14 +70,17 @@ int client_send_and_destroy_data(client_t *client, uint8_t *data, size_t count) 
 void on_write_complete(uv_write_t *req, int status) {
   uv_buf_t *buf = (uv_buf_t *)req->data;
 
-  sdb_free(buf[0].base);
-  sdb_free(buf[1].base);
-  sdb_free(buf);
-  sdb_free(req);
+  client_disconnect_and_destroy(buf[1].base);
+
+  free(buf->base);
+  free(buf);
+  free(req);
+
+
 }
 
 server_t *server_create(int port, packet_handler_t handler, void *handler_context) {
-  server_t *server = sdb_alloc(sizeof(server_t));
+  server_t *server = calloc(sizeof(server_t), 1);
   server->port = port;
   uv_loop_init(&server->loop);
   server->handler = handler;
@@ -97,7 +96,7 @@ server_t *server_create(int port, packet_handler_t handler, void *handler_contex
 
 void server_destroy(server_t *server) {
   uv_loop_close(&server->loop);
-  sdb_free(server);
+  free(server);
 }
 
 void server_run(server_t *server) {
@@ -129,7 +128,6 @@ void on_server_shutdown(uv_async_t *request) {
     return;
   }
 
-  log_info("Received shutdown request");
   uv_close((uv_handle_t *)&server->master_socket, NULL);
 
   for (int i = 0; i < SDB_MAX_CLIENTS; i++) {
@@ -140,14 +138,13 @@ void on_server_shutdown(uv_async_t *request) {
     }
   }
 
-  log_info("All clients disconnected");
   uv_close((uv_handle_t *)request, NULL);
 }
 
 void on_alloc(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
-  suggested_size = (size_t)sdb_min(SDB_SERVER_READ_BUFFER_MAX_LEN, (int)suggested_size);
+  suggested_size = SDB_SERVER_READ_BUFFER_MAX_LEN;
 
-  buf->base = sdb_alloc(suggested_size);
+  buf->base = calloc(suggested_size, 1);
   buf->len = suggested_size;
 }
 
@@ -155,11 +152,9 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
   server_t *server = (server_t *)master_socket->data;
 
   if (status < 0) {
-    log_error("New connection error: %s", uv_strerror(status));
     return;
   }
 
-  log_debug("Client connected");
   int new_client_index = 0;
 
   while (new_client_index < SDB_MAX_CLIENTS && server->clients[new_client_index] != NULL) {
@@ -167,19 +162,16 @@ void on_client_connected(uv_stream_t *master_socket, int status) {
   }
 
   if (new_client_index >= SDB_MAX_CLIENTS) {
-    log_debug("Max clients connected, ignoring this ctl");
     return;
   }
 
   client_t *client = server->clients[new_client_index] = client_create(server, new_client_index);
 
   if ((status = uv_accept((uv_stream_t *)&server->master_socket, (uv_stream_t *)&client->socket)) < 0) {
-    log_error("Failed to accept the connection: %s", uv_strerror(status));
     client_disconnect_and_destroy(client);
   }
 
   if ((status = uv_read_start((uv_stream_t *)client, on_alloc, on_data_read)) < 0) {
-    log_error("Failed to start reading: %s", uv_strerror(status));
     client_disconnect_and_destroy(client);
   }
 }
@@ -188,49 +180,21 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
   client_t *client = (client_t *)client_socket->data;
 
   if (nread < 0) {
-    log_debug("Client disconnected, %d", client->index);
+    const char *data =
+        "HTTP/1.1 200 OK\r\n"
+            "Content-Type: application/json\r\n"
+            "\r\n"
+            "{\"ala\": \"ma kota\"}\r\n";
+    size_t data_len = strlen(data);
 
-    if (buf->base != NULL) {
-      sdb_free(buf->base);
-    }
+    char *response = calloc(data_len, 1);
+    strncpy(response, data, data_len);
 
-    client_disconnect_and_destroy(client);
+    client_send_and_destroy_data(client, response, data_len);
+
   } else if (nread > 0) {
     memcpy(client->buffer + client->buffer_length, buf->base, (size_t)nread);
     client->buffer_length += nread;
-    sdb_free(buf->base);
-
-    if (client->buffer_length < sizeof(packet_t)) {
-      return;
-    }
-
-    packet_t *packet = (packet_t *)client->buffer;
-
-    if (packet->magic != SDB_SERVER_MAGIC || packet->total_size > SDB_SERVER_PACKET_MAX_LEN) {
-      log_error("Received malformed packet, disconnecting, magic: %u, len: %u", packet->magic, packet->total_size);
-      client_disconnect_and_destroy(client);
-      return;
-    }
-
-    if (client->buffer_length < packet->total_size) {
-      return;
-    }
-
-    int result = client->server->handler(
-        client,
-        packet->payload,
-        packet->total_size - sizeof(packet_t),
-        client->server->handler_context);
-
-    if (result) {
-      client_disconnect_and_destroy(client);
-      return;
-    }
-
-    client->buffer_length -= packet->total_size;
-
-    if (client->buffer_length > 0) {
-      memcpy(client->buffer, client->buffer + packet->total_size, client->buffer_length);
-    }
+    free(buf->base);
   }
 }

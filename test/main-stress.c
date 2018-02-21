@@ -26,7 +26,7 @@
 #include <time.h>
 
 #include "src/diagnostics.h"
-#include "src/client/session.h"
+#include "src/ctl/session.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
