@@ -37,7 +37,7 @@ int chunk_calculate_size(int points_count) {
   return points_count * sizeof(data_point_t);
 }
 
-chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points, cache_manager_t *cache) {
+chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points) {
   sdb_file_t *file = sdb_file_open(file_name);
 
   if (file == NULL) {
@@ -52,8 +52,6 @@ chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_point
   chunk->begin = SDB_TIMESTAMP_MAX;
   chunk->end = SDB_TIMESTAMP_MIN;
   chunk->number_of_points = 0;
-  chunk->cache_manager = cache;
-  chunk->cache_entry = NULL;
 
   size_t points_size = sizeof(data_point_t) * max_points;
   data_point_t *points = (data_point_t *)sdb_alloc(points_size);
@@ -99,8 +97,6 @@ points_reader_t *chunk_read(chunk_t *chunk, timestamp_t begin, timestamp_t end) 
   points_reader_t *reader = points_reader_create(number_of_points);
   points_reader_write(reader, points, number_of_points);
 
-  cache_manager_update(chunk->cache_manager, chunk->cache_entry);
-
   return reader;
 }
 
@@ -113,8 +109,6 @@ data_point_t chunk_read_latest(chunk_t *chunk) {
   if (chunk->number_of_points > 0) {
     result = chunk->cached_content[chunk->number_of_points - 1];
   }
-
-  cache_manager_update(chunk->cache_manager, chunk->cache_entry);
 
   return result;
 }
@@ -160,7 +154,6 @@ void chunk_clean_cache(chunk_t *chunk) {
 
   sdb_free(chunk->cached_content);
   chunk->cached_content = NULL;
-  chunk->cache_entry = NULL;
 
   log_debug("Chunk (%s, %" PRIu64 ", %" PRIu64 ") -> cache cleared", chunk->file_name, chunk->begin, chunk->end);
 }
@@ -174,10 +167,6 @@ void chunk_ensure_content_loaded(chunk_t *chunk) {
 
   size_t cached_content_size = sizeof(data_point_t) * chunk->max_points;
   chunk->cached_content = (data_point_t *)sdb_alloc(cached_content_size);
-
-  if (chunk->cache_entry == NULL) {
-    chunk->cache_entry = cache_manager_register_consumer(chunk->cache_manager, chunk, cached_content_size);
-  }
 
   sdb_file_t *file = sdb_file_open(chunk->file_name);
   sdb_file_seek(file, chunk->file_offset, SEEK_SET);

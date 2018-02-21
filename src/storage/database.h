@@ -35,7 +35,6 @@ typedef struct database_s {
 
   series_t **series;
   int max_series_count;
-  cache_manager_t *cache_manager;
 } database_t;
 
 database_t *database_create(const char *directory,

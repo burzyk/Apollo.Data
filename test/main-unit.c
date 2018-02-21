@@ -111,9 +111,6 @@ int main(int argc, char *argv[]) {
   TEST(test_database_truncate_multiple);
   TEST(test_database_truncate_write_again);
   TEST(test_database_failed_write);
-  TEST(test_database_cache_cleanup);
-  TEST(test_database_cache_cleanup_old);
-  TEST(test_database_cache_smaller_than_chunk);
   TEST(test_database_read_latest_no_data);
   TEST(test_database_read_latest_data_in_first_chunk);
   TEST(test_database_read_latest_data_in_second_chunk);

@@ -43,7 +43,6 @@ database_t *database_create(const char *directory,
   db->max_series_count = max_series;
   db->series = (series_t **)sdb_alloc(sizeof(series_t *) * db->max_series_count);
   db->points_per_chunk = points_per_chunk;
-  db->cache_manager = cache_manager_create(soft_limit, hard_limit);
 
   return db;
 }
@@ -59,8 +58,6 @@ void database_destroy(database_t *db) {
   }
 
   sdb_free(db->series);
-
-  cache_manager_destroy(db->cache_manager);
   sdb_free(db);
 }
 
@@ -125,7 +122,7 @@ series_t *database_get_or_create_data_series(database_t *db, series_id_t series_
     snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->directory, series_id);
 
     log_info("loading time series: %d", series_id);
-    series = db->series[series_id] = series_create(series_id, file_name, db->points_per_chunk, db->cache_manager);
+    series = db->series[series_id] = series_create(series_id, file_name, db->points_per_chunk);
   }
 
   return series;

@@ -340,48 +340,6 @@ void test_database_failed_write(test_context_t ctx) {
   database_destroy(db);
 }
 
-void test_database_cache_cleanup(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, 3, SDB_DATA_SERIES_MAX, 100, 200);
-
-  test_database_write(db, 12345, 10, 6);
-  test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
-
-  sdb_assert(db->cache_manager->allocated == 144, "Memory has not been cleaned up");
-
-  database_destroy(db);
-}
-
-void test_database_cache_cleanup_old(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
-
-  test_database_write(db, 12345, 2, 10);
-
-  for (int i = 0; i < 10; i++) {
-    points_reader_t *reader = database_read(db, 12345, 1, 10, 100);
-    points_reader_destroy(reader);
-  }
-
-  sdb_assert(((chunk_t *)db->cache_manager->guard.next->consumer)->begin == 1, "Invalid cached page");
-
-  for (int i = 0; i < 10; i++) {
-    points_reader_t *reader = database_read(db, 12345, 11, 100, 100);
-    points_reader_destroy(reader);
-  }
-
-  sdb_assert(((chunk_t *)db->cache_manager->guard.next->consumer)->begin == 11, "Invalid cached page");
-
-  database_destroy(db);
-}
-
-void test_database_cache_smaller_than_chunk(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, 100, SDB_DATA_SERIES_MAX, 1, 1);
-
-  test_database_write(db, 12345, 10, 6);
-  test_database_validate_read(db, 12345, 60, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
-
-  database_destroy(db);
-}
-
 void test_database_read_latest_no_data(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, 10, SDB_DATA_SERIES_MAX, 120, 120);
 

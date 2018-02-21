@@ -65,6 +65,8 @@ typedef struct data_point_s {
   float value;
 } __attribute__((packed)) data_point_t;
 
+int data_point_compare(data_point_t *lhs, data_point_t *rhs);
+
 typedef struct buffer_s {
   void *content;
   size_t size;
@@ -75,9 +77,6 @@ void *sdb_realloc(void *buffer, size_t size);
 void sdb_free(void *buffer);
 
 typedef int (*find_predicate)(void *, void *);
-
-int data_point_compare(data_point_t *lhs, data_point_t *rhs);
-
 int sdb_find(void *elements, int element_size, int elements_count, void *data, find_predicate predicate);
 
 void die_internal(const char *message, const char *file, int line_number);

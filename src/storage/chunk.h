@@ -28,7 +28,6 @@
 
 #include "src/common.h"
 #include "src/storage/points-reader.h"
-#include "src/storage/cache-manager.h"
 
 typedef struct chunk_s {
   timestamp_t begin;
@@ -40,13 +39,11 @@ typedef struct chunk_s {
   uint64_t file_offset;
   data_point_t *cached_content;
 
-  cache_manager_t *cache_manager;
-  cache_entry_t *cache_entry;
 } chunk_t;
 
 int chunk_calculate_size(int points_count);
 
-chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points, cache_manager_t *cache);
+chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points);
 void chunk_destroy(chunk_t *chunk);
 points_reader_t *chunk_read(chunk_t *chunk, timestamp_t begin, timestamp_t end);
 data_point_t chunk_read_latest(chunk_t *chunk);
