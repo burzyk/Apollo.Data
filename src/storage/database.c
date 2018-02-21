@@ -53,7 +53,7 @@ void database_destroy(database_t *db) {
       continue;
     }
 
-    log_info("closing time series: %d", db->series[i]->id);
+    log_info("closing time series: %d", i);
     series_destroy(db->series[i]);
   }
 
@@ -122,7 +122,7 @@ series_t *database_get_or_create_data_series(database_t *db, series_id_t series_
     snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->directory, series_id);
 
     log_info("loading time series: %d", series_id);
-    series = db->series[series_id] = series_create(series_id, file_name, db->points_per_chunk);
+    series = db->series[series_id] = series_create(file_name, db->points_per_chunk);
   }
 
   return series;

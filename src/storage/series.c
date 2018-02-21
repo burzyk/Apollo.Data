@@ -40,9 +40,8 @@ int series_chunk_memcpy(series_t *series, chunk_t *chunk, int position, data_poi
 int series_chunk_compare_begin(timestamp_t *begin, chunk_t **chunk);
 int series_chunk_compare_end(timestamp_t *end, chunk_t **chunk);
 
-series_t *series_create(series_id_t id, const char *file_name, int points_per_chunk) {
+series_t *series_create(const char *file_name, int points_per_chunk) {
   series_t *series = (series_t *)sdb_alloc(sizeof(series_t));
-  series->id = id;
   strncpy(series->file_name, file_name, SDB_FILE_MAX_LEN);
   series->points_per_chunk = points_per_chunk;
   series->chunks = NULL;

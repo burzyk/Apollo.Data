@@ -30,8 +30,6 @@
 #include "src/storage/points-reader.h"
 
 typedef struct series_s {
-  series_id_t id;
-
   char file_name[SDB_FILE_MAX_LEN];
   int points_per_chunk;
 
@@ -40,7 +38,7 @@ typedef struct series_s {
   int max_chunks;
 } series_t;
 
-series_t *series_create(series_id_t id, const char *file_name, int points_per_chunk);
+series_t *series_create(const char *file_name, int points_per_chunk);
 void series_destroy(series_t *series);
 int series_write(series_t *series, data_point_t *points, int count);
 int series_truncate(series_t *series);
