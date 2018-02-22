@@ -6,7 +6,7 @@
 #include "src/data-point.h"
 #include "src/common.h"
 
-int data_point_compare(data_point_t *lhs, data_point_t *rhs) {
+inline int data_point_compare(data_point_t *lhs, data_point_t *rhs) {
   return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;
 }
 

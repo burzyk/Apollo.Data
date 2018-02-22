@@ -27,11 +27,11 @@
 
 #include <stdlib.h>
 
-void *sdb_alloc(size_t size) {
+inline void *sdb_alloc(size_t size) {
   return calloc(1, size);
 }
 
-void sdb_free(void *buffer) {
+inline void sdb_free(void *buffer) {
   free(buffer);
 }
 
