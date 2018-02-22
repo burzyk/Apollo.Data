@@ -27,7 +27,9 @@
 #define SRC_NETWORK_SERVER_H_
 
 #include <uv.h>
+
 #include "src/common.h"
+#include "src/data-point.h"
 
 #ifndef SDB_MAX_CLIENTS
 #define SDB_MAX_CLIENTS 255

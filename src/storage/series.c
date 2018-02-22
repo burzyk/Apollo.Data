@@ -32,7 +32,7 @@
 #include "src/diagnostics.h"
 #include "src/storage/disk.h"
 
-int series_prepare_input(data_point_t *points, int count);
+uint64_t series_prepare_input(data_point_t *points, uint64_t count);
 
 series_t *series_create(const char *file_name) {
   series_t *series = (series_t *)sdb_alloc(sizeof(series_t));
@@ -101,32 +101,15 @@ int series_write(series_t *series, data_point_t *points, int count) {
   return 0;
 }
 
-int series_prepare_input(data_point_t *points, int count) {
-  // TODO: extract to data point specific function
-  qsort(points, (size_t)count, sizeof(data_point_t), (int (*)(const void *, const void *))data_point_compare);
+uint64_t series_prepare_input(data_point_t *points, uint64_t count) {
+  data_point_sort(points, count);
+  uint64_t new_count = data_point_non_zero_distinct(points, count);
 
-  // TODO: extract to remove duplicates
-  int tail = -1;
-
-  for (int i = 0; i < count; i++) {
-    if (points[i].time == 0) {
-      continue;
-    }
-
-    if (tail < 0 || points[tail].time < points[i].time) {
-      tail++;
-    }
-
-    points[tail] = points[i];
+  if (new_count != count) {
+    log_info("duplicated or zero timestamp points detected in request: %d -> %d", count, new_count);
   }
 
-  tail++;
-
-  if (tail != count) {
-    log_info("duplicated or zero timestamp points detected in request: %d -> %d", count, tail);
-  }
-
-  return tail;
+  return new_count;
 }
 
 int series_truncate(series_t *series) {

@@ -27,6 +27,7 @@
 #define SRC_STORAGE_POINTS_READER_H_
 
 #include "src/common.h"
+#include "src/data-point.h"
 
 typedef struct points_reader_s {
   data_point_t *points;

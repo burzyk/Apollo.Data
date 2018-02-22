@@ -31,43 +31,8 @@ void *sdb_alloc(size_t size) {
   return calloc(1, size);
 }
 
-void *sdb_realloc(void *buffer, size_t size) {
-  return realloc(buffer, size);
-}
-
 void sdb_free(void *buffer) {
   free(buffer);
-}
-
-int data_point_compare(data_point_t *lhs, data_point_t *rhs) {
-  return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;
-}
-
-uint64_t data_point_merge(data_point_t *src,
-                          uint64_t src_size,
-                          data_point_t *dst,
-                          uint64_t dst_size,
-                          data_point_t **result) {
-  uint64_t buffer_count = src_size + dst_size;
-  data_point_t *buffer = (data_point_t *)sdb_alloc(buffer_count * sizeof(data_point_t));
-  uint64_t src_pos = 0;
-  uint64_t dst_pos = 0;
-  uint64_t duplicated_count = 0;
-
-  for (uint64_t i = 0; i < buffer_count - duplicated_count; i++) {
-    if (src_pos == src_size || dst[dst_pos].time < src[src_pos].time) {
-      buffer[i] = dst[dst_pos++];
-    } else if (dst_pos == dst_size || src[src_pos].time < dst[dst_pos].time) {
-      buffer[i] = src[src_pos++];
-    } else {
-      buffer[i] = src[src_pos++];
-      dst_pos++;
-      duplicated_count++;
-    }
-  }
-
-  *result = buffer;
-  return buffer_count - duplicated_count;
 }
 
 inline uint64_t sdb_minl(uint64_t a, uint64_t b) {

@@ -26,20 +26,13 @@
 #ifndef SRC_COMMON_H_
 #define SRC_COMMON_H_
 
+#include <stdio.h>
 #include <stdint.h>
 
-typedef uint64_t timestamp_t;
 typedef uint32_t series_id_t;
-
-#define SDB_TIMESTAMP_MIN ((timestamp_t)0)
-#define SDB_TIMESTAMP_MAX ((timestamp_t)UINT64_MAX)
 
 #ifndef SDB_POINTS_PER_PACKET_MAX
 #define SDB_POINTS_PER_PACKET_MAX  6553600
-#endif
-
-#ifndef SDB_SOCKET_TIMEOUT
-#define SDB_SOCKET_TIMEOUT  10
 #endif
 
 #ifndef SDB_FILE_MAX_LEN
@@ -50,27 +43,8 @@ typedef uint32_t series_id_t;
 #define SDB_DATA_SERIES_MAX  (1<<20)
 #endif
 
-#ifndef SDB_REALLOC_GROW_INCREMENT
-#define SDB_REALLOC_GROW_INCREMENT  65536
-#endif
-
-#define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
-
-#include <stdio.h>
-
-typedef struct data_point_s {
-  timestamp_t time;
-  float value;
-} __attribute__((packed)) data_point_t;
-
-int data_point_compare(data_point_t *lhs, data_point_t *rhs);
-uint64_t data_point_merge(data_point_t *src,
-                          uint64_t src_size,
-                          data_point_t *dst,
-                          uint64_t dst_size,
-                          data_point_t **result);
 
 typedef struct buffer_s {
   void *content;
@@ -78,7 +52,6 @@ typedef struct buffer_s {
 } buffer_t;
 
 void *sdb_alloc(size_t size);
-void *sdb_realloc(void *buffer, size_t size);
 void sdb_free(void *buffer);
 
 typedef int (*find_predicate)(void *, void *);
