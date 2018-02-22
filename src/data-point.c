@@ -69,7 +69,7 @@ data_point_t *data_point_find(data_point_t *points, uint64_t size, data_point_t 
   uint64_t left = 0;
   uint64_t right = size;
 
-  if (data_point_compare(points, &element) < 0) {
+  if (data_point_compare(&element, points) < 0) {
     return points;
   }
 
