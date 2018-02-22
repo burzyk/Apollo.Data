@@ -31,13 +31,19 @@
 #include "src/storage/disk.h"
 
 uint64_t series_prepare_input(data_point_t *points, uint64_t count);
+void series_grow(series_t *series, uint64_t size);
 
 series_t *series_create(const char *file_name) {
   series_t *series = (series_t *)sdb_alloc(sizeof(series_t));
   strncpy(series->file_name, file_name, SDB_FILE_MAX_LEN);
-  series->points = (data_point_t *)file_map(series->file_name);
-  series->points_capacity = file_size(series->file_name) / sizeof(data_point_t);
+  series->file_map = file_map_create(series->file_name);
+  series->points = (data_point_t *)series->file_map->data;
+  series->points_capacity = series->file_map->size / sizeof(data_point_t);
   series->points_count = series->points_capacity;
+
+  if (series->file_map->size == 0) {
+    series_grow(series, SDB_FILE_GROW_INCREMENT);
+  }
 
   while (series->points_count > 1 && series->points[series->points_count - 1].time == 0) {
     series->points_count--;
@@ -47,7 +53,7 @@ series_t *series_create(const char *file_name) {
 }
 
 void series_destroy(series_t *series) {
-  file_unmap(series->points);
+  file_map_destroy(series->file_map);
   sdb_free(series);
 }
 
@@ -60,11 +66,7 @@ int series_write(series_t *series, data_point_t *points, uint64_t count) {
   }
 
   if (series->points_count + count > series->points_capacity) {
-    uint64_t increment = sdb_maxl(SDB_FILE_GROW_INCREMENT, count);
-    file_unmap(series->points);
-    file_grow(series->file_name, increment);
-    series->points_capacity += increment;
-    series->points = (data_point_t *)file_map(series->file_name);
+    series_grow(series, count);
   }
 
   data_point_t latest = series_read_latest(series);
@@ -90,7 +92,7 @@ int series_write(series_t *series, data_point_t *points, uint64_t count) {
     sdb_free(merged);
   }
 
-  file_sync(series->points);
+  file_map_sync(series->file_map);
 
   return 0;
 }
@@ -107,7 +109,7 @@ uint64_t series_prepare_input(data_point_t *points, uint64_t count) {
 }
 
 int series_truncate(series_t *series) {
-  file_unmap(series->points);
+  file_map_destroy(series->file_map);
   file_unlink(series->file_name);
 
   return 0;
@@ -132,4 +134,15 @@ data_point_t series_read_latest(series_t *series) {
   }
 
   return latest;
+}
+
+void series_grow(series_t *series, uint64_t size) {
+  uint64_t increment = sdb_maxl(SDB_FILE_GROW_INCREMENT, size);
+
+  file_map_destroy(series->file_map);
+  file_grow(series->file_name, increment);
+
+  series->points_capacity += increment;
+  series->file_map = file_map_create(series->file_name);
+  series->points = (data_point_t *)series->file_map->data;
 }

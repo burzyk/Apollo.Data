@@ -29,22 +29,17 @@
 #include <stdio.h>
 #include <stdint.h>
 
-typedef FILE sdb_file_t;
+#define SDB_GROW_BUFFER_SIZE  65536
 
-int sdb_directory_create(const char *directory_name);
+typedef struct file_map_s {
+  uint8_t *data;
+  uint64_t size;
+} file_map_t;
 
-void *file_map(const char *file_name);
-void file_unmap(void *file);
+file_map_t *file_map_create(const char *file_name);
+void file_map_destroy(file_map_t *file);
+void file_map_sync(file_map_t *file);
 void file_grow(const char *file_name, uint64_t increment);
-void file_sync(void *file);
 void file_unlink(const char *file_name);
-
-sdb_file_t *sdb_file_open(const char *file_name);
-void sdb_file_close(sdb_file_t *file);
-size_t sdb_file_write(sdb_file_t *file, void *buffer, size_t size);
-size_t sdb_file_read(sdb_file_t *file, void *buffer, size_t size);
-int sdb_file_seek(sdb_file_t *file, off_t offset, int origin);
-uint64_t file_size(const char *file_name);
-int sdb_file_truncate(const char *file_name);
 
 #endif  // SRC_STORAGE_DISK_H_

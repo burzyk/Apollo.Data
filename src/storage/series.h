@@ -27,6 +27,7 @@
 #define SRC_STORAGE_SERIES_H_
 
 #include "src/storage/points-reader.h"
+#include "disk.h"
 
 #ifndef SDB_FILE_GROW_INCREMENT
 #define SDB_FILE_GROW_INCREMENT 1000000
@@ -34,6 +35,7 @@
 
 typedef struct series_s {
   char file_name[SDB_FILE_MAX_LEN];
+  file_map_t *file_map;
   data_point_t *points;
   uint64_t points_count;
   uint64_t points_capacity;
