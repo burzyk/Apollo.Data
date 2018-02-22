@@ -40,7 +40,7 @@ server_test_context_t *server_test_context_start(
     uint64_t soft_limit,
     uint64_t hard_limit) {
   server_test_context_t *context = (server_test_context_t *) sdb_alloc(sizeof(server_test_context_t));
-  context->db = database_create(directory, points_per_chunk, max_series, soft_limit, hard_limit);
+  context->db = database_create(directory, points_per_chunk, max_series);
   context->server = server_create(8081, on_message_received, context);
   pthread_create(&context->runner, NULL, server_test_routine, context->server);
   context->session = NULL;

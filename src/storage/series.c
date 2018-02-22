@@ -34,9 +34,15 @@ uint64_t series_prepare_input(data_point_t *points, uint64_t count);
 void series_grow(series_t *series, uint64_t size);
 
 series_t *series_create(const char *file_name) {
+  file_map_t *map = file_map_create(file_name);
+
+  if (map == NULL) {
+    return NULL;
+  }
+
   series_t *series = (series_t *)sdb_alloc(sizeof(series_t));
   strncpy(series->file_name, file_name, SDB_FILE_MAX_LEN);
-  series->file_map = file_map_create(series->file_name);
+  series->file_map = map;
   series->points = (data_point_t *)series->file_map->data;
   series->points_capacity = series->file_map->size / sizeof(data_point_t);
   series->points_count = series->points_capacity;

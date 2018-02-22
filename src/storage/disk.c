@@ -33,6 +33,11 @@ FILE *file_open(const char *file_name);
 
 file_map_t *file_map_create(const char *file_name) {
   FILE *f = file_open(file_name);
+
+  if (f == NULL) {
+    return NULL;
+  }
+
   fseek(f, 0, SEEK_END);
 
   file_map_t *map = (file_map_t *)sdb_alloc(sizeof(file_map_t));
@@ -70,6 +75,10 @@ void file_grow(const char *file_name, uint64_t increment) {
   uint8_t *buffer = (uint8_t *)sdb_alloc(SDB_GROW_BUFFER_SIZE);
   FILE *f = file_open(file_name);
 
+  if (f == NULL) {
+    die("Failed to grow the file");
+  }
+
   while (increment > 0) {
     increment -= fwrite(buffer, 1, sdb_minl(SDB_GROW_BUFFER_SIZE, increment), 0);
   }
@@ -79,9 +88,7 @@ void file_grow(const char *file_name, uint64_t increment) {
 }
 
 void file_unlink(const char *file_name) {
-  if (unlink(file_name)) {
-    die("Failed to remove the file");
-  }
+  unlink(file_name);
 }
 
 FILE *file_open(const char *file_name) {
@@ -89,10 +96,6 @@ FILE *file_open(const char *file_name) {
 
   if (f == NULL) {
     f = fopen(file_name, "wb+");
-  }
-
-  if (f == NULL) {
-    die("Failed to open the file");
   }
 
   return f;
