@@ -22,9 +22,13 @@ uint64_t data_point_merge(data_point_t *src,
   uint64_t duplicated_count = 0;
 
   for (uint64_t i = 0; i < buffer_count - duplicated_count; i++) {
-    if (src_pos == src_size || dst[dst_pos].time < src[src_pos].time) {
+    if (src_pos == src_size) {
       buffer[i] = dst[dst_pos++];
-    } else if (dst_pos == dst_size || src[src_pos].time < dst[dst_pos].time) {
+    } else if (dst_pos == dst_size) {
+      buffer[i] = src[src_pos++];
+    } else if (dst[dst_pos].time < src[src_pos].time) {
+      buffer[i] = dst[dst_pos++];
+    } else if (src[src_pos].time < dst[dst_pos].time) {
       buffer[i] = src[src_pos++];
     } else {
       buffer[i] = src[src_pos++];
