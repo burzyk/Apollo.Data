@@ -26,22 +26,15 @@
 #ifndef SRC_STORAGE_DATABASE_H_
 #define SRC_STORAGE_DATABASE_H_
 
-#include "src/storage/chunk.h"
 #include "src/storage/series.h"
 
 typedef struct database_s {
   char directory[SDB_FILE_MAX_LEN];
-  int points_per_chunk;
-
   series_t **series;
   int max_series_count;
 } database_t;
 
-database_t *database_create(const char *directory,
-                            int points_per_chunk,
-                            int max_series,
-                            uint64_t soft_limit,
-                            uint64_t hard_limit);
+database_t *database_create(const char *directory, int max_series);
 void database_destroy(database_t *db);
 int database_write(database_t *db, series_id_t series_id, data_point_t *points, int count);
 int database_truncate(database_t *db, series_id_t series_id);

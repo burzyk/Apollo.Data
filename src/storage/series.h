@@ -26,19 +26,20 @@
 #ifndef SRC_STORAGE_SERIES_H_
 #define SRC_STORAGE_SERIES_H_
 
-#include "src/storage/chunk.h"
 #include "src/storage/points-reader.h"
+
+#ifndef SDB_FILE_GROW_INCREMENT
+#define SDB_FILE_GROW_INCREMENT 1000000
+#endif
 
 typedef struct series_s {
   char file_name[SDB_FILE_MAX_LEN];
-  int points_per_chunk;
-
-  chunk_t **chunks;
-  int chunks_count;
-  int max_chunks;
+  data_point_t *points;
+  uint64_t points_count;
+  uint64_t points_capacity;
 } series_t;
 
-series_t *series_create(const char *file_name, int points_per_chunk);
+series_t *series_create(const char *file_name);
 void series_destroy(series_t *series);
 int series_write(series_t *series, data_point_t *points, int count);
 int series_truncate(series_t *series);

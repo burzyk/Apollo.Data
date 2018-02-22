@@ -34,6 +34,26 @@ int sdb_directory_create(const char *directory_name) {
   return status && errno != EEXIST;
 }
 
+void *file_map(const char *file_name) {
+
+}
+
+void file_unmap(void *file) {
+
+}
+
+void file_grow(const char *file_name, uint64_t increment) {
+
+}
+
+void file_sync(void *file) {
+
+}
+
+void file_unlink(const char *file_name) {
+
+}
+
 sdb_file_t *sdb_file_open(const char *file_name) {
   sdb_file_t *f = fopen(file_name, "rb+");
 
@@ -60,7 +80,7 @@ int sdb_file_seek(sdb_file_t *file, off_t offset, int origin) {
   return fseek(file, offset, origin);
 }
 
-long sdb_file_size(const char *file_name) {
+uint64_t file_size(const char *file_name) {
   sdb_file_t *file = sdb_file_open(file_name);
 
   if (file == NULL) {

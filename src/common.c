@@ -43,6 +43,33 @@ int data_point_compare(data_point_t *lhs, data_point_t *rhs) {
   return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;
 }
 
+uint64_t data_point_merge(data_point_t *src,
+                          uint64_t src_size,
+                          data_point_t *dst,
+                          uint64_t dst_size,
+                          data_point_t **result) {
+  uint64_t buffer_count = src_size + dst_size;
+  data_point_t *buffer = (data_point_t *)sdb_alloc(buffer_count * sizeof(data_point_t));
+  uint64_t src_pos = 0;
+  uint64_t dst_pos = 0;
+  uint64_t duplicated_count = 0;
+
+  for (uint64_t i = 0; i < buffer_count - duplicated_count; i++) {
+    if (src_pos == src_size || dst[dst_pos].time < src[src_pos].time) {
+      buffer[i] = dst[dst_pos++];
+    } else if (dst_pos == dst_size || src[src_pos].time < dst[dst_pos].time) {
+      buffer[i] = src[src_pos++];
+    } else {
+      buffer[i] = src[src_pos++];
+      dst_pos++;
+      duplicated_count++;
+    }
+  }
+
+  *result = buffer;
+  return buffer_count - duplicated_count;
+}
+
 inline uint64_t sdb_minl(uint64_t a, uint64_t b) {
   return a < b ? a : b;
 }
@@ -58,14 +85,16 @@ inline int sdb_max(int a, int b) {
   return a < b ? b : a;
 }
 
-int sdb_find(void *elements, int element_size, int elements_count, void *data, find_predicate predicate) {
+// TODO: refactor to data_point_t specific
+// TODO: return pointer to data_point
+uint64_t sdb_find(void *elements, int element_size, uint64_t elements_count, void *data, find_predicate predicate) {
   if (elements == NULL || element_size == 0 || elements_count == 0 || data == NULL) {
-    return -1;
+    return (uint64_t)-1;
   }
 
   char *ptr = elements;
-  int left = 0;
-  int right = elements_count;
+  uint64_t left = 0;
+  uint64_t right = elements_count;
 
   if (predicate(data, ptr) < 0) {
     return 0;
@@ -76,7 +105,7 @@ int sdb_find(void *elements, int element_size, int elements_count, void *data, f
   }
 
   while (left < right) {
-    int mid = (right + left) / 2;
+    uint64_t mid = (right + left) / 2;
     int cmp = predicate(data, ptr + mid * element_size);
 
     if (cmp < 0) {

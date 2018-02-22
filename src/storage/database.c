@@ -31,18 +31,11 @@
 
 series_t *database_get_or_create_data_series(database_t *db, series_id_t series_id);
 
-database_t *database_create(const char *directory,
-                            int points_per_chunk,
-                            int max_series,
-                            uint64_t soft_limit,
-                            uint64_t hard_limit) {
-  sdb_assert(points_per_chunk > 1, "points_per_chunk must be greater than one");
-
+database_t *database_create(const char *directory, int max_series) {
   database_t *db = (database_t *)sdb_alloc(sizeof(database_t));
   strncpy(db->directory, directory, SDB_FILE_MAX_LEN);
   db->max_series_count = max_series;
   db->series = (series_t **)sdb_alloc(sizeof(series_t *) * db->max_series_count);
-  db->points_per_chunk = points_per_chunk;
 
   return db;
 }
@@ -100,7 +93,9 @@ points_reader_t *database_read(database_t *db,
   stopwatch_t *sw = stopwatch_start();
 
   series_t *series = database_get_or_create_data_series(db, series_id);
-  points_reader_t *result = series == NULL ? points_reader_create(0) : series_read(series, begin, end, max_points);
+  points_reader_t *result = series == NULL
+                            ? points_reader_create(NULL, 0)
+                            : series_read(series, begin, end, max_points);
 
   log_debug("Read series: %d, points: %d in: %fs",
             series_id,
@@ -122,7 +117,7 @@ series_t *database_get_or_create_data_series(database_t *db, series_id_t series_
     snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->directory, series_id);
 
     log_info("loading time series: %d", series_id);
-    series = db->series[series_id] = series_create(file_name, db->points_per_chunk);
+    series = db->series[series_id] = series_create(file_name);
   }
 
   return series;
