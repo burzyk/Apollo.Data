@@ -45,6 +45,7 @@ series_t *series_create(const char *file_name) {
     series_grow(series, SDB_FILE_GROW_INCREMENT);
   }
 
+  // TODO: use binary search here
   while (series->points_count > 1 && series->points[series->points_count - 1].time == 0) {
     series->points_count--;
   }

@@ -23,8 +23,8 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef TEST_COMMON_TESTS_H_
-#define TEST_COMMON_TESTS_H_
+#ifndef TEST_DATA_POINT_TESTS_H_
+#define TEST_DATA_POINT_TESTS_H_
 
 #include "test/framework.h"
 
@@ -38,4 +38,4 @@ void test_search_even(test_context_t ctx);
 void test_search_odd(test_context_t ctx);
 void test_search_duplicates(test_context_t ctx);
 
-#endif  // TEST_COMMON_TESTS_H_
+#endif  // TEST_DATA_POINT_TESTS_H_

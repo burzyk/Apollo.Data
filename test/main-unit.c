@@ -29,7 +29,7 @@
 #include "test/framework.h"
 #include "test/database-tests.h"
 #include "test/server-tests.h"
-#include "test/common-tests.h"
+#include "test/data-point-tests.h"
 
 #ifndef SDB_VERSION
 #define SDB_VERSION "0.0.1"
