@@ -25,5 +25,6 @@ uint64_t data_point_merge(data_point_t *src,
                           data_point_t **result);
 void data_point_sort(data_point_t *points, uint64_t count);
 uint64_t data_point_non_zero_distinct(data_point_t *points, uint64_t count);
+data_point_t *data_point_find(data_point_t *points, uint64_t size, data_point_t element);
 
 #endif  // SRC_DATA_POINT_H_

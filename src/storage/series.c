@@ -26,8 +26,6 @@
 #include "src/storage/series.h"
 
 #include <string.h>
-#include <inttypes.h>
-#include <stdlib.h>
 
 #include "src/diagnostics.h"
 #include "src/storage/disk.h"
@@ -53,7 +51,7 @@ void series_destroy(series_t *series) {
   sdb_free(series);
 }
 
-int series_write(series_t *series, data_point_t *points, int count) {
+int series_write(series_t *series, data_point_t *points, uint64_t count) {
   count = series_prepare_input(points, count);
 
   if (count == 0) {
@@ -75,23 +73,19 @@ int series_write(series_t *series, data_point_t *points, int count) {
     memcpy(series->points + series->points_count, points, sizeof(data_point_t) * count);
     series->points_count += count;
   } else {
-    find_predicate cmp = (find_predicate)data_point_compare;
-    int elem_size = sizeof(data_point_t);
-
-    uint64_t begin = sdb_find(series->points, elem_size, series->points_count, &points[0], cmp);
-    uint64_t end = sdb_find(series->points, elem_size, series->points_count, &points[count - 1], cmp);
+    data_point_t *begin = data_point_find(series->points, series->points_count, points[0]);
+    data_point_t *end = data_point_find(series->points, series->points_count, points[count - 1]);
     uint64_t slice_size = end - begin;
 
     data_point_t *merged = NULL;
-    uint64_t merged_size = data_point_merge(points, (uint64_t)count, &series->points[begin], slice_size, &merged);
+    uint64_t merged_size = data_point_merge(points, (uint64_t)count, begin, slice_size, &merged);
+    uint64_t tail_count = series->points + series->points_count - end;
 
-    if (end < series->points_count) {
-      memmove(series->points + begin + merged_size,
-              series->points + end,
-              (series->points_count - end) * sizeof(data_point_t));
+    if (tail_count > 0) {
+      memmove(begin + merged_size, end, tail_count * sizeof(data_point_t));
     }
 
-    memcpy(series->points + begin, merged, merged_size * sizeof(data_point_t));
+    memcpy(begin, merged, merged_size * sizeof(data_point_t));
     series->points_count += merged_size - slice_size;
     sdb_free(merged);
   }
@@ -119,15 +113,15 @@ int series_truncate(series_t *series) {
   return 0;
 }
 
-points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, int max_points) {
-  find_predicate cmp = (find_predicate)data_point_compare;
-  int elem_size = sizeof(data_point_t);
+points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, uint64_t max_points) {
+  data_point_t begin_timestamp = {.time=begin};
+  data_point_t end_timestamp = {.time=end};
 
-  uint64_t begin_index = sdb_find(series->points, elem_size, series->points_count, &begin, cmp);
-  uint64_t end_index = sdb_find(series->points, elem_size, series->points_count, &end, cmp);
-  uint64_t total_points = sdb_minl(max_points, end_index - begin_index);
+  data_point_t *begin_elem = data_point_find(series->points, series->points_count, begin_timestamp);
+  data_point_t *end_elem = data_point_find(series->points, series->points_count, end_timestamp);
+  uint64_t total_points = sdb_minl(max_points, end_elem - begin_elem);
 
-  return points_reader_create(series->points + begin_index, sdb_min(max_points, total_points));
+  return points_reader_create(begin_elem, sdb_minl(max_points, total_points));
 }
 
 data_point_t series_read_latest(series_t *series) {

@@ -54,9 +54,6 @@ typedef struct buffer_s {
 void *sdb_alloc(size_t size);
 void sdb_free(void *buffer);
 
-typedef int (*find_predicate)(void *, void *);
-uint64_t sdb_find(void *elements, int element_size, uint64_t elements_count, void *data, find_predicate predicate);
-
 void die_internal(const char *message, const char *file, int line_number);
 void assert_internal(int status, const char *message, const char *file, int line_number);
 

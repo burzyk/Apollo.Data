@@ -50,41 +50,6 @@ inline int sdb_max(int a, int b) {
   return a < b ? b : a;
 }
 
-// TODO: refactor to data_point_t specific
-// TODO: return pointer to data_point
-uint64_t sdb_find(void *elements, int element_size, uint64_t elements_count, void *data, find_predicate predicate) {
-  if (elements == NULL || element_size == 0 || elements_count == 0 || data == NULL) {
-    return (uint64_t)-1;
-  }
-
-  char *ptr = elements;
-  uint64_t left = 0;
-  uint64_t right = elements_count;
-
-  if (predicate(data, ptr) < 0) {
-    return 0;
-  }
-
-  if (predicate(data, ptr + (elements_count - 1) * element_size) > 0) {
-    return elements_count;
-  }
-
-  while (left < right) {
-    uint64_t mid = (right + left) / 2;
-    int cmp = predicate(data, ptr + mid * element_size);
-
-    if (cmp < 0) {
-      right = mid;
-    } else if (cmp > 0) {
-      left = mid + 1;
-    } else {
-      return mid;
-    }
-  }
-
-  return left;
-}
-
 void die_internal(const char *message, const char *file, int line_number) {
   fprintf(stderr, "PANIC: %s:%d -> %s\n", file, line_number, message);
   fflush(stderr);

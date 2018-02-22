@@ -29,7 +29,7 @@
 #include <math.h>
 #include <string.h>
 
-points_reader_t *points_reader_create(data_point_t *points, int points_count) {
+points_reader_t *points_reader_create(data_point_t *points, uint64_t points_count) {
   points_reader_t *reader = (points_reader_t *)sdb_alloc(sizeof(points_reader_t));
 
   reader->points_count = points_count;

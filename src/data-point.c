@@ -60,3 +60,36 @@ uint64_t data_point_non_zero_distinct(data_point_t *points, uint64_t count) {
 
   return (uint64_t)tail;
 }
+
+data_point_t *data_point_find(data_point_t *points, uint64_t size, data_point_t element) {
+  if (points == NULL || size == 0) {
+    return NULL;
+  }
+
+  uint64_t left = 0;
+  uint64_t right = size;
+
+  if (data_point_compare(points, &element) < 0) {
+    return points;
+  }
+
+  if (data_point_compare(&element, points + size - 1) > 0) {
+    return points + size;
+  }
+
+  while (left < right) {
+    uint64_t mid = (right + left) / 2;
+    int cmp = data_point_compare(&element, points + mid);
+
+    if (cmp < 0) {
+      right = mid;
+    } else if (cmp > 0) {
+      left = mid + 1;
+    } else {
+      return points + mid;
+    }
+  }
+
+  return points + left;
+}
+
