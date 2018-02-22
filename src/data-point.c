@@ -61,13 +61,14 @@ uint64_t data_point_non_zero_distinct(data_point_t *points, uint64_t count) {
   return (uint64_t)tail;
 }
 
-data_point_t *data_point_find(data_point_t *points, uint64_t size, data_point_t element) {
+data_point_t *data_point_find(data_point_t *points, uint64_t size, timestamp_t timestamp) {
   if (points == NULL || size == 0) {
     return NULL;
   }
 
   uint64_t left = 0;
   uint64_t right = size;
+  data_point_t element = {.time = timestamp};
 
   if (data_point_compare(&element, points) < 0) {
     return points;

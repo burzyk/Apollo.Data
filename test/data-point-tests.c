@@ -29,55 +29,46 @@
 
 void test_search_empty(test_context_t ctx) {
   data_point_t array[] = {};
-  data_point_t elem = {.time=13};
-  sdb_assert(data_point_find(array, 0, elem) == NULL, "Expected NULL");
+  sdb_assert(data_point_find(array, 0, 13) == NULL, "Expected NULL");
 }
 
 void test_search_left_out(test_context_t ctx) {
   data_point_t array[] = {{.time=4}, {.time=5}, {.time=6}, {.time=7}, {.time=8}, {.time=111}};
-  data_point_t elem = {.time=2};
-  sdb_assert(data_point_find(array, 6, elem) == array, "Expected index 0");
+  sdb_assert(data_point_find(array, 6, 2) == array, "Expected index 0");
 }
 
 void test_search_right_out(test_context_t ctx) {
   data_point_t array[] = {{.time=4}, {.time=5}, {.time=6}, {.time=7}, {.time=8}, {.time=111}};
-  data_point_t elem = {.time=200};
-  sdb_assert(data_point_find(array, 6, elem) == array + 6, "Expected 6");
+  sdb_assert(data_point_find(array, 6, 200) == array + 6, "Expected 6");
 }
 
 void test_search_left_approx(test_context_t ctx) {
   data_point_t array[] = {{.time=4}, {.time=50}, {.time=60}, {.time=70}, {.time=80}, {.time=111}};
-  data_point_t elem = {.time=55};
-  sdb_assert(data_point_find(array, 6, elem) == array + 2, "Expected 2");
+  sdb_assert(data_point_find(array, 6, 55) == array + 2, "Expected 2");
 }
 
 void test_search_right_approx(test_context_t ctx) {
   data_point_t array[] = {{.time=4}, {.time=50}, {.time=60}, {.time=70}, {.time=80}, {.time=111}};
-  data_point_t elem = {.time=90};
-  sdb_assert(data_point_find(array, 6, elem) == array + 5, "Expected 5");
+  sdb_assert(data_point_find(array, 6, 90) == array + 5, "Expected 5");
 }
 
 void test_search_exactly(test_context_t ctx) {
   data_point_t array[] = {{.time=4}, {.time=50}, {.time=60}, {.time=70}, {.time=80}, {.time=111}};
-  data_point_t elem = {.time=50};
-  sdb_assert(data_point_find(array, 6, elem) == array + 1, "Expected 1");
+  sdb_assert(data_point_find(array, 6, 50) == array + 1, "Expected 1");
 }
 
 void test_search_even(test_context_t ctx) {
   data_point_t
       array[] = {{.time=4}, {.time=50}, {.time=60}, {.time=70}, {.time=80}, {.time=111}, {.time=200}, {.time=1000}};
-  data_point_t elem = {.time=50};
-  sdb_assert(data_point_find(array, 8, elem) == array + 1, "Expected 1");
+  sdb_assert(data_point_find(array, 8, 50) == array + 1, "Expected 1");
 }
 
 void test_search_odd(test_context_t ctx) {
   data_point_t array[] = {{.time=4}, {.time=50}, {.time=60}, {.time=70}, {.time=80}, {.time=111}, {.time=1000}};
-  data_point_t elem = {.time=111};
-  sdb_assert(data_point_find(array, 7, elem) == array + 5, "Expected 5");
+  sdb_assert(data_point_find(array, 7, 111) == array + 5, "Expected 5");
 }
 
 void test_search_duplicates(test_context_t ctx) {
   data_point_t array[] = {{.time=1}, {.time=1}, {.time=1}, {.time=4}, {.time=4}, {.time=4}, {.time=4}, {.time=4}};
-  data_point_t elem = {.time=3};
-  sdb_assert(data_point_find(array, 8, elem) == array + 3, "Expected 3");
+  sdb_assert(data_point_find(array, 8, 3) == array + 3, "Expected 3");
 }

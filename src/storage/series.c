@@ -64,6 +64,11 @@ void series_destroy(series_t *series) {
   sdb_free(series);
 }
 
+void series_truncate_and_destroy(series_t *series) {
+  file_unlink(series->file_name);
+  series_destroy(series);
+}
+
 int series_write(series_t *series, data_point_t *points, uint64_t count) {
   count = series_prepare_input(points, count);
 
@@ -82,8 +87,8 @@ int series_write(series_t *series, data_point_t *points, uint64_t count) {
     memcpy(series->points + series->points_count, points, sizeof(data_point_t) * count);
     series->points_count += count;
   } else {
-    data_point_t *begin = data_point_find(series->points, series->points_count, points[0]);
-    data_point_t *end = data_point_find(series->points, series->points_count, points[count - 1]);
+    data_point_t *begin = data_point_find(series->points, series->points_count, points[0].time);
+    data_point_t *end = data_point_find(series->points, series->points_count, points[count - 1].time + 1);
     uint64_t slice_size = end - begin;
 
     data_point_t *merged = NULL;
@@ -115,19 +120,9 @@ uint64_t series_prepare_input(data_point_t *points, uint64_t count) {
   return new_count;
 }
 
-int series_truncate(series_t *series) {
-  file_map_destroy(series->file_map);
-  file_unlink(series->file_name);
-
-  return 0;
-}
-
 points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, uint64_t max_points) {
-  data_point_t begin_timestamp = {.time=begin};
-  data_point_t end_timestamp = {.time=end};
-
-  data_point_t *begin_elem = data_point_find(series->points, series->points_count, begin_timestamp);
-  data_point_t *end_elem = data_point_find(series->points, series->points_count, end_timestamp);
+  data_point_t *begin_elem = data_point_find(series->points, series->points_count, begin);
+  data_point_t *end_elem = data_point_find(series->points, series->points_count, end);
   uint64_t total_points = sdb_minl(max_points, end_elem - begin_elem);
 
   return points_reader_create(begin_elem, sdb_minl(max_points, total_points));

@@ -67,11 +67,22 @@ int database_write(database_t *db, series_id_t series_id, data_point_t *points, 
 int database_truncate(database_t *db, series_id_t series_id) {
   stopwatch_t *sw = stopwatch_start();
 
-  series_t *series = database_get_or_create_data_series(db, series_id);
-  int result = series == NULL ? -1 : series_truncate(series);
+  if (db->series == NULL || series_id >= db->max_series_count) {
+    return -1;
+  }
+
+  series_t *series = db->series[series_id];
+
+  if (series == NULL) {
+    return 0;
+  }
+
+  series_truncate_and_destroy(series);
+  db->series[series_id] = NULL;
+
   log_debug("Truncated series: %d in: %fs", series_id, stopwatch_stop_and_destroy(sw));
 
-  return result;
+  return 0;
 }
 
 data_point_t database_read_latest(database_t *db, series_id_t series_id) {

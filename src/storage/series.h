@@ -43,8 +43,8 @@ typedef struct series_s {
 
 series_t *series_create(const char *file_name);
 void series_destroy(series_t *series);
+void series_truncate_and_destroy(series_t *series);
 int series_write(series_t *series, data_point_t *points, uint64_t count);
-int series_truncate(series_t *series);
 points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, uint64_t max_points);
 data_point_t series_read_latest(series_t *series);
 
