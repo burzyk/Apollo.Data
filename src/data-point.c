@@ -3,6 +3,8 @@
 //
 
 #include <stdlib.h>
+#include <string.h>
+
 #include "src/data-point.h"
 #include "src/common.h"
 
@@ -47,28 +49,45 @@ void data_point_sort(data_point_t *points, uint64_t count) {
   qsort(points, (size_t)count, sizeof(data_point_t), (int (*)(const void *, const void *))data_point_compare);
 }
 
-uint64_t data_point_non_zero_distinct(data_point_t *points, uint64_t count) {
-  int64_t tail = -1;
+uint64_t data_point_non_zero_distinct(points_list_t *list) {
+  data_point_t *curr = list->points;
+  data_point_t *tail = data_point_prev(list, curr);
+  data_point_t *end = points_list_end(list);
 
-  for (uint64_t i = 0; i < count; i++) {
-    if (points[i].time == 0) {
-      continue;
+  while (curr < end) {
+    if (curr->time != 0) {
+      if (tail < list->points || tail->time < curr->time) {
+        tail = data_point_next(list, tail);
+      }
+
+      memcpy(tail, curr, list->point_size);
     }
 
-    if (tail < 0 || points[tail].time < points[i].time) {
-      tail++;
-    }
-
-    points[tail] = points[i];
+    curr = data_point_next(list, curr);
   }
 
-  tail++;
-
-  return (uint64_t)tail;
+  tail = data_point_next(list, tail);
+  return data_point_dist(list, list->points, tail);
 }
 
 inline data_point_t *data_point_at(points_list_t *list, uint64_t offset) {
   return (data_point_t *)(((uint8_t *)list->points) + offset * list->point_size);
+}
+
+inline data_point_t *data_point_next(points_list_t *list, data_point_t *curr) {
+  return (data_point_t *)(((uint8_t *)curr) + list->point_size);
+}
+
+inline data_point_t *data_point_prev(points_list_t *list, data_point_t *curr) {
+  return (data_point_t *)(((uint8_t *)curr) - list->point_size);
+}
+
+inline data_point_t *points_list_end(points_list_t *list) {
+  return data_point_at(list, list->count);
+}
+
+inline uint64_t data_point_dist(points_list_t *list, data_point_t *start, data_point_t *end) {
+  return (((uint8_t *)end) - ((uint8_t *)start)) / list->point_size;
 }
 
 data_point_t *data_point_find(points_list_t *list, timestamp_t timestamp) {
@@ -85,7 +104,7 @@ data_point_t *data_point_find(points_list_t *list, timestamp_t timestamp) {
   }
 
   if (data_point_compare(&element, data_point_at(list, list->count - 1)) > 0) {
-    return data_point_at(list, list->count);
+    return points_list_end(list);
   }
 
   while (left < right) {
