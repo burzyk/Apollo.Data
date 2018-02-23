@@ -68,7 +68,7 @@ uint64_t data_point_non_zero_distinct(data_point_t *points, uint64_t count) {
 }
 
 inline data_point_t *data_point_at(points_list_t *list, uint64_t offset) {
-  return (data_point_t *)(((uint8_t *)list->points) + offset * (list->value_size + sizeof(timestamp_t)));
+  return (data_point_t *)(((uint8_t *)list->points) + offset * list->point_size);
 }
 
 data_point_t *data_point_find(points_list_t *list, timestamp_t timestamp) {

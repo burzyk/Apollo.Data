@@ -20,7 +20,7 @@ typedef struct data_point_s {
 typedef struct points_list_s {
   data_point_t *points;
   uint64_t count;
-  uint32_t value_size;
+  uint32_t point_size;
 } points_list_t;
 
 uint64_t data_point_merge(data_point_t *src,

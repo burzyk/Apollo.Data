@@ -87,7 +87,7 @@ int series_write(series_t *series, data_point_t *points, uint64_t count) {
     memcpy(series->points + series->points_count, points, sizeof(data_point_t) * count);
     series->points_count += count;
   } else {
-    points_list_t list = {.points = series->points, .count = series->points_count, .value_size = 4};
+    points_list_t list = {.points = series->points, .count = series->points_count, .point_size = 12};
 
     data_point_t *begin = data_point_find(&list, points[0].time);
     data_point_t *end = data_point_find(&list, points[count - 1].time + 1);
@@ -123,7 +123,7 @@ uint64_t series_prepare_input(data_point_t *points, uint64_t count) {
 }
 
 points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, uint64_t max_points) {
-  points_list_t list = {.points = series->points, .count = series->points_count, .value_size = 4};
+  points_list_t list = {.points = series->points, .count = series->points_count, .point_size = 12};
 
   data_point_t *begin_elem = data_point_find(&list, begin);
   data_point_t *end_elem = data_point_find(&list, end);
