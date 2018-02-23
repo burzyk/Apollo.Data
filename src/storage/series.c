@@ -87,8 +87,10 @@ int series_write(series_t *series, data_point_t *points, uint64_t count) {
     memcpy(series->points + series->points_count, points, sizeof(data_point_t) * count);
     series->points_count += count;
   } else {
-    data_point_t *begin = data_point_find(series->points, series->points_count, points[0].time);
-    data_point_t *end = data_point_find(series->points, series->points_count, points[count - 1].time + 1);
+    points_list_t list = {.points = series->points, .count = series->points_count, .value_size = 4};
+
+    data_point_t *begin = data_point_find(&list, points[0].time);
+    data_point_t *end = data_point_find(&list, points[count - 1].time + 1);
     uint64_t slice_size = end - begin;
 
     data_point_t *merged = NULL;
@@ -121,8 +123,10 @@ uint64_t series_prepare_input(data_point_t *points, uint64_t count) {
 }
 
 points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, uint64_t max_points) {
-  data_point_t *begin_elem = data_point_find(series->points, series->points_count, begin);
-  data_point_t *end_elem = data_point_find(series->points, series->points_count, end);
+  points_list_t list = {.points = series->points, .count = series->points_count, .value_size = 4};
+
+  data_point_t *begin_elem = data_point_find(&list, begin);
+  data_point_t *end_elem = data_point_find(&list, end);
   uint64_t total_points = sdb_min(max_points, end_elem - begin_elem);
 
   return points_reader_create(begin_elem, sdb_min(max_points, total_points));

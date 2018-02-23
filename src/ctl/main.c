@@ -50,7 +50,7 @@ int execute_to_csv(session_t *session, client_configuration_t *config);
 int execute_resample(session_t *session, client_configuration_t *config);
 
 int main(int argc, char *argv[]) {
-  client_configuration_t config = {0};
+  client_configuration_t config = {};
   strcpy(config.hostname, "localhost");
   config.port = 8487;
   config.series_id = 0;
