@@ -142,7 +142,7 @@ void series_grow(series_t *series, uint64_t size) {
   uint64_t increment = sdb_maxl(SDB_FILE_GROW_INCREMENT, size);
 
   file_map_destroy(series->file_map);
-  file_grow(series->file_name, increment);
+  file_grow(series->file_name, increment * sizeof(data_point_t));
 
   series->points_capacity += increment;
   series->file_map = file_map_create(series->file_name);

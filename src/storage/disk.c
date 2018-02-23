@@ -38,8 +38,6 @@ file_map_t *file_map_create(const char *file_name) {
     return NULL;
   }
 
-  fseek(f, 0, SEEK_END);
-
   file_map_t *map = (file_map_t *)sdb_alloc(sizeof(file_map_t));
   map->size = (uint64_t)ftello(f);
   map->data = map->size == 0 ? NULL : mmap(NULL, map->size, PROT_READ | PROT_WRITE, MAP_SHARED, fileno(f), 0);
@@ -92,11 +90,5 @@ void file_unlink(const char *file_name) {
 }
 
 FILE *file_open(const char *file_name) {
-  FILE *f = fopen(file_name, "rb+");
-
-  if (f == NULL) {
-    f = fopen(file_name, "wb+");
-  }
-
-  return f;
+  return fopen(file_name, "a+");
 }
