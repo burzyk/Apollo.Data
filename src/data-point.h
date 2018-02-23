@@ -28,7 +28,7 @@ uint64_t data_point_merge(data_point_t *src,
                           data_point_t *dst,
                           uint64_t dst_size,
                           data_point_t **result);
-void data_point_sort(data_point_t *points, uint64_t count);
+void data_point_sort(points_list_t *list);
 uint64_t data_point_non_zero_distinct(points_list_t *list);
 data_point_t *data_point_find(points_list_t *list, timestamp_t timestamp);
 data_point_t *data_point_at(points_list_t *list, uint64_t offset);

@@ -114,7 +114,7 @@ int series_write(series_t *series, data_point_t *points, uint64_t count) {
 uint64_t series_prepare_input(data_point_t *points, uint64_t count) {
   points_list_t list = {.points = points, .count = count, .point_size = 12};
 
-  data_point_sort(points, count);
+  data_point_sort(&list);
   uint64_t new_count = data_point_non_zero_distinct(&list);
 
   if (new_count != count) {

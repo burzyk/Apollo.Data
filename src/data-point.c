@@ -45,8 +45,8 @@ uint64_t data_point_merge(data_point_t *src,
   return buffer_count - duplicated_count;
 }
 
-void data_point_sort(data_point_t *points, uint64_t count) {
-  qsort(points, (size_t)count, sizeof(data_point_t), (int (*)(const void *, const void *))data_point_compare);
+void data_point_sort(points_list_t *list) {
+  qsort(list->points, list->count, list->point_size, (int (*)(const void *, const void *))data_point_compare);
 }
 
 uint64_t data_point_non_zero_distinct(points_list_t *list) {
