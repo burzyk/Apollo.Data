@@ -25,68 +25,70 @@
 
 #include "disk.h"
 
-#include <sys/stat.h>
-#include <errno.h>
 #include <unistd.h>
+#include <sys/mman.h>
+#include <src/common.h>
 
-int sdb_directory_create(const char *directory_name) {
-  int status = mkdir(directory_name, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  return status && errno != EEXIST;
-}
+FILE *file_open(const char *file_name);
 
-sdb_file_t *sdb_file_open(const char *file_name) {
-  sdb_file_t *f = fopen(file_name, "rb+");
+file_map_t *file_map_create(const char *file_name) {
+  FILE *f = file_open(file_name);
 
   if (f == NULL) {
-    f = fopen(file_name, "wb+");
+    return NULL;
   }
 
-  return f;
-}
+  file_map_t *map = (file_map_t *)sdb_alloc(sizeof(file_map_t));
+  map->size = (uint64_t)ftello(f);
+  map->data = map->size == 0 ? NULL : mmap(NULL, map->size, PROT_READ | PROT_WRITE, MAP_SHARED, fileno(f), 0);
 
-void sdb_file_close(sdb_file_t *file) {
-  fclose(file);
-}
+  fclose(f);
 
-size_t sdb_file_write(sdb_file_t *file, void *buffer, size_t size) {
-  return fwrite(buffer, size, 1, file);
-}
-
-size_t sdb_file_read(sdb_file_t *file, void *buffer, size_t size) {
-  return fread(buffer, size, 1, file);
-}
-
-int sdb_file_seek(sdb_file_t *file, off_t offset, int origin) {
-  return fseek(file, offset, origin);
-}
-
-long sdb_file_size(const char *file_name) {
-  sdb_file_t *file = sdb_file_open(file_name);
-
-  if (file == NULL) {
-    return 0;
+  if (map->size != 0 && map->data == NULL) {
+    die("Failed to map memory");
   }
 
-  long position = ftell(file);
-  fseek(file, 0, SEEK_END);
-  long size = ftell(file);
-  fseek(file, position, SEEK_END);
-
-  sdb_file_close(file);
-
-  return size;
+  return map;
 }
 
-int sdb_file_truncate(const char *file_name) {
-  sdb_file_t *file = sdb_file_open(file_name);
-
-  if (file == NULL) {
-    return 0;
+void file_map_destroy(file_map_t *file) {
+  if (file->data != NULL) {
+    munmap(file->data, file->size);
   }
 
-  int status = ftruncate(fileno(file), 0);
-  sdb_file_close(file);
-
-  return status;
+  sdb_free(file);
 }
 
+void file_map_sync(file_map_t *file) {
+  if (file->data == NULL) {
+    return;
+  }
+
+  if (msync(file->data, file->size, MS_SYNC)) {
+    die("Failed to synchronize the file");
+  }
+}
+
+void file_grow(const char *file_name, uint64_t increment) {
+  uint8_t *buffer = (uint8_t *)sdb_alloc(SDB_GROW_BUFFER_SIZE);
+  FILE *f = file_open(file_name);
+
+  if (f == NULL) {
+    die("Failed to grow the file");
+  }
+
+  while (increment > 0) {
+    increment -= fwrite(buffer, 1, sdb_minl(SDB_GROW_BUFFER_SIZE, increment), f);
+  }
+
+  fclose(f);
+  sdb_free(buffer);
+}
+
+void file_unlink(const char *file_name) {
+  unlink(file_name);
+}
+
+FILE *file_open(const char *file_name) {
+  return fopen(file_name, "a+");
+}

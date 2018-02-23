@@ -27,8 +27,13 @@
 
 #include <string.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <errno.h>
 
-#include "src/storage/disk.h"
+int sdb_directory_create(const char *directory_name) {
+  int status = mkdir(directory_name, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+  return status && errno != EEXIST;
+}
 
 test_session_t *test_session_create(const char *root_directory) {
   test_session_t *session = (test_session_t *)sdb_alloc(sizeof(test_session_t));

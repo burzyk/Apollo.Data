@@ -33,11 +33,11 @@ include_directories(/usr/local/include)
 
 link_directories(/usr/local/lib)
 
-set(SRC_COMMON src/network/protocol.h src/network/protocol.c src/common.h src/common.c src/diagnostics.c src/diagnostics.h)
+set(SRC_COMMON src/network/protocol.h src/network/protocol.c src/common.h src/common.c src/diagnostics.c src/diagnostics.h src/data-point.c src/data-point.h)
 set(SRC_CTL src/ctl/session.c src/ctl/session.h)
 set(SRC_SERVER src/network/server.c src/network/server.h src/network/client-handler.c src/network/client-handler.h)
-set(SRC_STORAGE src/storage/disk.h src/storage/disk.c src/storage/chunk.c src/storage/chunk.h src/storage/points-reader.c src/storage/points-reader.h src/storage/database.c src/storage/database.h src/storage/series.c src/storage/series.h src/storage/cache-manager.c src/storage/cache-manager.h)
-set(SRC_TEST test/database-tests.h test/database-tests.c test/framework.c test/framework.h test/server-tests.c test/server-tests.h test/common-tests.c test/common-tests.h)
+set(SRC_STORAGE src/storage/disk.h src/storage/disk.c src/storage/points-reader.c src/storage/points-reader.h src/storage/database.c src/storage/database.h src/storage/series.c src/storage/series.h)
+set(SRC_TEST test/database-tests.h test/database-tests.c test/framework.c test/framework.h test/server-tests.c test/server-tests.h test/data-point-tests.c test/data-point-tests.h)
 
 set(SRC_SHAKADB ${SRC_COMMON} ${SRC_SERVER} ${SRC_STORAGE})
 set(SRC_SHAKADB_CTL ${SRC_COMMON} ${SRC_CTL} )

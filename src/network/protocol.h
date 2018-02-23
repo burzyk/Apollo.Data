@@ -30,6 +30,7 @@
 #include <stddef.h>
 
 #include "src/common.h"
+#include "src/data-point.h"
 
 typedef char packet_type_t;
 typedef char response_code_t;

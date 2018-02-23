@@ -43,16 +43,11 @@
 
 #define SDB_CONFIG_DEFAULT_DIRECTORY  "/var/lib/shakadb"
 #define SDB_CONFIG_DEFAULT_PORT 8487
-#define SDB_CONFIG_DEFAULT_SOFT_LIMIT 1500000000
-#define SDB_CONFIG_DEFAULT_HARD_LIMIT 2000000000
 
 typedef struct configuration_s {
   int log_verbose;
   char database_directory[SDB_FILE_MAX_LEN];
-  int database_points_per_chunk;
   int server_port;
-  uint64_t cache_soft_limit;
-  uint64_t cache_hard_limit;
 } configuration_t;
 
 server_t *g_server;
@@ -97,12 +92,7 @@ void control_signal_handler(int sig) {
 void master_routine(configuration_t *config) {
 
   log_info("initializing database ...");
-  database_t *db = database_create(
-      config->database_directory,
-      config->database_points_per_chunk,
-      SDB_DATA_SERIES_MAX,
-      config->cache_soft_limit,
-      config->cache_hard_limit);
+  database_t *db = database_create(config->database_directory, SDB_DATA_SERIES_MAX);
 
   log_info("initializing server ...");
   client_handler_t *handler = client_handler_create(db);
@@ -131,24 +121,18 @@ int configuration_parse(configuration_t *config, int argc, char **argv) {
   config->server_port = SDB_CONFIG_DEFAULT_PORT;
   strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_FILE_MAX_LEN);
   config->log_verbose = 0;
-  config->database_points_per_chunk = 10000;
-  config->cache_soft_limit = SDB_CONFIG_DEFAULT_SOFT_LIMIT;
-  config->cache_hard_limit = SDB_CONFIG_DEFAULT_HARD_LIMIT;
 
   while (1) {
     int option_index = 0;
     static struct option long_options[] = {
         {"port", required_argument, 0, 'p'},
         {"directory", required_argument, 0, 'd'},
-        {"soft-limit", required_argument, 0, 's'},
-        {"hard-limit", required_argument, 0, 'x'},
         {"help", no_argument, 0, 'h'},
         {"verbose", no_argument, 0, 'v'}
     };
 
-    int c = getopt_long(argc, argv, "vhp:d:x:s:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "vhp:d:", long_options, &option_index);
     if (c == -1) {
-      config->cache_soft_limit = sdb_minl(config->cache_soft_limit, config->cache_hard_limit);
       return 0;
     }
 
@@ -160,10 +144,6 @@ int configuration_parse(configuration_t *config, int argc, char **argv) {
       case 'h':print_usage();
         exit(0);
       case 'v':config->log_verbose = 1;
-        break;
-      case 's':sscanf(optarg, "%" PRIu64, &config->cache_soft_limit);
-        break;
-      case 'x':sscanf(optarg, "%" PRIu64, &config->cache_hard_limit);
         break;
       default:return -1;
     }
@@ -183,8 +163,6 @@ void print_banner(configuration_t *config) {
   log_info("");
   log_info("    directory:   %s", config->database_directory);
   log_info("    port:        %d", config->server_port);
-  log_info("    soft limit:  %" PRIu64 " bytes", config->cache_soft_limit);
-  log_info("    hard limit:  %" PRIu64 " bytes", config->cache_hard_limit);
   log_info("");
 }
 
@@ -204,10 +182,6 @@ void print_usage() {
   printf("    --directory, -d:  directory where database will be created\n");
   printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
   printf("    --verbose, -v:    logs debug information\n");
-  printf("    --soft-limit, -s: specifies the soft cache memory usage limit, in bytes\n");
-  printf("                      default value: %d\n", SDB_CONFIG_DEFAULT_SOFT_LIMIT);
-  printf("    --hard-limit, -x: specifies the hard cache memory usage limit, in bytes\n");
-  printf("                      default value: %d\n", SDB_CONFIG_DEFAULT_HARD_LIMIT);
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
   printf("\n");

@@ -27,20 +27,12 @@
 
 #include <stdlib.h>
 
-void *sdb_alloc(size_t size) {
+inline void *sdb_alloc(size_t size) {
   return calloc(1, size);
 }
 
-void *sdb_realloc(void *buffer, size_t size) {
-  return realloc(buffer, size);
-}
-
-void sdb_free(void *buffer) {
+inline void sdb_free(void *buffer) {
   free(buffer);
-}
-
-int data_point_compare(data_point_t *lhs, data_point_t *rhs) {
-  return lhs->time == rhs->time ? 0 : lhs->time < rhs->time ? -1 : 1;
 }
 
 inline uint64_t sdb_minl(uint64_t a, uint64_t b) {
@@ -56,39 +48,6 @@ inline uint64_t sdb_maxl(uint64_t a, uint64_t b) {
 
 inline int sdb_max(int a, int b) {
   return a < b ? b : a;
-}
-
-int sdb_find(void *elements, int element_size, int elements_count, void *data, find_predicate predicate) {
-  if (elements == NULL || element_size == 0 || elements_count == 0 || data == NULL) {
-    return -1;
-  }
-
-  char *ptr = elements;
-  int left = 0;
-  int right = elements_count;
-
-  if (predicate(data, ptr) < 0) {
-    return 0;
-  }
-
-  if (predicate(data, ptr + (elements_count - 1) * element_size) > 0) {
-    return elements_count;
-  }
-
-  while (left < right) {
-    int mid = (right + left) / 2;
-    int cmp = predicate(data, ptr + mid * element_size);
-
-    if (cmp < 0) {
-      right = mid;
-    } else if (cmp > 0) {
-      left = mid + 1;
-    } else {
-      return mid;
-    }
-  }
-
-  return left;
 }
 
 void die_internal(const char *message, const char *file, int line_number) {

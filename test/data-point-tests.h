@@ -20,37 +20,22 @@
  * SOFTWARE.
  */
 //
-// Created by Pawel Burzynski on 17/01/2017.
+// Created by Pawel Burzynski on 19/01/2017.
 //
 
-#ifndef SRC_STORAGE_CHUNK_H_
-#define SRC_STORAGE_CHUNK_H_
+#ifndef TEST_DATA_POINT_TESTS_H_
+#define TEST_DATA_POINT_TESTS_H_
 
-#include "src/common.h"
-#include "src/storage/points-reader.h"
-#include "src/storage/cache-manager.h"
+#include "test/framework.h"
 
-typedef struct chunk_s {
-  timestamp_t begin;
-  timestamp_t end;
-  int number_of_points;
-  int max_points;
+void test_search_empty(test_context_t ctx);
+void test_search_left_out(test_context_t ctx);
+void test_search_right_out(test_context_t ctx);
+void test_search_left_approx(test_context_t ctx);
+void test_search_right_approx(test_context_t ctx);
+void test_search_exactly(test_context_t ctx);
+void test_search_even(test_context_t ctx);
+void test_search_odd(test_context_t ctx);
+void test_search_duplicates(test_context_t ctx);
 
-  char file_name[SDB_FILE_MAX_LEN];
-  uint64_t file_offset;
-  data_point_t *cached_content;
-
-  cache_manager_t *cache_manager;
-  cache_entry_t *cache_entry;
-} chunk_t;
-
-int chunk_calculate_size(int points_count);
-
-chunk_t *chunk_create(const char *file_name, uint64_t file_offset, int max_points, cache_manager_t *cache);
-void chunk_destroy(chunk_t *chunk);
-points_reader_t *chunk_read(chunk_t *chunk, timestamp_t begin, timestamp_t end);
-data_point_t chunk_read_latest(chunk_t *chunk);
-int chunk_write(chunk_t *chunk, int offset, data_point_t *points, int count);
-void chunk_clean_cache(chunk_t *chunk);
-
-#endif  // SRC_STORAGE_CHUNK_H_
+#endif  // TEST_DATA_POINT_TESTS_H_

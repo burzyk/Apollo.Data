@@ -27,15 +27,14 @@
 #define SRC_STORAGE_POINTS_READER_H_
 
 #include "src/common.h"
+#include "src/data-point.h"
 
 typedef struct points_reader_s {
   data_point_t *points;
-  int points_count;
-  int write_position;
+  uint64_t points_count;
 } points_reader_t;
 
-points_reader_t *points_reader_create(int points_count);
-int points_reader_write(points_reader_t *reader, data_point_t *points, int count);
+points_reader_t *points_reader_create(data_point_t *points, uint64_t points_count);
 void points_reader_destroy(points_reader_t *reader);
 
 #endif  // SRC_STORAGE_POINTS_READER_H_
