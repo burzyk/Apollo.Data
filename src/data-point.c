@@ -78,11 +78,15 @@ uint64_t data_point_non_zero_distinct(points_list_t *points) {
   }
 
   tail = data_point_next(points, tail);
-  return data_point_dist(points, points->content, tail);
+  return data_point_index(points, tail);
 }
 
 inline data_point_t *data_point_at(points_list_t *points, uint64_t offset) {
   return (data_point_t *)(((uint8_t *)points->content) + offset * points->point_size);
+}
+
+uint64_t data_point_index(points_list_t *points, data_point_t *point) {
+  return data_point_dist(points, points->content, point);
 }
 
 inline data_point_t *data_point_next(points_list_t *points, data_point_t *curr) {
@@ -101,6 +105,10 @@ inline uint64_t data_point_dist(points_list_t *points, data_point_t *start, data
   return (((uint8_t *)end) - ((uint8_t *)start)) / points->point_size;
 }
 
+inline data_point_t *points_list_last(points_list_t *points) {
+  return data_point_at(points, points->count - 1);
+}
+
 data_point_t *data_point_find(points_list_t *points, timestamp_t timestamp) {
   if (points->content == NULL || points->count == 0) {
     return NULL;
@@ -114,7 +122,7 @@ data_point_t *data_point_find(points_list_t *points, timestamp_t timestamp) {
     return points->content;
   }
 
-  if (data_point_compare(&element, data_point_at(points, points->count - 1)) > 0) {
+  if (data_point_compare(&element, points_list_last(points)) > 0) {
     return points_list_end(points);
   }
 

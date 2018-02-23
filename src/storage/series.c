@@ -96,7 +96,7 @@ int series_write(series_t *series, points_list_t *to_write) {
     series->points.count += to_write->count;
   } else {
     data_point_t *begin = data_point_find(&series->points, to_write->content->time);
-    data_point_t *end = data_point_find(&series->points, data_point_at(to_write, to_write->count - 1)->time + 1);
+    data_point_t *end = data_point_find(&series->points, points_list_last(to_write)->time + 1);
     points_list_t slice = {
         .content = begin,
         .count = data_point_dist(&series->points, begin, end),
@@ -113,8 +113,7 @@ int series_write(series_t *series, points_list_t *to_write) {
 
     if (tail_count > 0) {
       memmove(
-          data_point_at(&series->points,
-                        data_point_dist(&series->points, series->points.content, begin) + merged.count),
+          data_point_at(&series->points, data_point_index(&series->points, begin) + merged.count),
           end,
           tail_count * series->points.point_size);
     }

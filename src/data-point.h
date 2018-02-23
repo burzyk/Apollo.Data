@@ -31,6 +31,8 @@ data_point_t *data_point_at(points_list_t *points, uint64_t offset);
 data_point_t *data_point_next(points_list_t *points, data_point_t *curr);
 data_point_t *data_point_prev(points_list_t *points, data_point_t *curr);
 data_point_t *points_list_end(points_list_t *points);
+data_point_t *points_list_last(points_list_t *points);
+uint64_t data_point_index(points_list_t *points, data_point_t *point);
 uint64_t data_point_dist(points_list_t *points, data_point_t *start, data_point_t *end);
 
 #endif  // SRC_DATA_POINT_H_
