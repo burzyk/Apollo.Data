@@ -93,8 +93,8 @@ data_point_t database_read_latest(database_t *db, series_id_t series_id) {
   if (series != NULL) {
     points_reader_t *reader = series_read_latest(series);
 
-    if (reader->points != NULL) {
-      result = *reader->points;
+    if (reader->points.content != NULL) {
+      result = *reader->points.content;
     }
 
     points_reader_destroy(reader);
@@ -112,12 +112,12 @@ points_reader_t *database_read(database_t *db,
 
   series_t *series = database_get_or_create_data_series(db, series_id);
   points_reader_t *result = series == NULL
-                            ? points_reader_create(NULL, 0)
+                            ? points_reader_create(NULL, 0, 0)
                             : series_read(series, begin, end, max_points);
 
   log_debug("Read series: %d, points: %d in: %fs",
             series_id,
-            result->points_count,
+            result->points.count,
             stopwatch_stop_and_destroy(sw));
 
   return result;

@@ -144,12 +144,12 @@ points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t en
   data_point_t *end_elem = data_point_find(&series->points, end);
   uint64_t total_points = sdb_min(max_points, end_elem - begin_elem);
 
-  return points_reader_create(begin_elem, sdb_min(max_points, total_points));
+  return points_reader_create(begin_elem, sdb_min(max_points, total_points), series->points.point_size);
 }
 
 points_reader_t *series_read_latest(series_t *series) {
   data_point_t *latest = series->points.count == 0 ? NULL : data_point_at(&series->points, series->points.count - 1);
-  points_reader_t *reader = points_reader_create(latest, latest == NULL ? 0 : 1);
+  points_reader_t *reader = points_reader_create(latest, latest == NULL ? 0 : 1, series->points.point_size);
 
   return reader;
 }

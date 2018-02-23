@@ -82,8 +82,8 @@ void test_database_validate_read_with_max(database_t *db,
                                           timestamp_t end,
                                           int max_points) {
   points_reader_t *reader = database_read(db, series_id, begin, end, max_points);
-  int total_read = reader->points_count;
-  data_point_t *points = reader->points;
+  uint64_t total_read = reader->points.count;
+  data_point_t *points = reader->points.content;
 
   for (int i = 1; i < total_read; i++) {
     sdb_assert(points[i - 1].time <= points[i].time, "Invalid order of elements");

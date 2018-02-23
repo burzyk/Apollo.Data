@@ -25,26 +25,24 @@
 
 #include "src/storage/points-reader.h"
 
-#include <stdlib.h>
-#include <math.h>
 #include <string.h>
 
-points_reader_t *points_reader_create(data_point_t *points, uint64_t points_count) {
+points_reader_t *points_reader_create(data_point_t *points, uint64_t points_count, uint32_t point_size) {
   points_reader_t *reader = (points_reader_t *)sdb_alloc(sizeof(points_reader_t));
 
-  reader->points_count = points_count;
-  reader->points = points_count == 0
-                   ? NULL
-                   : (data_point_t *)sdb_alloc(points_count * sizeof(data_point_t));
+  reader->points.count = points_count;
+  reader->points.content = points_count == 0
+                           ? NULL
+                           : (data_point_t *)sdb_alloc(points_count * point_size);
 
-  if (reader->points != NULL) {
-    memcpy(reader->points, points, points_count * sizeof(data_point_t));
+  if (reader->points.content != NULL) {
+    memcpy(reader->points.content, points, points_count * point_size);
   }
 
   return reader;
 }
 
 void points_reader_destroy(points_reader_t *reader) {
-  sdb_free(reader->points);
+  sdb_free(reader->points.content);
   sdb_free(reader);
 }

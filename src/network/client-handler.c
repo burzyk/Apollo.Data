@@ -73,14 +73,16 @@ void handle_read(client_t *client, read_request_t *request, database_t *db) {
       return;
     }
 
-    begin = reader->points_count == points_to_read ? reader->points[reader->points_count - 1].time : request->end;
+    begin = reader->points.count == points_to_read
+            ? reader->points.content[reader->points.count - 1].time
+            : request->end;
 
-    uint64_t points_to_send = sdb_min(points_per_packet, reader->points_count);
+    uint64_t points_to_send = sdb_min(points_per_packet, reader->points.count);
     log_debug("sending response: { begin: %"PRIu64", end: %"PRIu64", points: %d }",
-              points_to_send ? reader->points[0].time : 0,
-              points_to_send ? reader->points[points_to_send - 1].time : 0,
+              points_to_send ? reader->points.content[0].time : 0,
+              points_to_send ? reader->points.content[points_to_send - 1].time : 0,
               points_to_send);
-    int send_status = send_and_destroy(client, read_response_create(reader->points, points_to_send));
+    int send_status = send_and_destroy(client, read_response_create(reader->points.content, points_to_send));
 
     points_reader_destroy(reader);
 
