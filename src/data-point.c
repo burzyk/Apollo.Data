@@ -45,81 +45,81 @@ uint64_t data_point_merge(data_point_t *src,
   return buffer_count - duplicated_count;
 }
 
-void data_point_sort(points_list_t *list) {
-  qsort(list->points, list->count, list->point_size, (int (*)(const void *, const void *))data_point_compare);
+void data_point_sort(points_list_t *points) {
+  qsort(points->content, points->count, points->point_size, (int (*)(const void *, const void *))data_point_compare);
 }
 
-uint64_t data_point_non_zero_distinct(points_list_t *list) {
-  data_point_t *curr = list->points;
-  data_point_t *tail = data_point_prev(list, curr);
-  data_point_t *end = points_list_end(list);
+uint64_t data_point_non_zero_distinct(points_list_t *points) {
+  data_point_t *curr = points->content;
+  data_point_t *tail = data_point_prev(points, curr);
+  data_point_t *end = points_list_end(points);
 
   while (curr < end) {
     if (curr->time != 0) {
-      if (tail < list->points || tail->time < curr->time) {
-        tail = data_point_next(list, tail);
+      if (tail < points->content || tail->time < curr->time) {
+        tail = data_point_next(points, tail);
       }
 
-      memcpy(tail, curr, list->point_size);
+      memcpy(tail, curr, points->point_size);
     }
 
-    curr = data_point_next(list, curr);
+    curr = data_point_next(points, curr);
   }
 
-  tail = data_point_next(list, tail);
-  return data_point_dist(list, list->points, tail);
+  tail = data_point_next(points, tail);
+  return data_point_dist(points, points->content, tail);
 }
 
-inline data_point_t *data_point_at(points_list_t *list, uint64_t offset) {
-  return (data_point_t *)(((uint8_t *)list->points) + offset * list->point_size);
+inline data_point_t *data_point_at(points_list_t *points, uint64_t offset) {
+  return (data_point_t *)(((uint8_t *)points->content) + offset * points->point_size);
 }
 
-inline data_point_t *data_point_next(points_list_t *list, data_point_t *curr) {
-  return (data_point_t *)(((uint8_t *)curr) + list->point_size);
+inline data_point_t *data_point_next(points_list_t *points, data_point_t *curr) {
+  return (data_point_t *)(((uint8_t *)curr) + points->point_size);
 }
 
-inline data_point_t *data_point_prev(points_list_t *list, data_point_t *curr) {
-  return (data_point_t *)(((uint8_t *)curr) - list->point_size);
+inline data_point_t *data_point_prev(points_list_t *points, data_point_t *curr) {
+  return (data_point_t *)(((uint8_t *)curr) - points->point_size);
 }
 
-inline data_point_t *points_list_end(points_list_t *list) {
-  return data_point_at(list, list->count);
+inline data_point_t *points_list_end(points_list_t *points) {
+  return data_point_at(points, points->count);
 }
 
-inline uint64_t data_point_dist(points_list_t *list, data_point_t *start, data_point_t *end) {
-  return (((uint8_t *)end) - ((uint8_t *)start)) / list->point_size;
+inline uint64_t data_point_dist(points_list_t *points, data_point_t *start, data_point_t *end) {
+  return (((uint8_t *)end) - ((uint8_t *)start)) / points->point_size;
 }
 
-data_point_t *data_point_find(points_list_t *list, timestamp_t timestamp) {
-  if (list->points == NULL || list->count == 0) {
+data_point_t *data_point_find(points_list_t *points, timestamp_t timestamp) {
+  if (points->content == NULL || points->count == 0) {
     return NULL;
   }
 
   uint64_t left = 0;
-  uint64_t right = list->count;
+  uint64_t right = points->count;
   data_point_t element = {.time = timestamp};
 
-  if (data_point_compare(&element, list->points) < 0) {
-    return list->points;
+  if (data_point_compare(&element, points->content) < 0) {
+    return points->content;
   }
 
-  if (data_point_compare(&element, data_point_at(list, list->count - 1)) > 0) {
-    return points_list_end(list);
+  if (data_point_compare(&element, data_point_at(points, points->count - 1)) > 0) {
+    return points_list_end(points);
   }
 
   while (left < right) {
     uint64_t mid = (right + left) / 2;
-    int cmp = data_point_compare(&element, data_point_at(list, mid));
+    int cmp = data_point_compare(&element, data_point_at(points, mid));
 
     if (cmp < 0) {
       right = mid;
     } else if (cmp > 0) {
       left = mid + 1;
     } else {
-      return data_point_at(list, mid);
+      return data_point_at(points, mid);
     }
   }
 
-  return data_point_at(list, left);
+  return data_point_at(points, left);
 }
 

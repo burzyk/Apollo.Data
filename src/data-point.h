@@ -18,7 +18,7 @@ typedef struct data_point_s {
 } __attribute__((packed)) data_point_t;
 
 typedef struct points_list_s {
-  data_point_t *points;
+  data_point_t *content;
   uint64_t count;
   uint32_t point_size;
 } points_list_t;
@@ -28,13 +28,13 @@ uint64_t data_point_merge(data_point_t *src,
                           data_point_t *dst,
                           uint64_t dst_size,
                           data_point_t **result);
-void data_point_sort(points_list_t *list);
-uint64_t data_point_non_zero_distinct(points_list_t *list);
-data_point_t *data_point_find(points_list_t *list, timestamp_t timestamp);
-data_point_t *data_point_at(points_list_t *list, uint64_t offset);
-data_point_t *data_point_next(points_list_t *list, data_point_t *curr);
-data_point_t *data_point_prev(points_list_t *list, data_point_t *curr);
-data_point_t *points_list_end(points_list_t *list);
-uint64_t data_point_dist(points_list_t *list, data_point_t *start, data_point_t *end);
+void data_point_sort(points_list_t *points);
+uint64_t data_point_non_zero_distinct(points_list_t *points);
+data_point_t *data_point_find(points_list_t *points, timestamp_t timestamp);
+data_point_t *data_point_at(points_list_t *points, uint64_t offset);
+data_point_t *data_point_next(points_list_t *points, data_point_t *curr);
+data_point_t *data_point_prev(points_list_t *points, data_point_t *curr);
+data_point_t *points_list_end(points_list_t *points);
+uint64_t data_point_dist(points_list_t *points, data_point_t *start, data_point_t *end);
 
 #endif  // SRC_DATA_POINT_H_

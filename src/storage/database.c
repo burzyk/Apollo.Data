@@ -58,7 +58,8 @@ int database_write(database_t *db, series_id_t series_id, data_point_t *points, 
   stopwatch_t *sw = stopwatch_start();
 
   series_t *series = database_get_or_create_data_series(db, series_id);
-  int result = series == NULL ? -1 : series_write(series, points, count);
+  points_list_t list = {.content = points, .count = count, .point_size = 12};
+  int result = series == NULL ? -1 : series_write(series, &list);
   log_debug("Written series: %d, points: %d in: %fs", series_id, count, stopwatch_stop_and_destroy(sw));
 
   return result;
@@ -90,7 +91,13 @@ data_point_t database_read_latest(database_t *db, series_id_t series_id) {
   data_point_t result = {.time = 0, .value = 0};
 
   if (series != NULL) {
-    result = series_read_latest(series);
+    points_reader_t *reader = series_read_latest(series);
+
+    if (reader->points != NULL) {
+      result = *reader->points;
+    }
+
+    points_reader_destroy(reader);
   }
 
   return result;
@@ -128,7 +135,7 @@ series_t *database_get_or_create_data_series(database_t *db, series_id_t series_
     snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d", db->directory, series_id);
 
     log_info("loading time series: %d", series_id);
-    series = db->series[series_id] = series_create(file_name);
+    series = db->series[series_id] = series_create(file_name, 12);
   }
 
   return series;
