@@ -57,10 +57,8 @@ void sdb_free(void *buffer);
 void die_internal(const char *message, const char *file, int line_number);
 void assert_internal(int status, const char *message, const char *file, int line_number);
 
-uint64_t sdb_minl(uint64_t a, uint64_t b);
-int sdb_min(int a, int b);
-uint64_t sdb_maxl(uint64_t a, uint64_t b);
-int sdb_max(int a, int b);
+uint64_t sdb_min(uint64_t a, uint64_t b);
+uint64_t sdb_max(uint64_t a, uint64_t b);
 
 #define sdb_assert(status, message) assert_internal(status, message, __FILE__, __LINE__)
 #define die(message) die_internal(message, __FILE__, __LINE__)

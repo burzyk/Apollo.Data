@@ -35,18 +35,11 @@ inline void sdb_free(void *buffer) {
   free(buffer);
 }
 
-inline uint64_t sdb_minl(uint64_t a, uint64_t b) {
+inline uint64_t sdb_min(uint64_t a, uint64_t b) {
   return a < b ? a : b;
 }
 
-inline int sdb_min(int a, int b) {
-  return a < b ? a : b;
-}
-inline uint64_t sdb_maxl(uint64_t a, uint64_t b) {
-  return a < b ? b : a;
-}
-
-inline int sdb_max(int a, int b) {
+inline uint64_t sdb_max(uint64_t a, uint64_t b) {
   return a < b ? b : a;
 }
 

@@ -62,10 +62,10 @@ void handle_read(client_t *client, read_request_t *request, database_t *db) {
             request->end);
 
   timestamp_t begin = request->begin;
-  int points_per_packet = sdb_max(1, sdb_min(SDB_POINTS_PER_PACKET_MAX, request->points_per_packet));
+  uint64_t points_per_packet = sdb_max(1, sdb_min(SDB_POINTS_PER_PACKET_MAX, request->points_per_packet));
 
   for (;;) {
-    int points_to_read = points_per_packet + 1;
+    uint64_t points_to_read = points_per_packet + 1;
     points_reader_t *reader =
         database_read(db, request->data_series_id, begin, request->end, points_to_read);
 
@@ -75,7 +75,7 @@ void handle_read(client_t *client, read_request_t *request, database_t *db) {
 
     begin = reader->points_count == points_to_read ? reader->points[reader->points_count - 1].time : request->end;
 
-    int points_to_send = sdb_min(points_per_packet, reader->points_count);
+    uint64_t points_to_send = sdb_min(points_per_packet, reader->points_count);
     log_debug("sending response: { begin: %"PRIu64", end: %"PRIu64", points: %d }",
               points_to_send ? reader->points[0].time : 0,
               points_to_send ? reader->points[points_to_send - 1].time : 0,
@@ -137,7 +137,7 @@ void handle_read_latest(client_t *client, read_latest_request_t *request, databa
   log_debug("latest point: { time: %"PRIu64, ", value: %f }", latest.time, latest.value);
 
   data_point_t *result = latest.time != 0 ? &latest : NULL;
-  int count = result != NULL ? 1 : 0;
+  uint64_t count = result != NULL ? 1 : 0;
 
   if (send_and_destroy(client, read_response_create(result, count)) != 0) {
     log_debug("error sending response");

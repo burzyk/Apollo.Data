@@ -123,9 +123,9 @@ uint64_t series_prepare_input(data_point_t *points, uint64_t count) {
 points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, uint64_t max_points) {
   data_point_t *begin_elem = data_point_find(series->points, series->points_count, begin);
   data_point_t *end_elem = data_point_find(series->points, series->points_count, end);
-  uint64_t total_points = sdb_minl(max_points, end_elem - begin_elem);
+  uint64_t total_points = sdb_min(max_points, end_elem - begin_elem);
 
-  return points_reader_create(begin_elem, sdb_minl(max_points, total_points));
+  return points_reader_create(begin_elem, sdb_min(max_points, total_points));
 }
 
 data_point_t series_read_latest(series_t *series) {
@@ -139,7 +139,7 @@ data_point_t series_read_latest(series_t *series) {
 }
 
 void series_grow(series_t *series, uint64_t size) {
-  uint64_t increment = sdb_maxl(SDB_FILE_GROW_INCREMENT, size);
+  uint64_t increment = sdb_max(SDB_FILE_GROW_INCREMENT, size);
 
   file_map_destroy(series->file_map);
   file_grow(series->file_name, increment * sizeof(data_point_t));

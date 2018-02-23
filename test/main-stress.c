@@ -141,7 +141,7 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
 
     for (int i = 0; i < max_reads; i++) {
       // TODO: overflow issue with negatives
-      timestamp_t begin = sdb_maxl((uint64_t)(rand() % total_points - read_count), 1);
+      timestamp_t begin = sdb_max((uint64_t)(rand() % total_points - read_count), 1);
       timestamp_t end = begin + read_count;
 
       for (int j = 0; j < max_reads_repeat; j++) {

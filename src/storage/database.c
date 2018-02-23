@@ -31,7 +31,7 @@
 
 series_t *database_get_or_create_data_series(database_t *db, series_id_t series_id);
 
-database_t *database_create(const char *directory, int max_series) {
+database_t *database_create(const char *directory, uint64_t max_series) {
   database_t *db = (database_t *)sdb_alloc(sizeof(database_t));
   strncpy(db->directory, directory, SDB_FILE_MAX_LEN);
   db->max_series_count = max_series;
@@ -54,7 +54,7 @@ void database_destroy(database_t *db) {
   sdb_free(db);
 }
 
-int database_write(database_t *db, series_id_t series_id, data_point_t *points, int count) {
+int database_write(database_t *db, series_id_t series_id, data_point_t *points, uint64_t count) {
   stopwatch_t *sw = stopwatch_start();
 
   series_t *series = database_get_or_create_data_series(db, series_id);
@@ -100,7 +100,7 @@ points_reader_t *database_read(database_t *db,
                                series_id_t series_id,
                                timestamp_t begin,
                                timestamp_t end,
-                               int max_points) {
+                               uint64_t max_points) {
   stopwatch_t *sw = stopwatch_start();
 
   series_t *series = database_get_or_create_data_series(db, series_id);

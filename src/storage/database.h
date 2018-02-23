@@ -31,18 +31,18 @@
 typedef struct database_s {
   char directory[SDB_FILE_MAX_LEN];
   series_t **series;
-  int max_series_count;
+  uint64_t max_series_count;
 } database_t;
 
-database_t *database_create(const char *directory, int max_series);
+database_t *database_create(const char *directory, uint64_t max_series);
 void database_destroy(database_t *db);
-int database_write(database_t *db, series_id_t series_id, data_point_t *points, int count);
+int database_write(database_t *db, series_id_t series_id, data_point_t *points, uint64_t count);
 int database_truncate(database_t *db, series_id_t series_id);
 data_point_t database_read_latest(database_t *db, series_id_t series_id);
 points_reader_t *database_read(database_t *db,
                                series_id_t series_id,
                                timestamp_t begin,
                                timestamp_t end,
-                               int max_points);
+                               uint64_t max_points);
 
 #endif  // SRC_STORAGE_DATABASE_H_

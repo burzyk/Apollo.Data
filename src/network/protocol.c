@@ -29,7 +29,7 @@
 
 #include "src/diagnostics.h"
 
-buffer_t write_request_create(series_id_t data_series_id, data_point_t *points, int points_count) {
+buffer_t write_request_create(series_id_t data_series_id, data_point_t *points, uint64_t points_count) {
   size_t total_size = sizeof(write_request_t) + points_count * sizeof(data_point_t);
   write_request_t *request = (write_request_t *)sdb_alloc(total_size);
   request->header.type = SDB_WRITE_REQUEST;
@@ -59,7 +59,7 @@ buffer_t simple_response_create(response_code_t code) {
 buffer_t read_request_create(series_id_t data_series_id,
                              timestamp_t begin,
                              timestamp_t end,
-                             int points_per_packet) {
+                             uint64_t points_per_packet) {
   read_request_t *request = (read_request_t *)sdb_alloc(sizeof(read_request_t));
   request->header.type = SDB_READ_REQUEST;
   request->data_series_id = data_series_id;
@@ -86,7 +86,7 @@ buffer_t read_latest_request_create(series_id_t data_series_id) {
   return packet;
 }
 
-buffer_t read_response_create(data_point_t *points, int points_count) {
+buffer_t read_response_create(data_point_t *points, uint64_t points_count) {
   size_t total_size = sizeof(read_response_t) + points_count * sizeof(data_point_t);
   read_response_t *response = (read_response_t *)sdb_alloc(total_size);
   response->header.type = SDB_READ_RESPONSE;

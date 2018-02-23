@@ -78,7 +78,7 @@ void file_grow(const char *file_name, uint64_t increment) {
   }
 
   while (increment > 0) {
-    increment -= fwrite(buffer, 1, sdb_minl(SDB_GROW_BUFFER_SIZE, increment), f);
+    increment -= fwrite(buffer, 1, sdb_min(SDB_GROW_BUFFER_SIZE, increment), f);
   }
 
   fclose(f);

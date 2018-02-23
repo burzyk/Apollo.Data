@@ -141,7 +141,7 @@ void session_destroy(session_t *session) {
   sdb_free(session);
 }
 
-int session_write(session_t *session, series_id_t series_id, data_point_t *points, int count) {
+int session_write(session_t *session, series_id_t series_id, data_point_t *points, uint64_t count) {
   if (session->read_open) {
     return -1;
   }
@@ -163,7 +163,7 @@ int session_read(session_t *session,
                  series_id_t series_id,
                  timestamp_t begin,
                  timestamp_t end,
-                 int points_per_packet) {
+                 uint64_t points_per_packet) {
   if (session->read_open) {
     return -1;
   }
