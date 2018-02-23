@@ -17,7 +17,6 @@ typedef struct data_point_s {
   float value;
 } __attribute__((packed)) data_point_t;
 
-int data_point_compare(data_point_t *lhs, data_point_t *rhs);
 uint64_t data_point_merge(data_point_t *src,
                           uint64_t src_size,
                           data_point_t *dst,
