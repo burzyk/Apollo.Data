@@ -97,22 +97,31 @@ int series_write(series_t *series, points_list_t *to_write) {
   } else {
     data_point_t *begin = data_point_find(&series->points, to_write->content->time);
     data_point_t *end = data_point_find(&series->points, data_point_at(to_write, to_write->count - 1)->time + 1);
-    uint64_t slice_size = data_point_dist(&series->points, begin, end);
+    points_list_t slice = {
+        .content = begin,
+        .count = data_point_dist(&series->points, begin, end),
+        .point_size = to_write->point_size
+    };
 
-    data_point_t *merged = NULL;
-    uint64_t merged_size = data_point_merge(to_write->content, to_write->count, begin, slice_size, &merged);
+    points_list_t merged = {};
+    merged.count = slice.count + to_write->count;
+    merged.point_size = series->points.point_size;
+    merged.content = (data_point_t *)sdb_alloc(merged.count * merged.point_size);
+
+    data_point_merge(to_write, &slice, &merged);
     uint64_t tail_count = data_point_dist(&series->points, end, points_list_end(&series->points));
 
     if (tail_count > 0) {
       memmove(
-          data_point_at(&series->points, data_point_dist(&series->points, series->points.content, begin) + merged_size),
+          data_point_at(&series->points,
+                        data_point_dist(&series->points, series->points.content, begin) + merged.count),
           end,
           tail_count * series->points.point_size);
     }
 
-    memcpy(begin, merged, merged_size * to_write->point_size);
-    series->points.count += merged_size - slice_size;
-    sdb_free(merged);
+    memcpy(begin, merged.content, merged.count * merged.point_size);
+    series->points.count += merged.count - slice.count;
+    sdb_free(merged.content);
   }
 
   file_map_sync(series->file_map);

@@ -23,11 +23,7 @@ typedef struct points_list_s {
   uint32_t point_size;
 } points_list_t;
 
-uint64_t data_point_merge(data_point_t *src,
-                          uint64_t src_size,
-                          data_point_t *dst,
-                          uint64_t dst_size,
-                          data_point_t **result);
+void data_point_merge(points_list_t *src, points_list_t *dst, points_list_t *result);
 void data_point_sort(points_list_t *points);
 uint64_t data_point_non_zero_distinct(points_list_t *points);
 data_point_t *data_point_find(points_list_t *points, timestamp_t timestamp);
