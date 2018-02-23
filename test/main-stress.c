@@ -140,6 +140,7 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
     log_info("> Seeded with: %d in: %fs", total_points, stopwatch_stop_and_destroy(sw));
 
     for (int i = 0; i < max_reads; i++) {
+      // TODO: overflow issue with negatives
       timestamp_t begin = sdb_maxl((uint64_t)(rand() % total_points - read_count), 1);
       timestamp_t end = begin + read_count;
 
