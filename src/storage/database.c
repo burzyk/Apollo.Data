@@ -157,7 +157,7 @@ series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id
   DIR *d = opendir(db->directory);
 
   if (d == NULL) {
-    die("Failed to open directory for loading of the time series");
+    return NULL;
   }
 
   struct dirent *dir;

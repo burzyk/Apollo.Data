@@ -28,7 +28,6 @@
 #include <string.h>
 
 #include "src/diagnostics.h"
-#include "src/storage/disk.h"
 
 uint64_t series_prepare_input(points_list_t *list);
 void series_grow(series_t *series, uint64_t size);
@@ -48,7 +47,7 @@ series_t *series_create(const char *file_name, uint32_t point_size) {
   series->points_capacity = series->file_map->size / series->points.point_size;
 
   if (series->file_map->size == 0) {
-    series_grow(series, SDB_FILE_GROW_INCREMENT);
+    series_grow(series, SDB_FILE_GROW_INCREMENT / series->points.point_size);
   }
 
   // just for now to do the binary search
@@ -142,7 +141,7 @@ uint64_t series_prepare_input(points_list_t *list) {
 points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, uint64_t max_points) {
   data_point_t *begin_elem = data_point_find(&series->points, begin);
   data_point_t *end_elem = data_point_find(&series->points, end);
-  uint64_t total_points = sdb_min(max_points, end_elem - begin_elem);
+  uint64_t total_points = sdb_min(max_points, data_point_dist(&series->points, begin_elem, end_elem));
 
   return points_reader_create(begin_elem, sdb_min(max_points, total_points), series->points.point_size);
 }
@@ -155,7 +154,7 @@ points_reader_t *series_read_latest(series_t *series) {
 }
 
 void series_grow(series_t *series, uint64_t size) {
-  uint64_t increment = sdb_max(SDB_FILE_GROW_INCREMENT, size);
+  uint64_t increment = sdb_max(SDB_FILE_GROW_INCREMENT / series->points.point_size, size);
 
   file_map_destroy(series->file_map);
   file_grow(series->file_name, increment * series->points.point_size, 0xFF);
