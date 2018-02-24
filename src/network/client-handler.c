@@ -66,12 +66,14 @@ void handle_read(client_t *client, read_request_t *request, database_t *db) {
   // -10 just to be sure we're not hitting any edge case
   uint32_t max_points = (SDB_SERVER_PACKET_MAX_LEN - sizeof(packet_t) - sizeof(read_response_t) - 10) / data_point_size;
 
-  uint64_t points_per_packet = sdb_max(1, sdb_min(max_points, request->points_per_packet));
+  uint64_t points_per_packet = request->points_per_packet == SDB_POINTS_PER_PACKET_MAX
+                               ? max_points
+                               : sdb_max(1, sdb_min(max_points, request->points_per_packet));
 
   for (;;) {
     uint64_t points_to_read = points_per_packet + 1;
     points_reader_t *reader =
-        database_read(db, request->data_series_id, 12, begin, request->end, points_to_read);
+        database_read(db, request->data_series_id, begin, request->end, points_to_read);
 
     if (reader == NULL) {
       return;
@@ -124,7 +126,7 @@ void handle_write(client_t *client, write_request_t *request, database_t *db) {
 void handle_truncate(client_t *client, truncate_request_t *request, database_t *db) {
   log_debug("processing truncate request: { series: %d }", request->data_series_id);
 
-  int status = database_truncate(db, request->data_series_id, 12);
+  int status = database_truncate(db, request->data_series_id);
 
   if (status) {
     log_error("failed to truncate data series: %d", request->data_series_id);
@@ -140,7 +142,7 @@ void handle_truncate(client_t *client, truncate_request_t *request, database_t *
 void handle_read_latest(client_t *client, read_latest_request_t *request, database_t *db) {
   log_debug("processing read latest request: { series: %d }", request->data_series_id);
 
-  points_reader_t *reader = database_read_latest(db, request->data_series_id, 12);
+  points_reader_t *reader = database_read_latest(db, request->data_series_id);
 
   if (reader->points.count != 0) {
     data_point_t latest = reader->points.content[0];

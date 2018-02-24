@@ -26,11 +26,13 @@
 #include "src/storage/database.h"
 
 #include <memory.h>
+#include <dirent.h>
+#include <stdlib.h>
 
 #include "src/diagnostics.h"
 
-series_t *database_get_data_series(database_t *db, series_id_t series_id);
-series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id, uint32_t point_size);
+series_t *database_get_or_create_data_series(database_t *db, series_id_t series_id, uint32_t point_size);
+series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id);
 
 database_t *database_create(const char *directory, uint64_t max_series) {
   database_t *db = (database_t *)sdb_alloc(sizeof(database_t));
@@ -58,17 +60,17 @@ void database_destroy(database_t *db) {
 int database_write(database_t *db, series_id_t series_id, points_list_t *points) {
   stopwatch_t *sw = stopwatch_start();
 
-  series_t *series = database_get_or_load_data_series(db, series_id, points->point_size);
+  series_t *series = database_get_or_create_data_series(db, series_id, points->point_size);
   int result = series == NULL ? -1 : series_write(series, points);
 
   log_debug("Written series: %d, points: %d in: %fs", series_id, points->count, stopwatch_stop_and_destroy(sw));
   return result;
 }
 
-int database_truncate(database_t *db, series_id_t series_id, uint32_t point_size) {
+int database_truncate(database_t *db, series_id_t series_id) {
   stopwatch_t *sw = stopwatch_start();
 
-  series_t *series = database_get_or_load_data_series(db, series_id, point_size);
+  series_t *series = database_get_or_load_data_series(db, series_id);
 
   if (series == NULL) {
     return -1;
@@ -83,14 +85,14 @@ int database_truncate(database_t *db, series_id_t series_id, uint32_t point_size
 }
 
 uint32_t database_get_point_size(database_t *db, series_id_t series_id) {
-  series_t *series = database_get_or_load_data_series(db, series_id, 12);
+  series_t *series = database_get_or_load_data_series(db, series_id);
   return series == NULL ? 0 : series->points.point_size;
 }
 
-points_reader_t *database_read_latest(database_t *db, series_id_t series_id, uint32_t point_size) {
+points_reader_t *database_read_latest(database_t *db, series_id_t series_id) {
   stopwatch_t *sw = stopwatch_start();
 
-  series_t *series = database_get_or_load_data_series(db, series_id, point_size);
+  series_t *series = database_get_or_load_data_series(db, series_id);
   points_reader_t *result = series == NULL
                             ? points_reader_create(NULL, 0, 0)
                             : series_read_latest(series);
@@ -102,13 +104,12 @@ points_reader_t *database_read_latest(database_t *db, series_id_t series_id, uin
 
 points_reader_t *database_read(database_t *db,
                                series_id_t series_id,
-                               uint32_t point_size,
                                timestamp_t begin,
                                timestamp_t end,
                                uint64_t max_points) {
   stopwatch_t *sw = stopwatch_start();
 
-  series_t *series = database_get_or_load_data_series(db, series_id, point_size);
+  series_t *series = database_get_or_load_data_series(db, series_id);
   points_reader_t *result = series == NULL
                             ? points_reader_create(NULL, 0, 0)
                             : series_read(series, begin, end, max_points);
@@ -121,28 +122,60 @@ points_reader_t *database_read(database_t *db,
   return result;
 }
 
-series_t *database_get_data_series(database_t *db, series_id_t series_id) {
+series_t *database_get_or_create_data_series(database_t *db, series_id_t series_id, uint32_t point_size) {
   if (db->series == NULL || series_id >= db->max_series_count) {
     return NULL;
   }
 
-  return db->series[series_id];
+  series_t *series = database_get_or_load_data_series(db, series_id);
+
+  if (series != NULL) {
+    return series;
+  }
+
+  char file_name[SDB_STR_MAX_LEN] = {0};
+  snprintf(file_name, SDB_STR_MAX_LEN, "%s/%d-%d", db->directory, series_id, point_size);
+
+  log_info("loading or creating time series: %d", series_id);
+  return db->series[series_id] = series_create(file_name, point_size);
 }
 
-series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id, uint32_t point_size) {
+series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id) {
   if (db->series == NULL || series_id >= db->max_series_count) {
     return NULL;
   }
 
-  series_t *series = database_get_data_series(db, series_id);
+  series_t *series = db->series[series_id];
 
-  if (series == NULL) {
-    char file_name[SDB_STR_MAX_LEN] = {0};
-    snprintf(file_name, SDB_STR_MAX_LEN, "%s/%d-%d", db->directory, series_id, point_size);
+  if (series != NULL) {
+    return series;
+  }
+
+  char file_root[SDB_STR_MAX_LEN] = {0};
+  snprintf(file_root, SDB_STR_MAX_LEN, "%s/%d-", db->directory, series_id);
+
+  DIR *d = opendir(db->directory);
+
+  if (d == NULL) {
+    die("Failed to open directory for loading of the time series");
+  }
+
+  struct dirent *dir;
+  size_t root_len = strlen(file_root);
+
+  while ((dir = readdir(d)) != NULL && series == NULL) {
+    size_t dir_name_len = strlen(dir->d_name);
+
+    if (root_len >= dir_name_len || strncmp(file_root, dir->d_name, root_len) != 0) {
+      continue;
+    }
 
     log_info("loading time series: %d", series_id);
-    series = db->series[series_id] = series_create(file_name, point_size);
+    uint32_t point_size = (uint32_t)strtol(&dir->d_name[root_len], NULL, 0);
+    series = db->series[series_id] = series_create(dir->d_name, point_size);
   }
+
+  closedir(d);
 
   return series;
 }

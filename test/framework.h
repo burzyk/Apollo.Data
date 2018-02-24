@@ -37,6 +37,7 @@ typedef struct test_session_s {
 typedef struct test_context_s {
   char working_directory[SDB_STR_MAX_LEN];
   test_session_t *session;
+  uint32_t point_size;
 } test_context_t;
 
 typedef void (*sdb_test_function_t)(test_context_t);

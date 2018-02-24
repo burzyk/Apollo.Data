@@ -35,6 +35,10 @@
 typedef char packet_type_t;
 typedef char response_code_t;
 
+// this is an indicator that the server should send
+// as much as it can data points per a single packet
+#define SDB_POINTS_PER_PACKET_MAX 0
+
 #define SDB_RESPONSE_OK ((response_code_t)0)
 #define SDB_RESPONSE_ERROR  ((response_code_t)1)
 

@@ -66,7 +66,11 @@ int test_session_run(test_session_t *session, const char *name, sdb_test_functio
   strncpy(context.working_directory, working_directory, SDB_STR_MAX_LEN);
   context.session = session;
 
-  test_function(context);
+  for (int i = 12; i < 24; i += 4) {
+    printf(" %d ...", i);
+    context.point_size = 12;
+    test_function(context);
+  }
 
   printf(ANSI_COLOR_GREEN " [ OK ]\n" ANSI_COLOR_RESET);
   session->tests_success++;
