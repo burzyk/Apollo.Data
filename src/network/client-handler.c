@@ -136,16 +136,20 @@ void handle_truncate(client_t *client, truncate_request_t *request, database_t *
 void handle_read_latest(client_t *client, read_latest_request_t *request, database_t *db) {
   log_debug("processing read latest request: { series: %d }", request->data_series_id);
 
-  data_point_t latest = database_read_latest(db, request->data_series_id, 12);
-  log_debug("latest point: { time: %"PRIu64, ", value: %f }", latest.time, latest.value);
+  points_reader_t *reader = database_read_latest(db, request->data_series_id, 12);
 
-  data_point_t *result = latest.time != 0 ? &latest : NULL;
-  uint64_t count = result != NULL ? 1 : 0;
+  if (reader->points.count != 0) {
+    data_point_t latest = reader->points.content[0];
+    log_debug("latest point: { time: %"PRIu64, ", value: %f }", latest.time, latest.value);
+  }
 
-  if (send_and_destroy(client, read_response_create(result, count)) != 0) {
+  if (send_and_destroy(client, read_response_create(reader->points.content, reader->points.count)) != 0) {
     log_debug("error sending response");
+    points_reader_destroy(reader);
     return;
   }
+
+  points_reader_destroy(reader);
 }
 
 int send_and_destroy(client_t *client, buffer_t packet) {

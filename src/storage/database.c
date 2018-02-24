@@ -82,19 +82,15 @@ int database_truncate(database_t *db, series_id_t series_id, uint32_t point_size
   return 0;
 }
 
-data_point_t database_read_latest(database_t *db, series_id_t series_id, uint32_t point_size) {
+points_reader_t *database_read_latest(database_t *db, series_id_t series_id, uint32_t point_size) {
+  stopwatch_t *sw = stopwatch_start();
+
   series_t *series = database_get_or_load_data_series(db, series_id, point_size);
-  data_point_t result = {.time = 0, .value = 0};
+  points_reader_t *result = series == NULL
+                            ? points_reader_create(NULL, 0, 0)
+                            : series_read_latest(series);
 
-  if (series != NULL) {
-    points_reader_t *reader = series_read_latest(series);
-
-    if (reader->points.content != NULL) {
-      result = *reader->points.content;
-    }
-
-    points_reader_destroy(reader);
-  }
+  log_debug("Read latest from series: %d in: %fs", series_id, stopwatch_stop_and_destroy(sw));
 
   return result;
 }

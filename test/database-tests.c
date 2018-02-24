@@ -345,10 +345,9 @@ void test_database_failed_write(test_context_t ctx) {
 void test_database_read_latest_no_data(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
-  data_point_t latest = database_read_latest(db, 12345, 12);
+  data_point_t *latest = database_read_latest(db, 12345, 12)->points.content;
 
-  sdb_assert(latest.value == 0, "Value is non-zero");
-  sdb_assert(latest.time == 0, "Time is non-zero");
+  sdb_assert(latest == NULL, "Expected NULL value");
 
   database_destroy(db);
 }
@@ -357,7 +356,7 @@ void test_database_read_latest_data_in_first_chunk(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
   test_database_write(db, 12345, 1, 10);
-  data_point_t latest = database_read_latest(db, 12345, 12);
+  data_point_t latest = database_read_latest(db, 12345, 12)->points.content[0];
 
   sdb_assert(latest.value == 1000, "Incorrect value");
   sdb_assert(latest.time == 10, "Incorrect time");
@@ -369,7 +368,7 @@ void test_database_read_latest_data_in_second_chunk(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
   test_database_write(db, 12345, 2, 10);
-  data_point_t latest = database_read_latest(db, 12345, 12);
+  data_point_t latest = database_read_latest(db, 12345, 12)->points.content[0];
 
   sdb_assert(latest.value == 2000, "Incorrect value");
   sdb_assert(latest.time == 20, "Incorrect time");
