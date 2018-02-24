@@ -36,11 +36,12 @@ typedef struct database_s {
 
 database_t *database_create(const char *directory, uint64_t max_series);
 void database_destroy(database_t *db);
-int database_write(database_t *db, series_id_t series_id, data_point_t *points, uint64_t count);
-int database_truncate(database_t *db, series_id_t series_id);
-data_point_t database_read_latest(database_t *db, series_id_t series_id);
+int database_write(database_t *db, series_id_t series_id, points_list_t *points);
+int database_truncate(database_t *db, series_id_t series_id, uint32_t point_size);
+data_point_t database_read_latest(database_t *db, series_id_t series_id, uint32_t point_size);
 points_reader_t *database_read(database_t *db,
                                series_id_t series_id,
+                               uint32_t point_size,
                                timestamp_t begin,
                                timestamp_t end,
                                uint64_t max_points);

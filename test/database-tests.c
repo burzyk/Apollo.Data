@@ -69,7 +69,8 @@ void test_database_write_with_time(database_t *db,
       time++;
     }
 
-    database_write(db, series_id, points, count);
+    points_list_t list = {.content=points, .count=count, .point_size=12};
+    database_write(db, series_id, &list);
   }
 
   sdb_free(points);
@@ -81,7 +82,7 @@ void test_database_validate_read_with_max(database_t *db,
                                           timestamp_t begin,
                                           timestamp_t end,
                                           int max_points) {
-  points_reader_t *reader = database_read(db, series_id, begin, end, max_points);
+  points_reader_t *reader = database_read(db, series_id, 12, begin, end, max_points);
   uint64_t total_read = reader->points.count;
   data_point_t *points = reader->points.content;
 
@@ -293,7 +294,7 @@ void test_database_truncate(test_context_t ctx) {
   test_database_write(db, 12345, 1, 100);
   test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  database_truncate(db, 12345);
+  database_truncate(db, 12345, 12);
 
   test_database_validate_read(db, 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
@@ -306,9 +307,9 @@ void test_database_truncate_multiple(test_context_t ctx) {
   test_database_write(db, 12345, 100, 1);
   test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  database_truncate(db, 12345);
-  database_truncate(db, 1234555);
-  database_truncate(db, 12345);
+  database_truncate(db, 12345, 12);
+  database_truncate(db, 1234555, 12);
+  database_truncate(db, 12345, 12);
 
   test_database_validate_read(db, 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
@@ -321,7 +322,7 @@ void test_database_truncate_write_again(test_context_t ctx) {
   test_database_write(db, 12345, 100, 1);
   test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
 
-  database_truncate(db, 12345);
+  database_truncate(db, 12345, 12);
 
   test_database_validate_read(db, 12345, 0, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
   test_database_write(db, 12345, 100, 1);
@@ -334,7 +335,8 @@ void test_database_failed_write(test_context_t ctx) {
   database_t *db = database_create("/blah/blah", SDB_DATA_SERIES_MAX);
   data_point_t points[] = {{.time = 1, .value = 13}};
 
-  int result = database_write(db, 12345, points, 1);
+  points_list_t list = {.content=points, .point_size=12, .count=1};
+  int result = database_write(db, 12345, &list);
   sdb_assert(result != 0, "write operation should fail");
 
   database_destroy(db);
@@ -343,7 +345,7 @@ void test_database_failed_write(test_context_t ctx) {
 void test_database_read_latest_no_data(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
-  data_point_t latest = database_read_latest(db, 12345);
+  data_point_t latest = database_read_latest(db, 12345, 12);
 
   sdb_assert(latest.value == 0, "Value is non-zero");
   sdb_assert(latest.time == 0, "Time is non-zero");
@@ -355,7 +357,7 @@ void test_database_read_latest_data_in_first_chunk(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
   test_database_write(db, 12345, 1, 10);
-  data_point_t latest = database_read_latest(db, 12345);
+  data_point_t latest = database_read_latest(db, 12345, 12);
 
   sdb_assert(latest.value == 1000, "Incorrect value");
   sdb_assert(latest.time == 10, "Incorrect time");
@@ -367,7 +369,7 @@ void test_database_read_latest_data_in_second_chunk(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
   test_database_write(db, 12345, 2, 10);
-  data_point_t latest = database_read_latest(db, 12345);
+  data_point_t latest = database_read_latest(db, 12345, 12);
 
   sdb_assert(latest.value == 2000, "Incorrect value");
   sdb_assert(latest.time == 20, "Incorrect time");
