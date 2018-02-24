@@ -62,7 +62,11 @@ void handle_read(client_t *client, read_request_t *request, database_t *db) {
             request->end);
 
   timestamp_t begin = request->begin;
-  uint64_t points_per_packet = sdb_max(1, sdb_min(SDB_POINTS_PER_PACKET_MAX, request->points_per_packet));
+  uint32_t data_point_size = database_get_point_size(db, request->data_series_id);
+  // -10 just to be sure we're not hitting any edge case
+  uint32_t max_points = (SDB_SERVER_PACKET_MAX_LEN - sizeof(packet_t) - sizeof(read_response_t) - 10) / data_point_size;
+
+  uint64_t points_per_packet = sdb_max(1, sdb_min(max_points, request->points_per_packet));
 
   for (;;) {
     uint64_t points_to_read = points_per_packet + 1;

@@ -38,6 +38,7 @@ database_t *database_create(const char *directory, uint64_t max_series);
 void database_destroy(database_t *db);
 int database_write(database_t *db, series_id_t series_id, points_list_t *points);
 int database_truncate(database_t *db, series_id_t series_id, uint32_t point_size);
+uint32_t database_get_point_size(database_t *db, series_id_t series_id);
 points_reader_t *database_read_latest(database_t *db, series_id_t series_id, uint32_t point_size);
 points_reader_t *database_read(database_t *db,
                                series_id_t series_id,

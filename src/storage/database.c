@@ -82,6 +82,11 @@ int database_truncate(database_t *db, series_id_t series_id, uint32_t point_size
   return 0;
 }
 
+uint32_t database_get_point_size(database_t *db, series_id_t series_id) {
+  series_t *series = database_get_or_load_data_series(db, series_id, 12);
+  return series == NULL ? 0 : series->points.point_size;
+}
+
 points_reader_t *database_read_latest(database_t *db, series_id_t series_id, uint32_t point_size) {
   stopwatch_t *sw = stopwatch_start();
 

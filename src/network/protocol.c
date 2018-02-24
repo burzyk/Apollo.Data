@@ -118,12 +118,10 @@ int payload_validate(uint8_t *data, size_t size) {
   switch (hdr->type) {
     case SDB_WRITE_REQUEST:
       return size >= sizeof(write_request_t) &&
-          ((write_request_t *)data)->points_count <= SDB_POINTS_PER_PACKET_MAX &&
           size == sizeof(write_request_t) + sizeof(data_point_t) * ((write_request_t *)data)->points_count;
     case SDB_READ_REQUEST: return size == sizeof(read_request_t);
     case SDB_READ_RESPONSE:
       return size >= sizeof(read_response_t) &&
-          ((read_response_t *)data)->points_count <= SDB_POINTS_PER_PACKET_MAX &&
           size == sizeof(read_response_t) + sizeof(data_point_t) * ((read_response_t *)data)->points_count;
     case SDB_SIMPLE_RESPONSE: return size == sizeof(simple_response_t);
     case SDB_TRUNCATE_REQUEST: return size == sizeof(truncate_request_t);
