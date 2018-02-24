@@ -23,31 +23,50 @@
 // Created by Pawel Burzynski on 19/01/2017.
 //
 
-#include "database-tests.h"
+#include "test/database-tests.h"
+
+#include <string.h>
 
 #include "src/storage/database.h"
 
-void test_database_write_with_time(database_t *db, series_id_t series_id, int batches, int count, timestamp_t time);
-void test_database_write(database_t *db, series_id_t series_id, int batches, int count);
+void test_database_write_with_time(database_t *db,
+                                   series_id_t series_id,
+                                   uint64_t batches,
+                                   uint64_t count,
+                                   timestamp_t time);
+void test_database_write(database_t *db, series_id_t series_id, uint64_t batches, uint64_t count);
 void test_database_validate_read_with_max(database_t *db,
                                           series_id_t series_id,
-                                          int expected_count,
+                                          uint64_t expected_count,
                                           timestamp_t begin,
                                           timestamp_t end,
-                                          int max_points);
+                                          uint64_t max_points);
 void test_database_validate_read(database_t *db,
                                  series_id_t series_id,
-                                 int expected_count,
+                                 uint64_t expected_count,
                                  timestamp_t begin,
                                  timestamp_t end);
+void test_database_write_with_time_sized(database_t *db,
+                                         series_id_t series_id,
+                                         uint64_t batches,
+                                         uint64_t count,
+                                         timestamp_t time,
+                                         uint32_t point_size);
+void test_database_validate_read_with_max_sized(database_t *db,
+                                                series_id_t series_id,
+                                                uint64_t expected_count,
+                                                timestamp_t begin,
+                                                timestamp_t end,
+                                                uint64_t max_points,
+                                                uint32_t point_size);
 
-void test_database_write(database_t *db, series_id_t series_id, int batches, int count) {
+void test_database_write(database_t *db, series_id_t series_id, uint64_t batches, uint64_t count) {
   test_database_write_with_time(db, series_id, batches, count, 1);
 }
 
 void test_database_validate_read(database_t *db,
                                  series_id_t series_id,
-                                 int expected_count,
+                                 uint64_t expected_count,
                                  timestamp_t begin,
                                  timestamp_t end) {
   test_database_validate_read_with_max(db, series_id, expected_count, begin, end, INT32_MAX);
@@ -55,44 +74,78 @@ void test_database_validate_read(database_t *db,
 
 void test_database_write_with_time(database_t *db,
                                    series_id_t series_id,
-                                   int batches,
-                                   int count,
+                                   uint64_t batches,
+                                   uint64_t count,
                                    timestamp_t time) {
-  sdb_assert(time != 0, "Time cannot be 0");
 
-  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * count);
-
-  for (int i = 0; i < batches; i++) {
-    for (int j = 0; j < count; j++) {
-      points[j].time = time;
-      points[j].value = time * 100;
-      time++;
-    }
-
-    points_list_t list = {.content=points, .count=count, .point_size=12};
-    database_write(db, series_id, &list);
+  for (uint32_t i = 12; i < 60; i += 4) {
+    test_database_write_with_time_sized(db, series_id, batches, count, time, i);
   }
-
-  sdb_free(points);
 }
 
 void test_database_validate_read_with_max(database_t *db,
                                           series_id_t series_id,
-                                          int expected_count,
+                                          uint64_t expected_count,
                                           timestamp_t begin,
                                           timestamp_t end,
-                                          int max_points) {
-  points_reader_t *reader = database_read(db, series_id, 12, begin, end, max_points);
-  uint64_t total_read = reader->points.count;
-  data_point_t *points = reader->points.content;
+                                          uint64_t max_points) {
+  for (uint32_t i = 12; i < 60; i += 4) {
+    test_database_validate_read_with_max_sized(db, series_id, expected_count, begin, end, max_points, i);
+  }
+}
 
-  for (int i = 1; i < total_read; i++) {
-    sdb_assert(points[i - 1].time <= points[i].time, "Invalid order of elements");
-    sdb_assert(points[i].time != 0, "Time cannot be zero");
+void test_database_write_with_time_sized(database_t *db,
+                                         series_id_t series_id,
+                                         uint64_t batches,
+                                         uint64_t count,
+                                         timestamp_t time,
+                                         uint32_t point_size) {
+  sdb_assert(time != 0, "Time cannot be 0");
+
+  points_list_t list = {.content=(data_point_t *)sdb_alloc(point_size * count), .count=count, .point_size=point_size};
+
+  for (int i = 0; i < batches; i++) {
+    data_point_t *curr = list.content;
+    data_point_t *end = points_list_end(&list);
+
+    while (curr != end) {
+      curr->time = time;
+      float v = time * 100;
+      memcpy(&curr->value, &v, sizeof(v));
+
+      time++;
+      curr = data_point_next(&list, curr);
+    }
+
+    database_write(db, series_id, &list);
+  }
+
+  sdb_free(list.content);
+}
+
+void test_database_validate_read_with_max_sized(database_t *db,
+                                                series_id_t series_id,
+                                                uint64_t expected_count,
+                                                timestamp_t begin,
+                                                timestamp_t end,
+                                                uint64_t max_points,
+                                                uint32_t point_size) {
+  points_reader_t *reader = database_read(db, series_id, point_size, begin, end, max_points);
+
+  data_point_t *p1 = reader->points.content;
+  data_point_t *p2 = data_point_next(&reader->points, p1);
+  data_point_t *list_end = points_list_end(&reader->points);
+
+  while (p2 != list_end) {
+    sdb_assert(p1->time <= p2->time, "Invalid order of elements");
+    sdb_assert(p2->time != 0, "Time cannot be zero");
+
+    p1 = data_point_next(&reader->points, p1);
+    p2 = data_point_next(&reader->points, p2);
   }
 
   if (expected_count > 0) {
-    sdb_assert(expected_count == total_read, "Unexpected number of elements");
+    sdb_assert(expected_count == reader->points.count, "Unexpected number of elements");
   }
 
   points_reader_destroy(reader);
@@ -352,26 +405,19 @@ void test_database_read_latest_no_data(test_context_t ctx) {
   database_destroy(db);
 }
 
-void test_database_read_latest_data_in_first_chunk(test_context_t ctx) {
+void test_database_read_latest(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
-  test_database_write(db, 12345, 1, 10);
-  data_point_t latest = database_read_latest(db, 12345, 12)->points.content[0];
+  test_database_write_with_time_sized(db, 12345, 1, 10, 100, 12);
+  test_database_write_with_time_sized(db, 12345, 1, 10, 100, 16);
+  data_point_t latest_12 = database_read_latest(db, 12345, 12)->points.content[0];
+  data_point_t latest_16 = database_read_latest(db, 12345, 16)->points.content[0];
 
-  sdb_assert(latest.value == 1000, "Incorrect value");
-  sdb_assert(latest.time == 10, "Incorrect time");
+  sdb_assert(latest_12.value == 10900, "Incorrect value");
+  sdb_assert(latest_12.time == 109, "Incorrect time");
 
-  database_destroy(db);
-}
-
-void test_database_read_latest_data_in_second_chunk(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
-
-  test_database_write(db, 12345, 2, 10);
-  data_point_t latest = database_read_latest(db, 12345, 12)->points.content[0];
-
-  sdb_assert(latest.value == 2000, "Incorrect value");
-  sdb_assert(latest.time == 20, "Incorrect time");
+  sdb_assert(latest_16.value == 10900, "Incorrect value");
+  sdb_assert(latest_16.time == 109, "Incorrect time");
 
   database_destroy(db);
 }

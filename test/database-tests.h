@@ -50,7 +50,7 @@ void test_database_truncate_multiple(test_context_t ctx);
 void test_database_truncate_write_again(test_context_t ctx);
 void test_database_failed_write(test_context_t ctx);
 void test_database_read_latest_no_data(test_context_t ctx);
-void test_database_read_latest_data_in_first_chunk(test_context_t ctx);
+void test_database_read_latest(test_context_t ctx);
 void test_database_read_latest_data_in_second_chunk(test_context_t ctx);
 
 #endif  // TEST_DATABASE_TESTS_H_
