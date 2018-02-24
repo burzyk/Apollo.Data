@@ -35,8 +35,8 @@ typedef uint32_t series_id_t;
 #define SDB_POINTS_PER_PACKET_MAX  6553600
 #endif
 
-#ifndef SDB_FILE_MAX_LEN
-#define SDB_FILE_MAX_LEN  1024
+#ifndef SDB_STR_MAX_LEN
+#define SDB_STR_MAX_LEN  1024
 #endif
 
 #ifndef SDB_DATA_SERIES_MAX

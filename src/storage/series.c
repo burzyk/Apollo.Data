@@ -41,7 +41,7 @@ series_t *series_create(const char *file_name, uint32_t point_size) {
   }
 
   series_t *series = (series_t *)sdb_alloc(sizeof(series_t));
-  strncpy(series->file_name, file_name, SDB_FILE_MAX_LEN);
+  strncpy(series->file_name, file_name, SDB_STR_MAX_LEN);
   series->file_map = map;
   series->points.content = (data_point_t *)series->file_map->data;
   series->points.point_size = point_size;

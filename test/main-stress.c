@@ -45,8 +45,8 @@ void sdb_stress_test_random_read(const char *hostname, int port);
 int main(int argc, char *argv[]) {
   int configuration_parsed = 0;
   int port = 8487;
-  char hostname[SDB_FILE_MAX_LEN];
-  char test[SDB_FILE_MAX_LEN];
+  char hostname[SDB_STR_MAX_LEN];
+  char test[SDB_STR_MAX_LEN];
   strcpy(hostname, "localhost");
   strcpy(test, SDB_TEST_RANDOM_READ);
 
@@ -64,11 +64,11 @@ int main(int argc, char *argv[]) {
       configuration_parsed = 1;
     } else {
       switch (c) {
-        case 'h':strncpy(hostname, optarg, SDB_FILE_MAX_LEN);
+        case 'h':strncpy(hostname, optarg, SDB_STR_MAX_LEN);
           break;
         case 'p':port = atoi(optarg);
           break;
-        case 't':strncpy(test, optarg, SDB_FILE_MAX_LEN);
+        case 't':strncpy(test, optarg, SDB_STR_MAX_LEN);
           break;
         default: configuration_parsed = -1;
       }

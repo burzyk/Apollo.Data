@@ -46,7 +46,7 @@
 
 typedef struct configuration_s {
   int log_verbose;
-  char database_directory[SDB_FILE_MAX_LEN];
+  char database_directory[SDB_STR_MAX_LEN];
   int server_port;
 } configuration_t;
 
@@ -119,7 +119,7 @@ int on_message_received(client_t *client, uint8_t *data, uint32_t size, void *co
 
 int configuration_parse(configuration_t *config, int argc, char **argv) {
   config->server_port = SDB_CONFIG_DEFAULT_PORT;
-  strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_FILE_MAX_LEN);
+  strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_STR_MAX_LEN);
   config->log_verbose = 0;
 
   while (1) {
@@ -139,7 +139,7 @@ int configuration_parse(configuration_t *config, int argc, char **argv) {
     switch (c) {
       case 'p': config->server_port = atoi(optarg);
         break;
-      case 'd':strncpy(config->database_directory, optarg, SDB_FILE_MAX_LEN);
+      case 'd':strncpy(config->database_directory, optarg, SDB_STR_MAX_LEN);
         break;
       case 'h':print_usage();
         exit(0);

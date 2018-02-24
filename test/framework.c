@@ -37,7 +37,7 @@ int sdb_directory_create(const char *directory_name) {
 
 test_session_t *test_session_create(const char *root_directory) {
   test_session_t *session = (test_session_t *)sdb_alloc(sizeof(test_session_t));
-  snprintf(session->directory, SDB_FILE_MAX_LEN, "%s/%lu", root_directory, time(NULL));
+  snprintf(session->directory, SDB_STR_MAX_LEN, "%s/%lu", root_directory, time(NULL));
   session->tests_failed = 0;
   session->tests_success = 0;
 
@@ -55,15 +55,15 @@ void test_session_destroy(test_session_t *session) {
 int test_session_run(test_session_t *session, const char *name, sdb_test_function_t test_function) {
   printf("Running: %s ...", name);
 
-  char working_directory[SDB_FILE_MAX_LEN] = {0};
-  snprintf(working_directory, SDB_FILE_MAX_LEN, "%s/%s", session->directory, name);
+  char working_directory[SDB_STR_MAX_LEN] = {0};
+  snprintf(working_directory, SDB_STR_MAX_LEN, "%s/%s", session->directory, name);
 
   if (sdb_directory_create(working_directory)) {
     die("Unable to create working directory");
   }
 
   test_context_t context = {};
-  strncpy(context.working_directory, working_directory, SDB_FILE_MAX_LEN);
+  strncpy(context.working_directory, working_directory, SDB_STR_MAX_LEN);
   context.session = session;
 
   test_function(context);

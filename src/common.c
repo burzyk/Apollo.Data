@@ -51,7 +51,7 @@ void die_internal(const char *message, const char *file, int line_number) {
 
 void assert_internal(int status, const char *message, const char *file, int line_number) {
   if (!status) {
-    char line[SDB_FILE_MAX_LEN] = {0};
+    char line[SDB_STR_MAX_LEN] = {0};
     sprintf(line, "ASSERT: %s:%d -> %s", file, line_number, message);
     die(line);
   }

@@ -29,8 +29,8 @@
 #define SDB_CLIENT_CMD_RESAMPLE   "resample"
 
 typedef struct client_configuration_s {
-  char command[SDB_FILE_MAX_LEN];
-  char hostname[SDB_FILE_MAX_LEN];
+  char command[SDB_STR_MAX_LEN];
+  char hostname[SDB_STR_MAX_LEN];
   int port;
   series_id_t series_id;
   timestamp_t begin;
@@ -134,9 +134,9 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
     }
 
     switch (c) {
-      case 'c':strncpy(config->command, optarg, SDB_FILE_MAX_LEN);
+      case 'c':strncpy(config->command, optarg, SDB_STR_MAX_LEN);
         break;
-      case 'h':strncpy(config->hostname, optarg, SDB_FILE_MAX_LEN);
+      case 'h':strncpy(config->hostname, optarg, SDB_STR_MAX_LEN);
         break;
       case 'p':config->port = atoi(optarg);
         break;
@@ -154,28 +154,28 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
 }
 
 int execute_command(session_t *session, client_configuration_t *config) {
-  if (!strncmp(SDB_CLIENT_CMD_WRITE, config->command, SDB_FILE_MAX_LEN)) {
+  if (!strncmp(SDB_CLIENT_CMD_WRITE, config->command, SDB_STR_MAX_LEN)) {
     return execute_write(session, config);
 
-  } else if (!strncmp(SDB_CLIENT_CMD_READ, config->command, SDB_FILE_MAX_LEN)) {
+  } else if (!strncmp(SDB_CLIENT_CMD_READ, config->command, SDB_STR_MAX_LEN)) {
     return execute_read(session, config);
 
-  } else if (!strncmp(SDB_CLIENT_CMD_TRUNCATE, config->command, SDB_FILE_MAX_LEN)) {
+  } else if (!strncmp(SDB_CLIENT_CMD_TRUNCATE, config->command, SDB_STR_MAX_LEN)) {
     return execute_truncate(session, config);
 
-  } else if (!strncmp(SDB_CLIENT_CMD_LATEST, config->command, SDB_FILE_MAX_LEN)) {
+  } else if (!strncmp(SDB_CLIENT_CMD_LATEST, config->command, SDB_STR_MAX_LEN)) {
     return execute_get_latest(session, config);
 
-  } else if (!strncmp(SDB_CLIENT_CMD_TO_CSV, config->command, SDB_FILE_MAX_LEN)) {
+  } else if (!strncmp(SDB_CLIENT_CMD_TO_CSV, config->command, SDB_STR_MAX_LEN)) {
     return execute_to_csv(session, config);
 
-  } else if (!strncmp(SDB_CLIENT_CMD_FROM_CSV, config->command, SDB_FILE_MAX_LEN)) {
+  } else if (!strncmp(SDB_CLIENT_CMD_FROM_CSV, config->command, SDB_STR_MAX_LEN)) {
     return execute_from_csv(session, config);
 
-  } else if (!strncmp(SDB_CLIENT_CMD_RESAMPLE, config->command, SDB_FILE_MAX_LEN)) {
+  } else if (!strncmp(SDB_CLIENT_CMD_RESAMPLE, config->command, SDB_STR_MAX_LEN)) {
     return execute_resample(session, config);
 
-  } else if (!strncmp("", config->command, SDB_FILE_MAX_LEN)) {
+  } else if (!strncmp("", config->command, SDB_STR_MAX_LEN)) {
     print_usage();
   } else {
     fprintf(stderr, "unknown command: '%s'\n", config->command);

@@ -43,7 +43,7 @@
 
 int main(int argc, char *argv[]) {
   int configuration_parsed = 0;
-  char directory[SDB_FILE_MAX_LEN] = {0};
+  char directory[SDB_STR_MAX_LEN] = {0};
   strcpy(directory, "/Users/pburzynski/projects/ShakaDB/build/tests");
 
   while (!configuration_parsed) {
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
       configuration_parsed = 1;
     } else {
       switch (c) {
-        case 'd':strncpy(directory, optarg, SDB_FILE_MAX_LEN);
+        case 'd':strncpy(directory, optarg, SDB_STR_MAX_LEN);
           break;
         default: configuration_parsed = -1;
       }

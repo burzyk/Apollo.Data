@@ -48,8 +48,8 @@ int socket_connect(const char *server, int port) {
   struct addrinfo hints = {0};
   struct addrinfo *result;
   int sock = -1;
-  char port_string[SDB_FILE_MAX_LEN] = {0};
-  snprintf(port_string, SDB_FILE_MAX_LEN, "%d", port);
+  char port_string[SDB_STR_MAX_LEN] = {0};
+  snprintf(port_string, SDB_STR_MAX_LEN, "%d", port);
 
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;

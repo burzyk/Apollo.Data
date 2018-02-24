@@ -29,7 +29,7 @@
 #include "src/storage/series.h"
 
 typedef struct database_s {
-  char directory[SDB_FILE_MAX_LEN];
+  char directory[SDB_STR_MAX_LEN];
   series_t **series;
   uint64_t max_series_count;
 } database_t;

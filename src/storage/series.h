@@ -34,7 +34,7 @@
 #endif
 
 typedef struct series_s {
-  char file_name[SDB_FILE_MAX_LEN];
+  char file_name[SDB_STR_MAX_LEN];
   file_map_t *file_map;
   points_list_t points;
   uint64_t points_capacity;

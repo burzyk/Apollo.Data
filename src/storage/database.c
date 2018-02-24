@@ -34,7 +34,7 @@ series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id
 
 database_t *database_create(const char *directory, uint64_t max_series) {
   database_t *db = (database_t *)sdb_alloc(sizeof(database_t));
-  strncpy(db->directory, directory, SDB_FILE_MAX_LEN);
+  strncpy(db->directory, directory, SDB_STR_MAX_LEN);
   db->max_series_count = max_series;
   db->series = (series_t **)sdb_alloc(sizeof(series_t *) * db->max_series_count);
 
@@ -132,8 +132,8 @@ series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id
   series_t *series = database_get_data_series(db, series_id);
 
   if (series == NULL) {
-    char file_name[SDB_FILE_MAX_LEN] = {0};
-    snprintf(file_name, SDB_FILE_MAX_LEN, "%s/%d-%d", db->directory, series_id, point_size);
+    char file_name[SDB_STR_MAX_LEN] = {0};
+    snprintf(file_name, SDB_STR_MAX_LEN, "%s/%d-%d", db->directory, series_id, point_size);
 
     log_info("loading time series: %d", series_id);
     series = db->series[series_id] = series_create(file_name, point_size);
