@@ -221,6 +221,19 @@ void test_database_continuous_write_with_pickup(test_context_t ctx) {
   database_destroy(db);
 }
 
+void test_database_write_close_read(test_context_t ctx) {
+  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+
+  test_database_write(db, 12345, 5, 3, ctx.point_size);
+  test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  database_destroy(db);
+
+  db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+
+  test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
+  database_destroy(db);
+}
+
 void test_database_write_batch_size_equal_to_page_capacity(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
 

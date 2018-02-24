@@ -99,6 +99,7 @@ int main(int argc, char *argv[]) {
   TEST(test_database_write_close_and_write_more);
   TEST(test_database_continuous_write);
   TEST(test_database_continuous_write_with_pickup);
+  TEST(test_database_write_close_read);
   TEST(test_database_write_batch_size_equal_to_page_capacity);
   TEST(test_database_write_batch_size_greater_than_page_capacity);
   TEST(test_database_read_inside_single_chunk);

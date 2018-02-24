@@ -37,6 +37,7 @@ void test_database_write_history(test_context_t ctx);
 void test_database_write_close_and_write_more(test_context_t ctx);
 void test_database_continuous_write(test_context_t ctx);
 void test_database_continuous_write_with_pickup(test_context_t ctx);
+void test_database_write_close_read(test_context_t ctx);
 void test_database_write_batch_size_equal_to_page_capacity(test_context_t ctx);
 void test_database_write_batch_size_greater_than_page_capacity(test_context_t ctx);
 void test_database_read_inside_single_chunk(test_context_t ctx);

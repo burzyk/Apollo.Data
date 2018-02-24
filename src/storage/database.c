@@ -152,7 +152,7 @@ series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id
   }
 
   char file_root[SDB_STR_MAX_LEN] = {0};
-  snprintf(file_root, SDB_STR_MAX_LEN, "%s/%d-", db->directory, series_id);
+  snprintf(file_root, SDB_STR_MAX_LEN, "%d-", series_id);
 
   DIR *d = opendir(db->directory);
 
@@ -172,7 +172,10 @@ series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id
 
     log_info("loading time series: %d", series_id);
     uint32_t point_size = (uint32_t)strtol(&dir->d_name[root_len], NULL, 0);
-    series = db->series[series_id] = series_create(dir->d_name, point_size);
+    char file_name[SDB_STR_MAX_LEN] = {0};
+    snprintf(file_name, SDB_STR_MAX_LEN, "%s/%s", db->directory, dir->d_name);
+
+    series = db->series[series_id] = series_create(file_name, point_size);
   }
 
   closedir(d);

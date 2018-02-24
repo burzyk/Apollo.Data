@@ -31,6 +31,7 @@ points_reader_t *points_reader_create(data_point_t *points, uint64_t points_coun
   points_reader_t *reader = (points_reader_t *)sdb_alloc(sizeof(points_reader_t));
 
   reader->points.count = points_count;
+  reader->points.point_size = point_size;
   reader->points.content = points_count == 0
                            ? NULL
                            : (data_point_t *)sdb_alloc(points_count * point_size);
