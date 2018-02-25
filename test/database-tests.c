@@ -391,11 +391,11 @@ void test_database_read_latest(test_context_t ctx) {
   data_point_t latest_12 = database_read_latest(db, 12345)->points.content[0];
   data_point_t latest_16 = database_read_latest(db, 12345)->points.content[0];
 
-  sdb_assert(latest_12.value == 10900, "Incorrect value");
-  sdb_assert(latest_12.time == 109, "Incorrect time");
+  sdb_assert(latest_12.value == 1000, "Incorrect value");
+  sdb_assert(latest_12.time == 10, "Incorrect time");
 
-  sdb_assert(latest_16.value == 10900, "Incorrect value");
-  sdb_assert(latest_16.time == 109, "Incorrect time");
+  sdb_assert(latest_16.value == 1000, "Incorrect value");
+  sdb_assert(latest_16.time == 10, "Incorrect time");
 
   database_destroy(db);
 }
