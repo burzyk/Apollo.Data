@@ -549,7 +549,7 @@ void test_server_read_series_out_of_range(test_context_t ctx) {
 void test_server_truncate_series_out_of_range(test_context_t ctx) {
   server_test_context_t *context = server_test_context_start(ctx.working_directory, 10);
 
-  sdb_assert(session_truncate(context->session, SDB_EUR_USD_ID), "No error when truncating");
+  sdb_assert(!session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
 
   server_test_context_stop(context);
 }

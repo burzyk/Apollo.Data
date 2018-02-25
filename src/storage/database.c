@@ -73,7 +73,7 @@ int database_truncate(database_t *db, series_id_t series_id) {
   series_t *series = database_get_or_load_data_series(db, series_id);
 
   if (series == NULL) {
-    return -1;
+    return 0;
   }
 
   series_truncate_and_destroy(series);
