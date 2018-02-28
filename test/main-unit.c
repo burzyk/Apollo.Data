@@ -140,6 +140,7 @@ int main(int argc, char *argv[]) {
   TEST(test_server_read_latest_series_out_of_range);
   TEST(test_server_read_latest_when_empty);
   TEST(test_server_read_latest);
+  TEST(test_server_write_varsize);
 
   test_session_print_summary(session);
   printf("==================== Tests finished ===================\n");

@@ -730,17 +730,29 @@ void test_server_read_latest(test_context_t ctx) {
 }
 
 void test_server_write_varsize(test_context_t ctx) {
-  // TODO: finish
-  server_test_context_t *context =
-      server_test_context_start(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  server_test_context_t *context = server_test_context_start(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  data_point_t *curr = NULL;
 
-  float_data_point_t points[] = {
-      {.time=3, .value = 13},
-      {.time=5, .value = 76},
-      {.time=15, .value = 44}
+  points_list_t request_list = {
+      .point_size = 24,
+      .count = 3,
+      .content = sdb_alloc(24 * 3)
   };
 
-  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 3), "Error when sending");
+  curr = request_list.content;
+
+  curr->time = 3;
+  memcpy(curr->value, "ala ma kota    ", 16);
+  curr = data_point_next(&request_list, curr);
+
+  curr->time = 5;
+  memcpy(curr->value, "ola ma asa     ", 16);
+  curr = data_point_next(&request_list, curr);
+
+  curr->time = 7;
+  memcpy(curr->value, "kotki na plotki", 16);
+
+  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, &request_list), "Error when sending");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
@@ -748,15 +760,30 @@ void test_server_write_varsize(test_context_t ctx) {
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
+  points_list_t response_list = {
+      .content = context->session->read_response->points,
+      .count = context->session->read_response->points_count,
+      .point_size = context->session->read_response->point_size
+  };
+
   sdb_assert(context->session->read_response->points_count == 3, "Invalid number of points");
-  sdb_assert(get_points(context->session)[0].time == 3, "Time should be 3");
-  sdb_assert(get_points(context->session)[1].time == 5, "Time should be 5");
-  sdb_assert(get_points(context->session)[2].time == 15, "Time should be 15");
-  sdb_assert(get_points(context->session)[0].value == 13, "Value should be 13");
-  sdb_assert(get_points(context->session)[1].value == 76, "Value should be 76");
-  sdb_assert(get_points(context->session)[2].value == 44, "Value should be 44.3");
+  curr = response_list.content;
+
+  sdb_assert(curr->time == 3, "Time should be 3");
+  sdb_assert(!memcmp(curr->value, "ala ma kota    ", 16), "Value should be \"ala ma kota    \"");
+  curr = data_point_next(&response_list, curr);
+
+  sdb_assert(curr->time == 5, "Time should be 5");
+  sdb_assert(!memcmp(curr->value, "ola ma asa     ", 16), "Value should be \"ola ma asa     \"");
+  curr = data_point_next(&response_list, curr);
+
+  sdb_assert(curr->time == 7, "Time should be 7");
+  sdb_assert(!memcmp(curr->value, "kotki na plotki", 16), "Value should be \"kotki na plotki\"");
+  curr = data_point_next(&response_list, curr);
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
+  sdb_assert(curr == points_list_end(&response_list), "Data left in iterator");
 
   server_test_context_stop(context);
+  sdb_free(request_list.content);
 }
