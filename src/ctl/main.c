@@ -302,10 +302,10 @@ int execute_to_csv(client_configuration_t *config) {
 
   fprintf(stderr, "converting to string\n");
   int points_size = 6553600;
-  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_size);
+  data_point_t *points = (data_point_t *)sdb_alloc(config->point_size * points_size);
 
   while (!feof(stdin)) {
-    size_t read = fread(points, sizeof(data_point_t), (size_t)points_size, stdin);
+    size_t read = fread(points, config->point_size, (size_t)points_size, stdin);
 
     for (int i = 0; i < read; i++) {
       printf("%" PRIu64 ",%f\n", points[i].time, points[i].value);

@@ -192,7 +192,7 @@ void sdb_stress_test_read_write(const char *hostname, int port, uint32_t point_s
       sdb_assert(!session_truncate(session, series), "Failed to truncate data");
       log_info("> Truncated in: %fs", stopwatch_stop_and_destroy(sw));
 
-      data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_count);
+      data_point_t *points = (data_point_t *)sdb_alloc(point_size * points_count);
 
       for (timestamp_t i = 0; i < points_count; i++) {
         points[i].time = i + 100;
