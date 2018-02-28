@@ -681,26 +681,17 @@ void test_server_read_multiple_active(test_context_t ctx) {
 void test_server_read_latest_series_out_of_range(test_context_t ctx) {
   server_test_context_t *context = server_test_context_start(ctx.working_directory, 10);
 
-  data_point_t result = {0};
-
-  sdb_assert(!session_read_latest(context->session, SDB_EUR_GBP_ID, &result), "Read failed");
-
-  sdb_assert(result.time == 0, "Time should be zero");
-  sdb_assert(result.value == 0, "Time should be zero");
+  sdb_assert(!session_read_latest(context->session, SDB_EUR_GBP_ID), "Read failed");
+  sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
   server_test_context_stop(context);
 }
 
 void test_server_read_latest_when_empty(test_context_t ctx) {
-  server_test_context_t *context =
-      server_test_context_start(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  server_test_context_t *context = server_test_context_start(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
-  data_point_t result = {0};
-
-  sdb_assert(!session_read_latest(context->session, SDB_EUR_GBP_ID, &result), "Read failed");
-
-  sdb_assert(result.time == 0, "Time should be zero");
-  sdb_assert(result.value == 0, "Time should be zero");
+  sdb_assert(!session_read_latest(context->session, SDB_EUR_GBP_ID), "Read failed");
+  sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
   server_test_context_stop(context);
 }
@@ -719,12 +710,11 @@ void test_server_read_latest(test_context_t ctx) {
 
   sdb_assert(!test_session_write(context->session, SDB_EUR_GBP_ID, points, 5), "Write failed");
 
-  data_point_t latest = {0};
+  sdb_assert(!session_read_latest(context->session, SDB_EUR_GBP_ID), "Read failed");
+  sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
-  sdb_assert(!session_read_latest(context->session, SDB_EUR_GBP_ID, &latest), "Read failed");
-
-  sdb_assert(latest.time == 5, "Invalid time");
-  sdb_assert(latest.value == 50, "Invalid value");
+  sdb_assert(context->session->read_response->points[0].time == 5, "Invalid time");
+  sdb_assert(context->session->read_response->points[0].value == 50, "Invalid value");
 
   server_test_context_stop(context);
 }

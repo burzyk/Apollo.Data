@@ -257,16 +257,21 @@ int execute_truncate(session_t *session, client_configuration_t *config) {
 int execute_get_latest(session_t *session, client_configuration_t *config) {
 
   fprintf(stderr, "getting latest from: %d\n", config->series_id);
-  data_point_t latest = {0};
 
-  if (session_read_latest(session, config->series_id, &latest)) {
+  if (session_read_latest(session, config->series_id)) {
     fprintf(stderr, "failed to get latest data point\n");
     return -1;
   }
 
-  if (latest.time != 0) {
-    printf("%" PRIu64 ",%f\n", latest.time, latest.value);
-  } else {
+  while (session_read_next(session)) {
+    fwrite(
+        session->read_response->points,
+        session->read_response->point_size,
+        (size_t)session->read_response->points_count,
+        stdout);
+  }
+
+  if (session->read_response->points_count == 0) {
     fprintf(stderr, "time series empty\n");
   }
 

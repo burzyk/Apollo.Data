@@ -44,6 +44,6 @@ int session_read(session_t *session,
                  timestamp_t end,
                  uint64_t points_per_packet);
 int session_read_next(session_t *session);
-int session_read_latest(session_t *session, series_id_t series_id, data_point_t *latest);
+int session_read_latest(session_t *session, series_id_t series_id);
 
 #endif  // SRC_NETWORK_CTL_SESSION_H_

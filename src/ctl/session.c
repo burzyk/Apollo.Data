@@ -197,20 +197,14 @@ int session_read_next(session_t *session) {
   return 1;
 }
 
-int session_read_latest(session_t *session, series_id_t series_id, data_point_t *latest) {
+int session_read_latest(session_t *session, series_id_t series_id) {
   if (session->read_open) {
     return -1;
   }
 
   buffer_t packet = read_latest_request_create(series_id);
   session_send_and_destroy(session, packet);
-
-  read_response_t *response = (read_response_t *)session_receive(session, SDB_READ_RESPONSE);
-
-  latest->time = response->points_count != 0 ? response->points[0].time : 0;
-  latest->value = response->points_count != 0 ? response->points[0].value : 0;
-
-  sdb_free(response);
+  session->read_open = 1;
 
   return 0;
 }
