@@ -36,6 +36,7 @@ typedef struct client_configuration_s {
   timestamp_t begin;
   timestamp_t end;
   int window_width;
+  uint32_t point_size;
 } client_configuration_t;
 
 void print_usage();
@@ -57,6 +58,7 @@ int main(int argc, char *argv[]) {
   config.begin = 0;
   config.end = 0;
   config.window_width = 0;
+  config.point_size = 12;
 
   if (client_configuration_load(argc, argv, &config)) {
     print_usage();
@@ -110,6 +112,8 @@ void print_usage() {
   printf("                      Default value: 0\n");
   printf("    --width, -w:      Resample window width\n");
   printf("                      Default value: 0\n");
+  printf("    --size, -x:       Data point size\n");
+  printf("                      Default value: 12 (8 bytes timestamp, 4 bytes payload)\n");
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
   printf("\n");
@@ -125,10 +129,11 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
         {"series", required_argument, 0, 's'},
         {"begin", required_argument, 0, 'b'},
         {"end", required_argument, 0, 'e'},
-        {"width", required_argument, 0, 'w'}
+        {"width", required_argument, 0, 'w'},
+        {"size", required_argument, 0, 'x'}
     };
 
-    int c = getopt_long(argc, argv, "c:m:p:s:b:e:w:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "c:m:p:s:b:e:w:x:", long_options, &option_index);
     if (c == -1) {
       return 0;
     }
@@ -147,6 +152,8 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
       case 'e':sscanf(optarg, "%" PRIu64, &config->end);
         break;
       case 'w':sscanf(optarg, "%d", &config->window_width);
+        break;
+      case 'x':sscanf(optarg, "%d", &config->point_size);
         break;
       default:return -1;
     }
@@ -189,16 +196,16 @@ int execute_write(session_t *session, client_configuration_t *config) {
 
   fprintf(stderr, "writing to series: %d\n", config->series_id);
   int points_size = 6553600;
-  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_size);
+  data_point_t *points = (data_point_t *)sdb_alloc(config->point_size * points_size);
 
   while (!feof(stdin)) {
-    size_t read = fread(points, sizeof(data_point_t), (size_t)points_size, stdin);
+    size_t read = fread(points, config->point_size, (size_t)points_size, stdin);
 
     if (read > 0) {
       points_list_t p = {
           .content = points,
           .count = read,
-          .point_size = 12
+          .point_size = config->point_size
       };
       if (session_write(session, config->series_id, &p)) {
         fprintf(stderr, "failed to write points\n");
@@ -230,7 +237,7 @@ int execute_read(session_t *session, client_configuration_t *config) {
 
     fwrite(
         session->read_response->points,
-        sizeof(data_point_t),
+        session->read_response->point_size,
         (size_t)session->read_response->points_count,
         stdout);
   }
@@ -279,6 +286,11 @@ int execute_get_latest(session_t *session, client_configuration_t *config) {
 }
 
 int execute_from_csv(session_t *session, client_configuration_t *config) {
+  if (config->point_size != 12) {
+    fprintf(stderr, "only float data points are supported");
+    return -1;
+  }
+
   fprintf(stderr, "converting to binary\n");
   timestamp_t time;
   float value;
@@ -294,6 +306,11 @@ int execute_from_csv(session_t *session, client_configuration_t *config) {
 }
 
 int execute_to_csv(session_t *session, client_configuration_t *config) {
+  if (config->point_size != 12) {
+    fprintf(stderr, "only float data points are supported");
+    return -1;
+  }
+
   fprintf(stderr, "converting to string\n");
   int points_size = 6553600;
   data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_size);
