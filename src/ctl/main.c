@@ -195,7 +195,12 @@ int execute_write(session_t *session, client_configuration_t *config) {
     size_t read = fread(points, sizeof(data_point_t), (size_t)points_size, stdin);
 
     if (read > 0) {
-      if (session_write(session, config->series_id, points, (int)read)) {
+      points_list_t p = {
+          .content = points,
+          .count = read,
+          .point_size = 12
+      };
+      if (session_write(session, config->series_id, &p)) {
         fprintf(stderr, "failed to write points\n");
         return -1;
       }

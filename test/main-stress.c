@@ -39,8 +39,8 @@
 #define SDB_TEST_RANDOM_READ "random-read"
 #define SDB_TEST_READ_WRITE "read-write"
 
-void sdb_stress_test_read_write(const char *hostname, int port);
-void sdb_stress_test_random_read(const char *hostname, int port);
+void sdb_stress_test_read_write(const char *hostname, int port, uint32_t point_size);
+void sdb_stress_test_random_read(const char *hostname, int port, uint32_t point_size);
 
 int main(int argc, char *argv[]) {
   int configuration_parsed = 0;
@@ -94,25 +94,25 @@ int main(int argc, char *argv[]) {
   log_init(0);
 
   if (!strcmp(test, SDB_TEST_READ_WRITE)) {
-    sdb_stress_test_read_write(hostname, port);
+    sdb_stress_test_read_write(hostname, port, 12);
   }
 
   if (!strcmp(test, SDB_TEST_RANDOM_READ)) {
-    sdb_stress_test_random_read(hostname, port);
+    sdb_stress_test_random_read(hostname, port, 12);
   }
 
   printf("==================== Tests finished ===================\n");
 }
 
-void sdb_stress_test_random_read(const char *hostname, int port) {
+void sdb_stress_test_random_read(const char *hostname, int port, uint32_t point_size) {
   int max_tests = 1000;
   int max_reads = 100;
   int max_reads_repeat = 10;
-  int points_batch_size = 1000000;
+  uint32_t points_batch_size = 1000000;
   int points_batch_count = 100;
   int read_count = 100000;
   int total_points = points_batch_count * points_batch_size;
-  data_point_t *points = (data_point_t *)sdb_alloc(sizeof(data_point_t) * points_batch_size);
+  data_point_t *points = (data_point_t *)sdb_alloc(point_size * points_batch_size);
   stopwatch_t *sw;
 
   while (max_tests--) {
@@ -134,7 +134,12 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
         points[j].value = j + 100;
       }
 
-      sdb_assert(!session_write(session, series, points, points_batch_size), "Failed to write data");
+      points_list_t p = {
+          .content = points,
+          .point_size = point_size,
+          .count = points_batch_size
+      };
+      sdb_assert(!session_write(session, series, &p), "Failed to write data");
     }
 
     log_info("> Seeded with: %d in: %fs", total_points, stopwatch_stop_and_destroy(sw));
@@ -165,10 +170,10 @@ void sdb_stress_test_random_read(const char *hostname, int port) {
   sdb_free(points);
 }
 
-void sdb_stress_test_read_write(const char *hostname, int port) {
+void sdb_stress_test_read_write(const char *hostname, int port, uint32_t point_size) {
   int max_tests = 1000;
   int max_reads = 10;
-  int points_count = 10000;
+  uint32_t points_count = 10000;
   int step = 2;
   int max_count = 5000000;
   int status = 0;
@@ -195,7 +200,12 @@ void sdb_stress_test_read_write(const char *hostname, int port) {
       }
 
       sw = stopwatch_start();
-      sdb_assert(!session_write(session, series, points, points_count), "Failed to write data");
+      points_list_t l = {
+          .content = points,
+          .count = points_count,
+          .point_size = point_size
+      };
+      sdb_assert(!session_write(session, series, &l), "Failed to write data");
       log_info("> Written in: %fs", stopwatch_stop_and_destroy(sw));
 
       for (int i = 0; i < max_reads; i++) {

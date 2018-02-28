@@ -29,13 +29,14 @@
 
 #include "src/diagnostics.h"
 
-buffer_t write_request_create(series_id_t data_series_id, data_point_t *points, uint64_t points_count) {
-  size_t total_size = sizeof(write_request_t) + points_count * sizeof(data_point_t);
+buffer_t write_request_create(series_id_t data_series_id, points_list_t *points) {
+  size_t total_size = sizeof(write_request_t) + points->count * points->point_size;
   write_request_t *request = (write_request_t *)sdb_alloc(total_size);
   request->header.type = SDB_WRITE_REQUEST;
   request->data_series_id = data_series_id;
-  request->points_count = points_count;
-  memcpy(request->points, points, points_count * sizeof(data_point_t));
+  request->points_count = points->count;
+  request->point_size = points->point_size;
+  memcpy(request->points, points->content, points->count * points->point_size);
 
   buffer_t packet;
   packet.content = request;
@@ -86,12 +87,13 @@ buffer_t read_latest_request_create(series_id_t data_series_id) {
   return packet;
 }
 
-buffer_t read_response_create(data_point_t *points, uint64_t points_count) {
-  size_t total_size = sizeof(read_response_t) + points_count * sizeof(data_point_t);
+buffer_t read_response_create(points_list_t *points) {
+  size_t total_size = sizeof(read_response_t) + points->count * points->point_size;
   read_response_t *response = (read_response_t *)sdb_alloc(total_size);
   response->header.type = SDB_READ_RESPONSE;
-  response->points_count = points_count;
-  memcpy(response->points, points, points_count * sizeof(data_point_t));
+  response->points_count = points->count;
+  response->point_size = points->point_size;
+  memcpy(response->points, points->content, points->count * points->point_size);
 
   buffer_t packet;
   packet.content = response;

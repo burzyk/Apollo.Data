@@ -27,6 +27,16 @@ void *server_test_routine(void *data);
 int on_message_received(client_t *client, uint8_t *data, uint32_t size, void *context);
 server_test_context_t *server_test_context_start(const char *directory, int max_series);
 void server_test_context_stop(server_test_context_t *context);
+int test_session_write(session_t *session, series_id_t series_id, data_point_t *points, uint64_t count);
+
+int test_session_write(session_t *session, series_id_t series_id, data_point_t *points, uint64_t count) {
+  points_list_t list = {
+      .content = points,
+      .point_size = 12,
+      .count = count
+  };
+  return session_write(session, series_id, &list);
+}
 
 server_test_context_t *server_test_context_start(const char *directory, int max_series) {
   server_test_context_t *context = (server_test_context_t *)sdb_alloc(sizeof(server_test_context_t));
@@ -113,7 +123,7 @@ void test_server_write_small(test_context_t ctx) {
       {.time=15, .value = 44}
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 3), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 3), "Error when sending");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
@@ -145,7 +155,7 @@ void test_server_write_unordered(test_context_t ctx) {
       {.time=44, .value = 44}
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
@@ -182,8 +192,8 @@ void test_server_write_two_batches(test_context_t ctx) {
       {.time=5, .value = 4}
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points_1, 2), "Error when sending");
-  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points_2, 2), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points_1, 2), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points_2, 2), "Error when sending");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
@@ -217,7 +227,7 @@ void test_server_read_two_batches(test_context_t ctx) {
       {.time=4, .value = 4}
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 2),
@@ -256,7 +266,7 @@ void test_server_read_range(test_context_t ctx) {
       {.time=5, .value = 5}
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 5), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 5), "Error when sending");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
@@ -295,8 +305,8 @@ void test_server_read_range_with_multiple_series(test_context_t ctx) {
       {.time=5, .value = 50}
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
-  sdb_assert(!session_write(context->session, SDB_EUR_GBP_ID, points_2, 5), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_GBP_ID, points_2, 5), "Error when sending");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
@@ -327,7 +337,7 @@ void test_server_update(test_context_t ctx) {
       {.time=5, .value = 5}
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
@@ -351,7 +361,7 @@ void test_server_update(test_context_t ctx) {
       {.time=5, .value = 50}
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points_2, 5), "Error when sending");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points_2, 5), "Error when sending");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
@@ -386,7 +396,7 @@ void test_server_update_in_two_sessions(test_context_t ctx) {
       {.time=5, .value = 5}
   };
 
-  sdb_assert(!session_write(session_1, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
+  sdb_assert(!test_session_write(session_1, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
 
   sdb_assert(
       !session_read(session_1, SDB_EUR_USD_ID, 2, 4, 10),
@@ -415,7 +425,7 @@ void test_server_update_in_two_sessions(test_context_t ctx) {
       {.time=5, .value = 50}
   };
 
-  sdb_assert(!session_write(session_2, SDB_EUR_USD_ID, points_2, 5), "Error when sending");
+  sdb_assert(!test_session_write(session_2, SDB_EUR_USD_ID, points_2, 5), "Error when sending");
 
   sdb_assert(
       !session_read(session_2, SDB_EUR_USD_ID, 2, 4, 10),
@@ -482,7 +492,7 @@ void test_server_truncate_and_write(test_context_t ctx) {
         {.time=4 + i, .value = 4 + i}
     };
 
-    sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
+    sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
 
     sdb_assert(
         !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
@@ -518,7 +528,7 @@ void test_server_failed_write(test_context_t ctx) {
       {.time=4, .value = 4}
   };
 
-  sdb_assert(session_write(context->session, SDB_EUR_USD_ID, points, 4), "Write should fail");
+  sdb_assert(test_session_write(context->session, SDB_EUR_USD_ID, points, 4), "Write should fail");
 
   server_test_context_stop(context);
 }
@@ -530,7 +540,7 @@ void test_server_write_series_out_of_range(test_context_t ctx) {
       {.time=1, .value = 1},
   };
 
-  sdb_assert(session_write(context->session, SDB_EUR_USD_ID, points, 1), "Write should fail");
+  sdb_assert(test_session_write(context->session, SDB_EUR_USD_ID, points, 1), "Write should fail");
 
   server_test_context_stop(context);
 }
@@ -569,7 +579,7 @@ void test_server_write_filter_duplicates(test_context_t ctx) {
       {.time=4, .value = 8},
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_GBP_ID, points, 8), "Write failed");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_GBP_ID, points, 8), "Write failed");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
@@ -604,7 +614,7 @@ void test_server_write_filter_zeros(test_context_t ctx) {
       {.time=4, .value = 8},
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_GBP_ID, points, 10), "Write failed");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_GBP_ID, points, 10), "Write failed");
 
   sdb_assert(
       !session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
@@ -631,7 +641,7 @@ void test_server_read_multiple_active(test_context_t ctx) {
       {.time=2, .value = 2}
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_GBP_ID, points, 2), "Write failed");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_GBP_ID, points, 2), "Write failed");
 
   // read first time
   sdb_assert(
@@ -707,7 +717,7 @@ void test_server_read_latest(test_context_t ctx) {
       {.time=5, .value = 50},
   };
 
-  sdb_assert(!session_write(context->session, SDB_EUR_GBP_ID, points, 5), "Write failed");
+  sdb_assert(!test_session_write(context->session, SDB_EUR_GBP_ID, points, 5), "Write failed");
 
   data_point_t latest = {0};
 

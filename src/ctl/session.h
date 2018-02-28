@@ -36,7 +36,7 @@ typedef struct session_s {
 
 session_t *session_create(const char *server, int port);
 void session_destroy(session_t *session);
-int session_write(session_t *session, series_id_t series_id, data_point_t *points, uint64_t count);
+int session_write(session_t *session, series_id_t series_id, points_list_t *points);
 int session_truncate(session_t *session, series_id_t series_id);
 int session_read(session_t *session,
                  series_id_t series_id,

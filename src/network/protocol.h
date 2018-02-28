@@ -68,6 +68,7 @@ typedef struct write_request_s {
   payload_header_t header;
   series_id_t data_series_id;
   uint64_t points_count;
+  uint32_t point_size;
   data_point_t points[];
 } __attribute__((packed)) write_request_t;
 
@@ -87,6 +88,7 @@ typedef struct read_latest_request_s {
 typedef struct read_response_s {
   payload_header_t header;
   uint64_t points_count;
+  uint32_t point_size;
   data_point_t points[];
 } __attribute__((packed)) read_response_t;
 
@@ -100,13 +102,13 @@ typedef struct simple_response_s {
   response_code_t code;
 } __attribute__((packed)) simple_response_t;
 
-buffer_t write_request_create(series_id_t data_series_id, data_point_t *points, uint64_t points_count);
+buffer_t write_request_create(series_id_t data_series_id, points_list_t *points);
 buffer_t read_request_create(series_id_t data_series_id,
                              timestamp_t begin,
                              timestamp_t end,
                              uint64_t points_per_packet);
 buffer_t read_latest_request_create(series_id_t data_series_id);
-buffer_t read_response_create(data_point_t *points, uint64_t points_count);
+buffer_t read_response_create(points_list_t *points);
 buffer_t simple_response_create(response_code_t code);
 buffer_t truncate_request_create(series_id_t data_series_id);
 

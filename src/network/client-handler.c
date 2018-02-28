@@ -78,8 +78,7 @@ void handle_read(client_t *client, read_request_t *request, database_t *db) {
 
   for (;;) {
     uint64_t points_to_read = points_per_packet + 1;
-    points_reader_t *reader =
-        database_read(db, request->data_series_id, begin, request->end, points_to_read);
+    points_reader_t *reader = database_read(db, request->data_series_id, begin, request->end, points_to_read);
 
     if (reader == NULL) {
       return;
@@ -94,7 +93,11 @@ void handle_read(client_t *client, read_request_t *request, database_t *db) {
               points_to_send ? reader->points.content[0].time : 0,
               points_to_send ? reader->points.content[points_to_send - 1].time : 0,
               points_to_send);
-    int send_status = send_and_destroy(client, read_response_create(reader->points.content, points_to_send));
+    points_list_t p = {
+        .content=reader->points.content,
+        .point_size=reader->points.point_size,
+        .count=points_to_send};
+    int send_status = send_and_destroy(client, read_response_create(&p));
 
     points_reader_destroy(reader);
 
@@ -115,7 +118,7 @@ void handle_write(client_t *client, write_request_t *request, database_t *db) {
             request->data_series_id,
             request->points_count);
 
-  points_list_t points = {.content = request->points, .count = request->points_count, .point_size = 12};
+  points_list_t points = {.content = request->points, .count = request->points_count, .point_size = request->point_size};
   int status = database_write(db, request->data_series_id, &points);
 
   if (status) {
@@ -155,7 +158,7 @@ void handle_read_latest(client_t *client, read_latest_request_t *request, databa
     log_debug("latest point: { time: %"PRIu64, ", value: %f }", latest.time, latest.value);
   }
 
-  if (send_and_destroy(client, read_response_create(reader->points.content, reader->points.count)) != 0) {
+  if (send_and_destroy(client, read_response_create(&reader->points)) != 0) {
     log_debug("error sending response");
     points_reader_destroy(reader);
     return;
