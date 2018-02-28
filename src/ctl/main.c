@@ -34,7 +34,6 @@ typedef struct client_configuration_s {
   series_id_t series_id;
   timestamp_t begin;
   timestamp_t end;
-  int window_width;
   uint32_t point_size;
 } client_configuration_t;
 
@@ -45,8 +44,8 @@ int execute_write(session_t *session, client_configuration_t *config);
 int execute_read(session_t *session, client_configuration_t *config);
 int execute_truncate(session_t *session, client_configuration_t *config);
 int execute_get_latest(session_t *session, client_configuration_t *config);
-int execute_from_csv(session_t *session, client_configuration_t *config);
-int execute_to_csv(session_t *session, client_configuration_t *config);
+int execute_from_csv(client_configuration_t *config);
+int execute_to_csv(client_configuration_t *config);
 
 int main(int argc, char *argv[]) {
   client_configuration_t config = {};
@@ -138,15 +137,15 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
         break;
       case 'h':strncpy(config->hostname, optarg, SDB_STR_MAX_LEN);
         break;
-      case 'p':config->port = atoi(optarg);
+      case 'p':config->port = (int)strtol(optarg, NULL, 0);
         break;
-      case 's':config->series_id = (series_id_t)atoi(optarg);
+      case 's':config->series_id = (series_id_t)strtol(optarg, NULL, 0);
         break;
-      case 'b':sscanf(optarg, "%" PRIu64, &config->begin);
+      case 'b':config->begin = strtoull(optarg, NULL, 0);
         break;
-      case 'e':sscanf(optarg, "%" PRIu64, &config->end);
+      case 'e':config->end = strtoull(optarg, NULL, 0);
         break;
-      case 'x':sscanf(optarg, "%d", &config->point_size);
+      case 'x':config->point_size = (uint32_t)strtoul(optarg, NULL, 0);
         break;
       default:return -1;
     }
@@ -167,10 +166,10 @@ int execute_command(session_t *session, client_configuration_t *config) {
     return execute_get_latest(session, config);
 
   } else if (!strncmp(SDB_CLIENT_CMD_TO_CSV, config->command, SDB_STR_MAX_LEN)) {
-    return execute_to_csv(session, config);
+    return execute_to_csv(config);
 
   } else if (!strncmp(SDB_CLIENT_CMD_FROM_CSV, config->command, SDB_STR_MAX_LEN)) {
-    return execute_from_csv(session, config);
+    return execute_from_csv(config);
 
   } else if (!strncmp("", config->command, SDB_STR_MAX_LEN)) {
     print_usage();
@@ -275,7 +274,7 @@ int execute_get_latest(session_t *session, client_configuration_t *config) {
   return 0;
 }
 
-int execute_from_csv(session_t *session, client_configuration_t *config) {
+int execute_from_csv(client_configuration_t *config) {
   if (config->point_size != 12) {
     fprintf(stderr, "only float data points are supported");
     return -1;
@@ -295,7 +294,7 @@ int execute_from_csv(session_t *session, client_configuration_t *config) {
   return 0;
 }
 
-int execute_to_csv(session_t *session, client_configuration_t *config) {
+int execute_to_csv(client_configuration_t *config) {
   if (config->point_size != 12) {
     fprintf(stderr, "only float data points are supported");
     return -1;
