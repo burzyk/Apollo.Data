@@ -131,7 +131,8 @@ void sdb_stress_test_random_read(const char *hostname, int port, uint32_t point_
     for (int i = 0; i < points_batch_count; i++) {
       for (timestamp_t j = 0; j < points_batch_size; j++) {
         points[j].time = i * points_batch_size + j + 100;
-        points[j].value = j + 100;
+        float value = j + 100;
+        memcpy(points[j].value, &value, point_size);
       }
 
       points_list_t p = {
@@ -196,7 +197,8 @@ void sdb_stress_test_read_write(const char *hostname, int port, uint32_t point_s
 
       for (timestamp_t i = 0; i < points_count; i++) {
         points[i].time = i + 100;
-        points[i].value = i;
+        float value = i;
+        memcpy(points[i].value, &value, point_size);
       }
 
       sw = stopwatch_start();

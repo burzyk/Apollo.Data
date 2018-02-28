@@ -33,6 +33,11 @@ int on_message_received(client_t *client, uint8_t *data, uint32_t size, void *co
 server_test_context_t *server_test_context_start(const char *directory, int max_series);
 void server_test_context_stop(server_test_context_t *context);
 int test_session_write(session_t *session, series_id_t series_id, float_data_point_t *points, uint64_t count);
+float_data_point_t *get_points(session_t *session);
+
+float_data_point_t *get_points(session_t *session) {
+  return (float_data_point_t *)session->read_response->points;
+}
 
 int test_session_write(session_t *session, series_id_t series_id, float_data_point_t *points, uint64_t count) {
   points_list_t list = {
@@ -137,12 +142,12 @@ void test_server_write_small(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 3, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 3, "Time should be 3");
-  sdb_assert(context->session->read_response->points[1].time == 5, "Time should be 5");
-  sdb_assert(context->session->read_response->points[2].time == 15, "Time should be 15");
-  sdb_assert(context->session->read_response->points[0].value == 13, "Value should be 13");
-  sdb_assert(context->session->read_response->points[1].value == 76, "Value should be 76");
-  sdb_assert(context->session->read_response->points[2].value == 44, "Value should be 44.3");
+  sdb_assert(get_points(context->session)[0].time == 3, "Time should be 3");
+  sdb_assert(get_points(context->session)[1].time == 5, "Time should be 5");
+  sdb_assert(get_points(context->session)[2].time == 15, "Time should be 15");
+  sdb_assert(get_points(context->session)[0].value == 13, "Value should be 13");
+  sdb_assert(get_points(context->session)[1].value == 76, "Value should be 76");
+  sdb_assert(get_points(context->session)[2].value == 44, "Value should be 44.3");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 
@@ -169,14 +174,14 @@ void test_server_write_unordered(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 4, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 1, "Time should be 1");
-  sdb_assert(context->session->read_response->points[1].time == 5, "Time should be 5");
-  sdb_assert(context->session->read_response->points[2].time == 6, "Time should be 6");
-  sdb_assert(context->session->read_response->points[3].time == 44, "Time should be 44");
-  sdb_assert(context->session->read_response->points[0].value == 44, "Value should be 44");
-  sdb_assert(context->session->read_response->points[1].value == 76, "Value should be 76");
-  sdb_assert(context->session->read_response->points[2].value == 13, "Value should be 13");
-  sdb_assert(context->session->read_response->points[3].value == 44, "Value should be 44");
+  sdb_assert(get_points(context->session)[0].time == 1, "Time should be 1");
+  sdb_assert(get_points(context->session)[1].time == 5, "Time should be 5");
+  sdb_assert(get_points(context->session)[2].time == 6, "Time should be 6");
+  sdb_assert(get_points(context->session)[3].time == 44, "Time should be 44");
+  sdb_assert(get_points(context->session)[0].value == 44, "Value should be 44");
+  sdb_assert(get_points(context->session)[1].value == 76, "Value should be 76");
+  sdb_assert(get_points(context->session)[2].value == 13, "Value should be 13");
+  sdb_assert(get_points(context->session)[3].value == 44, "Value should be 44");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 
@@ -207,14 +212,14 @@ void test_server_write_two_batches(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 4, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 1, "Time should be 1");
-  sdb_assert(context->session->read_response->points[1].time == 2, "Time should be 2");
-  sdb_assert(context->session->read_response->points[2].time == 4, "Time should be 4");
-  sdb_assert(context->session->read_response->points[3].time == 5, "Time should be 5");
-  sdb_assert(context->session->read_response->points[0].value == 1, "Value should be 1");
-  sdb_assert(context->session->read_response->points[1].value == 3, "Value should be 3");
-  sdb_assert(context->session->read_response->points[2].value == 2, "Value should be 2");
-  sdb_assert(context->session->read_response->points[3].value == 4, "Value should be 4");
+  sdb_assert(get_points(context->session)[0].time == 1, "Time should be 1");
+  sdb_assert(get_points(context->session)[1].time == 2, "Time should be 2");
+  sdb_assert(get_points(context->session)[2].time == 4, "Time should be 4");
+  sdb_assert(get_points(context->session)[3].time == 5, "Time should be 5");
+  sdb_assert(get_points(context->session)[0].value == 1, "Value should be 1");
+  sdb_assert(get_points(context->session)[1].value == 3, "Value should be 3");
+  sdb_assert(get_points(context->session)[2].value == 2, "Value should be 2");
+  sdb_assert(get_points(context->session)[3].value == 4, "Value should be 4");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 
@@ -241,18 +246,18 @@ void test_server_read_two_batches(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 1, "Time should be 1");
-  sdb_assert(context->session->read_response->points[1].time == 2, "Time should be 2");
-  sdb_assert(context->session->read_response->points[0].value == 1, "Value should be 1");
-  sdb_assert(context->session->read_response->points[1].value == 2, "Value should be 2");
+  sdb_assert(get_points(context->session)[0].time == 1, "Time should be 1");
+  sdb_assert(get_points(context->session)[1].time == 2, "Time should be 2");
+  sdb_assert(get_points(context->session)[0].value == 1, "Value should be 1");
+  sdb_assert(get_points(context->session)[1].value == 2, "Value should be 2");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 3, "Time should be 3");
-  sdb_assert(context->session->read_response->points[1].time == 4, "Time should be 4");
-  sdb_assert(context->session->read_response->points[0].value == 3, "Value should be 3");
-  sdb_assert(context->session->read_response->points[1].value == 4, "Value should be 4");
+  sdb_assert(get_points(context->session)[0].time == 3, "Time should be 3");
+  sdb_assert(get_points(context->session)[1].time == 4, "Time should be 4");
+  sdb_assert(get_points(context->session)[0].value == 3, "Value should be 3");
+  sdb_assert(get_points(context->session)[1].value == 4, "Value should be 4");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 
@@ -280,10 +285,10 @@ void test_server_read_range(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 2, "Time should be 2");
-  sdb_assert(context->session->read_response->points[1].time == 3, "Time should be 3");
-  sdb_assert(context->session->read_response->points[0].value == 2, "Value should be 2");
-  sdb_assert(context->session->read_response->points[1].value == 3, "Value should be 3");
+  sdb_assert(get_points(context->session)[0].time == 2, "Time should be 2");
+  sdb_assert(get_points(context->session)[1].time == 3, "Time should be 3");
+  sdb_assert(get_points(context->session)[0].value == 2, "Value should be 2");
+  sdb_assert(get_points(context->session)[1].value == 3, "Value should be 3");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 
@@ -320,10 +325,10 @@ void test_server_read_range_with_multiple_series(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 2, "Time should be 2");
-  sdb_assert(context->session->read_response->points[1].time == 3, "Time should be 3");
-  sdb_assert(context->session->read_response->points[0].value == 2, "Value should be 2");
-  sdb_assert(context->session->read_response->points[1].value == 3, "Value should be 3");
+  sdb_assert(get_points(context->session)[0].time == 2, "Time should be 2");
+  sdb_assert(get_points(context->session)[1].time == 3, "Time should be 3");
+  sdb_assert(get_points(context->session)[0].value == 2, "Value should be 2");
+  sdb_assert(get_points(context->session)[1].value == 3, "Value should be 3");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 
@@ -351,10 +356,10 @@ void test_server_update(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 2, "Time should be 2");
-  sdb_assert(context->session->read_response->points[1].time == 3, "Time should be 3");
-  sdb_assert(context->session->read_response->points[0].value == 2, "Value should be 2");
-  sdb_assert(context->session->read_response->points[1].value == 3, "Value should be 3");
+  sdb_assert(get_points(context->session)[0].time == 2, "Time should be 2");
+  sdb_assert(get_points(context->session)[1].time == 3, "Time should be 3");
+  sdb_assert(get_points(context->session)[0].value == 2, "Value should be 2");
+  sdb_assert(get_points(context->session)[1].value == 3, "Value should be 3");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 
@@ -375,10 +380,10 @@ void test_server_update(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 2, "Time should be 2");
-  sdb_assert(context->session->read_response->points[1].time == 3, "Time should be 3");
-  sdb_assert(context->session->read_response->points[0].value == 20, "Value should be 20");
-  sdb_assert(context->session->read_response->points[1].value == 30, "Value should be 30");
+  sdb_assert(get_points(context->session)[0].time == 2, "Time should be 2");
+  sdb_assert(get_points(context->session)[1].time == 3, "Time should be 3");
+  sdb_assert(get_points(context->session)[0].value == 20, "Value should be 20");
+  sdb_assert(get_points(context->session)[1].value == 30, "Value should be 30");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 
@@ -410,10 +415,10 @@ void test_server_update_in_two_sessions(test_context_t ctx) {
   sdb_assert(session_read_next(session_1) != 0, "No data found in iterator");
 
   sdb_assert(session_1->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(session_1->read_response->points[0].time == 2, "Time should be 2");
-  sdb_assert(session_1->read_response->points[1].time == 3, "Time should be 3");
-  sdb_assert(session_1->read_response->points[0].value == 2, "Value should be 2");
-  sdb_assert(session_1->read_response->points[1].value == 3, "Value should be 3");
+  sdb_assert(get_points(session_1)[0].time == 2, "Time should be 2");
+  sdb_assert(get_points(session_1)[1].time == 3, "Time should be 3");
+  sdb_assert(get_points(session_1)[0].value == 2, "Value should be 2");
+  sdb_assert(get_points(session_1)[1].value == 3, "Value should be 3");
 
   sdb_assert(session_read_next(session_1) == 0, "Data left in iterator");
 
@@ -439,10 +444,10 @@ void test_server_update_in_two_sessions(test_context_t ctx) {
   sdb_assert(session_read_next(session_2) != 0, "No data found in iterator");
 
   sdb_assert(session_2->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(session_2->read_response->points[0].time == 2, "Time should be 2");
-  sdb_assert(session_2->read_response->points[1].time == 3, "Time should be 3");
-  sdb_assert(session_2->read_response->points[0].value == 20, "Value should be 20");
-  sdb_assert(session_2->read_response->points[1].value == 30, "Value should be 30");
+  sdb_assert(get_points(session_2)[0].time == 2, "Time should be 2");
+  sdb_assert(get_points(session_2)[1].time == 3, "Time should be 3");
+  sdb_assert(get_points(session_2)[0].value == 20, "Value should be 20");
+  sdb_assert(get_points(session_2)[1].value == 30, "Value should be 30");
 
   sdb_assert(session_read_next(session_2) == 0, "Data left in iterator");
 
@@ -505,14 +510,14 @@ void test_server_truncate_and_write(test_context_t ctx) {
     sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
     sdb_assert(context->session->read_response->points_count == 4, "Invalid number of points");
-    sdb_assert(context->session->read_response->points[0].time == 1 + i, "Invalid time value");
-    sdb_assert(context->session->read_response->points[1].time == 2 + i, "Invalid time value");
-    sdb_assert(context->session->read_response->points[2].time == 3 + i, "Invalid time value");
-    sdb_assert(context->session->read_response->points[3].time == 4 + i, "Invalid time value");
-    sdb_assert(context->session->read_response->points[0].value == 1 + i, "Invalid value");
-    sdb_assert(context->session->read_response->points[1].value == 2 + i, "Invalid value");
-    sdb_assert(context->session->read_response->points[2].value == 3 + i, "Invalid value");
-    sdb_assert(context->session->read_response->points[3].value == 4 + i, "Invalid value");
+    sdb_assert(get_points(context->session)[0].time == 1 + i, "Invalid time value");
+    sdb_assert(get_points(context->session)[1].time == 2 + i, "Invalid time value");
+    sdb_assert(get_points(context->session)[2].time == 3 + i, "Invalid time value");
+    sdb_assert(get_points(context->session)[3].time == 4 + i, "Invalid time value");
+    sdb_assert(get_points(context->session)[0].value == 1 + i, "Invalid value");
+    sdb_assert(get_points(context->session)[1].value == 2 + i, "Invalid value");
+    sdb_assert(get_points(context->session)[2].value == 3 + i, "Invalid value");
+    sdb_assert(get_points(context->session)[3].value == 4 + i, "Invalid value");
 
     sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -592,10 +597,10 @@ void test_server_write_filter_duplicates(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 4, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 1, "Invalid time value");
-  sdb_assert(context->session->read_response->points[1].time == 2, "Invalid time value");
-  sdb_assert(context->session->read_response->points[2].time == 3, "Invalid time value");
-  sdb_assert(context->session->read_response->points[3].time == 4, "Invalid time value");
+  sdb_assert(get_points(context->session)[0].time == 1, "Invalid time value");
+  sdb_assert(get_points(context->session)[1].time == 2, "Invalid time value");
+  sdb_assert(get_points(context->session)[2].time == 3, "Invalid time value");
+  sdb_assert(get_points(context->session)[3].time == 4, "Invalid time value");
 
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -627,10 +632,10 @@ void test_server_write_filter_zeros(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 4, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 1, "Invalid time value");
-  sdb_assert(context->session->read_response->points[1].time == 2, "Invalid time value");
-  sdb_assert(context->session->read_response->points[2].time == 3, "Invalid time value");
-  sdb_assert(context->session->read_response->points[3].time == 4, "Invalid time value");
+  sdb_assert(get_points(context->session)[0].time == 1, "Invalid time value");
+  sdb_assert(get_points(context->session)[1].time == 2, "Invalid time value");
+  sdb_assert(get_points(context->session)[2].time == 3, "Invalid time value");
+  sdb_assert(get_points(context->session)[3].time == 4, "Invalid time value");
 
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -662,7 +667,7 @@ void test_server_read_multiple_active(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 1, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 1, "Invalid time value");
+  sdb_assert(get_points(context->session)[0].time == 1, "Invalid time value");
 
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -675,8 +680,8 @@ void test_server_read_multiple_active(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 1, "Invalid time value");
-  sdb_assert(context->session->read_response->points[1].time == 2, "Invalid time value");
+  sdb_assert(get_points(context->session)[0].time == 1, "Invalid time value");
+  sdb_assert(get_points(context->session)[1].time == 2, "Invalid time value");
 
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -719,12 +724,13 @@ void test_server_read_latest(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points[0].time == 5, "Invalid time");
-  sdb_assert(context->session->read_response->points[0].value == 50, "Invalid value");
+  sdb_assert(get_points(context->session)[0].value == 50, "Invalid value");
 
   server_test_context_stop(context);
 }
 
 void test_server_write_varsize(test_context_t ctx) {
+  // TODO: finish
   server_test_context_t *context =
       server_test_context_start(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
@@ -743,12 +749,12 @@ void test_server_write_varsize(test_context_t ctx) {
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
   sdb_assert(context->session->read_response->points_count == 3, "Invalid number of points");
-  sdb_assert(context->session->read_response->points[0].time == 3, "Time should be 3");
-  sdb_assert(context->session->read_response->points[1].time == 5, "Time should be 5");
-  sdb_assert(context->session->read_response->points[2].time == 15, "Time should be 15");
-  sdb_assert(context->session->read_response->points[0].value == 13, "Value should be 13");
-  sdb_assert(context->session->read_response->points[1].value == 76, "Value should be 76");
-  sdb_assert(context->session->read_response->points[2].value == 44, "Value should be 44.3");
+  sdb_assert(get_points(context->session)[0].time == 3, "Time should be 3");
+  sdb_assert(get_points(context->session)[1].time == 5, "Time should be 5");
+  sdb_assert(get_points(context->session)[2].time == 15, "Time should be 15");
+  sdb_assert(get_points(context->session)[0].value == 13, "Value should be 13");
+  sdb_assert(get_points(context->session)[1].value == 76, "Value should be 76");
+  sdb_assert(get_points(context->session)[2].value == 44, "Value should be 44.3");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 

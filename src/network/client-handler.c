@@ -85,13 +85,13 @@ void handle_read(client_t *client, read_request_t *request, database_t *db) {
     }
 
     begin = reader->points.count == points_to_read
-            ? reader->points.content[reader->points.count - 1].time
+            ? points_list_last(&reader->points)->time
             : request->end;
 
     uint64_t points_to_send = sdb_min(points_per_packet, reader->points.count);
     log_debug("sending response: { begin: %"PRIu64", end: %"PRIu64", points: %d }",
-              points_to_send ? reader->points.content[0].time : 0,
-              points_to_send ? reader->points.content[points_to_send - 1].time : 0,
+              points_to_send ? reader->points.content->time : 0,
+              points_to_send ? data_point_at(&reader->points, points_to_send - 1)->time : 0,
               points_to_send);
     points_list_t p = {
         .content=reader->points.content,
@@ -118,7 +118,8 @@ void handle_write(client_t *client, write_request_t *request, database_t *db) {
             request->data_series_id,
             request->points_count);
 
-  points_list_t points = {.content = request->points, .count = request->points_count, .point_size = request->point_size};
+  points_list_t
+      points = {.content = request->points, .count = request->points_count, .point_size = request->point_size};
   int status = database_write(db, request->data_series_id, &points);
 
   if (status) {
@@ -154,14 +155,11 @@ void handle_read_latest(client_t *client, read_latest_request_t *request, databa
   points_reader_t *reader = database_read_latest(db, request->data_series_id);
 
   if (reader->points.count != 0) {
-    data_point_t latest = reader->points.content[0];
-    log_debug("latest point: { time: %"PRIu64, ", value: %f }", latest.time, latest.value);
+    log_debug("latest point: { time: %"PRIu64, " }", reader->points.content->time);
   }
 
   if (send_and_destroy(client, read_response_create(&reader->points)) != 0) {
     log_debug("error sending response");
-    points_reader_destroy(reader);
-    return;
   }
 
   points_reader_destroy(reader);

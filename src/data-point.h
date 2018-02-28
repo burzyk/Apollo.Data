@@ -14,7 +14,7 @@ typedef uint64_t timestamp_t;
 
 typedef struct data_point_s {
   timestamp_t time;
-  float value;
+  uint8_t value[];
 } __attribute__((packed)) data_point_t;
 
 typedef struct points_list_s {

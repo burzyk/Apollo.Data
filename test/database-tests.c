@@ -77,7 +77,7 @@ void test_database_write_with_time(database_t *db,
     while (curr != end) {
       curr->time = time;
       float v = time * 100;
-      memcpy(&curr->value, &v, sizeof(v));
+      memcpy(curr->value, &v, sizeof(v));
 
       time++;
       curr = data_point_next(&list, curr);
@@ -364,9 +364,9 @@ void test_database_truncate_write_again(test_context_t ctx) {
 
 void test_database_failed_write(test_context_t ctx) {
   database_t *db = database_create("/blah/blah", SDB_DATA_SERIES_MAX);
-  data_point_t points[] = {{.time = 1, .value = 13}};
+  data_point_t points[] = {{.time = 1}};
 
-  points_list_t list = {.content=points, .point_size=12, .count=1};
+  points_list_t list = {.content=points, .point_size=8, .count=1};
   int result = database_write(db, 12345, &list);
   sdb_assert(result != 0, "write operation should fail");
 
@@ -376,10 +376,11 @@ void test_database_failed_write(test_context_t ctx) {
 void test_database_read_latest_no_data(test_context_t ctx) {
   database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
-  data_point_t *latest = database_read_latest(db, 12345)->points.content;
+  points_reader_t *reader = database_read_latest(db, 12345);
 
-  sdb_assert(latest == NULL, "Expected NULL value");
+  sdb_assert(reader->points.content == NULL, "Expected NULL value");
 
+  points_reader_destroy(reader);
   database_destroy(db);
 }
 
@@ -388,14 +389,13 @@ void test_database_read_latest(test_context_t ctx) {
 
   test_database_write(db, 12345, 1, 10, ctx.point_size);
   test_database_write(db, 12345, 1, 10, ctx.point_size);
-  data_point_t latest_12 = database_read_latest(db, 12345)->points.content[0];
-  data_point_t latest_16 = database_read_latest(db, 12345)->points.content[0];
 
-  sdb_assert(latest_12.value == 1000, "Incorrect value");
-  sdb_assert(latest_12.time == 10, "Incorrect time");
+  points_reader_t *reader = database_read_latest(db, 12345);
+  float v = 1000;
 
-  sdb_assert(latest_16.value == 1000, "Incorrect value");
-  sdb_assert(latest_16.time == 10, "Incorrect time");
+  sdb_assert(!memcmp(reader->points.content->value, &v, sizeof(v)), "Incorrect value");
+  sdb_assert(reader->points.content->time == 10, "Incorrect time");
 
+  points_reader_destroy(reader);
   database_destroy(db);
 }

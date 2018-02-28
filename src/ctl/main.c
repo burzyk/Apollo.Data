@@ -308,7 +308,7 @@ int execute_to_csv(client_configuration_t *config) {
     size_t read = fread(points, config->point_size, (size_t)points_size, stdin);
 
     for (int i = 0; i < read; i++) {
-      printf("%" PRIu64 ",%f\n", points[i].time, points[i].value);
+      printf("%" PRIu64 ",%f\n", points[i].time, *(float *)points[i].value);
     }
   }
 
