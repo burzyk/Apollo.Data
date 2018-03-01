@@ -139,6 +139,10 @@ uint64_t series_prepare_input(points_list_t *list) {
 }
 
 points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, uint64_t max_points) {
+  if (begin > end) {
+    return points_reader_create(NULL, 0, 0);
+  }
+
   data_point_t *begin_elem = data_point_find(&series->points, begin);
   data_point_t *end_elem = data_point_find(&series->points, end);
   uint64_t total_points = sdb_min(max_points, data_point_dist(&series->points, begin_elem, end_elem));

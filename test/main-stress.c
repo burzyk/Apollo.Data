@@ -39,7 +39,6 @@
 #define SDB_TEST_RANDOM_READ "random-read"
 #define SDB_TEST_READ_WRITE "read-write"
 
-void sdb_stress_test_read_write(const char *hostname, int port, uint32_t point_size);
 void sdb_stress_test_random_read(const char *hostname, int port, uint32_t point_size);
 
 int main(int argc, char *argv[]) {
@@ -93,10 +92,6 @@ int main(int argc, char *argv[]) {
   srand((unsigned int)time(NULL));
   log_init(0);
 
-  if (!strcmp(test, SDB_TEST_READ_WRITE)) {
-    sdb_stress_test_read_write(hostname, port, 12);
-  }
-
   if (!strcmp(test, SDB_TEST_RANDOM_READ)) {
     sdb_stress_test_random_read(hostname, port, 12);
   }
@@ -108,8 +103,8 @@ void sdb_stress_test_random_read(const char *hostname, int port, uint32_t point_
   int max_tests = 1000;
   int max_reads = 100;
   int max_reads_repeat = 10;
-  uint32_t points_batch_size = 1000000;
-  int points_batch_count = 100;
+  uint32_t points_batch_size = 100000;
+  int points_batch_count = 1000;
   int read_count = 100000;
   int total_points = points_batch_count * points_batch_size;
   data_point_t *points = (data_point_t *)sdb_alloc(point_size * points_batch_size);
@@ -129,24 +124,31 @@ void sdb_stress_test_random_read(const char *hostname, int port, uint32_t point_
     log_info("Seeding database ...");
 
     for (int i = 0; i < points_batch_count; i++) {
-      for (timestamp_t j = 0; j < points_batch_size; j++) {
-        points[j].time = i * points_batch_size + j + 100;
-        float value = j + 100;
-        memcpy(points[j].value, &value, point_size);
-      }
-
-      points_list_t p = {
+      points_list_t request_points = {
           .content = points,
           .point_size = point_size,
           .count = points_batch_size
       };
-      sdb_assert(!session_write(session, series, &p), "Failed to write data");
+
+      data_point_t *curr = request_points.content;
+      data_point_t *end = points_list_end(&request_points);
+      timestamp_t j = 0;
+
+      while (curr != end) {
+        curr->time = i * points_batch_size + j + 100;
+        float value = j + 100;
+        memcpy(curr->value, &value, sizeof(value));
+
+        j++;
+        curr = data_point_next(&request_points, curr);
+      }
+
+      sdb_assert(!session_write(session, series, &request_points), "Failed to write data");
     }
 
     log_info("> Seeded with: %d in: %fs", total_points, stopwatch_stop_and_destroy(sw));
 
     for (int i = 0; i < max_reads; i++) {
-      // TODO: overflow issue with negatives
       timestamp_t begin = sdb_max((uint64_t)(rand() % total_points - read_count), 1);
       timestamp_t end = begin + read_count;
 
@@ -169,78 +171,4 @@ void sdb_stress_test_random_read(const char *hostname, int port, uint32_t point_
   }
 
   sdb_free(points);
-}
-
-void sdb_stress_test_read_write(const char *hostname, int port, uint32_t point_size) {
-  int max_tests = 1000;
-  int max_reads = 10;
-  uint32_t points_count = 10000;
-  int step = 2;
-  int max_count = 5000000;
-  int status = 0;
-  stopwatch_t *sw;
-
-  while (max_tests--) {
-    log_info("Connecting to network ...");
-    session_t *session = session_create(hostname, port);
-    sdb_assert(session != NULL, "Failed to connect");
-
-    series_id_t series = rand() % 1000000U;
-    log_info("Testing series: %d", series);
-
-    while (points_count < max_count) {
-      sw = stopwatch_start();
-      sdb_assert(!session_truncate(session, series), "Failed to truncate data");
-      log_info("> Truncated in: %fs", stopwatch_stop_and_destroy(sw));
-
-      data_point_t *points = (data_point_t *)sdb_alloc(point_size * points_count);
-
-      for (timestamp_t i = 0; i < points_count; i++) {
-        points[i].time = i + 100;
-        float value = i;
-        memcpy(points[i].value, &value, point_size);
-      }
-
-      sw = stopwatch_start();
-      points_list_t l = {
-          .content = points,
-          .count = points_count,
-          .point_size = point_size
-      };
-      sdb_assert(!session_write(session, series, &l), "Failed to write data");
-      log_info("> Written in: %fs", stopwatch_stop_and_destroy(sw));
-
-      for (int i = 0; i < max_reads; i++) {
-        sw = stopwatch_start();
-
-        status = session_read(session, series, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, SDB_POINTS_PER_PACKET_MAX);
-        sdb_assert(!status, "Failed to read data");
-
-        int expected_pos = 0;
-        int actual_pos = 0;
-
-        while (session_read_next(session)) {
-          while (expected_pos < points_count && actual_pos < session->read_response->points_count) {
-            sdb_assert(session->read_response->points[actual_pos].time == points[expected_pos].time, "Invalid time");
-            sdb_assert(session->read_response->points[actual_pos].value == points[expected_pos].value, "Invalid value");
-
-            actual_pos++;
-            expected_pos++;
-          }
-
-          actual_pos = 0;
-        }
-
-        sdb_assert(expected_pos == points_count, "Not all points have been read");
-        log_info("> Read: %d in: %fs", points_count, stopwatch_stop_and_destroy(sw));
-      }
-
-      sdb_free(points);
-      points_count *= step;
-    }
-
-    log_info("Closing session ...");
-    points_count = 10000;
-    session_destroy(session);
-  }
 }

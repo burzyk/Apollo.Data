@@ -204,7 +204,7 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
     packet_t *packet = (packet_t *)client->buffer;
 
     if (packet->magic != SDB_SERVER_MAGIC || packet->total_size > SDB_SERVER_PACKET_MAX_LEN) {
-      log_error("Received malformed packet, disconnecting, magic: %u, len: %u", packet->magic, packet->total_size);
+      log_error("Received malformed packet, disconnecting, magic: 0x%X, len: %u", packet->magic, packet->total_size);
       client_disconnect_and_destroy(client);
       return;
     }
