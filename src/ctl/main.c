@@ -27,14 +27,27 @@
 #define SDB_CLIENT_CMD_TO_CSV     "to_csv"
 #define SDB_CLIENT_CMD_FROM_CSV   "from_csv"
 
+#define SDB_TYPE_FLOAT  0x01
+#define SDB_TYPE_DOUBLE 0x02
+#define SDB_TYPE_INT32  0x03
+#define SDB_TYPE_INT64  0x04
+#define SDB_TYPE_STRING 0x05
+
+#define SDB_FORMAT_TIMESTAMP  "%" PRIu64 ","
+#define SDB_FORMAT_INT32      SDB_FORMAT_TIMESTAMP "%" PRIi32
+#define SDB_FORMAT_INT64      SDB_FORMAT_TIMESTAMP "%" PRIi64
+#define SDB_FORMAT_FLOAT      SDB_FORMAT_TIMESTAMP "%f"
+#define SDB_FORMAT_DOUBLE     SDB_FORMAT_TIMESTAMP "%lf"
+
 typedef struct client_configuration_s {
-  char command[SDB_STR_MAX_LEN];
-  char hostname[SDB_STR_MAX_LEN];
+  char *command;
+  char *hostname;
   int port;
   series_id_t series_id;
   timestamp_t begin;
   timestamp_t end;
   uint32_t point_size;
+  uint8_t data_type;
 } client_configuration_t;
 
 void print_usage();
@@ -46,15 +59,18 @@ int execute_truncate(session_t *session, client_configuration_t *config);
 int execute_get_latest(session_t *session, client_configuration_t *config);
 int execute_from_csv(client_configuration_t *config);
 int execute_to_csv(client_configuration_t *config);
+uint8_t parse_data_type(const char *type);
 
 int main(int argc, char *argv[]) {
   client_configuration_t config = {};
-  strcpy(config.hostname, "localhost");
+  config.command = NULL;
+  config.hostname = "localhost";
   config.port = 8487;
   config.series_id = 0;
   config.begin = 0;
   config.end = 0;
-  config.point_size = 12;
+  config.point_size = 0;
+  config.data_type = 0;
 
   if (client_configuration_load(argc, argv, &config)) {
     print_usage();
@@ -89,52 +105,104 @@ void print_usage() {
   printf("\n");
   printf("shakadbctl - controls shakadb instance\n");
   printf("\n");
-  printf("    Version:\t" SDB_VERSION "\n");
-  printf("    Build:\t" SDB_BUILD "\n");
+  printf("    version:\t" SDB_VERSION "\n");
+  printf("    build:\t" SDB_BUILD "\n");
   printf("\n");
-  printf("Usage: shakadbctl [options]\n");
+  printf("Usage: shakadbctl <command> [options]\n");
   printf("\n");
-  printf("    --command, -c:    Command to be executed. Command can be:\n");
-  printf("                      write, read, truncate, latest, to_csv, from_csv\n");
-  printf("    --hostname, -h:   ShakaDB server hostname\n");
-  printf("                      Default value: 'localhost'\n");
-  printf("    --port, -p:       ShakaDB server port\n");
-  printf("                      Default value: 8487\n");
-  printf("    --series, -s:     Time series id\n");
-  printf("                      Default value: 0\n");
-  printf("    --begin, -b:      Begin for reading, inclusive\n");
-  printf("                      Default value: 0\n");
-  printf("    --end, -e:        End for reading, exclusive\n");
-  printf("                      Default value: 0\n");
-  printf("    --size, -x:       Data point size\n");
-  printf("                      Default value: 12 (8 bytes timestamp, 4 bytes payload)\n");
+  printf("    global parameters:\n");
+  printf("\n");
+  printf("    --hostname, -h:   shakadb server address, can be IP or hostname\n");
+  printf("                      default value: 'localhost'\n");
+  printf("    --port, -p:       shakadb server port\n");
+  printf("                      default value: 8487\n");
+  printf("\n");
+  printf("    available commands:\n");
+  printf("\n");
+  printf("    write        writes the binary stream from STDIN\n");
+  printf("                 to the time series\n");
+  printf("                     --series, -s    time series id\n");
+  printf("                     --size, -x      data point value size\n");
+  printf("                                     can be derived from the type parameter\n");
+  printf("                     --type, -t      optional type of the data point\n");
+  printf("                                     available values: int32, int64, string, float, double\n");
+  printf("\n");
+  printf("    read         reads the time series and outputs\n");
+  printf("                 the binary stream to STDOUT\n");
+  printf("                     --series, -s    time series id\n");
+  printf("                     --begin, -b     begin for reading, inclusive\n");
+  printf("                     --end, -e       end for reading, exclusive\n");
+  printf("\n");
+  printf("    truncate     removes all data from the given time series\n");
+  printf("                     --series, -s    time series id\n");
+  printf("\n");
+  printf("    latest       reads the latest value from the time series\n");
+  printf("                 and outputs in binary format to STDOUT\n");
+  printf("                     --series, -s    time series id\n");
+  printf("\n");
+  printf("    to_csv       converts the binary stream of data points from STDIN\n");
+  printf("                 into human readable CSV format\n");
+  printf("                     --size, -x      data point value size\n");
+  printf("                                     required only for strings\n");
+  printf("                     --type, -t      type of the data point\n");
+  printf("                                     available values: int32, int64, string, float, double\n");
+  printf("\n");
+  printf("    from_csv     reads data from the STDIN in CSV format and converts to binary\n");
+  printf("                 writing to STDOUT\n");
+  printf("                     --size, -x      data point value size\n");
+  printf("                                     required only for strings\n");
+  printf("                     --type, -t      type of the data point\n");
+  printf("                                     available values: int32, int64, string, float, double\n");
+  printf("\n");
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
   printf("\n");
 }
 
 int client_configuration_load(int argc, char **argv, client_configuration_t *config) {
+  if (argc < 2) {
+    return -1;
+  }
+
+  config->command = argv[1];
+
   while (1) {
     int option_index = 0;
     static struct option long_options[] = {
-        {"command", required_argument, 0, 'c'},
         {"hostname", required_argument, 0, 'h'},
         {"port", required_argument, 0, 'p'},
         {"series", required_argument, 0, 's'},
         {"begin", required_argument, 0, 'b'},
         {"end", required_argument, 0, 'e'},
-        {"width", required_argument, 0, 'w'},
-        {"size", required_argument, 0, 'x'}
+        {"size", required_argument, 0, 'x'},
+        {"type", required_argument, 0, 't'}
     };
 
-    int c = getopt_long(argc, argv, "c:m:p:s:b:e:x:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "h:p:s:b:e:x:t:", long_options, &option_index);
     if (c == -1) {
+      if (config->data_type != 0) {
+        switch (config->data_type) {
+          case SDB_TYPE_DOUBLE:
+          case SDB_TYPE_INT64:config->point_size = 8 + sizeof(timestamp_t);
+            break;
+          case SDB_TYPE_FLOAT:
+          case SDB_TYPE_INT32:config->point_size = 4 + sizeof(timestamp_t);
+            break;
+          case SDB_TYPE_STRING:
+            if (config->point_size == 0) {
+              fprintf(stderr, "string has to have the size specified\n");
+              return -1;
+            }
+            break;
+          default:fprintf(stderr, "invalid data type\n");
+            return -1;
+        }
+      }
+
       return 0;
     }
 
     switch (c) {
-      case 'c':strncpy(config->command, optarg, SDB_STR_MAX_LEN);
-        break;
       case 'h':strncpy(config->hostname, optarg, SDB_STR_MAX_LEN);
         break;
       case 'p':config->port = (int)strtol(optarg, NULL, 0);
@@ -145,11 +213,30 @@ int client_configuration_load(int argc, char **argv, client_configuration_t *con
         break;
       case 'e':config->end = strtoull(optarg, NULL, 0);
         break;
-      case 'x':config->point_size = (uint32_t)strtoul(optarg, NULL, 0);
+      case 'x':config->point_size = (uint32_t)strtoul(optarg, NULL, 0) + sizeof(timestamp_t);
+        break;
+      case 't':config->data_type = parse_data_type(optarg);
         break;
       default:return -1;
     }
   }
+}
+
+uint8_t parse_data_type(const char *type) {
+  if (!strncmp("string", type, SDB_STR_MAX_LEN)) {
+    return SDB_TYPE_STRING;
+  } else if (!strncmp("int32", type, SDB_STR_MAX_LEN)) {
+    return SDB_TYPE_INT32;
+  } else if (!strncmp("int64", type, SDB_STR_MAX_LEN)) {
+    return SDB_TYPE_INT64;
+  } else if (!strncmp("float", type, SDB_STR_MAX_LEN)) {
+    return SDB_TYPE_FLOAT;
+  } else if (!strncmp("double", type, SDB_STR_MAX_LEN)) {
+    return SDB_TYPE_DOUBLE;
+  }
+
+  die("Unknown type");
+  return 0;
 }
 
 int execute_command(session_t *session, client_configuration_t *config) {
@@ -182,6 +269,10 @@ int execute_command(session_t *session, client_configuration_t *config) {
 }
 
 int execute_write(session_t *session, client_configuration_t *config) {
+  if (config->point_size == 0 || config->data_type == 0) {
+    fprintf(stderr, "unknown point size/type\n");
+    return -1;
+  }
 
   fprintf(stderr, "writing to series: %d\n", config->series_id);
   int points_size = 6553600;
@@ -237,7 +328,6 @@ int execute_read(session_t *session, client_configuration_t *config) {
 }
 
 int execute_truncate(session_t *session, client_configuration_t *config) {
-
   fprintf(stderr, "truncating data series: %d\n", config->series_id);
 
   if (session_truncate(session, config->series_id)) {
@@ -251,7 +341,6 @@ int execute_truncate(session_t *session, client_configuration_t *config) {
 }
 
 int execute_get_latest(session_t *session, client_configuration_t *config) {
-
   fprintf(stderr, "getting latest from: %d\n", config->series_id);
 
   if (session_read_latest(session, config->series_id)) {
@@ -275,28 +364,64 @@ int execute_get_latest(session_t *session, client_configuration_t *config) {
 }
 
 int execute_from_csv(client_configuration_t *config) {
-  if (config->point_size != 12) {
-    fprintf(stderr, "only float data points are supported");
+  if (config->point_size == 0 || config->data_type == 0) {
+    fprintf(stderr, "unknown point size/type\n");
     return -1;
   }
 
   fprintf(stderr, "converting to binary\n");
   timestamp_t time;
-  float value;
+  size_t value_size = config->point_size - sizeof(timestamp_t);
+  void *value = sdb_alloc(value_size);
+  char *line = NULL;
+  size_t line_len = 0;
 
   while (!feof(stdin)) {
-    fscanf(stdin, "%" PRIu64 ",%f\n", &time, &value);
+    switch (config->data_type) {
+      case SDB_TYPE_INT32: fscanf(stdin, SDB_FORMAT_INT32, &time, (int32_t *)value);
+        break;
+      case SDB_TYPE_INT64: fscanf(stdin, SDB_FORMAT_INT64, &time, (int64_t *)value);
+        break;
+      case SDB_TYPE_FLOAT: fscanf(stdin, SDB_FORMAT_FLOAT, &time, (float *)value);
+        break;
+      case SDB_TYPE_DOUBLE: fscanf(stdin, SDB_FORMAT_DOUBLE, &time, (double *)value);
+        break;
+      case SDB_TYPE_STRING:fscanf(stdin, SDB_FORMAT_TIMESTAMP, &time);
+        if (feof(stdin)) {
+          return 0;
+        }
+
+        // this gets the rest of the line
+        getline(&line, &line_len, stdin);
+
+        if (line_len > value_size) {
+          die("line too long");
+        }
+
+        memset(value, 0, value_size);
+
+        // ignore the trailing new-line character
+        strncpy(value, line, strlen(line) - 1);
+        break;
+      default:die("Unknown type");
+    }
 
     fwrite(&time, sizeof(time), 1, stdout);
-    fwrite(&value, sizeof(value), 1, stdout);
+    fwrite(value, value_size, 1, stdout);
   }
+
+  if (line != NULL) {
+    sdb_free(line);
+  }
+
+  sdb_free(value);
 
   return 0;
 }
 
 int execute_to_csv(client_configuration_t *config) {
-  if (config->point_size != 12) {
-    fprintf(stderr, "only float data points are supported");
+  if (config->point_size == 0 || config->data_type == 0) {
+    fprintf(stderr, "unknown point size/type\n");
     return -1;
   }
 
@@ -318,7 +443,20 @@ int execute_to_csv(client_configuration_t *config) {
     data_point_t *end = points_list_end(&list);
 
     while (curr != end) {
-      printf("%" PRIu64 ",%f\n", curr->time, *(float *)curr->value);
+      switch (config->data_type) {
+        case SDB_TYPE_INT32: printf(SDB_FORMAT_INT32 "\n", curr->time, *(int32_t *)curr->value);
+          break;
+        case SDB_TYPE_INT64: printf(SDB_FORMAT_INT64 "\n", curr->time, *(int64_t *)curr->value);
+          break;
+        case SDB_TYPE_FLOAT: printf(SDB_FORMAT_FLOAT "\n", curr->time, *(float *)curr->value);
+          break;
+        case SDB_TYPE_DOUBLE: printf(SDB_FORMAT_DOUBLE "\n", curr->time, *(double *)curr->value);
+          break;
+        case SDB_TYPE_STRING: printf(SDB_FORMAT_TIMESTAMP "%s\n", curr->time, curr->value);
+          break;
+        default:die("Unknown type");
+      }
+
       curr = data_point_next(&list, curr);
     }
   }
