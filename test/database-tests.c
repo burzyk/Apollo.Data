@@ -29,6 +29,7 @@
 
 #include "src/storage/database.h"
 
+database_t *test_database_create(char *directory);
 void test_database_write_with_time(database_t *db,
                                    series_id_t series_id,
                                    uint64_t batches,
@@ -116,13 +117,17 @@ void test_database_validate_read_with_max(database_t *db,
   points_reader_destroy(reader);
 }
 
+database_t *test_database_create(char *directory) {
+  return database_create(directory, SDB_DATA_SERIES_MAX, 0);
+}
+
 void test_database_simple_initialization_test(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
   database_destroy(db);
 }
 
 void test_database_write_and_read_all(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 5, 3, ctx.point_size);
   test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
@@ -131,7 +136,7 @@ void test_database_write_and_read_all(test_context_t ctx) {
 }
 
 void test_database_write_database_in_one_big_batch(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 1, 32, ctx.point_size);
   test_database_validate_read(db, 12345, 32, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
@@ -140,7 +145,7 @@ void test_database_write_database_in_one_big_batch(test_context_t ctx) {
 }
 
 void test_database_write_database_in_multiple_small_batches(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 32, 1, ctx.point_size);
   test_database_validate_read(db, 12345, 32, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
@@ -149,7 +154,7 @@ void test_database_write_database_in_multiple_small_batches(test_context_t ctx) 
 }
 
 void test_database_multi_write_and_read_all(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 100, 3, ctx.point_size);
   test_database_write(db, 12345, 100, 3, ctx.point_size);
@@ -161,7 +166,7 @@ void test_database_multi_write_and_read_all(test_context_t ctx) {
 }
 
 void test_database_write_history(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write_with_time(db, 12345, 5, 3, 10000, ctx.point_size);
   test_database_write_with_time(db, 12345, 5, 3, 1000, ctx.point_size);
@@ -173,19 +178,19 @@ void test_database_write_history(test_context_t ctx) {
 }
 
 void test_database_write_close_and_write_more(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 5, 3, ctx.point_size);
   test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
   database_destroy(db);
 
-  db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  db = test_database_create(ctx.working_directory);
 
   test_database_write_with_time(db, 12345, 5, 3, 100, ctx.point_size);
   test_database_validate_read(db, 12345, 30, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
   database_destroy(db);
 
-  db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  db = test_database_create(ctx.working_directory);
 
   test_database_write_with_time(db, 12345, 5, 3, 1000, ctx.point_size);
   test_database_validate_read(db, 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
@@ -193,7 +198,7 @@ void test_database_write_close_and_write_more(test_context_t ctx) {
 }
 
 void test_database_continuous_write(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 5, 3, ctx.point_size);
   test_database_write_with_time(db, 12345, 5, 3, 30, ctx.point_size);
@@ -204,7 +209,7 @@ void test_database_continuous_write(test_context_t ctx) {
 }
 
 void test_database_continuous_write_with_pickup(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 5, 3, ctx.point_size);
   test_database_write_with_time(db, 12345, 5, 3, 30, ctx.point_size);
@@ -212,7 +217,7 @@ void test_database_continuous_write_with_pickup(test_context_t ctx) {
   test_database_validate_read(db, 12345, 45, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
   database_destroy(db);
 
-  db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  db = test_database_create(ctx.working_directory);
 
   test_database_write_with_time(db, 12345, 5, 3, 800, ctx.point_size);
   test_database_write_with_time(db, 12345, 5, 3, 10000, ctx.point_size);
@@ -222,20 +227,20 @@ void test_database_continuous_write_with_pickup(test_context_t ctx) {
 }
 
 void test_database_write_close_read(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 5, 3, ctx.point_size);
   test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
   database_destroy(db);
 
-  db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  db = test_database_create(ctx.working_directory);
 
   test_database_validate_read(db, 12345, 15, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
   database_destroy(db);
 }
 
 void test_database_write_batch_size_equal_to_page_capacity(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 5, 5, ctx.point_size);
   test_database_write(db, 12345, 5, 5, ctx.point_size);
@@ -249,7 +254,7 @@ void test_database_write_batch_size_equal_to_page_capacity(test_context_t ctx) {
 }
 
 void test_database_write_batch_size_greater_than_page_capacity(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 100, 7, ctx.point_size);
   test_database_write(db, 12345, 100, 7, ctx.point_size);
@@ -259,7 +264,7 @@ void test_database_write_batch_size_greater_than_page_capacity(test_context_t ct
 }
 
 void test_database_read_inside_single_chunk(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 10, 10, ctx.point_size);
   test_database_validate_read(db, 12345, 3, 2, 5);
@@ -268,7 +273,7 @@ void test_database_read_inside_single_chunk(test_context_t ctx) {
 }
 
 void test_database_read_span_two_chunks(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 10, 10, ctx.point_size);
   test_database_validate_read(db, 12345, 4, 8, 12);
@@ -277,7 +282,7 @@ void test_database_read_span_two_chunks(test_context_t ctx) {
 }
 
 void test_database_read_span_three_chunks(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 10, 10, ctx.point_size);
   test_database_validate_read(db, 12345, 14, 8, 22);
@@ -286,7 +291,7 @@ void test_database_read_span_three_chunks(test_context_t ctx) {
 }
 
 void test_database_read_chunk_edges(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 10, 10, ctx.point_size);
   test_database_validate_read(db, 12345, 10, 10, 20);
@@ -295,7 +300,7 @@ void test_database_read_chunk_edges(test_context_t ctx) {
 }
 
 void test_database_read_duplicated_values(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 1, 2, ctx.point_size);
   test_database_write(db, 12345, 1, 2, ctx.point_size);
@@ -309,7 +314,7 @@ void test_database_read_duplicated_values(test_context_t ctx) {
 }
 
 void test_database_read_with_limit(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 10, 10, ctx.point_size);
   test_database_validate_read_with_max(db, 12345, 2, 0, 10, 2);
@@ -320,7 +325,7 @@ void test_database_read_with_limit(test_context_t ctx) {
 }
 
 void test_database_truncate(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 1, 100, ctx.point_size);
   test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
@@ -333,7 +338,7 @@ void test_database_truncate(test_context_t ctx) {
 }
 
 void test_database_truncate_multiple(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 100, 1, ctx.point_size);
   test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
@@ -348,7 +353,7 @@ void test_database_truncate_multiple(test_context_t ctx) {
 }
 
 void test_database_truncate_write_again(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 100, 1, ctx.point_size);
   test_database_validate_read(db, 12345, 100, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX);
@@ -363,7 +368,7 @@ void test_database_truncate_write_again(test_context_t ctx) {
 }
 
 void test_database_failed_write(test_context_t ctx) {
-  database_t *db = database_create("/blah/blah", SDB_DATA_SERIES_MAX);
+  database_t *db = database_create("/blah/blah", SDB_DATA_SERIES_MAX, 0);
   data_point_t points[] = {{.time = 1}};
 
   points_list_t list = {.content=points, .point_size=8, .count=1};
@@ -374,7 +379,7 @@ void test_database_failed_write(test_context_t ctx) {
 }
 
 void test_database_read_latest_no_data(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   points_reader_t *reader = database_read_latest(db, 12345);
 
@@ -385,7 +390,7 @@ void test_database_read_latest_no_data(test_context_t ctx) {
 }
 
 void test_database_read_latest(test_context_t ctx) {
-  database_t *db = database_create(ctx.working_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = test_database_create(ctx.working_directory);
 
   test_database_write(db, 12345, 1, 10, ctx.point_size);
   test_database_write(db, 12345, 1, 10, ctx.point_size);

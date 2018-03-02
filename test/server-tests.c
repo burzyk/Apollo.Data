@@ -50,7 +50,7 @@ int test_session_write(session_t *session, series_id_t series_id, float_data_poi
 
 server_test_context_t *server_test_context_start(const char *directory, int max_series) {
   server_test_context_t *context = (server_test_context_t *)sdb_alloc(sizeof(server_test_context_t));
-  context->db = database_create(directory, max_series);
+  context->db = database_create(directory, max_series, 1);
   context->server = server_create(8081, on_message_received, context);
   pthread_create(&context->runner, NULL, server_test_routine, context->server);
   context->session = NULL;

@@ -32,7 +32,7 @@
 uint64_t series_prepare_input(points_list_t *list);
 void series_grow(series_t *series, uint64_t size);
 
-series_t *series_create(const char *file_name, uint32_t point_size) {
+series_t *series_create(const char *file_name, uint32_t point_size, int no_flush) {
   file_map_t *map = file_map_create(file_name);
 
   if (map == NULL) {
@@ -42,6 +42,7 @@ series_t *series_create(const char *file_name, uint32_t point_size) {
   series_t *series = (series_t *)sdb_alloc(sizeof(series_t));
   strncpy(series->file_name, file_name, SDB_STR_MAX_LEN);
   series->file_map = map;
+  series->no_flush = no_flush;
   series->points.content = (data_point_t *)series->file_map->data;
   series->points.point_size = point_size;
   series->points_capacity = series->file_map->size / series->points.point_size;
@@ -122,7 +123,12 @@ int series_write(series_t *series, points_list_t *to_write) {
     sdb_free(merged.content);
   }
 
-  file_map_sync(series->file_map);
+  // this little trick makes the write performance
+  // 10 times better on the default server packet size
+  // and should give even better results in very small batches
+  if (!series->no_flush) {
+    file_map_sync(series->file_map);
+  }
 
   return 0;
 }

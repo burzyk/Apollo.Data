@@ -32,9 +32,10 @@ typedef struct database_s {
   char directory[SDB_STR_MAX_LEN];
   series_t **series;
   uint64_t max_series_count;
+  int no_flush;
 } database_t;
 
-database_t *database_create(const char *directory, uint64_t max_series);
+database_t *database_create(const char *directory, uint64_t max_series, int no_flush);
 void database_destroy(database_t *db);
 int database_write(database_t *db, series_id_t series_id, points_list_t *points);
 int database_truncate(database_t *db, series_id_t series_id);

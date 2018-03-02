@@ -38,9 +38,10 @@ typedef struct series_s {
   file_map_t *file_map;
   points_list_t points;
   uint64_t points_capacity;
+  int no_flush;
 } series_t;
 
-series_t *series_create(const char *file_name, uint32_t point_size);
+series_t *series_create(const char *file_name, uint32_t point_size, int no_flush);
 void series_destroy(series_t *series);
 void series_truncate_and_destroy(series_t *series);
 int series_write(series_t *series, points_list_t *to_write);

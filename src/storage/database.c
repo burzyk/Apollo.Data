@@ -34,11 +34,12 @@
 series_t *database_get_or_create_data_series(database_t *db, series_id_t series_id, uint32_t point_size);
 series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id);
 
-database_t *database_create(const char *directory, uint64_t max_series) {
+database_t *database_create(const char *directory, uint64_t max_series, int no_flush) {
   database_t *db = (database_t *)sdb_alloc(sizeof(database_t));
   strncpy(db->directory, directory, SDB_STR_MAX_LEN);
   db->max_series_count = max_series;
   db->series = (series_t **)sdb_alloc(sizeof(series_t *) * db->max_series_count);
+  db->no_flush = no_flush;
 
   return db;
 }
@@ -137,7 +138,7 @@ series_t *database_get_or_create_data_series(database_t *db, series_id_t series_
   snprintf(file_name, SDB_STR_MAX_LEN, "%s/%d-%d", db->directory, series_id, point_size);
 
   log_info("loading or creating time series: %d", series_id);
-  return db->series[series_id] = series_create(file_name, point_size);
+  return db->series[series_id] = series_create(file_name, point_size, db->no_flush);
 }
 
 series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id) {
@@ -175,7 +176,7 @@ series_t *database_get_or_load_data_series(database_t *db, series_id_t series_id
     char file_name[SDB_STR_MAX_LEN] = {0};
     snprintf(file_name, SDB_STR_MAX_LEN, "%s/%s", db->directory, dir->d_name);
 
-    series = db->series[series_id] = series_create(file_name, point_size);
+    series = db->series[series_id] = series_create(file_name, point_size, db->no_flush);
   }
 
   closedir(d);
