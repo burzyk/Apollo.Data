@@ -33,7 +33,7 @@
         [Fact]
         public void SerializeReadRequestTest()
         {
-            var request = new ReadRequest(15, 0, 100, 123);
+            var request = new ReadRequest(15, 0, 100);
 
             var serialized = request.Serialize();
 
@@ -45,7 +45,6 @@
             Assert.Equal(15, (int) deserialized.DataSeriesId);
             Assert.Equal(0L, (long) deserialized.Begin);
             Assert.Equal(100L, (long) deserialized.End);
-            Assert.Equal(123, deserialized.PointsPerPacket);
         }
 
         [Fact]

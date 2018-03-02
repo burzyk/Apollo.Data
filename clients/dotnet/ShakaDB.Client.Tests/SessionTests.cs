@@ -84,7 +84,7 @@ namespace ShakaDB.Client.Tests
                     new DataPoint(3, 15)
                 });
 
-                var result = (await session.Read(TestConstants.UsdAud, pointsPerPacket: 2)).ToList();
+                var result = (await session.Read(TestConstants.UsdAud)).ToList();
 
                 Assert.Equal(3, result.Count);
             }

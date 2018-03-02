@@ -63,8 +63,7 @@ namespace ShakaDB.Client
         public async Task<IEnumerable<DataPoint>> Read(
             uint seriesId,
             ulong? begin = null,
-            ulong? end = null,
-            int pointsPerPacket = 655360)
+            ulong? end = null)
         {
             EnsurePreConditions();
 
@@ -73,8 +72,7 @@ namespace ShakaDB.Client
             var request = new ReadRequest(
                 seriesId,
                 begin ?? Constants.ShakadbMinTimestamp,
-                end ?? Constants.ShakadbMaxTimestamp,
-                pointsPerPacket);
+                end ?? Constants.ShakadbMaxTimestamp);
 
             await Transmitter.Send(request.Serialize(), _stream);
 
