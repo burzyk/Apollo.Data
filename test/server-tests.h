@@ -14,7 +14,7 @@ void test_server_connect_invalid_port(test_context_t ctx);
 void test_server_write_small(test_context_t ctx);
 void test_server_write_unordered(test_context_t ctx);
 void test_server_write_two_batches(test_context_t ctx);
-void test_server_read_two_batches(test_context_t ctx);
+void test_server_read_multiple_batches(test_context_t ctx);
 void test_server_read_range(test_context_t ctx);
 void test_server_read_range_with_multiple_series(test_context_t ctx);
 void test_server_update(test_context_t ctx);

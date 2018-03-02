@@ -61,20 +61,16 @@ void handle_read(client_t *client, read_request_t *request, database_t *db) {
             request->begin,
             request->end);
 
-  timestamp_t begin = request->begin;
-
-  // TODO: when the size is zero just return empty response immediately
   uint32_t data_point_size = database_get_point_size(db, request->data_series_id);
 
-  // -10 just to be sure we're not hitting any edge case
-  uint32_t max_points = data_point_size == 0
-                        ? 1
-                        : (SDB_SERVER_PACKET_MAX_LEN - sizeof(packet_t) - sizeof(read_response_t) - 10)
-                            / data_point_size;
+  if (data_point_size == 0) {
+    points_list_t empty = {.content=NULL, .point_size=0, .count=0};
+    send_and_destroy(client, read_response_create(&empty));
+    return;
+  }
 
-  uint64_t points_per_packet = request->points_per_packet == SDB_POINTS_PER_PACKET_MAX
-                               ? max_points
-                               : sdb_max(1, sdb_min(max_points, request->points_per_packet));
+  uint64_t points_per_packet = sdb_max(1, SDB_READ_MAX_PAYLOAD / data_point_size);
+  timestamp_t begin = request->begin;
 
   for (;;) {
     uint64_t points_to_read = points_per_packet + 1;

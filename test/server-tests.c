@@ -136,7 +136,7 @@ void test_server_write_small(test_context_t ctx) {
   sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 3), "Error when sending");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -168,7 +168,7 @@ void test_server_write_unordered(test_context_t ctx) {
   sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -206,7 +206,7 @@ void test_server_write_two_batches(test_context_t ctx) {
   sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points_2, 2), "Error when sending");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -226,42 +226,41 @@ void test_server_write_two_batches(test_context_t ctx) {
   server_test_context_stop(context);
 }
 
-void test_server_read_two_batches(test_context_t ctx) {
+void test_server_read_multiple_batches(test_context_t ctx) {
   server_test_context_t *context =
       server_test_context_start(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
-  float_data_point_t points[] = {
-      {.time=1, .value = 1},
-      {.time=2, .value = 2},
-      {.time=3, .value = 3},
-      {.time=4, .value = 4}
-  };
+  uint64_t points_count = SDB_READ_MAX_PAYLOAD / sizeof(float_data_point_t);
+  float_data_point_t *points = sdb_alloc(sizeof(float_data_point_t) * points_count);
 
-  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
+  for (uint32_t i = 0; i < points_count; i++) {
+    points[i].time = i + 1;
+    points[i].value = i;
+  }
+
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, points_count), "Error when sending");
+
+  for (uint32_t i = 0; i < points_count; i++) {
+    points[i].time = i + points_count * 2;
+    points[i].value = i;
+  }
+
+  sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, points_count), "Error when sending");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 2),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
-
-  sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(get_points(context->session)[0].time == 1, "Time should be 1");
-  sdb_assert(get_points(context->session)[1].time == 2, "Time should be 2");
-  sdb_assert(get_points(context->session)[0].value == 1, "Value should be 1");
-  sdb_assert(get_points(context->session)[1].value == 2, "Value should be 2");
+  sdb_assert(context->session->read_response->points_count != 0, "Invalid number of points");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
-
-  sdb_assert(context->session->read_response->points_count == 2, "Invalid number of points");
-  sdb_assert(get_points(context->session)[0].time == 3, "Time should be 3");
-  sdb_assert(get_points(context->session)[1].time == 4, "Time should be 4");
-  sdb_assert(get_points(context->session)[0].value == 3, "Value should be 3");
-  sdb_assert(get_points(context->session)[1].value == 4, "Value should be 4");
+  sdb_assert(context->session->read_response->points_count != 0, "Invalid number of points");
 
   sdb_assert(session_read_next(context->session) == 0, "Data left in iterator");
 
   server_test_context_stop(context);
+  sdb_free(points);
 }
 
 void test_server_read_range(test_context_t ctx) {
@@ -279,7 +278,7 @@ void test_server_read_range(test_context_t ctx) {
   sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 5), "Error when sending");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, 2, 4),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -319,7 +318,7 @@ void test_server_read_range_with_multiple_series(test_context_t ctx) {
   sdb_assert(!test_session_write(context->session, SDB_EUR_GBP_ID, points_2, 5), "Error when sending");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, 2, 4),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -350,7 +349,7 @@ void test_server_update(test_context_t ctx) {
   sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, 2, 4),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -374,7 +373,7 @@ void test_server_update(test_context_t ctx) {
   sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points_2, 5), "Error when sending");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, 2, 4),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
@@ -409,7 +408,7 @@ void test_server_update_in_two_sessions(test_context_t ctx) {
   sdb_assert(!test_session_write(session_1, SDB_EUR_USD_ID, points_1, 5), "Error when sending");
 
   sdb_assert(
-      !session_read(session_1, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(session_1, SDB_EUR_USD_ID, 2, 4),
       "Unable to read data");
 
   sdb_assert(session_read_next(session_1) != 0, "No data found in iterator");
@@ -438,7 +437,7 @@ void test_server_update_in_two_sessions(test_context_t ctx) {
   sdb_assert(!test_session_write(session_2, SDB_EUR_USD_ID, points_2, 5), "Error when sending");
 
   sdb_assert(
-      !session_read(session_2, SDB_EUR_USD_ID, 2, 4, 10),
+      !session_read(session_2, SDB_EUR_USD_ID, 2, 4),
       "Unable to read data");
 
   sdb_assert(session_read_next(session_2) != 0, "No data found in iterator");
@@ -464,7 +463,7 @@ void test_server_truncate_not_existing(test_context_t ctx) {
   sdb_assert(!session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -476,14 +475,14 @@ void test_server_truncate_empty(test_context_t ctx) {
       server_test_context_start(ctx.working_directory, SDB_DATA_SERIES_MAX);
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
   sdb_assert(!session_truncate(context->session, SDB_EUR_USD_ID), "Error when truncating");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -505,7 +504,7 @@ void test_server_truncate_and_write(test_context_t ctx) {
     sdb_assert(!test_session_write(context->session, SDB_EUR_USD_ID, points, 4), "Error when sending");
 
     sdb_assert(
-        !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+        !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
         "Unable to read data");
     sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
@@ -559,7 +558,7 @@ void test_server_read_series_out_of_range(test_context_t ctx) {
   server_test_context_t *context = server_test_context_start(ctx.working_directory, 10);
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) == 0, "Data found in iterator");
 
@@ -592,7 +591,7 @@ void test_server_write_filter_duplicates(test_context_t ctx) {
   sdb_assert(!test_session_write(context->session, SDB_EUR_GBP_ID, points, 8), "Write failed");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
@@ -627,7 +626,7 @@ void test_server_write_filter_zeros(test_context_t ctx) {
   sdb_assert(!test_session_write(context->session, SDB_EUR_GBP_ID, points, 10), "Write failed");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");
 
@@ -655,12 +654,12 @@ void test_server_read_multiple_active(test_context_t ctx) {
 
   // read first time
   sdb_assert(
-      !session_read(context->session, SDB_EUR_GBP_ID, 1, 2, 10),
+      !session_read(context->session, SDB_EUR_GBP_ID, 1, 2),
       "Unable to read data");
 
   // read second time
   sdb_assert(
-      session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "There are multiple reads open");
 
   // initial data still returned
@@ -673,7 +672,7 @@ void test_server_read_multiple_active(test_context_t ctx) {
 
   // third read
   sdb_assert(
-      !session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 10),
+      !session_read(context->session, SDB_EUR_GBP_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
 
   // third iterator returns data
@@ -755,7 +754,7 @@ void test_server_write_varsize(test_context_t ctx) {
   sdb_assert(!session_write(context->session, SDB_EUR_USD_ID, &request_list), "Error when sending");
 
   sdb_assert(
-      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX, 100),
+      !session_read(context->session, SDB_EUR_USD_ID, SDB_TIMESTAMP_MIN, SDB_TIMESTAMP_MAX),
       "Unable to read data");
 
   sdb_assert(session_read_next(context->session) != 0, "No data found in iterator");

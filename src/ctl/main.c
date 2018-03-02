@@ -307,7 +307,7 @@ int execute_read(session_t *session, client_configuration_t *config) {
 
   int total_read = 0;
 
-  if (session_read(session, config->series_id, config->begin, config->end, SDB_POINTS_PER_PACKET_MAX)) {
+  if (session_read(session, config->series_id, config->begin, config->end)) {
     fprintf(stderr, "failed to read data points\n");
     return -1;
   }

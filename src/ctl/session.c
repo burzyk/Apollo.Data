@@ -159,16 +159,12 @@ int session_truncate(session_t *session, series_id_t series_id) {
   return session_send_with_simple_response(session, request);
 }
 
-int session_read(session_t *session,
-                 series_id_t series_id,
-                 timestamp_t begin,
-                 timestamp_t end,
-                 uint64_t points_per_packet) {
+int session_read(session_t *session, series_id_t series_id, timestamp_t begin, timestamp_t end) {
   if (session->read_open) {
     return -1;
   }
 
-  buffer_t packet = read_request_create(series_id, begin, end, points_per_packet);
+  buffer_t packet = read_request_create(series_id, begin, end);
   session_send_and_destroy(session, packet);
   session->read_open = 1;
 

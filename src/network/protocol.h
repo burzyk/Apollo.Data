@@ -35,10 +35,6 @@
 typedef char packet_type_t;
 typedef char response_code_t;
 
-// this is an indicator that the server should send
-// as much as it can data points per a single packet
-#define SDB_POINTS_PER_PACKET_MAX 0
-
 #define SDB_RESPONSE_OK ((response_code_t)0)
 #define SDB_RESPONSE_ERROR  ((response_code_t)1)
 
@@ -77,7 +73,6 @@ typedef struct read_request_s {
   series_id_t data_series_id;
   timestamp_t begin;
   timestamp_t end;
-  uint64_t points_per_packet;
 } __attribute__((packed)) read_request_t;
 
 typedef struct read_latest_request_s {
@@ -103,10 +98,7 @@ typedef struct simple_response_s {
 } __attribute__((packed)) simple_response_t;
 
 buffer_t write_request_create(series_id_t data_series_id, points_list_t *points);
-buffer_t read_request_create(series_id_t data_series_id,
-                             timestamp_t begin,
-                             timestamp_t end,
-                             uint64_t points_per_packet);
+buffer_t read_request_create(series_id_t data_series_id, timestamp_t begin, timestamp_t end);
 buffer_t read_latest_request_create(series_id_t data_series_id);
 buffer_t read_response_create(points_list_t *points);
 buffer_t simple_response_create(response_code_t code);

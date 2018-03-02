@@ -157,7 +157,7 @@ void sdb_stress_test_random_read(const char *hostname, int port, uint32_t point_
         log_info("> Reading: [%d, %d)", begin, end);
 
         sw = stopwatch_start();
-        sdb_assert(!session_read(session, series, begin, end, SDB_POINTS_PER_PACKET_MAX), "Failed to read data");
+        sdb_assert(!session_read(session, series, begin, end), "Failed to read data");
 
         while (session_read_next(session)) {
         }

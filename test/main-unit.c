@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
   TEST(test_server_write_small);
   TEST(test_server_write_unordered);
   TEST(test_server_write_two_batches);
-  TEST(test_server_read_two_batches);
+  TEST(test_server_read_multiple_batches);
   TEST(test_server_read_range);
   TEST(test_server_read_range_with_multiple_series);
   TEST(test_server_update);

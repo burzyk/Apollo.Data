@@ -57,16 +57,12 @@ buffer_t simple_response_create(response_code_t code) {
   return packet;
 }
 
-buffer_t read_request_create(series_id_t data_series_id,
-                             timestamp_t begin,
-                             timestamp_t end,
-                             uint64_t points_per_packet) {
+buffer_t read_request_create(series_id_t data_series_id, timestamp_t begin, timestamp_t end) {
   read_request_t *request = (read_request_t *)sdb_alloc(sizeof(read_request_t));
   request->header.type = SDB_READ_REQUEST;
   request->data_series_id = data_series_id;
   request->begin = begin;
   request->end = end;
-  request->points_per_packet = points_per_packet;
 
   buffer_t packet;
   packet.content = request;
