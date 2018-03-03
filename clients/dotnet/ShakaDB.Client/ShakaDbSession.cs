@@ -45,19 +45,18 @@ namespace ShakaDB.Client
 
         public async Task Write(uint seriesId, IEnumerable<DataPoint> dataPoints)
         {
-            await WithSimpleResponse(new WriteRequest(seriesId, dataPoints), "Failed to write points");
+            // TODO: send paged
+            await WithSimpleResponse(Packet.WriteRequest(seriesId, dataPoints.ToList()), "Failed to write points");
         }
 
         public async Task<DataPoint> GetLatest(uint seriesId)
         {
             EnsurePreConditions();
 
-            var request = new ReadLatestRequest(seriesId);
-            await Transmitter.Send(request.Serialize(), _stream);
+            await Transmitter.Send(Packet.ReadLatestRequest(seriesId), _stream);
+            var response = Packet.ReadResponse(await Transmitter.Receive(_stream));
 
-            var response = new ReadResponse(await Transmitter.Receive(_stream));
-
-            return response.Points.SingleOrDefault();
+            return response.SingleOrDefault();
         }
 
         public async Task<IEnumerable<DataPoint>> Read(
@@ -69,19 +68,19 @@ namespace ShakaDB.Client
 
             _readOpen = true;
 
-            var request = new ReadRequest(
+            var request = Packet.ReadRequest(
                 seriesId,
                 begin ?? Constants.ShakadbMinTimestamp,
                 end ?? Constants.ShakadbMaxTimestamp);
 
-            await Transmitter.Send(request.Serialize(), _stream);
+            await Transmitter.Send(request, _stream);
 
             return Enumerable.Range(0, int.MaxValue)
                 .Select(async x => await Transmitter.Receive(_stream))
-                .Select(x => new ReadResponse(x.Result))
-                .TakeWhile(x => x.Points.Any())
-                .SelectMany(x => x.Points)
-                .Concat(new[] {new DataPoint(0, 0)}.Select(x =>
+                .Select(x => Packet.ReadResponse(x.Result))
+                .TakeWhile(x => x.Any())
+                .SelectMany(x => x)
+                .Concat(new[] {new DataPoint(0, new byte[] { })}.Select(x =>
                 {
                     _readOpen = false;
                     return x;
@@ -91,7 +90,7 @@ namespace ShakaDB.Client
 
         public async Task Truncate(uint seriesId)
         {
-            await WithSimpleResponse(new TruncateRequest(seriesId), "Failed to truncate data series");
+            await WithSimpleResponse(Packet.TruncateRequest(seriesId), "Failed to truncate data series");
         }
 
         private void EnsurePreConditions()
@@ -107,14 +106,14 @@ namespace ShakaDB.Client
             }
         }
 
-        private async Task WithSimpleResponse(BasePacket request, string errorMessage)
+        private async Task WithSimpleResponse(byte[] request, string errorMessage)
         {
             EnsurePreConditions();
 
-            await Transmitter.Send(request.Serialize(), _stream);
-            var response = new SimpleResponse(await Transmitter.Receive(_stream));
+            await Transmitter.Send(request, _stream);
+            var responseCode = Packet.ReadSimpleResponse(await Transmitter.Receive(_stream));
 
-            if (response.ResponseCode == ResponseCode.Failure)
+            if (responseCode == ResponseCode.Failure)
             {
                 throw new ShakaDbException(errorMessage);
             }

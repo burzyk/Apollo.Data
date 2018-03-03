@@ -46,8 +46,8 @@ namespace ShakaDB.Client.Tests
                 Assert.Equal(2, result.Count);
                 Assert.Equal(1, (int) result[0].Timestamp);
                 Assert.Equal(2, (int) result[1].Timestamp);
-                Assert.Equal(12, result[0].Value);
-                Assert.Equal(13, (int) result[1].Value);
+                Assert.Equal(12, result[0].ValueAsFloat);
+                Assert.Equal(13, (int) result[1].ValueAsFloat);
             }
         }
 
@@ -67,26 +67,7 @@ namespace ShakaDB.Client.Tests
 
                 Assert.Equal(1, result.Count);
                 Assert.Equal(1, (int) result[0].Timestamp);
-                Assert.Equal(12, result[0].Value);
-            }
-        }
-
-        [Fact]
-        public async Task ServerReadAndWriteWithIteatorAndPointsPerPacketLimitTest()
-        {
-            using (var session = await ShakaDbSession.Open("localhost", 8487))
-            {
-                await session.Truncate(TestConstants.UsdAud);
-                await session.Write(TestConstants.UsdAud, new[]
-                {
-                    new DataPoint(1, 12),
-                    new DataPoint(2, 13),
-                    new DataPoint(3, 15)
-                });
-
-                var result = (await session.Read(TestConstants.UsdAud)).ToList();
-
-                Assert.Equal(3, result.Count);
+                Assert.Equal(12, result[0].ValueAsFloat);
             }
         }
 
@@ -118,7 +99,7 @@ namespace ShakaDB.Client.Tests
                 var latest = await session.GetLatest(TestConstants.UsdAud);
 
                 Assert.Equal(3, (int) latest.Timestamp);
-                Assert.Equal(15, latest.Value);
+                Assert.Equal(15, latest.ValueAsFloat);
             }
         }
 
@@ -138,7 +119,7 @@ namespace ShakaDB.Client.Tests
 
                 Assert.Equal(1, result.Count);
                 Assert.Equal(1, (int) result[0].Timestamp);
-                Assert.Equal(12, result[0].Value);
+                Assert.Equal(12, result[0].ValueAsFloat);
 
                 await session.Truncate(TestConstants.UsdAud);
 
