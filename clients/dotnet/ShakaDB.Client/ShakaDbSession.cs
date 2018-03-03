@@ -43,10 +43,33 @@ namespace ShakaDB.Client
             _disposed = true;
         }
 
-        public async Task Write(uint seriesId, IEnumerable<DataPoint> dataPoints)
+        public async Task Write(uint seriesId, IEnumerable<DataPoint> dataPoints, int? pointSize = null)
         {
-            // TODO: send paged
-            await WithSimpleResponse(Packet.WriteRequest(seriesId, dataPoints.ToList()), "Failed to write points");
+            EnsurePreConditions();
+
+            var page = new List<DataPoint>();
+            var hasData = true;
+
+            using (var curr = dataPoints.GetEnumerator())
+            {
+                while (hasData)
+                {
+                    hasData = curr.MoveNext();
+
+                    if (page.Any() && (!hasData || page.Count == Constants.MaxPointsPerPacket))
+                    {
+                        await WithSimpleResponse(
+                            Packet.WriteRequest(seriesId, page, pointSize),
+                            "Failed to write points");
+                        page.Clear();
+                    }
+
+                    if (hasData)
+                    {
+                        page.Add(curr.Current);
+                    }
+                }
+            }
         }
 
         public async Task<DataPoint> GetLatest(uint seriesId)

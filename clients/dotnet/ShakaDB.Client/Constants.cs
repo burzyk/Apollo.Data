@@ -1,6 +1,6 @@
 namespace ShakaDB.Client
 {
-    internal class Constants
+    public class Constants
     {
         public const ulong ShakadbMaxTimestamp = 0xFFFFFFFFFFFFFFFF;
 

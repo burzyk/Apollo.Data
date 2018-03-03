@@ -7,8 +7,13 @@
 
     public static class Packet
     {
-        public static byte[] WriteRequest(uint seriesId, List<DataPoint> points)
+        public static byte[] WriteRequest(uint seriesId, List<DataPoint> points, int? pointSize = null)
         {
+            if (points.Select(x => x.Value.Length).Distinct().Count() > 1 && pointSize == null)
+            {
+                throw new InvalidOperationException("PointSize needs to be specified if values have different size");
+            }
+
             var ms = new MemoryStream();
 
             using (var w = new BinaryWriter(ms))
@@ -16,12 +21,22 @@
                 w.Write((byte) PacketType.WriteRequest);
                 w.Write(seriesId);
                 w.Write((ulong) points.Count);
-                w.Write((uint) (points.Any() ? points[0].Value.Length + 8 : 0));
+                w.Write((uint) (pointSize ?? (points.Any() ? points[0].Value.Length + 8 : 0)));
 
                 foreach (var point in points)
                 {
+                    var writeBuffer = pointSize != null ? new byte[pointSize.Value - 8] : null;
+                    var toWrite = point.Value;
+
+                    if (writeBuffer != null)
+                    {
+                        // ensure the size of the buffer is alligned
+                        Array.Copy(point.Value, writeBuffer, point.Value.Length);
+                        toWrite = writeBuffer;
+                    }
+
                     w.Write(point.Timestamp);
-                    w.Write(point.Value);
+                    w.Write(toWrite);
                 }
             }
 

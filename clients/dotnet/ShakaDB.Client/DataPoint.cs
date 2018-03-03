@@ -1,9 +1,10 @@
 namespace ShakaDB.Client
 {
     using System;
+    using System.Linq;
     using System.Text;
 
-    public class DataPoint
+    public class DataPoint : IEquatable<DataPoint>
     {
         public DataPoint(ulong timestamp, byte[] value)
         {
@@ -60,6 +61,11 @@ namespace ShakaDB.Client
 
         public double ValueAsDouble => BitConverter.ToDouble(Value, 0);
 
-        public string ValueAsString => Encoding.ASCII.GetString(Value);
+        public string ValueAsString => Encoding.ASCII.GetString(Value.TakeWhile(x => x != 0).ToArray());
+
+        public bool Equals(DataPoint other)
+        {
+            return Timestamp == other?.Timestamp && Value.SequenceEqual(other.Value ?? new byte[] { });
+        }
     }
 }
