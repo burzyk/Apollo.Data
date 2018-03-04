@@ -1,5 +1,6 @@
 require 'rake'
 require 'fileutils'
+require 'open3'
 
 THIS_DIR=File.dirname(__FILE__)
 BUILD_DIR=THIS_DIR + '/build'
@@ -36,11 +37,20 @@ def run_dotnet_tests()
     sh("dotnet test #{DOTNET_CLIENT_DIR}/ShakaDB.Client.Tests/ShakaDB.Client.Tests.csproj")
 end
 
+task :set_debug do
+    ENV['SDB_CONFIGURATION'] = "debug"
+end
+
+task :set_release do
+    ENV['SDB_CONFIGURATION'] = "release"
+end
+
+
 task :default => [:build_binaries, :run_tests]
 
 task :build_common => [:default, :build_clients]
-task :build_debug => [:build_common]
-task :build_release => [:build_common, :run_integration_tests]
+task :build_debug => [:set_debug, :build_common]
+task :build_release => [:set_release, :build_common, :run_integration_tests]
 
 task :init do
     puts "Initializing build ..."
@@ -50,6 +60,12 @@ task :init do
     Dir.mkdir(BUILD_DIR)
     Dir.mkdir(BINARIES_DIR)
     Dir.mkdir(TESTS_DIR)
+
+    git_descr, _, _ = Open3.capture3("git", "describe")
+    git_commit, _, _ = Open3.capture3("git", "rev-parse", "HEAD")
+
+    ENV['SDB_VERSION'] = git_descr.strip
+    ENV['SDB_BUILD'] = git_commit.strip
 end
 
 task :build_binaries => [:init] do
