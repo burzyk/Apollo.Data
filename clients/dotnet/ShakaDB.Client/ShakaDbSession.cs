@@ -43,47 +43,67 @@ namespace ShakaDB.Client
             _disposed = true;
         }
 
-        public async Task Write(uint seriesId, IEnumerable<DataPoint> dataPoints)
+        public async Task Write(uint seriesId, IEnumerable<DataPoint> dataPoints, int? pointSize = null)
         {
-            await WithSimpleResponse(new WriteRequest(seriesId, dataPoints), "Failed to write points");
+            EnsurePreConditions();
+
+            var page = new List<DataPoint>();
+            var hasData = true;
+
+            using (var curr = dataPoints.GetEnumerator())
+            {
+                while (hasData)
+                {
+                    hasData = curr.MoveNext();
+
+                    if (page.Any() && (!hasData || page.Count == Constants.MaxPointsPerPacket))
+                    {
+                        await WithSimpleResponse(
+                            Packet.WriteRequest(seriesId, page, pointSize),
+                            "Failed to write points");
+                        page.Clear();
+                    }
+
+                    if (hasData)
+                    {
+                        page.Add(curr.Current);
+                    }
+                }
+            }
         }
 
         public async Task<DataPoint> GetLatest(uint seriesId)
         {
             EnsurePreConditions();
 
-            var request = new ReadLatestRequest(seriesId);
-            await Transmitter.Send(request.Serialize(), _stream);
+            await Transmitter.Send(Packet.ReadLatestRequest(seriesId), _stream);
+            var response = Packet.ReadResponse(await Transmitter.Receive(_stream));
 
-            var response = new ReadResponse(await Transmitter.Receive(_stream));
-
-            return response.Points.SingleOrDefault();
+            return response.SingleOrDefault();
         }
 
         public async Task<IEnumerable<DataPoint>> Read(
             uint seriesId,
             ulong? begin = null,
-            ulong? end = null,
-            int pointsPerPacket = 655360)
+            ulong? end = null)
         {
             EnsurePreConditions();
 
             _readOpen = true;
 
-            var request = new ReadRequest(
+            var request = Packet.ReadRequest(
                 seriesId,
                 begin ?? Constants.ShakadbMinTimestamp,
-                end ?? Constants.ShakadbMaxTimestamp,
-                pointsPerPacket);
+                end ?? Constants.ShakadbMaxTimestamp);
 
-            await Transmitter.Send(request.Serialize(), _stream);
+            await Transmitter.Send(request, _stream);
 
             return Enumerable.Range(0, int.MaxValue)
                 .Select(async x => await Transmitter.Receive(_stream))
-                .Select(x => new ReadResponse(x.Result))
-                .TakeWhile(x => x.Points.Any())
-                .SelectMany(x => x.Points)
-                .Concat(new[] {new DataPoint(0, 0)}.Select(x =>
+                .Select(x => Packet.ReadResponse(x.Result))
+                .TakeWhile(x => x.Any())
+                .SelectMany(x => x)
+                .Concat(new[] {new DataPoint(0, new byte[] { })}.Select(x =>
                 {
                     _readOpen = false;
                     return x;
@@ -93,7 +113,7 @@ namespace ShakaDB.Client
 
         public async Task Truncate(uint seriesId)
         {
-            await WithSimpleResponse(new TruncateRequest(seriesId), "Failed to truncate data series");
+            await WithSimpleResponse(Packet.TruncateRequest(seriesId), "Failed to truncate data series");
         }
 
         private void EnsurePreConditions()
@@ -109,14 +129,14 @@ namespace ShakaDB.Client
             }
         }
 
-        private async Task WithSimpleResponse(BasePacket request, string errorMessage)
+        private async Task WithSimpleResponse(byte[] request, string errorMessage)
         {
             EnsurePreConditions();
 
-            await Transmitter.Send(request.Serialize(), _stream);
-            var response = new SimpleResponse(await Transmitter.Receive(_stream));
+            await Transmitter.Send(request, _stream);
+            var responseCode = Packet.ReadSimpleResponse(await Transmitter.Receive(_stream));
 
-            if (response.ResponseCode == ResponseCode.Failure)
+            if (responseCode == ResponseCode.Failure)
             {
                 throw new ShakaDbException(errorMessage);
             }

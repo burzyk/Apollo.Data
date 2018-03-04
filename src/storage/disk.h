@@ -39,7 +39,7 @@ typedef struct file_map_s {
 file_map_t *file_map_create(const char *file_name);
 void file_map_destroy(file_map_t *file);
 void file_map_sync(file_map_t *file);
-void file_grow(const char *file_name, uint64_t increment);
+void file_grow(const char *file_name, uint64_t increment, uint8_t pattern);
 void file_unlink(const char *file_name);
 
 #endif  // SRC_STORAGE_DISK_H_

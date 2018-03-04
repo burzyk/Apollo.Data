@@ -8,12 +8,14 @@ namespace ShakaDB.Client.Tests
 
     public class SessionTests
     {
+        public const int UsdAud = 1;
+
         [Fact]
         public async Task ServerRunningTest()
         {
             using (var session = await ShakaDbSession.Open("localhost", 8487))
             {
-                await session.Truncate(TestConstants.UsdAud);
+                await session.Truncate(UsdAud);
             }
         }
 
@@ -34,20 +36,20 @@ namespace ShakaDB.Client.Tests
         {
             using (var session = await ShakaDbSession.Open("localhost", 8487))
             {
-                await session.Truncate(TestConstants.UsdAud);
-                await session.Write(TestConstants.UsdAud, new[]
+                await session.Truncate(UsdAud);
+                await session.Write(UsdAud, new[]
                 {
                     new DataPoint(1, 12),
                     new DataPoint(2, 13)
                 });
 
-                var result = (await session.Read(TestConstants.UsdAud)).ToList();
+                var result = (await session.Read(UsdAud)).ToList();
 
                 Assert.Equal(2, result.Count);
                 Assert.Equal(1, (int) result[0].Timestamp);
                 Assert.Equal(2, (int) result[1].Timestamp);
-                Assert.Equal(12, result[0].Value);
-                Assert.Equal(13, (int) result[1].Value);
+                Assert.Equal(12, result[0].ValueAsFloat);
+                Assert.Equal(13, (int) result[1].ValueAsFloat);
             }
         }
 
@@ -56,37 +58,18 @@ namespace ShakaDB.Client.Tests
         {
             using (var session = await ShakaDbSession.Open("localhost", 8487))
             {
-                await session.Truncate(TestConstants.UsdAud);
-                await session.Write(TestConstants.UsdAud, new[]
+                await session.Truncate(UsdAud);
+                await session.Write(UsdAud, new[]
                 {
                     new DataPoint(1, 12),
                     new DataPoint(2, 13)
                 });
 
-                var result = (await session.Read(TestConstants.UsdAud, 0, 2)).ToList();
+                var result = (await session.Read(UsdAud, 0, 2)).ToList();
 
                 Assert.Equal(1, result.Count);
                 Assert.Equal(1, (int) result[0].Timestamp);
-                Assert.Equal(12, result[0].Value);
-            }
-        }
-
-        [Fact]
-        public async Task ServerReadAndWriteWithIteatorAndPointsPerPacketLimitTest()
-        {
-            using (var session = await ShakaDbSession.Open("localhost", 8487))
-            {
-                await session.Truncate(TestConstants.UsdAud);
-                await session.Write(TestConstants.UsdAud, new[]
-                {
-                    new DataPoint(1, 12),
-                    new DataPoint(2, 13),
-                    new DataPoint(3, 15)
-                });
-
-                var result = (await session.Read(TestConstants.UsdAud, pointsPerPacket: 2)).ToList();
-
-                Assert.Equal(3, result.Count);
+                Assert.Equal(12, result[0].ValueAsFloat);
             }
         }
 
@@ -95,8 +78,8 @@ namespace ShakaDB.Client.Tests
         {
             using (var session = await ShakaDbSession.Open("localhost", 8487))
             {
-                await session.Truncate(TestConstants.UsdAud);
-                var latest = await session.GetLatest(TestConstants.UsdAud);
+                await session.Truncate(UsdAud);
+                var latest = await session.GetLatest(UsdAud);
 
                 Assert.Null(latest);
             }
@@ -107,18 +90,18 @@ namespace ShakaDB.Client.Tests
         {
             using (var session = await ShakaDbSession.Open("localhost", 8487))
             {
-                await session.Truncate(TestConstants.UsdAud);
-                await session.Write(TestConstants.UsdAud, new[]
+                await session.Truncate(UsdAud);
+                await session.Write(UsdAud, new[]
                 {
                     new DataPoint(1, 12),
                     new DataPoint(2, 13),
                     new DataPoint(3, 15)
                 });
 
-                var latest = await session.GetLatest(TestConstants.UsdAud);
+                var latest = await session.GetLatest(UsdAud);
 
                 Assert.Equal(3, (int) latest.Timestamp);
-                Assert.Equal(15, latest.Value);
+                Assert.Equal(15, latest.ValueAsFloat);
             }
         }
 
@@ -127,22 +110,22 @@ namespace ShakaDB.Client.Tests
         {
             using (var session = await ShakaDbSession.Open("localhost", 8487))
             {
-                await session.Truncate(TestConstants.UsdAud);
-                await session.Write(TestConstants.UsdAud, new[]
+                await session.Truncate(UsdAud);
+                await session.Write(UsdAud, new[]
                 {
                     new DataPoint(1, 12),
                     new DataPoint(2, 13)
                 });
 
-                var result = (await session.Read(TestConstants.UsdAud, 0, 2)).ToList();
+                var result = (await session.Read(UsdAud, 0, 2)).ToList();
 
                 Assert.Equal(1, result.Count);
                 Assert.Equal(1, (int) result[0].Timestamp);
-                Assert.Equal(12, result[0].Value);
+                Assert.Equal(12, result[0].ValueAsFloat);
 
-                await session.Truncate(TestConstants.UsdAud);
+                await session.Truncate(UsdAud);
 
-                result = (await session.Read(TestConstants.UsdAud)).ToList();
+                result = (await session.Read(UsdAud)).ToList();
                 Assert.Equal(0, result.Count);
             }
         }
@@ -152,18 +135,59 @@ namespace ShakaDB.Client.Tests
         {
             using (var session = await ShakaDbSession.Open("localhost", 8487))
             {
-                await session.Truncate(TestConstants.UsdAud);
-                await session.Write(TestConstants.UsdAud, new[]
+                await session.Truncate(UsdAud);
+                await session.Write(UsdAud, new[]
                 {
                     new DataPoint(1, 12),
                     new DataPoint(2, 13)
                 });
 
-                var read = await session.Read(TestConstants.UsdAud);
-                await Assert.ThrowsAsync<ShakaDbException>(async () => await session.Read(TestConstants.UsdAud));
+                var read = await session.Read(UsdAud);
+                await Assert.ThrowsAsync<ShakaDbException>(async () => await session.Read(UsdAud));
 
                 read.ToList();
-                (await session.Read(TestConstants.UsdAud)).ToList();
+                (await session.Read(UsdAud)).ToList();
+            }
+        }
+
+        [Fact]
+        public async Task ServerWriteVariableSizeTest()
+        {
+            using (var session = await ShakaDbSession.Open("localhost", 8487))
+            {
+                await session.Truncate(UsdAud);
+                await session.Write(UsdAud, new[]
+                {
+                    new DataPoint(new DateTimeOffset(new DateTime(2012, 1, 1)), "ala ma kota"),
+                    new DataPoint(new DateTimeOffset(new DateTime(2013, 1, 1)), "ola ma asa"),
+                    new DataPoint(new DateTimeOffset(new DateTime(2014, 1, 1)), "kamis ma rica")
+                }, 100);
+
+                var result = (await session.Read(UsdAud)).ToList();
+
+                Assert.Equal(3, result.Count);
+                Assert.Equal("ala ma kota", result[0].ValueAsString);
+                Assert.Equal("ola ma asa", result[1].ValueAsString);
+                Assert.Equal("kamis ma rica", result[2].ValueAsString);
+            }
+        }
+
+        [Fact]
+        public async Task ServerWriteMultipleBatchesTest()
+        {
+            using (var session = await ShakaDbSession.Open("localhost", 8487))
+            {
+                await session.Truncate(UsdAud);
+
+                var data = Enumerable.Range(1, Constants.MaxPointsPerPacket * 2 + 1)
+                    .Select(x => new DataPoint((ulong) x, x + 1000f))
+                    .ToList();
+
+                await session.Write(UsdAud, data);
+
+                var result = (await session.Read(UsdAud)).ToList();
+
+                Assert.True(data.SequenceEqual(result));
             }
         }
     }

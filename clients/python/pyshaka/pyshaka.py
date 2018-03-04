@@ -3,6 +3,8 @@ import struct as s
 
 SERVER_MAGIC = 0x4B414D41
 
+MAX_POINTS_PER_PACKET = 100000
+
 RESPONSE_OK = 0
 RESPONSE_ERROR = 1
 
@@ -46,30 +48,58 @@ class Session:
         self.socket.close()
 
     @ensure_reading_closed
-    def write(self, series_id, points):
-        payload = s.pack('II', series_id, len(points))
+    def write(self, series_id, points, dp_type='double', point_size=None):
+        pages_source = range(0, len(points) + MAX_POINTS_PER_PACKET, MAX_POINTS_PER_PACKET)
+        pages = [points[x:x + MAX_POINTS_PER_PACKET] for x in pages_source]
+        pages = filter(lambda x: x != [], pages)
+
+        for page in pages:
+            self._write_batch(series_id, page, dp_type, point_size)
+
+    def _write_batch(self, series_id, points, dp_type='double', point_size=None):
+        type_spec = {
+            'double': (8 + 8, 'd'),
+            'float': (4 + 8, 'f'),
+            'int32': (4 + 8, 'i'),
+            'int64': (8 + 8, 'q'),
+            'string': (None, None)
+        }[dp_type]
+
+        point_size = point_size if point_size is not None else type_spec[0]
+
+        if point_size is None:
+            raise ShakaDbError('Unknown point size')
+
+        payload = s.pack('=IQI', series_id, len(points), point_size)
 
         for dp in points:
-            payload = payload + s.pack('Qf', dp[0], dp[1])
+            payload = payload + s.pack('Q', dp[0])
+
+            if type_spec[0] is None:
+                bytes_value = dp[1].encode('ASCII')
+                # this is for padding
+                bytes_value = bytes_value + b"\0" * (point_size - len(bytes_value) - 8)
+                payload = payload + bytes_value
+            else:
+                payload = payload + s.pack(type_spec[1], dp[1])
 
         self._send(payload, WRITE_REQUEST)
         self._assert_simple_response()
 
     @ensure_reading_closed
-    def latest(self, series_id):
+    def latest(self, series_id, dp_type='double'):
         self._send(s.pack('I', series_id), READ_LATEST_REQUEST)
-        points = self._read_points()
+        points = self._read_points(dp_type)
         return None if len(points) == 0 else points[0]
 
     @ensure_reading_closed
-    def read(self, series_id, begin, end, points_per_packet=65536):
-        # turns out pack was returning IQQI -> size 28, IQ is packed incorrectly but QI is fine
-        payload = s.pack('I', series_id) + s.pack('QQ', begin, end) + s.pack('I', points_per_packet)
+    def read(self, series_id, begin, end, dp_type='double'):
+        payload = s.pack('=IQQ', series_id, begin, end)
         self._send(payload, READ_REQUEST)
         self._reading_open = True
 
         while True:
-            points = self._read_points()
+            points = self._read_points(dp_type)
 
             if len(points) == 0:
                 self._reading_open = False
@@ -86,15 +116,29 @@ class Session:
     def is_reading_open(self):
         return self._reading_open
 
-    def _read_points(self):
+    def _read_points(self, dp_type):
+        type_spec = {
+            'double': 'd',
+            'float': 'f',
+            'int32': 'i',
+            'int64': 'q',
+            'string': 's'
+        }[dp_type]
+
         payload = self._receive(READ_RESPONSE)
-        details = s.unpack('I', payload[:4])
+        (points_count, point_size) = s.unpack('=QI', payload[:12])
         points = []
-        points_count = details[0]
 
         for i in range(0, points_count):
-            p = s.unpack_from('Qf', payload, 4 + 12 * i)
-            points.append((p[0], p[1]))
+            offset = 12 + point_size * i
+            time = s.unpack_from('Q', payload, offset)[0]
+
+            if type_spec != 's':
+                value = s.unpack_from(type_spec, payload, offset + 8)[0]
+            else:
+                value = payload[offset + 8:offset + point_size].decode('ASCII').strip(b"\00".decode('ASCII'))
+
+            points.append((time, value))
 
         return points
 
@@ -136,3 +180,8 @@ class Session:
 
 if __name__ == "__main__":
     session = Session()
+    # session.write(1, [(1, 3.14), (2, 6.77)])
+    session.truncate(99)
+    session.write(99, [(1, 'ala ma kota'), (2, 'kamis ma pieska'), (3, 'ola ma asa')], 'string', 100)
+    data = list(session.read(99, 0, 100, dp_type='string'))
+    print(data)

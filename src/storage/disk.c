@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <src/common.h>
+#include <string.h>
 
 FILE *file_open(const char *file_name);
 
@@ -69,8 +70,9 @@ void file_map_sync(file_map_t *file) {
   }
 }
 
-void file_grow(const char *file_name, uint64_t increment) {
+void file_grow(const char *file_name, uint64_t increment, uint8_t pattern) {
   uint8_t *buffer = (uint8_t *)sdb_alloc(SDB_GROW_BUFFER_SIZE);
+  memset(buffer, pattern, SDB_GROW_BUFFER_SIZE);
   FILE *f = file_open(file_name);
 
   if (f == NULL) {
@@ -78,7 +80,7 @@ void file_grow(const char *file_name, uint64_t increment) {
   }
 
   while (increment > 0) {
-    increment -= fwrite(buffer, 1, sdb_minl(SDB_GROW_BUFFER_SIZE, increment), f);
+    increment -= fwrite(buffer, 1, sdb_min(SDB_GROW_BUFFER_SIZE, increment), f);
   }
 
   fclose(f);

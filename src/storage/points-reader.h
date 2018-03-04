@@ -30,11 +30,10 @@
 #include "src/data-point.h"
 
 typedef struct points_reader_s {
-  data_point_t *points;
-  uint64_t points_count;
+  points_list_t points;
 } points_reader_t;
 
-points_reader_t *points_reader_create(data_point_t *points, uint64_t points_count);
+points_reader_t *points_reader_create(data_point_t *points, uint64_t points_count, uint32_t point_size);
 void points_reader_destroy(points_reader_t *reader);
 
 #endif  // SRC_STORAGE_POINTS_READER_H_

@@ -4,9 +4,6 @@
 
 #include "src/network/server.h"
 
-#include <string.h>
-
-#include "src/common.h"
 #include "src/diagnostics.h"
 #include "src/network/protocol.h"
 
@@ -29,7 +26,7 @@ client_t *client_create(server_t *server, int index) {
   uv_tcp_init(&server->loop, &client->socket);
   client->socket.data = client;
 
-  // if this is not available on linux
+  // if this is not set on linux
   // each time a connection is reset by a peer
   // the application will crash
   signal(SIGPIPE, SIG_IGN);
@@ -207,7 +204,7 @@ void on_data_read(uv_stream_t *client_socket, ssize_t nread, const uv_buf_t *buf
     packet_t *packet = (packet_t *)client->buffer;
 
     if (packet->magic != SDB_SERVER_MAGIC || packet->total_size > SDB_SERVER_PACKET_MAX_LEN) {
-      log_error("Received malformed packet, disconnecting, magic: %u, len: %u", packet->magic, packet->total_size);
+      log_error("Received malformed packet, disconnecting, magic: 0x%X, len: %u", packet->magic, packet->total_size);
       client_disconnect_and_destroy(client);
       return;
     }

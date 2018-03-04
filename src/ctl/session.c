@@ -48,8 +48,8 @@ int socket_connect(const char *server, int port) {
   struct addrinfo hints = {0};
   struct addrinfo *result;
   int sock = -1;
-  char port_string[SDB_FILE_MAX_LEN] = {0};
-  snprintf(port_string, SDB_FILE_MAX_LEN, "%d", port);
+  char port_string[SDB_STR_MAX_LEN] = {0};
+  snprintf(port_string, SDB_STR_MAX_LEN, "%d", port);
 
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
@@ -141,12 +141,12 @@ void session_destroy(session_t *session) {
   sdb_free(session);
 }
 
-int session_write(session_t *session, series_id_t series_id, data_point_t *points, int count) {
+int session_write(session_t *session, series_id_t series_id, points_list_t *points) {
   if (session->read_open) {
     return -1;
   }
 
-  buffer_t request = write_request_create(series_id, points, count);
+  buffer_t request = write_request_create(series_id, points);
   return session_send_with_simple_response(session, request);
 }
 
@@ -159,16 +159,12 @@ int session_truncate(session_t *session, series_id_t series_id) {
   return session_send_with_simple_response(session, request);
 }
 
-int session_read(session_t *session,
-                 series_id_t series_id,
-                 timestamp_t begin,
-                 timestamp_t end,
-                 int points_per_packet) {
+int session_read(session_t *session, series_id_t series_id, timestamp_t begin, timestamp_t end) {
   if (session->read_open) {
     return -1;
   }
 
-  buffer_t packet = read_request_create(series_id, begin, end, points_per_packet);
+  buffer_t packet = read_request_create(series_id, begin, end);
   session_send_and_destroy(session, packet);
   session->read_open = 1;
 
@@ -197,20 +193,14 @@ int session_read_next(session_t *session) {
   return 1;
 }
 
-int session_read_latest(session_t *session, series_id_t series_id, data_point_t *latest) {
+int session_read_latest(session_t *session, series_id_t series_id) {
   if (session->read_open) {
     return -1;
   }
 
   buffer_t packet = read_latest_request_create(series_id);
   session_send_and_destroy(session, packet);
-
-  read_response_t *response = (read_response_t *)session_receive(session, SDB_READ_RESPONSE);
-
-  latest->time = response->points_count != 0 ? response->points[0].time : 0;
-  latest->value = response->points_count != 0 ? response->points[0].value : 0;
-
-  sdb_free(response);
+  session->read_open = 1;
 
   return 0;
 }

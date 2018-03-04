@@ -43,7 +43,7 @@
 
 int main(int argc, char *argv[]) {
   int configuration_parsed = 0;
-  char directory[SDB_FILE_MAX_LEN] = {0};
+  char directory[SDB_STR_MAX_LEN] = {0};
   strcpy(directory, "/Users/pburzynski/projects/ShakaDB/build/tests");
 
   while (!configuration_parsed) {
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
       configuration_parsed = 1;
     } else {
       switch (c) {
-        case 'd':strncpy(directory, optarg, SDB_FILE_MAX_LEN);
+        case 'd':strncpy(directory, optarg, SDB_STR_MAX_LEN);
           break;
         default: configuration_parsed = -1;
       }
@@ -99,6 +99,7 @@ int main(int argc, char *argv[]) {
   TEST(test_database_write_close_and_write_more);
   TEST(test_database_continuous_write);
   TEST(test_database_continuous_write_with_pickup);
+  TEST(test_database_write_close_read);
   TEST(test_database_write_batch_size_equal_to_page_capacity);
   TEST(test_database_write_batch_size_greater_than_page_capacity);
   TEST(test_database_read_inside_single_chunk);
@@ -112,8 +113,7 @@ int main(int argc, char *argv[]) {
   TEST(test_database_truncate_write_again);
   TEST(test_database_failed_write);
   TEST(test_database_read_latest_no_data);
-  TEST(test_database_read_latest_data_in_first_chunk);
-  TEST(test_database_read_latest_data_in_second_chunk);
+  TEST(test_database_read_latest);
 
   TEST(test_server_simple_initialization_test);
   TEST(test_server_connect);
@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
   TEST(test_server_write_small);
   TEST(test_server_write_unordered);
   TEST(test_server_write_two_batches);
-  TEST(test_server_read_two_batches);
+  TEST(test_server_read_multiple_batches);
   TEST(test_server_read_range);
   TEST(test_server_read_range_with_multiple_series);
   TEST(test_server_update);
@@ -140,6 +140,7 @@ int main(int argc, char *argv[]) {
   TEST(test_server_read_latest_series_out_of_range);
   TEST(test_server_read_latest_when_empty);
   TEST(test_server_read_latest);
+  TEST(test_server_write_varsize);
 
   test_session_print_summary(session);
   printf("==================== Tests finished ===================\n");

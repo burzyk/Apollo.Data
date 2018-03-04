@@ -34,18 +34,18 @@
 #endif
 
 typedef struct series_s {
-  char file_name[SDB_FILE_MAX_LEN];
+  char file_name[SDB_STR_MAX_LEN];
   file_map_t *file_map;
-  data_point_t *points;
-  uint64_t points_count;
+  points_list_t points;
   uint64_t points_capacity;
+  int no_flush;
 } series_t;
 
-series_t *series_create(const char *file_name);
+series_t *series_create(const char *file_name, uint32_t point_size, int no_flush);
 void series_destroy(series_t *series);
 void series_truncate_and_destroy(series_t *series);
-int series_write(series_t *series, data_point_t *points, uint64_t count);
+int series_write(series_t *series, points_list_t *to_write);
 points_reader_t *series_read(series_t *series, timestamp_t begin, timestamp_t end, uint64_t max_points);
-data_point_t series_read_latest(series_t *series);
+points_reader_t *series_read_latest(series_t *series);
 
 #endif  // SRC_STORAGE_SERIES_H_

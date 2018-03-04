@@ -28,15 +28,12 @@
 
 #include <uv.h>
 
-#include "src/common.h"
-#include "src/data-point.h"
-
 #ifndef SDB_MAX_CLIENTS
 #define SDB_MAX_CLIENTS 255
 #endif
 
 #ifndef SDB_SERVER_PACKET_MAX_LEN
-#define SDB_SERVER_PACKET_MAX_LEN ((SDB_POINTS_PER_PACKET_MAX * sizeof(data_point_t)) + 65536)
+#define SDB_SERVER_PACKET_MAX_LEN 6553600
 #endif
 
 #define SDB_SERVER_READ_BUFFER_MAX_LEN  65536

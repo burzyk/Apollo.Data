@@ -8,6 +8,12 @@
 #include "src/storage/database.h"
 #include "src/network/server.h"
 
+#ifndef SDB_READ_MAX_PAYLOAD
+// 300 is just an arbitrary number to
+// reduce any risk of hitting the transport limit
+#define SDB_READ_MAX_PAYLOAD (SDB_SERVER_PACKET_MAX_LEN - 300)
+#endif
+
 typedef struct client_handler_s {
   database_t *db;
 } client_handler_t;

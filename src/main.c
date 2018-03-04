@@ -46,7 +46,8 @@
 
 typedef struct configuration_s {
   int log_verbose;
-  char database_directory[SDB_FILE_MAX_LEN];
+  char database_directory[SDB_STR_MAX_LEN];
+  int database_no_flush;
   int server_port;
 } configuration_t;
 
@@ -92,7 +93,7 @@ void control_signal_handler(int sig) {
 void master_routine(configuration_t *config) {
 
   log_info("initializing database ...");
-  database_t *db = database_create(config->database_directory, SDB_DATA_SERIES_MAX);
+  database_t *db = database_create(config->database_directory, SDB_DATA_SERIES_MAX, config->database_no_flush);
 
   log_info("initializing server ...");
   client_handler_t *handler = client_handler_create(db);
@@ -119,7 +120,7 @@ int on_message_received(client_t *client, uint8_t *data, uint32_t size, void *co
 
 int configuration_parse(configuration_t *config, int argc, char **argv) {
   config->server_port = SDB_CONFIG_DEFAULT_PORT;
-  strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_FILE_MAX_LEN);
+  strncpy(config->database_directory, SDB_CONFIG_DEFAULT_DIRECTORY, SDB_STR_MAX_LEN);
   config->log_verbose = 0;
 
   while (1) {
@@ -128,10 +129,11 @@ int configuration_parse(configuration_t *config, int argc, char **argv) {
         {"port", required_argument, 0, 'p'},
         {"directory", required_argument, 0, 'd'},
         {"help", no_argument, 0, 'h'},
+        {"no-flush", no_argument, 0, 'x'},
         {"verbose", no_argument, 0, 'v'}
     };
 
-    int c = getopt_long(argc, argv, "vhp:d:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "vhp:d:x", long_options, &option_index);
     if (c == -1) {
       return 0;
     }
@@ -139,10 +141,12 @@ int configuration_parse(configuration_t *config, int argc, char **argv) {
     switch (c) {
       case 'p': config->server_port = atoi(optarg);
         break;
-      case 'd':strncpy(config->database_directory, optarg, SDB_FILE_MAX_LEN);
+      case 'd':strncpy(config->database_directory, optarg, SDB_STR_MAX_LEN);
         break;
       case 'h':print_usage();
         exit(0);
+      case 'x':config->database_no_flush = 1;
+        break;
       case 'v':config->log_verbose = 1;
         break;
       default:return -1;
@@ -163,6 +167,7 @@ void print_banner(configuration_t *config) {
   log_info("");
   log_info("    directory:   %s", config->database_directory);
   log_info("    port:        %d", config->server_port);
+  log_info("    flush write: %s", config->database_no_flush ? "no" : "yes");
   log_info("");
 }
 
@@ -181,6 +186,10 @@ void print_usage() {
   printf("                      default value: %d\n", SDB_CONFIG_DEFAULT_PORT);
   printf("    --directory, -d:  directory where database will be created\n");
   printf("                      default value: %s\n", SDB_CONFIG_DEFAULT_DIRECTORY);
+  printf("    --no-flush, -x:   omits the flush call after the write method\n");
+  printf("                      this can make the db 10x faster,\n");
+  printf("                      especially when batches are small\n");
+  printf("                      WARNING: if server crashes you may loose your data\n");
   printf("    --verbose, -v:    logs debug information\n");
   printf("\n");
   printf("For more info visit: http://shakadb.com/getting-started\n");
