@@ -6,6 +6,7 @@ THIS_DIR=File.dirname(__FILE__)
 BUILD_DIR=THIS_DIR + '/build'
 BINARIES_DIR=BUILD_DIR + '/bin'
 TESTS_DIR=BUILD_DIR + '/tests'
+DOCS_DIR=BUILD_DIR + '/docs'
 INTEGRATION_TESTS_DATA_DIR=BUILD_DIR + '/integration-tests'
 PYTHON_CLIENT_DIR=THIS_DIR + '/clients/python'
 PYTHON_CLIENT_DIST=PYTHON_CLIENT_DIR + '/dist'
@@ -48,7 +49,7 @@ end
 
 task :default => [:build_binaries, :run_tests]
 
-task :build_common => [:default, :build_clients]
+task :build_common => [:default, :build_clients, :build_docs]
 task :build_debug => [:set_debug, :build_common]
 task :build_release => [:set_release, :build_common, :run_integration_tests]
 
@@ -60,6 +61,7 @@ task :init do
     Dir.mkdir(BUILD_DIR)
     Dir.mkdir(BINARIES_DIR)
     Dir.mkdir(TESTS_DIR)
+    Dir.mkdir(DOCS_DIR)
 
     git_descr, _, _ = Open3.capture3("git", "describe")
     git_commit, _, _ = Open3.capture3("git", "rev-parse", "HEAD")
@@ -72,6 +74,12 @@ task :build_binaries => [:init] do
     sh("cmake -H. -B#{BINARIES_DIR}")
     sh("cmake  --build #{BINARIES_DIR} --target all -- -j 8")
 end
+
+task :build_docs => [:init] do
+    sh("scss docs/style/_main.scss > #{DOCS_DIR}/style.css")
+    sh("pug -o #{DOCS_DIR} docs/pages")
+end
+
 
 task :run_tests => [:build_binaries] do
     puts "running tests ..."
