@@ -8,8 +8,21 @@ html(lang="en")
     title shakadb documentation
 
     link(href="style.css" rel="stylesheet")
-    link(href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css?family=Ubuntu|Ubuntu+Mono" rel="stylesheet")
     link(rel="shortcut icon" href="favicon.png")
   body
-    p some header here
-    block content
+    nav.main
+      ul
+        li.name
+          a(href="") shakadb
+        li
+          a(href="#getting-started") Getting Started
+        li
+          a(href="#download") Downloads
+        li
+          a(href="#overview") Documentation
+        li
+          a(href="") Source Code
+    .content
+      block content
+    footer

@@ -1,0 +1,62 @@
+extends _layout.pug
+
+block content
+  nav.side
+    ul.main
+      li
+        a(href="#getting-started") Getting Started
+      li
+        a(href="#overview") Overview
+      li
+        a(href="#overview") Components
+        ul.sub
+          li
+            a(href="") shakadb
+          li
+            a(href="") shakadbctl
+          li
+            a(href="") shakadb.test
+          li
+            a(href="") shakadb.stress
+      li
+        a(href="#overview") Data model
+      li
+        a(href="#overview") Protocol
+      li
+        a(href="#overview") Clients
+        ul.sub
+          li
+            a(href="") .NET
+          li
+            a(href="") python
+      li
+        a(href="#overview") Download
+      li
+        a(href="#overview") Building from source
+      li
+        a(href="#overview") Troubleshooting
+  main
+    h1#overview Overview
+    p Sed congue ante arcu, quis efficitur ipsum pharetra a. Suspendisse interdum eget nibh ac eleifend. Nunc accumsan auctor nibh mollis consequat. #[a(href="dasda") Proin] rhoncus leo quis massa finibus consequat. Maecenas ut accumsan felis, #[code.inline this->DoSomething();] ac rutrum eros. Curabitur finibus,  nibh id varius vehicula, arcu ex rutrum risus, eget ornare ligula risus ut elit. Praesent at volutpat metus, quis aliquam urna.
+
+    p this is #[em sparta]
+
+    p this is #[i ala]
+
+    p this is #[code.inline this->DoSomething();] blah
+
+    code.block
+      span 01. if (new_client_index >= SDB_MAX_CLIENTS) {
+      span  02. log_debug("Max clients connected, ignoring this ctl");
+      span  03.    return;
+      span  04.  }
+      span  05.
+      span  06.  client_t *client = server->clients[new_client_index] = client_create(server, new_client_index);
+      span  07.
+      span  08.  if ((status = uv_accept((uv_stream_t *)&server->master_socket, (uv_stream_t *)&client->socket))    | < 0) {
+      span  09.  log_error("Failed to accept the connection: %s", uv_strerror(status));
+      span  10.  client_disconnect_and_destroy(client);
+      span  11. }
+
+    p Phasellus efficitur, augue sed dapibus rutrum, lectus diam cursus justo, eu facilisis lectus ex sit amet diam. Suspendisse id varius velit. Cras facilisis vel mauris quis semper. Praesent mollis, sem eu semper posuere, lacus lacus pretium libero, quis elementum eros magna et diam. Vestibulum sit amet justo et mi sagittis congue sit amet sed velit. Suspendisse viverra enim arcu, vel varius magna ullamcorper in. Suspendisse at accumsan orci. Vivamus vitae nisi eu odio tincidunt tincidunt sit amet sit amet risus. Morbi augue ex, dictum ut augue a, bibendum ullamcorper arcu.
+

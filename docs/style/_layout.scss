@@ -1,0 +1,154 @@
+$dark-color: #2C3E50;
+$alert-color: #E74C3C;
+$light-color: #ECF0F1;
+$main-color: #3498DB;
+$main-dark-color: #2980B9;
+
+$code-font: 'Ubuntu Mono';
+$font: 'Ubuntu';
+
+body {
+    font-family: $font, sans-serif;
+    background-color: $dark-color;
+    color: $light-color;
+}
+
+$main-nav-height: 50px;
+
+nav.main {
+    position: fixed;
+    width: 100%;
+    height: $main-nav-height;
+    background-color: $main-color;
+    border-bottom: 2px solid $main-dark-color;
+    z-index: 100;
+
+    ul {
+        color: $light-color;
+        margin: 0 50px;
+
+        li {
+            display: inline-block;
+        }
+
+        a {
+            display: inline-block;
+            color: $light-color;
+            padding: 16px 10px;
+            transition: all 0.3s;
+
+            &:hover { background-color: $main-dark-color; }
+        }
+    }
+}
+
+footer {
+    min-height: 400px;
+}
+
+.content {
+    background-color: $light-color;
+    color: $dark-color;
+    display: flex;
+    padding-top: $main-nav-height;
+}
+
+$side-nav-width: 400px;
+
+nav.side {
+    // background-color: $;
+    order: 0;
+    font-size: 14px;
+
+    a {
+        color: $dark-color;
+        padding: 15px 0 5px 0px;
+        display: inline-block;
+        border-bottom: 1px solid $light-color;
+        transition: all 0.3s;
+
+        &:hover {
+            color: lighten($dark-color, 20%);
+            border-bottom: 1px solid $main-color;
+        }
+    }
+
+    ul.main {
+        position: sticky;
+        top: $main-nav-height + 10px;
+        margin: 0 20px 40px;
+    }
+
+    li {
+        margin-left: 20px;
+    }
+}
+
+main {
+    height: 1024px;
+    border-left: 1px solid darken($light-color, 10%);
+    order: 0;
+    padding: 0 60px;
+
+    h1 {
+        font-size: 40px;
+        margin: 40px 0 25px 0;
+        line-height: 1.3;
+    }
+
+    a {
+        color: $alert-color;
+        transition: all 0.3s;
+
+        &:hover {
+            color: darken($alert-color, 20%);
+            text-decoration: underline;
+        }
+    }
+
+    em { font-weight: bold; }
+
+    i { font-style: italic; }
+
+    p {
+        font-size: 16px;
+        line-height: 180%;
+        margin-bottom: 15px;
+    }
+
+    code {
+        font-family: $code-font, monospace;
+        background-color: darken($light-color, 10%);
+        border: 1px solid darken($light-color, 20%);
+        border-radius: 5px;
+
+        &.inline {
+            padding: 3px 5px;
+            white-space: nowrap;
+        }
+
+        &.block {
+            padding: 20px 10px;
+            margin: 20px 0;
+            display: block;
+
+            span {
+                display: block;
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
