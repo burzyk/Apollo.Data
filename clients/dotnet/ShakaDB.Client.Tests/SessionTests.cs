@@ -179,8 +179,7 @@ namespace ShakaDB.Client.Tests
             {
                 await session.Truncate(UsdAud);
 
-                var expectedDataCount = Constants.MaxPointsPerPacket * 2 + 1;
-                var data = Enumerable.Range(1, expectedDataCount)
+                var data = Enumerable.Range(1, Constants.MaxPointsPerPacket * 2 + 1)
                     .Select(x => new DataPoint((ulong) x, x + 1000f))
                     .ToList();
 
