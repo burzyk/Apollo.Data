@@ -76,7 +76,9 @@ task :build_binaries => [:init] do
 end
 
 task :build_docs => [:init] do
-    sh("scss docs/style/_main.scss > #{DOCS_DIR}/style.css")
+    sh("scss docs/style/_docs.scss > #{DOCS_DIR}/docs.css")
+    sh("scss docs/style/_promo.scss > #{DOCS_DIR}/promo.css")
+    sh("cp docs/assets/* #{DOCS_DIR}")
     sh("pug -o #{DOCS_DIR} docs/pages")
 end
 

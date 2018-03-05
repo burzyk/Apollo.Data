@@ -1,0 +1,25 @@
+
+footer {
+    min-height: 300px;
+
+    .mega {
+        font-family: $logo-font;
+        font-size: 150px;
+        text-align: center;
+        margin-top: 50px;
+        color: darken($dark-color, 2%);
+        text-shadow: 0 0 5px darken($dark-color, 10%);
+
+    }
+
+    small {
+        display: block;
+        font-size: 16px;
+        text-align: center;
+        color: darken($dark-color, 10%);
+
+        a {
+            color: lighten($dark-color, 15%);
+        }
+    }
+}
