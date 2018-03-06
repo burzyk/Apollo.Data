@@ -135,11 +135,36 @@ nav.main {
         padding: 40px 60px;
         font-size: 30px;
         line-height: 180%;
+
+        h1 {
+            font-family: $logo-font;
+            font-size: 70px;
+            color: darken($dark-color, 2%);
+        }
+
+        span {
+            margin-top: 30px;
+            display: block;
+        }
+
+        a {
+            color: $alert-color;
+            margin-left: 5px;
+            transition: all 0.3s;
+            padding: 0px 5px;
+
+            &:hover {
+                color: lighten($alert-color, 30%);
+                background-color: $alert-color;
+                border-radius: 5px;
+            }
+        }
     }
 
     img {
         width: $img-width;
         height: $img-width;
+        border: 1px solid $main-dark-color;
     }
 
     &.rev {

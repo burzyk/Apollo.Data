@@ -36,7 +36,6 @@ float stopwatch_stop_and_destroy(stopwatch_t *stopwatch) {
   return elapsed;
 }
 
-
 int test_lz4() {
   FILE *f = fopen("/Users/pburzynski/data/test.data", "rb");
   uint64_t file_size = 1000000000;
@@ -66,8 +65,31 @@ int test_lz4() {
   free(data);
 }
 
+void generate_random_file() {
+  int size = 1000000;
+  int *data = (int *)malloc(sizeof(int) * size);
+  int *deltas = (int *)malloc(sizeof(int) * size);
+  srand((unsigned int)time(NULL));
+
+  for (int i = 0; i < size; i++) {
+    data[i] = i + (rand() * 100) % 50;
+  }
+
+  for (int i = 0; i < size - 1; i++) {
+    deltas[i] = data[i - 1] - data[i];
+  }
+
+  FILE *f = fopen("/Users/pburzynski/data/test.data", "wb");
+  fwrite(data, sizeof(int), size, f);
+
+  FILE *d = fopen("/Users/pburzynski/data/test.data-delta", "wb");
+  fwrite(deltas, sizeof(int), size, d);
+}
+
 int main() {
-  test_lz4();
+  generate_random_file();
+
+//  test_lz4();
   return 0;
 
   int sock = socket(AF_INET, SOCK_STREAM, 0);
